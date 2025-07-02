@@ -203,7 +203,7 @@ def interpose[T](el: Any, seq: Iterable[T]) -> Iterator[T | Any]:
     """
     ...
 
-def isdistinct[T](seq: Iterable[Any]) -> bool:
+def isdistinct(seq: Iterable[Any]) -> bool:
     """
     All values in sequence are distinct
 
@@ -219,7 +219,7 @@ def isdistinct[T](seq: Iterable[Any]) -> bool:
     """
     ...
 
-def isiterable[T](x: Any) -> bool:
+def isiterable(x: Any) -> bool:
     """
     Is x iterable?
 
