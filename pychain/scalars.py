@@ -1,93 +1,67 @@
 import operator as op
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from dataclasses import dataclass
-from functools import partial
-from typing import Self
+from typing import Self, Any
 
 import cytoolz as cz
 
 
 @dataclass(slots=True, frozen=True)
-class ScalarStream[T]:
-    _value: T
-    _pipe: list[Callable[..., T]]
+class ScalarChain[T]:
+    value: T
 
-    def _append(self, f: Callable[..., T]) -> Self:
-        self._pipe.append(f)
-        return self
+    def _new(self, value: T) -> Self:
+        return self.__class__(value)
 
-    def _transform[U](self, f: Callable[..., U]) -> "ScalarStream[U]":
-        self._pipe.append(f)  # type: ignore
-        return self.__class__(self._value, self._pipe)  # type: ignore
+    def _transform[U](self, value: U) -> "ScalarChain[U]":
+        return self.__class__(value)  # type: ignore
 
-    def compose[U](self, *fns: Callable[[T], U]) -> "ScalarStream[U]":
-        return self._transform(cz.functoolz.compose_left(*fns))
+    def compose[U](self, *fns: Callable[[T], U]) -> "ScalarChain[U]":
+        return self._transform(value=cz.functoolz.compose_left(*fns)(self.value))
 
-    def add(self, value: T) -> Self:
-        return self._append(partial(self._add, b=value))
+    def pipe[U](self, *fns: Callable[..., U]) -> "ScalarChain[U]":
+        return self._transform(value=cz.functoolz.pipe(data=self.value, *fns))
 
-    def sub(self, value: T) -> Self:
-        return self._append(partial(self._sub, b=value))
+    def thread_first[U](self, *fns: Callable[..., U]) -> "ScalarChain[U]":
+        return self._transform(value=cz.functoolz.thread_first(val=self.value, *fns))
 
-    def mul(self, value: T) -> Self:
-        return self._append(partial(self._mul, b=value))
+    def thread_last[U](
+        self, *fns: tuple[Callable[..., U], Any] | Callable[..., U]
+    ) -> "ScalarChain[U]":
+        return self._transform(value=cz.functoolz.thread_last(val=self.value, *fns))
 
-    def div(self, value: T) -> "ScalarStream[float]":
-        return self._transform(partial(self._div, b=value))
+    def to_int(self) -> "NumericChain[int]":
+        return NumericChain(_value=int(self.value))  # type: ignore
 
-    def abs(self) -> "ScalarStream[float]":
-        return self._transform(abs)
+    def to_float(self) -> "NumericChain[float]":
+        return NumericChain(_value=float(self.value))  # type: ignore
 
-    def round(self, ndigits: int) -> "ScalarStream[float]":
-        return self._transform(partial(round, ndigits=ndigits))
-
-    @staticmethod
-    def _add(a: T, b: T) -> T:
-        return op.add(a, b)
-
-    @staticmethod
-    def _sub(a: T, b: T) -> T:
-        return op.sub(a, b)
-
-    @staticmethod
-    def _mul(a: T, b: T) -> T:
-        return op.mul(a, b)
-
-    @staticmethod
-    def _div(a: T, b: T) -> float:
-        return op.truediv(a, b)
-
-    def collect(self) -> T:
-        return cz.functoolz.pipe(self._value, *self._pipe)
+    def to_string(self) -> str:
+        return str(self.value)
 
     def to_list(self) -> list[T]:
-        return [self.collect()]
+        return [self.value]
 
     def to_tuple(self) -> tuple[T, ...]:
-        return (self.collect(),)
+        return (self.value,)
 
 
 @dataclass(slots=True, frozen=True)
-class Aggregator[T]:
-    _parent: Iterable[T]
+class NumericChain[T: int | float](ScalarChain[T]):
+    def add(self, other: T) -> Self:
+        return self._new(value=op.add(self.value, other))
 
-    def _to_scalar[U](self, f: Callable[[Iterable[T]], U]) -> ScalarStream[U]:
-        return ScalarStream(_value=f(self._parent), _pipe=[])
+    def sub(self, other: T) -> Self:
+        return self._new(value=op.sub(self.value, other))
 
-    def len(self) -> ScalarStream[int]:
-        return self._to_scalar(cz.itertoolz.count)
+    def mul(self, other: T) -> Self:
+        return self._new(value=op.mul(self.value, other))
 
-    def first(self) -> ScalarStream[T]:
-        return self._to_scalar(cz.itertoolz.first)
+    def div(self, other: float | int) -> Self:
+        return self._new(value=op.truediv(self.value, other))
 
-    def second(self) -> ScalarStream[T]:
-        return self._to_scalar(cz.itertoolz.second)
+    def abs(self) -> "NumericChain[float]":
+        return NumericChain(value=abs(self.value))
 
-    def last(self) -> ScalarStream[T]:
-        return self._to_scalar(cz.itertoolz.last)
-
-    def isdistinct(self) -> bool:
-        return cz.itertoolz.isdistinct(self._parent)
-
-    def sum(self) -> ScalarStream[T]:
-        return ScalarStream(_value=sum(self._parent), _pipe=[])  # type: ignore
+    def round(self, ndigits: int) -> "NumericChain[float]":
+        return NumericChain(value=round(number=self.value, ndigits=ndigits))

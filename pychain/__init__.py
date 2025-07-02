@@ -1,10 +1,3 @@
-from pychain.dictstream import DictStream
-from pychain.main import LazyStream
-from pychain.scalars import Aggregator, ScalarStream
+from pychain.main import from_dict, from_iterable, from_scalar, from_numeric, from_range
 
-__all__ = [
-    "DictStream",
-    "LazyStream",
-    "Aggregator",
-    "ScalarStream",
-]
+__all__ = ["from_scalar", "from_iterable", "from_dict", "from_numeric", "from_range"]
