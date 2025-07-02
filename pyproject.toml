@@ -7,5 +7,6 @@ requires-python = ">=3.13"
 dependencies = [
     "cytoolz>=1.0.1",
     "ipykernel>=6.29.5",
+    "polars>=1.31.0",
     "toolz>=1.0.0",
 ]
