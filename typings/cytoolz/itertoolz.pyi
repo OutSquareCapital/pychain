@@ -4,7 +4,8 @@ from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 def accumulate[T](
     binop: Callable[[T, T], T], seq: Iterable[T], initial: Any = ...
 ) -> Iterator[T]:
-    """Repeatedly apply binary function to a sequence, accumulating results
+    """
+    Repeatedly apply binary function to a sequence, accumulating results
 
     >>> from operator import add, mul
     >>> list(accumulate(add, [1, 2, 3, 4, 5]))
@@ -33,7 +34,8 @@ def accumulate[T](
     ...
 
 def concat[T](seqs: Iterable[Iterable[T]]) -> Iterator[T]:
-    """Concatenate zero or more iterables, any of which may be infinite.
+    """
+    Concatenate zero or more iterables, any of which may be infinite.
 
     An infinite sequence will prevent the rest of the arguments from
     being included.
@@ -50,7 +52,8 @@ def concat[T](seqs: Iterable[Iterable[T]]) -> Iterator[T]:
     ...
 
 def concatv[T](*seqs: Iterable[T]) -> Iterator[T]:
-    """Variadic version of concat
+    """
+    Variadic version of concat
 
     >>> list(concatv([], ["a"], ["b", "c"]))
     ['a', 'b', 'c']
@@ -61,7 +64,8 @@ def concatv[T](*seqs: Iterable[T]) -> Iterator[T]:
     ...
 
 def cons[T](el: T, seq: Iterable[T]) -> Iterator[T]:
-    """Add el to beginning of (possibly infinite) sequence seq.
+    """
+    Add el to beginning of (possibly infinite) sequence seq.
 
     >>> list(cons(1, [2, 3]))
     [1, 2, 3]
@@ -69,7 +73,8 @@ def cons[T](el: T, seq: Iterable[T]) -> Iterator[T]:
     ...
 
 def count(seq: Iterable[Any]) -> int:
-    """Count the number of items in seq
+    """
+    Count the number of items in seq
 
     Like the builtin ``len`` but works on lazy sequences.
 
@@ -81,7 +86,8 @@ def count(seq: Iterable[Any]) -> int:
     ...
 
 def diff[T](*seqs: Iterable[T], **kwargs: Any) -> Iterator[tuple[T, ...]]:
-    """Return those items that differ between sequences
+    """
+    Return those items that differ between sequences
 
     >>> list(diff([1, 2, 3], [1, 2, 10, 100]))
     [(3, 10)]
@@ -100,7 +106,8 @@ def diff[T](*seqs: Iterable[T], **kwargs: Any) -> Iterator[tuple[T, ...]]:
     ...
 
 def drop[T](n: int, seq: Iterable[T]) -> Iterator[T]:
-    """The sequence following the first n elements
+    """
+    The sequence following the first n elements
 
     >>> list(drop(2, [10, 20, 30, 40, 50]))
     [30, 40, 50]
@@ -112,7 +119,8 @@ def drop[T](n: int, seq: Iterable[T]) -> Iterator[T]:
     ...
 
 def first[T](seq: Iterable[T]) -> T:
-    """The first element in a sequence
+    """
+    The first element in a sequence
 
     >>> first('ABC')
     'A'
@@ -120,7 +128,8 @@ def first[T](seq: Iterable[T]) -> T:
     ...
 
 def frequencies[T](seq: Iterable[T]) -> dict[T, int]:
-    """Find number of occurrences of each value in seq
+    """
+    Find number of occurrences of each value in seq
 
     >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])  #doctest: +SKIP
     {'cat': 3, 'ox': 1, 'pig': 2}
@@ -142,7 +151,8 @@ def get[KT, VT](
 @overload
 def get[T](ind: Iterable[int], seq: Sequence[T], default: Any = ...) -> Iterator[T]: ...
 def groupby[T, KT](key: Callable[[T], KT], seq: Iterable[T]) -> dict[KT, list[T]]:
-    """Group a collection by a key function
+    """
+    Group a collection by a key function
 
     >>> names = ['Alice', 'Bob', 'Charlie', 'Dan', 'Edith', 'Frank']
     >>> groupby(len, names)  # doctest: +SKIP
@@ -169,7 +179,8 @@ def groupby[T, KT](key: Callable[[T], KT], seq: Iterable[T]) -> dict[KT, list[T]
     ...
 
 def interleave[T](seqs: Iterable[Iterable[T]]) -> Iterator[T]:
-    """Interleave a sequence of sequences
+    """
+    Interleave a sequence of sequences
 
     >>> list(interleave([[1, 2], [3, 4]]))
     [1, 3, 2, 4]
@@ -184,7 +195,8 @@ def interleave[T](seqs: Iterable[Iterable[T]]) -> Iterator[T]:
     ...
 
 def interpose[T](el: Any, seq: Iterable[T]) -> Iterator[T | Any]:
-    """Introduce element between each pair of elements in seq
+    """
+    Introduce element between each pair of elements in seq
 
     >>> list(interpose("a", [1, 2, 3]))
     [1, 'a', 2, 'a', 3]
@@ -192,7 +204,8 @@ def interpose[T](el: Any, seq: Iterable[T]) -> Iterator[T | Any]:
     ...
 
 def isdistinct[T](seq: Iterable[Any]) -> bool:
-    """All values in sequence are distinct
+    """
+    All values in sequence are distinct
 
     >>> isdistinct([1, 2, 3])
     True
@@ -207,7 +220,8 @@ def isdistinct[T](seq: Iterable[Any]) -> bool:
     ...
 
 def isiterable[T](x: Any) -> bool:
-    """Is x iterable?
+    """
+    Is x iterable?
 
     >>> isiterable([1, 2, 3])
     True
@@ -219,7 +233,8 @@ def isiterable[T](x: Any) -> bool:
     ...
 
 def iterate[T](func: Callable[[T], T], x: T) -> Iterator[T]:
-    """Repeatedly apply a function func onto an original input
+    """
+    Repeatedly apply a function func onto an original input
 
     Yields x, then func(x), then func(func(x)), then func(func(func(x))), etc..
 
@@ -253,7 +268,8 @@ def join[T1, T2, KT](
     left_default: Any = ...,
     right_default: Any = ...,
 ) -> Iterator[tuple[T1, T2]]:
-    """Join two sequences on common attributes
+    """
+    Join two sequences on common attributes
 
     This is a semi-streaming operation.  The LEFT sequence is fully evaluated
     and placed into memory.  The RIGHT sequence is evaluated lazily and so can
@@ -314,7 +330,8 @@ def join[T1, T2, KT](
     ...
 
 def last[T](seq: Iterable[T]) -> T:
-    """The last element in a sequence
+    """
+    The last element in a sequence
 
     >>> last('ABC')
     'C'
@@ -324,7 +341,8 @@ def last[T](seq: Iterable[T]) -> T:
 def mapcat[T1, T2](
     func: Callable[[Iterable[T1]], Iterable[T2]], seqs: Iterable[Iterable[T1]]
 ) -> Iterator[T2]:
-    """Apply func to each sequence in seqs, concatenating results.
+    """
+    Apply func to each sequence in seqs, concatenating results.
 
     >>> list(mapcat(lambda s: [c.upper() for c in s],
     ...             [["a", "b"], ["c", "d", "e"]]))
@@ -333,7 +351,8 @@ def mapcat[T1, T2](
     ...
 
 def merge_sorted[T](*seqs: Iterable[T], **kwargs: Any) -> Iterator[T]:
-    """Merge and sort a collection of sorted collections
+    """
+    Merge and sort a collection of sorted collections
 
     This works lazily and only keeps one value from each iterable in memory.
 
@@ -351,7 +370,8 @@ def merge_sorted[T](*seqs: Iterable[T], **kwargs: Any) -> Iterator[T]:
     ...
 
 def nth[T](n: int, seq: Iterable[T]) -> T:
-    """The nth element in a sequence
+    """
+    The nth element in a sequence
 
     >>> nth(1, 'ABC')
     'B'
@@ -359,7 +379,8 @@ def nth[T](n: int, seq: Iterable[T]) -> T:
     ...
 
 def partition[T](n: int, seq: Iterable[T], pad: Any = ...) -> Iterator[tuple[T, ...]]:
-    """Partition sequence into tuples of length n
+    """
+    Partition sequence into tuples of length n
 
     >>> list(partition(2, [1, 2, 3, 4]))
     [(1, 2), (3, 4)]
@@ -379,7 +400,8 @@ def partition[T](n: int, seq: Iterable[T], pad: Any = ...) -> Iterator[tuple[T, 
     ...
 
 def partition_all[T](n: int, seq: Iterable[T]) -> Iterator[tuple[T, ...]]:
-    """Partition all elements of sequence into tuples of length at most n
+    """
+    Partition all elements of sequence into tuples of length at most n
 
     The final tuple may be shorter to accommodate extra elements.
 
@@ -395,7 +417,8 @@ def partition_all[T](n: int, seq: Iterable[T]) -> Iterator[tuple[T, ...]]:
     ...
 
 def peek[T](seq: Iterable[T]) -> tuple[T, Iterator[T]]:
-    """Retrieve the next element of a sequence
+    """
+    Retrieve the next element of a sequence
 
     Returns the first element and an iterable equivalent to the original
     sequence, still having the element retrieved.
@@ -410,7 +433,8 @@ def peek[T](seq: Iterable[T]) -> tuple[T, Iterator[T]]:
     ...
 
 def peekn[T](n: int, seq: Iterable[T]) -> tuple[tuple[T, ...], Iterator[T]]:
-    """Retrieve the next n elements of a sequence
+    """
+    Retrieve the next n elements of a sequence
 
     Returns a tuple of the first n elements and an iterable equivalent
     to the original, still having the elements retrieved.
@@ -425,7 +449,8 @@ def peekn[T](n: int, seq: Iterable[T]) -> tuple[tuple[T, ...], Iterator[T]]:
     ...
 
 def pluck(ind: Any, seqs: Iterable[Any], default: Any = ...) -> Iterator[Any]:
-    """plucks an element or several elements from each item in a sequence.
+    """
+    plucks an element or several elements from each item in a sequence.
 
     ``pluck`` maps ``itertoolz.get`` over a sequence and returns one or more
     elements of each item in the sequence.
@@ -452,7 +477,8 @@ def pluck(ind: Any, seqs: Iterable[Any], default: Any = ...) -> Iterator[Any]:
 def random_sample[T](
     prob: float, seq: Iterable[T], random_state: Any = ...
 ) -> Iterator[T]:
-    """Return elements from a sequence with probability of prob
+    """
+    Return elements from a sequence with probability of prob
 
     Returns a lazy iterator of random items from seq.
 
@@ -491,7 +517,8 @@ def reduceby[T, KT, VT](
     seq: Iterable[T],
     init: Any = ...,
 ) -> dict[KT, VT]:
-    """Perform a simultaneous groupby and reduction
+    """
+    Perform a simultaneous groupby and reduction
 
     The computation:
 
@@ -554,7 +581,8 @@ def reduceby[T, KT, VT](
     ...
 
 def remove[T](predicate: Callable[[T], bool], seq: Iterable[T]) -> Iterator[T]:
-    """Return those items of sequence for which predicate(item) is False
+    """
+    Return those items of sequence for which predicate(item) is False
 
     >>> def iseven(x):
     ...     return x % 2 == 0
@@ -564,7 +592,8 @@ def remove[T](predicate: Callable[[T], bool], seq: Iterable[T]) -> Iterator[T]:
     ...
 
 def second[T](seq: Iterable[T]) -> T:
-    """The second element in a sequence
+    """
+    The second element in a sequence
 
     >>> second('ABC')
     'B'
@@ -572,7 +601,8 @@ def second[T](seq: Iterable[T]) -> T:
     ...
 
 def sliding_window[T](n: int, seq: Iterable[T]) -> Iterator[tuple[T, ...]]:
-    """A sequence of overlapping subsequences
+    """
+    A sequence of overlapping subsequences
 
     >>> list(sliding_window(2, [1, 2, 3, 4]))
     [(1, 2), (2, 3), (3, 4)]
@@ -587,7 +617,8 @@ def sliding_window[T](n: int, seq: Iterable[T]) -> Iterator[tuple[T, ...]]:
     ...
 
 def tail[T](n: int, seq: Iterable[T]) -> Iterator[T]:
-    """The last n elements of a sequence
+    """
+    The last n elements of a sequence
 
     >>> tail(2, [10, 20, 30, 40, 50])
     [40, 50]
@@ -599,7 +630,8 @@ def tail[T](n: int, seq: Iterable[T]) -> Iterator[T]:
     ...
 
 def take[T](n: int, seq: Iterable[T]) -> Iterator[T]:
-    """The first n elements of a sequence
+    """
+    The first n elements of a sequence
 
     >>> list(take(2, [10, 20, 30, 40, 50]))
     [10, 20]
@@ -611,7 +643,8 @@ def take[T](n: int, seq: Iterable[T]) -> Iterator[T]:
     ...
 
 def take_nth[T](n: int, seq: Iterable[T]) -> Iterator[T]:
-    """Every nth item in seq
+    """
+    Every nth item in seq
 
     >>> list(take_nth(2, [10, 20, 30, 40, 50]))
     [10, 30, 50]
@@ -621,7 +654,8 @@ def take_nth[T](n: int, seq: Iterable[T]) -> Iterator[T]:
 def topk[T](
     k: int, seq: Iterable[T], key: Callable[[T], Any] | None = ...
 ) -> tuple[T, ...]:
-    """Find the k largest elements of a sequence
+    """
+    Find the k largest elements of a sequence
 
     Operates lazily in ``n*log(k)`` time
 
@@ -639,7 +673,8 @@ def topk[T](
     ...
 
 def unique[T](seq: Iterable[T], key: Callable[[T], Any] | None = ...) -> Iterator[T]:
-    """Return only unique elements of a sequence
+    """
+    Return only unique elements of a sequence
 
     >>> tuple(unique((1, 2, 3)))
     (1, 2, 3)
