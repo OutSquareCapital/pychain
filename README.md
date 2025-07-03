@@ -8,10 +8,9 @@ Below is presented 3 ways of doing a simple task
 
 ### Steps
 
-- Instanciating objects from an iterable
-- Storing them in a list
-- From this list, getting back an attribute
-- Doing an aggregation on the value of this attribute
+- Instanciating objects from an iterable, and getting an attribute from them
+- Storing thoses in a list
+- Doing an aggregation on the value of this list
 - Repeating the resulting scalar in a range the same size as the original iterable
 - Returning this final list
 
@@ -29,40 +28,39 @@ class ObjectExample:
 
 #### Solution 1
 
-... Could you even read it without the steps by step explanation above?
+As concise as possible.
+
+Almost as unreadable as possible too.
+
+Oddly enough inlining result in the list comp up the computation time from 500 nanosecs to 500 millisecs, for the same result.
 
 ````python
 
 def summed() -> list[float]:
-    return [
-        round(
+    result: float = round(
             number=sum(
-                e.value
-                for e in [ObjectExample(value=i, foo="baz") for i in range(1, 1000)]
+                [ObjectExample(value=i, foo="baz").value for i in range(1, 1000)]
             )
             / 1000,
             ndigits=3,
         )
+    return [
+        result
         for _ in range(1, 1000)
     ]
+
 ````
 
 #### Solution 2
 
-Most declarative way. 
-Clear but very long, and maybe ineficient.
+Most imperative way. 
+Clearer, but longer.
 
 ````python
 def summed_alt() -> list[float]:
-    object_list: list[ObjectExample] = []
-
-    for i in range(1, 1000):
-        object_list.append(ObjectExample(value=i, foo="baz"))
-
     values_list: list[float] = []
-
-    for v in object_list:
-        values_list.append(v.value)
+    for i in range(1, 1000):
+        values_list.append(ObjectExample(value=i, foo="baz").value)
 
     total_sum: float = sum(values_list)
     total_average: float = total_sum / 1000
@@ -89,22 +87,23 @@ That's often NOT the case.
 
 ````python
 def summed_other_alt() -> list[float]:
-    object_list: list[ObjectExample] = [
-        ObjectExample(value=i, foo="baz") for i in range(1, 1000)
+    values_list: list[float] = [
+        ObjectExample(value=i, foo="baz").value for i in range(1, 1000)
     ]
-    values_list: list[float] = [v.value for v in object_list]
     result: float = round(number=sum(values_list) / 1000, ndigits=3)
     return [result for _ in range(1, 1000)]
+
 ````
 
 ## pychain solution
+
+Linear progression, automatic type inference (even with lambdas)
 
 ````python
 def summed_chained() -> list[float]:
     return (
         pc.from_range(1, 1000) # initializing the object from an iterable
-        .map(lambda i: ObjectExample(value=i, foo="baz")) # mapping the instanciation
-        .map(lambda x: x.value) # mapping the attribute recuperation
+        .map(lambda i: ObjectExample(value=i, foo="baz").value) # Mapping the instanciation + attribute getting
         .sum() # computation happen here! so far it was only lazy
         .div(1000) # chaining smoothly
         .round(ndigits=3) # the scalar transformation
@@ -113,12 +112,10 @@ def summed_chained() -> list[float]:
         .collect() # computing the result
     )
 
-
 def summed_chained_alt() -> list[float]:
     return (
         pc.from_range(1, 1000)
-        .map(lambda x: ObjectExample(value=x, foo="baz"))
-        .map(lambda x: x.value)
+        .map(lambda x: ObjectExample(value=x, foo="baz").value)
         .sum()
         .compose( # Alternatively we can use lambdas chaining for iterators as well as scalars
             lambda x: x / 1000,
@@ -135,12 +132,16 @@ With proper IDE highlighting it's even better!
 
 ![alt text](docs/summed_example.png)
 
-## Performance
+## Tests
 
-... is sligthly worse due to intermediate object instanciation. 
+Performance is the same. 
 
-But the visibility gain is way better. 
+Here the differences are mostly due to noise. The pychain classes are all dataclasses, and they use slots for optimization. 
 
-The first summed functions is a lot slower than the others, so I suspect that I'm doing a lot of useless computations.
+However they do use frozen True too, which has a performance cost.
 
-However it's so unreadable I don't bother.
+In the examples here the time changes are mostly due to noise.
+
+But the visibility gain is way better.
+
+![alt text](docs/perf.png)
