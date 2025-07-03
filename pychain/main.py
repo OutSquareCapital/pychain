@@ -1,7 +1,12 @@
+from collections.abc import Mapping
+from pychain.iterchain import (
+    IterChain,
+    NumericChain,
+    ScalarChain,
+    DictChain,
+    IterDictChain,
+)
 from collections.abc import Iterable
-
-from pychain.dictchain import DictChain
-from pychain.iterchain import IterChain, ScalarChain, NumericChain
 
 
 def from_scalar[T](value: T) -> ScalarChain[T]:
@@ -20,5 +25,11 @@ def from_range(start: int, stop: int, step: int = 1) -> IterChain[int]:
     return IterChain(value=range(start, stop, step))
 
 
+def from_dict_of_iterables[K, V](
+    data: Mapping[K, Iterable[V]],
+) -> IterDictChain[K, V]:
+    return IterDictChain(values={k: from_iterable(data=v) for k, v in data.items()})
+
+
 def from_dict[K, V](data: dict[K, V]) -> DictChain[K, V]:
-    return DictChain(value=data)
+    return DictChain(values=data)
