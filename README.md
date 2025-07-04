@@ -102,46 +102,111 @@ Linear progression, automatic type inference (even with lambdas)
 ````python
 def summed_chained() -> list[float]:
     return (
-        pc.from_range(1, 1000) # initializing the object from an iterable
+        pc.from_iterable(range(1, 1000)) # initializing the object from an iterable
         .map(lambda i: ObjectExample(value=i, foo="baz").value) # Mapping the instanciation + attribute getting
         .sum() # computation happen here! so far it was only lazy
         .div(1000) # chaining smoothly
         .round(ndigits=3) # the scalar transformation
-        .to_list() # returning into a lazy iterator object
+        .into_iter() # returning into a lazy iterator object
         .repeat(999) # repeating the value
-        .collect() # computing the result
+        .to_list() # returning the result as a list
     )
 
 def summed_chained_alt() -> list[float]:
     return (
-        pc.from_range(1, 1000)
+        pc.from_iterable(range(1, 1000))
         .map(lambda x: ObjectExample(value=x, foo="baz").value)
         .sum()
         .compose( # Alternatively we can use lambdas chaining for iterators as well as scalars
             lambda x: x / 1000,
             lambda x: round(number=x, ndigits=3),
         )
-        .to_list()
+        .into_iter()
         .repeat(999)
-        .collect()
+        .to_list()
     )
 
+print(summed() == summed_chained() == summed_chained_alt())
 ````
 
 With proper IDE highlighting it's even better!
 
-![alt text](docs/summed_example.png)
+![alt text](docs/summed_example2.png)
 
 ## Tests
 
-Performance is the same. 
+Performance is the same for some tasks.
 
-Here the differences are mostly due to noise. The pychain classes are all dataclasses, and they use slots for optimization. 
+Here the differences are mostly due to noise.
 
-However they do use frozen True too, which has a performance cost.
+````
+%timeit summed()
+%timeit summed_chained()
+%timeit summed_chained_alt()
+->
+531 μs ± 7.08 μs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
+561 μs ± 4.02 μs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
+572 μs ± 8.38 μs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
+````
+
+The pychain classes are all dataclasses, and they use slots for optimization, but they also use frozen=True too, which has a performance cost.
 
 In the examples here the time changes are mostly due to noise.
 
-But the visibility gain is way better.
+However in other cases speed gains can be significants.
 
-![alt text](docs/perf.png)
+#### Example
+
+````python
+
+def repeat() -> list[int]:
+    values_list: list[float] = [
+        ObjectExample(value=i, foo="baz").value for i in range(1, 10000)
+    ]
+    values_dict: dict[str, list[float]] = {
+        "a": values_list,
+        "b": values_list,
+    }
+
+    return [i for lib in values_dict.keys() for i in range(len(values_dict[lib]))]
+
+
+def repeat_alt() -> list[int]:
+    values_list: list[float] = [
+        ObjectExample(value=i, foo="baz").value for i in range(1, 10000)
+    ]
+    values_dict: dict[str, list[float]] = {
+        "a": values_list,
+        "b": values_list,
+    }
+
+    result: list[int] = []
+    for lib in values_dict.keys():
+        result.extend(range(len(values_dict[lib])))
+    return result
+
+
+def repeat_pychain() -> list[int]:
+    return (
+        pc.from_iterable(range(1, 10000))
+        .to_lazy_dict("a", "b")
+        .values_to_iter()
+        .flatten(f=lambda it: it.range().to_list())
+        .to_list()
+    )
+
+
+print(repeat() == repeat_alt() == repeat_pychain())
+````
+
+#### Speed comparison
+
+````
+%timeit repeat()
+%timeit repeat_alt()
+%timeit repeat_pychain()
+->
+5.53 ms ± 78.7 μs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+5.34 ms ± 48.8 μs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+418 μs ± 2.64 μs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
+````
