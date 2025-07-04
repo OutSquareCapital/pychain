@@ -16,7 +16,7 @@ class ScalarChain[V]:
 
     @classmethod
     def _transform(cls, value: object) -> Self:
-        return cls(value) # type: ignore
+        return cls(value)  # type: ignore
 
     def compose[V1](self, *fns: Callable[[V], V1]) -> Self:
         return self._transform(value=cz.functoolz.compose_left(*fns)(self.value))
@@ -78,10 +78,6 @@ class IterChain[V]:
     def _new(cls, value: Iterable[V]) -> Self:
         return cls(value)
 
-    @classmethod
-    def _transform[V1](cls, value: Iterable[V1]) -> Self:
-        return cls(value)  # type: ignore
-
     def _to_scalar[V1](self, f: Callable[[Iterable[V]], V1]) -> ScalarChain[V1]:
         return ScalarChain(value=f(self.value))
 
@@ -90,17 +86,21 @@ class IterChain[V]:
     ) -> NumericChain[V1]:
         return NumericChain(value=f(self.value))
 
+    @classmethod
+    def range(cls, start: int, stop: int, step: int = 1) -> "IterChain[int]":
+        return IterChain(value=range(start, stop, step))
+
+    def enumerate(self) -> "IterChain[tuple[int, V]]":
+        return IterChain(value=enumerate(iterable=self.value))
+
     def copy(self) -> Self:
         return self._new(value=self.value)
 
-    def map[V1](self, f: Callable[[V], V1]) -> Self:
-        return self._transform(value=map(f, self.value))
+    def map[V1](self, f: Callable[[V], V1]) -> "IterChain[V1]":
+        return IterChain(value=map(f, self.value))
 
-    def flat_map[V1](self, f: Callable[[V], Iterable[V1]]) -> Self:
-        return self._transform(value=cz.itertoolz.concat(map(f, self.value)))
-
-    def enumerate(self) -> Self:
-        return self._transform(value=enumerate(iterable=self.value))
+    def flat_map[V1](self, f: Callable[[V], Iterable[V1]]) -> "IterChain[V1]":
+        return IterChain(value=cz.itertoolz.concat(map(f, self.value)))
 
     def filter(self, f: Callable[[V], bool]) -> Self:
         return self._new(value=filter(f, self.value))
@@ -142,6 +142,9 @@ class IterChain[V]:
     def cumprod(self) -> Self:
         return self._new(value=cz.itertoolz.accumulate(op.mul, self.value))
 
+    def isdistinct(self) -> bool:
+        return cz.itertoolz.isdistinct(seq=self.value)
+
     def len(self) -> NumericChain[int]:
         return self._to_numeric(f=cz.itertoolz.count)
 
@@ -155,11 +158,14 @@ class IterChain[V]:
     def last(self) -> ScalarChain[V]:
         return self._to_scalar(f=cz.itertoolz.last)
 
-    def isdistinct(self) -> bool:
-        return cz.itertoolz.isdistinct(seq=self.value)
-
     def sum(self) -> NumericChain[V]:  # type: ignore
         return self._to_numeric(f=sum)  # type: ignore
+
+    def min(self) -> NumericChain[V]:  # type: ignore
+        return self._to_numeric(f=min)  # type: ignore
+
+    def max(self) -> NumericChain[V]:  # type: ignore
+        return self._to_numeric(f=max)  # type: ignore
 
     def to_list(self) -> list[V]:
         return list(self.value)
@@ -183,6 +189,12 @@ class DictChain[K, V]:
 
     def _transform[K1, V1](self, value: dict[K1, V1]) -> "DictChain[K1, V1]":
         return self.__class__(value)  # type: ignore
+
+    def keys_to_iter(self) -> IterChain[K]:
+        return IterChain(value=self.values.keys())
+
+    def values_to_iter(self) -> IterChain[V]:
+        return IterChain(value=self.values.values())
 
     def map_items[K1, V1](
         self, f: Callable[[tuple[K, V]], tuple[K1, V1]]

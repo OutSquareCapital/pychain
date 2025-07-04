@@ -22,7 +22,7 @@ def from_iterable[T](data: Iterable[T]) -> IterChain[T]:
 
 
 def from_range(start: int, stop: int, step: int = 1) -> IterChain[int]:
-    return IterChain(value=range(start, stop, step))
+    return IterChain.range(start=start, stop=stop, step=step)
 
 
 def from_dict_of_iterables[K, V](
