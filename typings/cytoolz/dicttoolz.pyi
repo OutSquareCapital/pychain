@@ -69,9 +69,9 @@ def dissoc[K, V](d: dict[K, V], *keys: K, **kwargs: Any) -> dict[K, V]:
     """
     ...
 
-def get_in(
-    keys: Iterable[Any], coll: Any, default: Any = ..., no_default: bool = ...
-) -> Any:
+def get_in[V](
+    keys: Iterable[V], coll: Iterable[Iterable[V]], default: Any = ..., no_default: bool = ...
+) -> V:
     """
     Returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys.
 
@@ -217,13 +217,13 @@ def merge_with[K, V, V1](
     """
     ...
 
-def update_in(
-    d: dict[Any, Any],
-    keys: Iterable[Any],
-    func: Callable[[Any], Any],
-    default: Any = ...,
-    factory: Callable[[], dict[Any, Any]] = ...,
-) -> dict[Any, Any]:
+def update_in[K, V](
+    d: dict[K, V],
+    keys: Iterable[K],
+    func: Callable[..., V],
+    default: V|None = None,
+    factory: Callable[[], dict[K, V]] = dict,
+) -> dict[K, V]:
     """
     Update value in a (potentially) nested dictionary
 
