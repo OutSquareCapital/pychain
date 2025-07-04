@@ -12,14 +12,12 @@ class RandomProtocol(Protocol):
     def random(self, *args: Any, **kwargs: Any) -> float: ...
 
 
-def collector(*func: Callable[P, R]) -> Callable[P, R]:
+def lazy(*func: Callable[P, R]) -> Callable[P, R]:
     def decorator(f: Callable[P, R]) -> Callable[P, R]:
         @wraps(f)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            result: R = f(*args, **kwargs)
-            print(f"Result of {f.__name__}: {result}")
-            return result
-
+            print(f"Lazy eval of {f.__name__} with args: {args}, kwargs: {kwargs}")
+            return f(*args, **kwargs)
         return wrapper
 
     return decorator(*func)

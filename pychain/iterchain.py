@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import cytoolz as cz
 import polars as pl
 from copy import deepcopy
-from pychain.interfaces import RandomProtocol, CheckFunc, collector
+from pychain.interfaces import RandomProtocol, CheckFunc, lazy
 
 
 @dataclass(slots=True, frozen=True)
@@ -19,35 +19,29 @@ class ScalarTransformator[V]:
     def copy(self) -> "ScalarChain[V]":
         return deepcopy(self._parent)
 
-    @collector
     def series(self) -> pl.Series:
         return pl.Series(values=self.value)
 
-    @collector
     def frame(self) -> pl.DataFrame:
         return pl.DataFrame(data=self.value)
 
-    @collector
+    @lazy
     def lazy_frame(self) -> pl.LazyFrame:
         return pl.LazyFrame(data=self.value)
 
-    @collector
     def dict[K](self, *keys: K) -> "DictChain[K, ScalarChain[V]]":
         return DictChain(values={k: self.copy() for k in keys})
 
     def int(self) -> "ScalarChain[int]":
-        if not isinstance(self.value, (int, float)):
-            raise TypeError(f"Cannot convert {type(self.value)} to int")
-        return ScalarChain(value=int(self.value))
+        return ScalarChain(value=int(self.value))  # type: ignore
 
     def float(self) -> "ScalarChain[float]":
-        if not isinstance(self.value, (int, float)):
-            raise TypeError(f"Cannot convert {type(self.value)} to float")
-        return ScalarChain(value=float(self.value))
+        return ScalarChain(value=float(self.value))  # type: ignore
 
-    def string(self) -> str:
-        return str(self.value)
+    def string(self) -> "ScalarChain[str]":
+        return ScalarChain(value=str(self.value))
 
+    @lazy
     def iter(self) -> "IterChain[V]":
         return IterChain(value=iter([self.value]))
 
@@ -63,27 +57,22 @@ class IterTransformator[V]:
     def copy(self) -> "IterChain[V]":
         return deepcopy(self._parent)
 
-    @collector
     def list(self) -> list[V]:
         return list(self.value)
 
-    @collector
     def tuple(self) -> tuple[V, ...]:
         return tuple(self.value)
 
-    @collector
     def series(self) -> pl.Series:
         return pl.Series(values=self.value)
 
-    @collector
     def frame(self) -> pl.DataFrame:
         return pl.DataFrame(data=self.value)
 
-    @collector
+    @lazy
     def lazy_frame(self) -> pl.LazyFrame:
         return pl.LazyFrame(data=self.value)
 
-    @collector
     def lazy_dict[K](self, *keys: K) -> "IterDictChain[K, V]":
         return IterDictChain(values={k: self.copy() for k in keys})
 
@@ -96,21 +85,21 @@ class DictTransformator[K, V]:
     def values(self) -> dict[K, V]:
         return self._parent.values
 
+    @lazy
     def keys_to_iter(self) -> "IterChain[K]":
         return IterChain(value=self.values.keys())
 
+    @lazy
     def values_to_iter(self) -> "IterChain[V]":
         return IterChain(value=self.values.values())
 
-    @collector
     def series(self) -> pl.Series:
         return pl.Series(values=self.values)
 
-    @collector
     def frame(self) -> pl.DataFrame:
         return pl.DataFrame(data=self.values)
 
-    @collector
+    @lazy
     def lazy_frame(self) -> pl.LazyFrame:
         return pl.LazyFrame(data=self.values)
 
@@ -186,29 +175,37 @@ class IterChain[V]:
     ) -> "IterChain[int]":
         return IterChain(value=range(start, stop or self.len().value, step))
 
+    @lazy
     def enumerate(self) -> "IterChain[tuple[int, V]]":
         return IterChain(value=enumerate(iterable=self.value))
 
+    @lazy
     def map[V1](self, f: Callable[[V], V1]) -> "IterChain[V1]":
         return IterChain(value=map(f, self.value))
 
+    @lazy
     def flatten[V1](self, f: Callable[[V], Iterable[V1]]) -> "IterChain[V1]":
         return IterChain(value=cz.itertoolz.concat(map(f, self.value)))
 
+    @lazy
     def interleave(self, *others: Iterable[V]) -> Self:
         return self._new(value=cz.itertoolz.interleave([self.value, *others]))
 
+    @lazy
     def interpose(self, element: V) -> Self:
         return self._new(value=cz.itertoolz.interpose(el=element, seq=self.value))
 
+    @lazy
     def diff(
         self, *seqs: Iterable[V], key: Callable[[V], V] | None = None
     ) -> "IterChain[tuple[V, ...]]":
         return IterChain(value=cz.itertoolz.diff(self.value, *seqs, key=key))
 
+    @lazy
     def top_n(self, n: int, key: Callable[[V], Any] | None = None) -> Self:
         return self._new(value=cz.itertoolz.topk(k=n, seq=self.value, key=key))
 
+    @lazy
     def random_sample(
         self, probability: float, state: RandomProtocol | int | None = None
     ) -> Self:
@@ -227,99 +224,103 @@ class IterChain[V]:
     def rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
         return IterChain(value=cz.itertoolz.sliding_window(n=length, seq=self.value))
 
+    @lazy
     def concat(self, *others: Iterable[V]) -> Self:
         return self._new(value=cz.itertoolz.concat([self.value, *others]))
 
+    @lazy
     def filter(self, f: CheckFunc[V]) -> Self:
         return self._new(value=filter(f, self.value))
 
+    @lazy
     def iterate(self, f: Callable[[V], V], arg: V) -> Self:
         return self._new(value=cz.itertoolz.iterate(func=f, x=arg))
 
+    @lazy
     def accumulate(self, f: Callable[[V, V], V]) -> Self:
         return self._new(value=cz.itertoolz.accumulate(f, self.value))
 
+    @lazy
     def cons(self, value: V) -> Self:
         return self._new(value=cz.itertoolz.cons(value, self.value))
 
+    @lazy
     def peek(self) -> Self:
         val, _ = cz.itertoolz.peek(self.value)
         print(f"Peeked value: {val}")
         return self
 
+    @lazy
     def peekn(self, n: int) -> Self:
         values, _ = cz.itertoolz.peekn(n, self.value)
         print(f"Peeked {n} values: {list(values)}")
         return self
 
+    @lazy
     def head(self, n: int) -> Self:
         return self._new(value=cz.itertoolz.take(n, self.value))
 
+    @lazy
     def tail(self, n: int) -> Self:
         return self._new(value=cz.itertoolz.tail(n, self.value))
 
+    @lazy
     def drop_first(self, n: int) -> Self:
         return self._new(value=cz.itertoolz.drop(n, self.value))
 
+    @lazy
     def every(self, n: int) -> Self:
         return self._new(value=cz.itertoolz.take_nth(n, self.value))
 
+    @lazy
     def repeat(self, n: int) -> Self:
         return self._new(value=cz.itertoolz.concat(map(lambda x: [x] * n, self.value)))
 
+    @lazy
     def unique(self) -> Self:
         return self._new(value=cz.itertoolz.unique(self.value))
 
+    @lazy
     def cumsum(self) -> Self:
         return self._new(value=cz.itertoolz.accumulate(op.add, self.value))
 
+    @lazy
     def cumprod(self) -> Self:
         return self._new(value=cz.itertoolz.accumulate(op.mul, self.value))
 
-    @collector
     def isdistinct(self) -> bool:
         return cz.itertoolz.isdistinct(seq=self.value)
 
-    @collector
     def len(self) -> ScalarChain[int]:
         return self._to_scalar(f=cz.itertoolz.count)
 
-    @collector
     def first(self) -> ScalarChain[V]:
         return self._to_scalar(f=cz.itertoolz.first)
 
-    @collector
     def second(self) -> ScalarChain[V]:
         return self._to_scalar(f=cz.itertoolz.second)
 
-    @collector
     def last(self) -> ScalarChain[V]:
         return self._to_scalar(f=cz.itertoolz.last)
 
-    @collector
     def sum(self) -> ScalarChain[V]:  # type: ignore
         return self._to_scalar(f=sum)  # type: ignore
 
-    @collector
     def min(self) -> ScalarChain[V]:  # type: ignore
         return self._to_scalar(f=min)  # type: ignore
 
-    @collector
     def max(self) -> ScalarChain[V]:  # type: ignore
         return self._to_scalar(f=max)  # type: ignore
 
-    @collector
     def group_by[K](self, on: Callable[[V], K]) -> "IterDictChain[K, V]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.value)
         return IterDictChain(values={k: IterChain(v) for k, v in grouped.items()})
 
-    @collector
     def reduce_by[K](
         self, key: Callable[[V], K], binop: Callable[[V, V], V]
     ) -> "DictChain[K, V]":
         return DictChain(values=cz.itertoolz.reduceby(key, binop, self.value))
 
-    @collector
     def frequencies(self) -> "DictChain[V, int]":
         return DictChain(values=cz.itertoolz.frequencies(self.value))
 
@@ -369,6 +370,5 @@ class DictChain[K, V]:
 class IterDictChain[K, V](DictChain[K, IterChain[V]]):
     values: dict[K, IterChain[V]]
 
-    @collector
     def collect(self) -> dict[K, list[V]]:
         return self.map_values(f=lambda x: x.to.list()).values
