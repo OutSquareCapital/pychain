@@ -193,8 +193,12 @@ class IterChain[V]:
         return IterChain(value=map(f, self.value))
 
     @lazy
-    def flatten[V1](self, f: Callable[[V], Iterable[V1]]) -> "IterChain[V1]":
+    def flat_map[V1](self, f: Callable[[V], Iterable[V1]]) -> "IterChain[V1]":
         return IterChain(value=cz.itertoolz.concat(map(f, self.value)))
+
+    @lazy
+    def flatten(self) -> "IterChain[Any]":
+        return IterChain(value=cz.itertoolz.concat(self.value))
 
     @lazy
     def interleave(self, *others: Iterable[V]) -> Self:
