@@ -20,11 +20,6 @@ def from_numeric[T: int | float](value: T) -> NumericChain[T]:
 def from_iterable[T](data: Iterable[T]) -> IterChain[T]:
     return IterChain(value=data)
 
-
-def from_range(start: int, stop: int, step: int = 1) -> IterChain[int]:
-    return IterChain.range(start=start, stop=stop, step=step)
-
-
 def from_dict_of_iterables[K, V](
     data: Mapping[K, Iterable[V]],
 ) -> IterDictChain[K, V]:

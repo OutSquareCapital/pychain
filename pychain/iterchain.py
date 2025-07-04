@@ -86,9 +86,10 @@ class IterChain[V]:
     ) -> NumericChain[V1]:
         return NumericChain(value=f(self.value))
 
-    @classmethod
-    def range(cls, start: int, stop: int, step: int = 1) -> "IterChain[int]":
-        return IterChain(value=range(start, stop, step))
+    def range(
+        self, start: int = 0, stop: int | None = None, step: int = 1
+    ) -> "IterChain[int]":
+        return IterChain(value=range(start, stop or self.len().value, step))
 
     def enumerate(self) -> "IterChain[tuple[int, V]]":
         return IterChain(value=enumerate(iterable=self.value))
@@ -99,8 +100,11 @@ class IterChain[V]:
     def map[V1](self, f: Callable[[V], V1]) -> "IterChain[V1]":
         return IterChain(value=map(f, self.value))
 
-    def flat_map[V1](self, f: Callable[[V], Iterable[V1]]) -> "IterChain[V1]":
+    def flatten[V1](self, f: Callable[[V], Iterable[V1]]) -> "IterChain[V1]":
         return IterChain(value=cz.itertoolz.concat(map(f, self.value)))
+
+    def concat(self, *others: Iterable[V]) -> Self:
+        return self._new(value=cz.itertoolz.concat([self.value, *others]))
 
     def filter(self, f: Callable[[V], bool]) -> Self:
         return self._new(value=filter(f, self.value))
@@ -110,12 +114,6 @@ class IterChain[V]:
 
     def accumulate(self, f: Callable[[V, V], V]) -> Self:
         return self._new(value=cz.itertoolz.accumulate(f, self.value))
-
-    def concat(self, *others: Iterable[V]) -> Self:
-        return self._new(value=cz.itertoolz.concat([self.value, *others]))
-
-    def flatten(self) -> Self:
-        return self._new(value=cz.itertoolz.concat(self.value))
 
     def cons(self, value: V) -> Self:
         return self._new(value=cz.itertoolz.cons(value, self.value))
