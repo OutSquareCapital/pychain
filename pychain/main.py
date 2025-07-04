@@ -1,7 +1,6 @@
 from collections.abc import Mapping
 from pychain.iterchain import (
     IterChain,
-    NumericChain,
     ScalarChain,
     DictChain,
     IterDictChain,
@@ -11,10 +10,6 @@ from collections.abc import Iterable
 
 def from_scalar[T](value: T) -> ScalarChain[T]:
     return ScalarChain(value=value)
-
-
-def from_numeric[T: int | float](value: T) -> NumericChain[T]:
-    return NumericChain(value=value)
 
 
 def from_iterable[T](data: Iterable[T]) -> IterChain[T]:
