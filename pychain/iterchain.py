@@ -4,6 +4,121 @@ from typing import Self, Any
 from dataclasses import dataclass
 import cytoolz as cz
 import polars as pl
+from copy import deepcopy
+from pychain.interfaces import RandomProtocol, CheckFunc, collector
+
+
+@dataclass(slots=True, frozen=True)
+class ScalarTransformator[V]:
+    _parent: "ScalarChain[V]"
+
+    @property
+    def value(self) -> V:
+        return self._parent.value
+
+    def copy(self) -> "ScalarChain[V]":
+        return deepcopy(self._parent)
+
+    @collector
+    def series(self) -> pl.Series:
+        return pl.Series(values=self.value)
+
+    @collector
+    def frame(self) -> pl.DataFrame:
+        return pl.DataFrame(data=self.value)
+
+    @collector
+    def lazy_frame(self) -> pl.LazyFrame:
+        return pl.LazyFrame(data=self.value)
+
+    @collector
+    def dict[K](self, *keys: K) -> "DictChain[K, ScalarChain[V]]":
+        return DictChain(values={k: self.copy() for k in keys})
+
+    def int(self) -> "ScalarChain[int]":
+        if not isinstance(self.value, (int, float)):
+            raise TypeError(f"Cannot convert {type(self.value)} to int")
+        return ScalarChain(value=int(self.value))
+
+    def float(self) -> "ScalarChain[float]":
+        if not isinstance(self.value, (int, float)):
+            raise TypeError(f"Cannot convert {type(self.value)} to float")
+        return ScalarChain(value=float(self.value))
+
+    def string(self) -> str:
+        return str(self.value)
+
+    def iter(self) -> "IterChain[V]":
+        return IterChain(value=iter([self.value]))
+
+
+@dataclass(slots=True, frozen=True)
+class IterTransformator[V]:
+    _parent: "IterChain[V]"
+
+    @property
+    def value(self) -> Iterable[V]:
+        return self._parent.value
+
+    def copy(self) -> "IterChain[V]":
+        return deepcopy(self._parent)
+
+    @collector
+    def list(self) -> list[V]:
+        return list(self.value)
+
+    @collector
+    def tuple(self) -> tuple[V, ...]:
+        return tuple(self.value)
+
+    @collector
+    def series(self) -> pl.Series:
+        return pl.Series(values=self.value)
+
+    @collector
+    def frame(self) -> pl.DataFrame:
+        return pl.DataFrame(data=self.value)
+
+    @collector
+    def lazy_frame(self) -> pl.LazyFrame:
+        return pl.LazyFrame(data=self.value)
+
+    @collector
+    def lazy_dict[K](self, *keys: K) -> "IterDictChain[K, V]":
+        return IterDictChain(values={k: self.copy() for k in keys})
+
+
+@dataclass(slots=True, frozen=True)
+class DictTransformator[K, V]:
+    _parent: "DictChain[K, V]"
+
+    @property
+    def values(self) -> dict[K, V]:
+        return self._parent.values
+
+    def keys_to_iter(self) -> "IterChain[K]":
+        return IterChain(value=self.values.keys())
+
+    def values_to_iter(self) -> "IterChain[V]":
+        return IterChain(value=self.values.values())
+
+    @collector
+    def series(self) -> pl.Series:
+        return pl.Series(values=self.values)
+
+    @collector
+    def frame(self) -> pl.DataFrame:
+        return pl.DataFrame(data=self.values)
+
+    @collector
+    def lazy_frame(self) -> pl.LazyFrame:
+        return pl.LazyFrame(data=self.values)
+
+    def dict(self) -> dict[K, V]:
+        return self.values
+
+    def value(self, key: K) -> V | None:
+        return self.values.get(key)
 
 
 @dataclass(slots=True, frozen=True)
@@ -14,43 +129,24 @@ class ScalarChain[V]:
     def _new(cls, value: V) -> Self:
         return cls(value)
 
-    @classmethod
-    def _transform(cls, value: object) -> Self:
-        return cls(value)  # type: ignore
+    @property
+    def to(self) -> ScalarTransformator[V]:
+        return ScalarTransformator(_parent=self)
 
-    def compose[V1](self, *fns: Callable[[V], V1]) -> Self:
-        return self._transform(value=cz.functoolz.compose_left(*fns)(self.value))
+    def compose[V1](self, *fns: Callable[[V], V1]) -> "ScalarChain[V1]":
+        return ScalarChain(value=cz.functoolz.compose_left(*fns)(self.value))
 
-    def pipe[V1](self, *fns: Callable[..., V1]) -> Self:
-        return self._transform(value=cz.functoolz.pipe(data=self.value, *fns))
+    def pipe[V1](self, *fns: Callable[..., V1]) -> "ScalarChain[V1]":
+        return ScalarChain(value=cz.functoolz.pipe(data=self.value, *fns))
 
-    def thread_first[V1](self, *fns: Callable[..., V1]) -> Self:
-        return self._transform(value=cz.functoolz.thread_first(val=self.value, *fns))
+    def thread_first[V1](self, *fns: Callable[..., V1]) -> "ScalarChain[V1]":
+        return ScalarChain(value=cz.functoolz.thread_first(val=self.value, *fns))
 
     def thread_last[V1](
         self, *fns: tuple[Callable[..., V1], Any] | Callable[..., V1]
-    ) -> Self:
-        return self._transform(value=cz.functoolz.thread_last(val=self.value, *fns))
+    ) -> "ScalarChain[V1]":
+        return ScalarChain(value=cz.functoolz.thread_last(val=self.value, *fns))
 
-    def to_int(self) -> "NumericChain[int]":
-        if not isinstance(self.value, (int, float)):
-            raise TypeError(f"Cannot convert {type(self.value)} to int")
-        return NumericChain(value=int(self.value))
-
-    def to_float(self) -> "NumericChain[float]":
-        if not isinstance(self.value, (int, float)):
-            raise TypeError(f"Cannot convert {type(self.value)} to float")
-        return NumericChain(value=float(self.value))
-
-    def to_string(self) -> str:
-        return str(self.value)
-
-    def into_iter(self) -> "IterChain[V]":
-        return IterChain(value=iter([self.value]))
-
-
-@dataclass(slots=True, frozen=True)
-class NumericChain[V: int | float](ScalarChain[V]):
     def add(self, other: V) -> Self:
         return self._new(value=op.add(self.value, other))
 
@@ -60,14 +156,14 @@ class NumericChain[V: int | float](ScalarChain[V]):
     def mul(self, other: V) -> Self:
         return self._new(value=op.mul(self.value, other))
 
-    def div(self, other: float | int) -> "NumericChain[float]":
-        return NumericChain(value=op.truediv(self.value, other))
+    def div(self, other: float | int) -> "ScalarChain[float]":
+        return ScalarChain(value=op.truediv(self.value, other))
 
-    def abs(self) -> "NumericChain[float]":
-        return NumericChain(value=abs(self.value))
+    def abs(self) -> Self:
+        return self._new(value=abs(self.value))  # type: ignore
 
-    def round(self, ndigits: int) -> "NumericChain[float]":
-        return NumericChain(value=round(number=self.value, ndigits=ndigits))
+    def round(self, ndigits: int) -> Self:
+        return self._new(value=round(number=self.value, ndigits=ndigits))  # type: ignore
 
 
 @dataclass(slots=True, frozen=True)
@@ -81,10 +177,9 @@ class IterChain[V]:
     def _to_scalar[V1](self, f: Callable[[Iterable[V]], V1]) -> ScalarChain[V1]:
         return ScalarChain(value=f(self.value))
 
-    def _to_numeric[V1: int | float](
-        self, f: Callable[[Iterable[V]], V1]
-    ) -> NumericChain[V1]:
-        return NumericChain(value=f(self.value))
+    @property
+    def to(self) -> IterTransformator[V]:
+        return IterTransformator(_parent=self)
 
     def range(
         self, start: int = 0, stop: int | None = None, step: int = 1
@@ -94,19 +189,48 @@ class IterChain[V]:
     def enumerate(self) -> "IterChain[tuple[int, V]]":
         return IterChain(value=enumerate(iterable=self.value))
 
-    def copy(self) -> Self:
-        return self._new(value=self.value)
-
     def map[V1](self, f: Callable[[V], V1]) -> "IterChain[V1]":
         return IterChain(value=map(f, self.value))
 
     def flatten[V1](self, f: Callable[[V], Iterable[V1]]) -> "IterChain[V1]":
         return IterChain(value=cz.itertoolz.concat(map(f, self.value)))
 
+    def interleave(self, *others: Iterable[V]) -> Self:
+        return self._new(value=cz.itertoolz.interleave([self.value, *others]))
+
+    def interpose(self, element: V) -> Self:
+        return self._new(value=cz.itertoolz.interpose(el=element, seq=self.value))
+
+    def diff(
+        self, *seqs: Iterable[V], key: Callable[[V], V] | None = None
+    ) -> "IterChain[tuple[V, ...]]":
+        return IterChain(value=cz.itertoolz.diff(self.value, *seqs, key=key))
+
+    def top_n(self, n: int, key: Callable[[V], Any] | None = None) -> Self:
+        return self._new(value=cz.itertoolz.topk(k=n, seq=self.value, key=key))
+
+    def random_sample(
+        self, probability: float, state: RandomProtocol | int | None = None
+    ) -> Self:
+        return self._new(
+            value=cz.itertoolz.random_sample(
+                prob=probability, seq=self.value, random_state=state
+            )
+        )
+
+    def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
+        return IterChain(value=cz.itertoolz.partition(n=n, seq=self.value, pad=pad))
+
+    def partition_all(self, n: int) -> "IterChain[tuple[V, ...]]":
+        return IterChain(value=cz.itertoolz.partition_all(n=n, seq=self.value))
+
+    def rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
+        return IterChain(value=cz.itertoolz.sliding_window(n=length, seq=self.value))
+
     def concat(self, *others: Iterable[V]) -> Self:
         return self._new(value=cz.itertoolz.concat([self.value, *others]))
 
-    def filter(self, f: Callable[[V], bool]) -> Self:
+    def filter(self, f: CheckFunc[V]) -> Self:
         return self._new(value=filter(f, self.value))
 
     def iterate(self, f: Callable[[V], V], arg: V) -> Self:
@@ -118,8 +242,17 @@ class IterChain[V]:
     def cons(self, value: V) -> Self:
         return self._new(value=cz.itertoolz.cons(value, self.value))
 
+    def peek(self) -> Self:
+        val, _ = cz.itertoolz.peek(self.value)
+        print(f"Peeked value: {val}")
+        return self
+
+    def peekn(self, n: int) -> Self:
+        values, _ = cz.itertoolz.peekn(n, self.value)
+        print(f"Peeked {n} values: {list(values)}")
+        return self
+
     def head(self, n: int) -> Self:
-        # NOTE: immutable -> cz.itertoolz.peekn
         return self._new(value=cz.itertoolz.take(n, self.value))
 
     def tail(self, n: int) -> Self:
@@ -143,42 +276,52 @@ class IterChain[V]:
     def cumprod(self) -> Self:
         return self._new(value=cz.itertoolz.accumulate(op.mul, self.value))
 
+    @collector
     def isdistinct(self) -> bool:
         return cz.itertoolz.isdistinct(seq=self.value)
 
-    def len(self) -> NumericChain[int]:
-        return self._to_numeric(f=cz.itertoolz.count)
+    @collector
+    def len(self) -> ScalarChain[int]:
+        return self._to_scalar(f=cz.itertoolz.count)
 
+    @collector
     def first(self) -> ScalarChain[V]:
-        # NOTE: immutable -> cz.itertoolz.peek
         return self._to_scalar(f=cz.itertoolz.first)
 
+    @collector
     def second(self) -> ScalarChain[V]:
         return self._to_scalar(f=cz.itertoolz.second)
 
+    @collector
     def last(self) -> ScalarChain[V]:
         return self._to_scalar(f=cz.itertoolz.last)
 
-    def sum(self) -> NumericChain[V]:  # type: ignore
-        return self._to_numeric(f=sum)  # type: ignore
+    @collector
+    def sum(self) -> ScalarChain[V]:  # type: ignore
+        return self._to_scalar(f=sum)  # type: ignore
 
-    def min(self) -> NumericChain[V]:  # type: ignore
-        return self._to_numeric(f=min)  # type: ignore
+    @collector
+    def min(self) -> ScalarChain[V]:  # type: ignore
+        return self._to_scalar(f=min)  # type: ignore
 
-    def max(self) -> NumericChain[V]:  # type: ignore
-        return self._to_numeric(f=max)  # type: ignore
+    @collector
+    def max(self) -> ScalarChain[V]:  # type: ignore
+        return self._to_scalar(f=max)  # type: ignore
 
-    def to_list(self) -> list[V]:
-        return list(self.value)
+    @collector
+    def group_by[K](self, on: Callable[[V], K]) -> "IterDictChain[K, V]":
+        grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.value)
+        return IterDictChain(values={k: IterChain(v) for k, v in grouped.items()})
 
-    def to_tuple(self) -> tuple[V, ...]:
-        return tuple(self.value)
+    @collector
+    def reduce_by[K](
+        self, key: Callable[[V], K], binop: Callable[[V, V], V]
+    ) -> "DictChain[K, V]":
+        return DictChain(values=cz.itertoolz.reduceby(key, binop, self.value))
 
-    def to_series(self, name: str | None = None) -> pl.Series:
-        return pl.Series(name=name, values=self.value)
-
-    def to_lazy_dict[K](self, *keys: K) -> "IterDictChain[K, V]":
-        return IterDictChain(values={k: self.copy() for k in keys})
+    @collector
+    def frequencies(self) -> "DictChain[V, int]":
+        return DictChain(values=cz.itertoolz.frequencies(self.value))
 
 
 @dataclass(slots=True, frozen=True)
@@ -188,37 +331,29 @@ class DictChain[K, V]:
     def _new(self, value: dict[K, V]) -> Self:
         return self.__class__(value)
 
-    def _transform[K1, V1](self, value: dict[K1, V1]) -> "DictChain[K1, V1]":
-        return self.__class__(value)  # type: ignore
-
-    def keys_to_iter(self) -> IterChain[K]:
-        return IterChain(value=self.values.keys())
-
-    def values_to_iter(self) -> IterChain[V]:
-        return IterChain(value=self.values.values())
+    @property
+    def to(self) -> DictTransformator[K, V]:
+        return DictTransformator(_parent=self)
 
     def map_items[K1, V1](
         self, f: Callable[[tuple[K, V]], tuple[K1, V1]]
     ) -> "DictChain[K1, V1]":
-        return self._transform(value=cz.dicttoolz.itemmap(f, self.values))
+        return DictChain(values=cz.dicttoolz.itemmap(func=f, d=self.values))
 
     def map_keys[K1](self, f: Callable[[K], K1]) -> "DictChain[K1, V]":
-        return self._transform(value=cz.dicttoolz.keymap(f, self.values))
+        return DictChain(values=cz.dicttoolz.keymap(func=f, d=self.values))
 
     def map_values[V1](self, f: Callable[[V], V1]) -> "DictChain[K, V1]":
-        return self._transform(value=cz.dicttoolz.valmap(f, self.values))
+        return DictChain(values=cz.dicttoolz.valmap(func=f, d=self.values))
 
     def select_and_filter(self, predicate: Callable[[tuple[K, V]], bool]) -> Self:
         return self._new(value=cz.dicttoolz.itemfilter(predicate, self.values))
 
-    def select(self, predicate: Callable[[K], bool]) -> Self:
+    def select(self, predicate: CheckFunc[K]) -> Self:
         return self._new(value=cz.dicttoolz.keyfilter(predicate, self.values))
 
-    def filter(self, predicate: Callable[[V], bool]) -> Self:
+    def filter(self, predicate: CheckFunc[V]) -> Self:
         return self._new(value=cz.dicttoolz.valfilter(predicate, self.values))
-
-    def get(self, key: K) -> V | None:
-        return self.values.get(key)
 
     def drop(self, *keys: K) -> Self:
         return self._new(value=cz.dicttoolz.dissoc(d=self.values, *keys))
@@ -229,19 +364,11 @@ class DictChain[K, V]:
     def stack(self, *others: dict[K, V]) -> Self:
         return self._new(value=cz.dicttoolz.merge(self.values, *others))
 
-    def to_pl(self) -> pl.DataFrame:
-        return pl.DataFrame(data=self.values)
-
-    def to_pl_lazy(self) -> pl.LazyFrame:
-        return pl.LazyFrame(data=self.values)
-
-    def to_dict(self) -> dict[K, V]:
-        return self.values
-
 
 @dataclass(slots=True, frozen=True)
 class IterDictChain[K, V](DictChain[K, IterChain[V]]):
     values: dict[K, IterChain[V]]
 
+    @collector
     def collect(self) -> dict[K, list[V]]:
-        return self.map_values(f=lambda x: x.to_list()).values
+        return self.map_values(f=lambda x: x.to.list()).values
