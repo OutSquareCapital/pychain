@@ -151,62 +151,44 @@ Here the differences are mostly due to noise.
 
 The pychain classes are all dataclasses, and they use slots for optimization, but they also use frozen=True too, which has a performance cost.
 
-In the examples here the time changes are mostly due to noise.
+In the example above here the time changes are mostly due to noise.
 
-However in other cases speed gains can be significants.
+However in the other situations, as shown below, speed gains can be significants. This is all thanks due to the lazy evaluation that enable skipping any useless intermediate computation.
 
-#### Example
+Yes those are some "bad" examples in the sense that we could've done the same with the "vanilla" python functions by directly passing the range in the final list comp without ever materializing the intermediate dict, but the lazy eval is precisely there to not even make me think about efficiency.
+
+#### Example 2
 
 ````python
-
-def repeat() -> list[int]:
+def names() -> list[str]:
     values_list: list[float] = [
-        ObjectExample(value=i, foo="baz").value for i in range(1, 10000)
+        ObjectExample(value=i, foo="baz").value for i in range(1, 10_000)
     ]
     values_dict: dict[str, list[float]] = {
         "a": values_list,
         "b": values_list,
     }
 
-    return [i for lib in values_dict.keys() for i in range(len(values_dict[lib]))]
+    return [lib for lib in values_dict.keys() for _ in range(len(values_dict[lib]))]
 
-
-def repeat_alt() -> list[int]:
-    values_list: list[float] = [
-        ObjectExample(value=i, foo="baz").value for i in range(1, 10000)
-    ]
-    values_dict: dict[str, list[float]] = {
-        "a": values_list,
-        "b": values_list,
-    }
-
-    result: list[int] = []
-    for lib in values_dict.keys():
-        result.extend(range(len(values_dict[lib])))
-    return result
-
-
-def repeat_pychain() -> list[int]:
+def names_pychain() -> list[str]:
     return (
-        pc.from_iterable(range(1, 10000))
+        pc.from_iterable(range(1, 10_000))
+        .map(lambda i: ObjectExample(value=i, foo="baz").value)
         .to_lazy_dict("a", "b")
-        .values_to_iter()
-        .flatten(f=lambda it: it.range().to_list())
+        .keys_to_iter()
+        .repeat(9999)
         .to_list()
     )
 
-
-print(repeat() == repeat_alt() == repeat_pychain())
+names() == names_pychain()
 ````
 
 #### Speed comparison
-
 ````
-%timeit repeat()
-%timeit repeat_alt()
-%timeit repeat_pychain()
+%timeit names()
+%timeit names_pychain()
 ->
-5.53 ms ± 78.7 μs per loop (mean ± std. dev. of 7 runs, 100 loops each)
-5.34 ms ± 48.8 μs per loop (mean ± std. dev. of 7 runs, 100 loops each)
-418 μs ± 2.64 μs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
+6.07 ms ± 498 μs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+128 μs ± 307 ns per loop (mean ± std. dev. of 7 runs, 10,000 loops each)
 ````
