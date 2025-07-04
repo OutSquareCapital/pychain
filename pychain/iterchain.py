@@ -114,6 +114,9 @@ class IterChain[V]:
     def concat(self, *others: Iterable[V]) -> Self:
         return self._new(value=cz.itertoolz.concat([self.value, *others]))
 
+    def flatten(self) -> Self:
+        return self._new(value=cz.itertoolz.concat(self.value))
+
     def cons(self, value: V) -> Self:
         return self._new(value=cz.itertoolz.cons(value, self.value))
 

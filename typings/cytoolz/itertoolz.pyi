@@ -33,7 +33,7 @@ def accumulate[T](
     """
     ...
 
-def concat[T](seqs: Iterable[Iterable[T]]) -> Iterator[T]:
+def concat[T](seqs: Iterable[Iterable[T]] | Iterable[T]) -> Iterator[T]:
     """
     Concatenate zero or more iterables, any of which may be infinite.
 
