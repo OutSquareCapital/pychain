@@ -70,7 +70,10 @@ def dissoc[K, V](d: dict[K, V], *keys: K, **kwargs: Any) -> dict[K, V]:
     ...
 
 def get_in[V](
-    keys: Iterable[V], coll: Iterable[Iterable[V]], default: Any = ..., no_default: bool = ...
+    keys: Iterable[V],
+    coll: Iterable[Iterable[V]],
+    default: Any = ...,
+    no_default: bool = ...,
 ) -> V:
     """
     Returns coll[i0][i1]...[iX] where [i0, i1, ..., iX]==keys.
@@ -221,7 +224,7 @@ def update_in[K, V](
     d: dict[K, V],
     keys: Iterable[K],
     func: Callable[..., V],
-    default: V|None = None,
+    default: V | None = None,
     factory: Callable[[], dict[K, V]] = dict,
 ) -> dict[K, V]:
     """

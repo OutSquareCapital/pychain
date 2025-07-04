@@ -18,6 +18,7 @@ def lazy(*func: Callable[P, R]) -> Callable[P, R]:
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             print(f"Lazy eval of {f.__name__} with args: {args}, kwargs: {kwargs}")
             return f(*args, **kwargs)
+
         return wrapper
 
     return decorator(*func)

@@ -122,6 +122,15 @@ class ScalarChain[V]:
     def to(self) -> ScalarTransformator[V]:
         return ScalarTransformator(_parent=self)
 
+    def do(self, f: Callable[[V], V]) -> Self:
+        new: V = cz.functoolz.do(func=f, x=self.value)
+        if not new == self.value:
+            print(f"Value changed from {self.value} to {new}")
+            return self._new(value=new)
+        else:
+            print(f"Value remains unchanged: {self.value}")
+            return self
+
     def compose[V1](self, *fns: Callable[[V], V1]) -> "ScalarChain[V1]":
         return ScalarChain(value=cz.functoolz.compose_left(*fns)(self.value))
 
@@ -347,7 +356,9 @@ class DictChain[K, V]:
     def map_values[V1](self, f: Callable[[V], V1]) -> "DictChain[K, V1]":
         return DictChain(values=cz.dicttoolz.valmap(func=f, d=self.values))
 
-    def merge_with[V1](self, f: Callable[..., V1], *others: dict[K, V]) -> "DictChain[K, V1]":
+    def merge_with[V1](
+        self, f: Callable[..., V1], *others: dict[K, V]
+    ) -> "DictChain[K, V1]":
         return DictChain(values=cz.dicttoolz.merge_with(f, self.values, *others))
 
     def select_and_filter(self, predicate: Callable[[tuple[K, V]], bool]) -> Self:
@@ -370,6 +381,7 @@ class DictChain[K, V]:
 
     def update_in(self, *keys: K, f: Callable[..., V]) -> Self:
         return self._new(value=cz.dicttoolz.update_in(d=self.values, keys=keys, func=f))
+
 
 @dataclass(slots=True, frozen=True)
 class IterDictChain[K, V](DictChain[K, IterChain[V]]):
