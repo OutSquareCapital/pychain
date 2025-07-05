@@ -10,14 +10,10 @@ from pychain.interfaces import RandomProtocol, CheckFunc, lazy
 
 @dataclass(slots=True, frozen=True)
 class ScalarTransformator[V]:
-    _parent: "ScalarChain[V]"
+    value: V
 
-    @property
-    def value(self) -> V:
-        return self._parent.value
-
-    def copy(self) -> "ScalarChain[V]":
-        return deepcopy(self._parent)
+    def copy(self) -> V:
+        return deepcopy(self.value)
 
     def series(self) -> pl.Series:
         return pl.Series(values=self.value)
@@ -30,7 +26,7 @@ class ScalarTransformator[V]:
         return pl.LazyFrame(data=self.value)
 
     def dict[K](self, *keys: K) -> "DictChain[K, ScalarChain[V]]":
-        return DictChain(values={k: self.copy() for k in keys})
+        return DictChain(values={k: ScalarChain(self.copy()) for k in keys})
 
     def int(self) -> "ScalarChain[int]":
         return ScalarChain(value=int(self.value))  # type: ignore
@@ -48,14 +44,10 @@ class ScalarTransformator[V]:
 
 @dataclass(slots=True, frozen=True)
 class IterTransformator[V]:
-    _parent: "IterChain[V]"
+    value: Iterable[V]
 
-    @property
-    def value(self) -> Iterable[V]:
-        return self._parent.value
-
-    def copy(self) -> "IterChain[V]":
-        return deepcopy(self._parent)
+    def copy(self) -> Iterable[V]:
+        return deepcopy(self.value)
 
     def list(self) -> list[V]:
         return list(self.value)
@@ -74,16 +66,12 @@ class IterTransformator[V]:
         return pl.LazyFrame(data=self.value)
 
     def lazy_dict[K](self, *keys: K) -> "IterDictChain[K, V]":
-        return IterDictChain(values={k: self.copy() for k in keys})
+        return IterDictChain(values={k: IterChain(self.copy()) for k in keys})
 
 
 @dataclass(slots=True, frozen=True)
 class DictTransformator[K, V]:
-    _parent: "DictChain[K, V]"
-
-    @property
-    def values(self) -> dict[K, V]:
-        return self._parent.values
+    values: dict[K, V]
 
     @lazy
     def keys_to_iter(self) -> "IterChain[K]":
@@ -120,7 +108,7 @@ class ScalarChain[V]:
 
     @property
     def to(self) -> ScalarTransformator[V]:
-        return ScalarTransformator(_parent=self)
+        return ScalarTransformator(value=self.value)
 
     def do(self, f: Callable[[V], V]) -> Self:
         new: V = cz.functoolz.do(func=f, x=self.value)
@@ -172,17 +160,44 @@ class IterChain[V]:
     def _new(cls, value: Iterable[V]) -> Self:
         return cls(value)
 
-    def _to_scalar[V1](self, f: Callable[[Iterable[V]], V1]) -> ScalarChain[V1]:
-        return ScalarChain(value=f(self.value))
+    def for_each[V1](self, f: Callable[[V], V1]) -> "IterChain[V1]":
+        new_data: list[V1] = []
+        for item in self.value:
+            new_data.append(f(item))
+        return IterChain(value=new_data)
+
+    def while_each[V1](
+        self,
+        cond: CheckFunc[V],
+        f: Callable[[V], V1] = lambda x: x,
+    ) -> "IterChain[V1]":
+        new_data: list[V1] = []
+        for item in self.value:
+            if cond(item):
+                new_data.append(f(item))
+            else:
+                break
+        return IterChain(value=new_data)
 
     @property
     def to(self) -> IterTransformator[V]:
-        return IterTransformator(_parent=self)
+        return IterTransformator(value=self.value)
 
+    @property
+    def agg(self) -> "Aggregator[V]":
+        return Aggregator(value=self.value)
+
+    @lazy
     def range(
         self, start: int = 0, stop: int | None = None, step: int = 1
     ) -> "IterChain[int]":
-        return IterChain(value=range(start, stop or self.len().value, step))
+        return IterChain(value=range(start, stop or self.agg.len().value, step))
+
+    @lazy
+    def zip[V1](
+        self, *others: Iterable[V1], strict: bool = False
+    ) -> "IterChain[tuple[V, V1]]":
+        return IterChain(value=zip(self.value, *others, strict=strict))
 
     @lazy
     def enumerate(self) -> "IterChain[tuple[int, V]]":
@@ -301,29 +316,16 @@ class IterChain[V]:
     def cumprod(self) -> Self:
         return self._new(value=cz.itertoolz.accumulate(op.mul, self.value))
 
+    @lazy
+    def merge_sorted(
+        self, *others: Iterable[V], sort_on: Callable[[V], Any] | None = None
+    ) -> Self:
+        return self._new(
+            value=cz.itertoolz.merge_sorted(self.value, *others, key=sort_on)
+        )
+
     def isdistinct(self) -> bool:
         return cz.itertoolz.isdistinct(seq=self.value)
-
-    def len(self) -> ScalarChain[int]:
-        return self._to_scalar(f=cz.itertoolz.count)
-
-    def first(self) -> ScalarChain[V]:
-        return self._to_scalar(f=cz.itertoolz.first)
-
-    def second(self) -> ScalarChain[V]:
-        return self._to_scalar(f=cz.itertoolz.second)
-
-    def last(self) -> ScalarChain[V]:
-        return self._to_scalar(f=cz.itertoolz.last)
-
-    def sum(self) -> ScalarChain[V]:  # type: ignore
-        return self._to_scalar(f=sum)  # type: ignore
-
-    def min(self) -> ScalarChain[V]:  # type: ignore
-        return self._to_scalar(f=min)  # type: ignore
-
-    def max(self) -> ScalarChain[V]:  # type: ignore
-        return self._to_scalar(f=max)  # type: ignore
 
     def group_by[K](self, on: Callable[[V], K]) -> "IterDictChain[K, V]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.value)
@@ -347,7 +349,7 @@ class DictChain[K, V]:
 
     @property
     def to(self) -> DictTransformator[K, V]:
-        return DictTransformator(_parent=self)
+        return DictTransformator(values=self.values)
 
     def map_items[K1, V1](
         self, f: Callable[[tuple[K, V]], tuple[K1, V1]]
@@ -393,3 +395,32 @@ class IterDictChain[K, V](DictChain[K, IterChain[V]]):
 
     def collect(self) -> dict[K, list[V]]:
         return self.map_values(f=lambda x: x.to.list()).values
+
+
+@dataclass(slots=True, frozen=True)
+class Aggregator[V]:
+    value: Iterable[V]
+
+    def _to_scalar[V1](self, f: Callable[[Iterable[V]], V1]) -> ScalarChain[V1]:
+        return ScalarChain(value=f(self.value))
+
+    def len(self) -> ScalarChain[int]:
+        return self._to_scalar(f=cz.itertoolz.count)
+
+    def first(self) -> ScalarChain[V]:
+        return self._to_scalar(f=cz.itertoolz.first)
+
+    def second(self) -> ScalarChain[V]:
+        return self._to_scalar(f=cz.itertoolz.second)
+
+    def last(self) -> ScalarChain[V]:
+        return self._to_scalar(f=cz.itertoolz.last)
+
+    def sum(self) -> ScalarChain[V]:  # type: ignore
+        return self._to_scalar(f=sum)  # type: ignore
+
+    def min(self) -> ScalarChain[V]:  # type: ignore
+        return self._to_scalar(f=min)  # type: ignore
+
+    def max(self) -> ScalarChain[V]:  # type: ignore
+        return self._to_scalar(f=max)  # type: ignore
