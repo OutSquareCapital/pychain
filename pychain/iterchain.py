@@ -5,6 +5,8 @@ from dataclasses import dataclass
 import cytoolz as cz
 from copy import deepcopy
 from pychain.interfaces import RandomProtocol, CheckFunc, lazy, BaseTransformator
+import functools as ft
+import itertools as it
 
 
 @dataclass(slots=True, frozen=True)
@@ -127,18 +129,11 @@ class IterChain[V]:
             new_data.append(f(item))
         return IterChain(value=new_data)
 
-    def while_each[V1](
-        self,
-        cond: CheckFunc[V],
-        f: Callable[[V], V1] = lambda x: x,
-    ) -> "IterChain[V1]":
-        new_data: list[V1] = []
-        for item in self.value:
-            if cond(item):
-                new_data.append(f(item))
-            else:
-                break
-        return IterChain(value=new_data)
+    def take_while(self, predicate: CheckFunc[V]) -> "IterChain[V]":
+        return self._new(value=it.takewhile(predicate, self.value))
+
+    def drop_while(self, predicate: CheckFunc[V]) -> Self:
+        return self._new(value=it.dropwhile(predicate, self.value))
 
     @property
     def to(self) -> IterTransformator[V]:
@@ -148,7 +143,6 @@ class IterChain[V]:
     def agg(self) -> "Aggregator[V]":
         return Aggregator(value=self.value)
 
-    @lazy
     def range(
         self, start: int = 0, stop: int | None = None, step: int = 1
     ) -> "IterChain[int]":
@@ -203,6 +197,18 @@ class IterChain[V]:
                 prob=probability, seq=self.value, random_state=state
             )
         )
+
+    @lazy
+    def distinct_by[K](self, key: Callable[[V], K]) -> "IterChain[V]":
+        def gen() -> Iterable[V]:
+            seen: set[K] = set()
+            for item in self.value:
+                k: K = key(item)
+                if k not in seen:
+                    seen.add(k)
+                    yield item
+
+        return self._new(value=gen())
 
     def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
         return IterChain(value=cz.itertoolz.partition(n=n, seq=self.value, pad=pad))
@@ -285,9 +291,6 @@ class IterChain[V]:
             value=cz.itertoolz.merge_sorted(self.value, *others, key=sort_on)
         )
 
-    def isdistinct(self) -> bool:
-        return cz.itertoolz.isdistinct(seq=self.value)
-
     def group_by[K](self, on: Callable[[V], K]) -> "IterDictChain[K, V]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.value)
         return IterDictChain(values={k: IterChain(v) for k, v in grouped.items()})
@@ -328,13 +331,16 @@ class DictChain[K, V]:
     ) -> "DictChain[K, V1]":
         return DictChain(values=cz.dicttoolz.merge_with(f, self.values, *others))
 
-    def select_and_filter(self, predicate: Callable[[tuple[K, V]], bool]) -> Self:
+    def get(self, key: K) -> V:
+        return cz.itertoolz.get(key, seq=self.values)
+
+    def filter_on_item(self, predicate: Callable[[tuple[K, V]], bool]) -> Self:
         return self._new(value=cz.dicttoolz.itemfilter(predicate, self.values))
 
-    def select(self, predicate: CheckFunc[K]) -> Self:
+    def filter_on_key(self, predicate: CheckFunc[K]) -> Self:
         return self._new(value=cz.dicttoolz.keyfilter(predicate, self.values))
 
-    def filter(self, predicate: CheckFunc[V]) -> Self:
+    def filter_on_value(self, predicate: CheckFunc[V]) -> Self:
         return self._new(value=cz.dicttoolz.valfilter(predicate, self.values))
 
     def drop(self, *keys: K) -> Self:
@@ -377,6 +383,9 @@ class Aggregator[V]:
     def last(self) -> ScalarChain[V]:
         return self._to_scalar(f=cz.itertoolz.last)
 
+    def nth(self, n: int) -> ScalarChain[V]:
+        return self._to_scalar(f=ft.partial(cz.itertoolz.nth, n=n))
+
     def sum(self) -> ScalarChain[V]:  # type: ignore
         return self._to_scalar(f=sum)  # type: ignore
 
@@ -385,3 +394,12 @@ class Aggregator[V]:
 
     def max(self) -> ScalarChain[V]:  # type: ignore
         return self._to_scalar(f=max)  # type: ignore
+
+    def all(self, predicate: CheckFunc[V]) -> ScalarChain[bool]:
+        return ScalarChain(value=all(map(predicate, self.value)))
+
+    def any(self, predicate: CheckFunc[V]) -> ScalarChain[bool]:
+        return ScalarChain(value=any(map(predicate, self.value)))
+
+    def is_distinct(self) -> ScalarChain[bool]:
+        return ScalarChain(value=cz.itertoolz.isdistinct(seq=self.value))
