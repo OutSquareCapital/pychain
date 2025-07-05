@@ -82,19 +82,20 @@ class ScalarChain[V]:
             print(f"Value remains unchanged: {self.value}")
             return self
 
-    def compose[V1](self, *fns: Callable[[V], V1]) -> "ScalarChain[V1]":
-        return ScalarChain(value=cz.functoolz.compose_left(*fns)(self.value))
+    @lazy
+    def pipe_lazy[V1](self, *fns: Callable[[V], V1]) -> "ScalarChain[Callable[..., V1]]":
+        return ScalarChain(value=cz.functoolz.compose_left(*fns))
 
-    def pipe[V1](self, *fns: Callable[..., V1]) -> "ScalarChain[V1]":
-        return ScalarChain(value=cz.functoolz.pipe(data=self.value, *fns))
+    def pipe[V1](self, *fns: Callable[[V], V1]) -> "ScalarChain[V1]":
+        return ScalarChain(value=cz.functoolz.pipe(self.value, *fns))
 
-    def thread_first[V1](self, *fns: Callable[..., V1]) -> "ScalarChain[V1]":
-        return ScalarChain(value=cz.functoolz.thread_first(val=self.value, *fns))
+    def thread_first[V1](self, *fns: Callable[..., V1] | tuple[Callable[..., V1], Any]) -> "ScalarChain[V1]":
+        return ScalarChain(value=cz.functoolz.thread_first(self.value, *fns))
 
     def thread_last[V1](
-        self, *fns: tuple[Callable[..., V1], Any] | Callable[..., V1]
+        self, *fns: Callable[..., V1] | tuple[Callable[..., V1], Any]
     ) -> "ScalarChain[V1]":
-        return ScalarChain(value=cz.functoolz.thread_last(val=self.value, *fns))
+        return ScalarChain(value=cz.functoolz.thread_last(self.value, *fns))
 
     def add(self, other: V) -> Self:
         return self._new(value=op.add(self.value, other))
