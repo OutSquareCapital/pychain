@@ -3,27 +3,14 @@ from collections.abc import Callable, Iterable
 from typing import Self, Any
 from dataclasses import dataclass
 import cytoolz as cz
-import polars as pl
 from copy import deepcopy
-from pychain.interfaces import RandomProtocol, CheckFunc, lazy
+from pychain.interfaces import RandomProtocol, CheckFunc, lazy, BaseTransformator
 
 
 @dataclass(slots=True, frozen=True)
-class ScalarTransformator[V]:
-    value: V
-
+class ScalarTransformator[V](BaseTransformator[V]):
     def copy(self) -> V:
         return deepcopy(self.value)
-
-    def series(self) -> pl.Series:
-        return pl.Series(values=self.value)
-
-    def frame(self) -> pl.DataFrame:
-        return pl.DataFrame(data=self.value)
-
-    @lazy
-    def lazy_frame(self) -> pl.LazyFrame:
-        return pl.LazyFrame(data=self.value)
 
     def dict[K](self, *keys: K) -> "DictChain[K, ScalarChain[V]]":
         return DictChain(values={k: ScalarChain(self.copy()) for k in keys})
@@ -43,7 +30,7 @@ class ScalarTransformator[V]:
 
 
 @dataclass(slots=True, frozen=True)
-class IterTransformator[V]:
+class IterTransformator[V](BaseTransformator[Iterable[V]]):
     value: Iterable[V]
 
     def copy(self) -> Iterable[V]:
@@ -55,47 +42,21 @@ class IterTransformator[V]:
     def tuple(self) -> tuple[V, ...]:
         return tuple(self.value)
 
-    def series(self) -> pl.Series:
-        return pl.Series(values=self.value)
-
-    def frame(self) -> pl.DataFrame:
-        return pl.DataFrame(data=self.value)
-
-    @lazy
-    def lazy_frame(self) -> pl.LazyFrame:
-        return pl.LazyFrame(data=self.value)
-
     def lazy_dict[K](self, *keys: K) -> "IterDictChain[K, V]":
         return IterDictChain(values={k: IterChain(self.copy()) for k in keys})
 
 
 @dataclass(slots=True, frozen=True)
-class DictTransformator[K, V]:
-    values: dict[K, V]
+class DictTransformator[K, V](BaseTransformator[dict[K, V]]):
+    value: dict[K, V]
 
     @lazy
-    def keys_to_iter(self) -> "IterChain[K]":
-        return IterChain(value=self.values.keys())
+    def keys_iter(self) -> "IterChain[K]":
+        return IterChain(value=self.value.keys())
 
     @lazy
-    def values_to_iter(self) -> "IterChain[V]":
-        return IterChain(value=self.values.values())
-
-    def series(self) -> pl.Series:
-        return pl.Series(values=self.values)
-
-    def frame(self) -> pl.DataFrame:
-        return pl.DataFrame(data=self.values)
-
-    @lazy
-    def lazy_frame(self) -> pl.LazyFrame:
-        return pl.LazyFrame(data=self.values)
-
-    def dict(self) -> dict[K, V]:
-        return self.values
-
-    def value(self, key: K) -> V | None:
-        return self.values.get(key)
+    def values_iter(self) -> "IterChain[V]":
+        return IterChain(value=self.value.values())
 
 
 @dataclass(slots=True, frozen=True)
@@ -349,7 +310,7 @@ class DictChain[K, V]:
 
     @property
     def to(self) -> DictTransformator[K, V]:
-        return DictTransformator(values=self.values)
+        return DictTransformator(value=self.values)
 
     def map_items[K1, V1](
         self, f: Callable[[tuple[K, V]], tuple[K1, V1]]

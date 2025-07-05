@@ -1,6 +1,8 @@
 from functools import wraps
 from typing import Protocol, Any, ParamSpec, TypeVar
 from collections.abc import Callable
+import polars as pl
+from dataclasses import dataclass
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -22,3 +24,18 @@ def lazy(*func: Callable[P, R]) -> Callable[P, R]:
         return wrapper
 
     return decorator(*func)
+
+
+@dataclass(slots=True, frozen=True)
+class BaseTransformator[V]:
+    value: V
+
+    def series(self) -> pl.Series:
+        return pl.Series(values=self.value)
+
+    def frame(self) -> pl.DataFrame:
+        return pl.DataFrame(data=self.value)
+
+    @lazy
+    def lazy_frame(self) -> pl.LazyFrame:
+        return pl.LazyFrame(data=self.value)
