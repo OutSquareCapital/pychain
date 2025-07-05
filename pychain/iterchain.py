@@ -3,103 +3,33 @@ from collections.abc import Callable, Iterable
 from typing import Self, Any
 from dataclasses import dataclass
 import cytoolz as cz
-from copy import deepcopy
-from pychain.interfaces import RandomProtocol, CheckFunc, lazy, BaseTransformator
+from pychain.interfaces import RandomProtocol, CheckFunc, lazy, Transformable
 import functools as ft
 import itertools as it
+import functional as fn  # type: ignore
+import polars as pl
+from pathlib import Path
 
 
 @dataclass(slots=True, frozen=True)
-class ScalarTransformator[V](BaseTransformator[V]):
-    def copy(self) -> V:
-        return deepcopy(self.value)
-
-    def dict[K](self, *keys: K) -> "DictChain[K, ScalarChain[V]]":
-        return DictChain(values={k: ScalarChain(self.copy()) for k in keys})
-
-    def int(self) -> "ScalarChain[int]":
-        return ScalarChain(value=int(self.value))  # type: ignore
-
-    def float(self) -> "ScalarChain[float]":
-        return ScalarChain(value=float(self.value))  # type: ignore
-
-    def string(self) -> "ScalarChain[str]":
-        return ScalarChain(value=str(self.value))
-
-    @lazy
-    def iter(self) -> "IterChain[V]":
-        return IterChain(value=iter([self.value]))
-
-
-@dataclass(slots=True, frozen=True)
-class IterTransformator[V](BaseTransformator[Iterable[V]]):
-    value: Iterable[V]
-
-    def copy(self) -> Iterable[V]:
-        return deepcopy(self.value)
-
-    def list(self) -> list[V]:
-        return list(self.value)
-
-    def tuple(self) -> tuple[V, ...]:
-        return tuple(self.value)
-
-    def lazy_dict[K](self, *keys: K) -> "IterDictChain[K, V]":
-        return IterDictChain(values={k: IterChain(self.copy()) for k in keys})
-
-
-@dataclass(slots=True, frozen=True)
-class DictTransformator[K, V](BaseTransformator[dict[K, V]]):
-    value: dict[K, V]
-
-    @lazy
-    def keys_iter(self) -> "IterChain[K]":
-        return IterChain(value=self.value.keys())
-
-    @lazy
-    def values_iter(self) -> "IterChain[V]":
-        return IterChain(value=self.value.values())
-
-
-@dataclass(slots=True, frozen=True)
-class ScalarChain[V]:
+class ScalarChain[V](Transformable[V]):
     value: V
 
-    @classmethod
-    def _new(cls, value: V) -> Self:
-        return cls(value)
+    def _new(self, value: V) -> Self:
+        return self.__class__(value=value)
 
-    @property
-    def to(self) -> ScalarTransformator[V]:
-        return ScalarTransformator(value=self.value)
-
-    def do(self, f: Callable[[V], V]) -> Self:
-        new: V = cz.functoolz.do(func=f, x=self.value)
-        if not new == self.value:
-            print(f"Value changed from {self.value} to {new}")
-            return self._new(value=new)
-        else:
-            print(f"Value remains unchanged: {self.value}")
-            return self
+    def do[V1](self, f: Callable[[V], V1]) -> "ScalarChain[V1]":
+        return ScalarChain(value=f(self.value))
 
     @lazy
-    def pipe_lazy[V1](
-        self, *fns: Callable[[V], V1]
-    ) -> "ScalarChain[Callable[..., V1]]":
-        return ScalarChain(value=cz.functoolz.compose_left(*fns))
+    def lazy_pipe[V1](self, *fns: Callable[[V], V1]) -> "ScalarChain[V1]":
+        return ScalarChain(value=(cz.functoolz.compose_left(*fns)(self.value)))
 
     def pipe[V1](self, *fns: Callable[[V], V1]) -> "ScalarChain[V1]":
         return ScalarChain(value=cz.functoolz.pipe(self.value, *fns))
 
-    def thread_first[V1](
-        self, *fns: Callable[..., V1] | tuple[Callable[..., V1], Any]
-    ) -> "ScalarChain[V1]":
-        return ScalarChain(value=cz.functoolz.thread_first(self.value, *fns))
-
-    def thread_last[V1](
-        self, *fns: Callable[..., V1] | tuple[Callable[..., V1], Any]
-    ) -> "ScalarChain[V1]":
-        return ScalarChain(value=cz.functoolz.thread_last(self.value, *fns))
+    def to_string(self) -> "ScalarChain[str]":
+        return ScalarChain(value=str(self.value))
 
     def add(self, other: V) -> Self:
         return self._new(value=op.add(self.value, other))
@@ -110,8 +40,14 @@ class ScalarChain[V]:
     def mul(self, other: V) -> Self:
         return self._new(value=op.mul(self.value, other))
 
-    def div(self, other: float | int) -> "ScalarChain[float]":
-        return ScalarChain(value=op.truediv(self.value, other))
+    def div(self, other: V) -> Self:
+        return self._new(value=op.truediv(self.value, other))
+
+    def to_int(self) -> "ScalarChain[int]":
+        return ScalarChain(value=int(self.value))  # type: ignore
+
+    def to_float(self) -> "ScalarChain[float]":
+        return ScalarChain(value=float(self.value))  # type: ignore
 
     def abs(self) -> Self:
         return self._new(value=abs(self.value))  # type: ignore
@@ -119,11 +55,19 @@ class ScalarChain[V]:
     def round(self, ndigits: int) -> Self:
         return self._new(value=round(number=self.value, ndigits=ndigits))  # type: ignore
 
+    def to_path(self) -> "ScalarChain[Path]":
+        return ScalarChain(value=Path(self.value))  # type: ignore
+
+    @lazy
+    def to_iter(self) -> "IterChain[V]":
+        return IterChain(value=iter([self.value]))
+
+    def to_dict[K](self, *keys: K) -> "DictChain[K, V]":
+        return DictChain(value={k: self.copy() for k in keys})
+
 
 @dataclass(slots=True, frozen=True)
-class IterChain[V]:
-    value: Iterable[V]
-
+class IterChain[V](Transformable[Iterable[V]]):
     @classmethod
     def _new(cls, value: Iterable[V]) -> Self:
         return cls(value)
@@ -139,10 +83,6 @@ class IterChain[V]:
 
     def drop_while(self, predicate: CheckFunc[V]) -> Self:
         return self._new(value=it.dropwhile(predicate, self.value))
-
-    @property
-    def to(self) -> IterTransformator[V]:
-        return IterTransformator(value=self.value)
 
     @property
     def agg(self) -> "Aggregator[V]":
@@ -298,83 +238,105 @@ class IterChain[V]:
 
     def group_by[K](self, on: Callable[[V], K]) -> "IterDictChain[K, V]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.value)
-        return IterDictChain(values={k: IterChain(v) for k, v in grouped.items()})
+        return IterDictChain(value={k: IterChain(v) for k, v in grouped.items()})
 
     def reduce_by[K](
         self, key: Callable[[V], K], binop: Callable[[V, V], V]
     ) -> "DictChain[K, V]":
-        return DictChain(values=cz.itertoolz.reduceby(key, binop, self.value))
+        return DictChain(value=cz.itertoolz.reduceby(key, binop, self.value))
 
     def frequencies(self) -> "DictChain[V, int]":
-        return DictChain(values=cz.itertoolz.frequencies(self.value))
+        return DictChain(value=cz.itertoolz.frequencies(self.value))
+
+    def to_list(self) -> list[V]:
+        return list(self.value)
+
+    def to_tuple(self) -> tuple[V, ...]:
+        return tuple(self.value)
+
+    def to_lazy_dict[K](self, *keys: K) -> "IterDictChain[K, V]":
+        return IterDictChain(value={k: self for k in keys})
+
+    def to_functional(self):
+        return fn.seq(self.value)
 
 
 @dataclass(slots=True, frozen=True)
-class DictChain[K, V]:
-    values: dict[K, V]
-
+class DictChain[K, V](Transformable[dict[K, V]]):
     def _new(self, value: dict[K, V]) -> Self:
         return self.__class__(value)
 
-    @property
-    def to(self) -> DictTransformator[K, V]:
-        return DictTransformator(value=self.values)
+    @lazy
+    def to_keys_iter(self) -> "IterChain[K]":
+        return IterChain(value=self.value.keys())
+
+    @lazy
+    def to_values_iter(self) -> "IterChain[V]":
+        return IterChain(value=self.value.values())
 
     def map_items[K1, V1](
         self, f: Callable[[tuple[K, V]], tuple[K1, V1]]
     ) -> "DictChain[K1, V1]":
-        return DictChain(values=cz.dicttoolz.itemmap(func=f, d=self.values))
+        return DictChain(value=cz.dicttoolz.itemmap(func=f, d=self.value))
 
     def map_keys[K1](self, f: Callable[[K], K1]) -> "DictChain[K1, V]":
-        return DictChain(values=cz.dicttoolz.keymap(func=f, d=self.values))
+        return DictChain(value=cz.dicttoolz.keymap(func=f, d=self.value))
 
     def map_values[V1](self, f: Callable[[V], V1]) -> "DictChain[K, V1]":
-        return DictChain(values=cz.dicttoolz.valmap(func=f, d=self.values))
+        return DictChain(value=cz.dicttoolz.valmap(func=f, d=self.value))
 
     def filter_items(self, predicate: Callable[[tuple[K, V]], bool]) -> Self:
-        return self._new(value=cz.dicttoolz.itemfilter(predicate, self.values))
+        return self._new(value=cz.dicttoolz.itemfilter(predicate, self.value))
 
     def filter_keys(self, predicate: CheckFunc[K]) -> Self:
-        return self._new(value=cz.dicttoolz.keyfilter(predicate, self.values))
+        return self._new(value=cz.dicttoolz.keyfilter(predicate, self.value))
 
     def filter_values(self, predicate: CheckFunc[V]) -> Self:
-        return self._new(value=cz.dicttoolz.valfilter(predicate, self.values))
+        return self._new(value=cz.dicttoolz.valfilter(predicate, self.value))
 
     def merge(self, *others: dict[K, V]) -> Self:
-        return self._new(value=cz.dicttoolz.merge(self.values, *others))
+        return self._new(value=cz.dicttoolz.merge(self.value, *others))
 
     def merge_with[V1](
         self, f: Callable[..., V1], *others: dict[K, V]
     ) -> "DictChain[K, V1]":
-        return DictChain(values=cz.dicttoolz.merge_with(f, self.values, *others))
+        return DictChain(value=cz.dicttoolz.merge_with(f, self.value, *others))
 
     def get(self, key: K) -> V:
-        return cz.itertoolz.get(key, seq=self.values)
+        return cz.itertoolz.get(key, seq=self.value)
 
     def get_nested(self, *keys: Iterable[K]) -> V:
-        return cz.dicttoolz.get_in(*keys, coll=self.values)
+        return cz.dicttoolz.get_in(*keys, coll=self.value)
 
     def with_key(self, key: K, value: V) -> Self:
-        return self._new(value=cz.dicttoolz.assoc(self.values, key, value))
+        return self._new(value=cz.dicttoolz.assoc(self.value, key, value))
 
     def with_nested_key(self, keys: Iterable[K] | K, value: V) -> Self:
         return self._new(
-            value=cz.dicttoolz.assoc_in(d=self.values, keys=keys, value=value)
+            value=cz.dicttoolz.assoc_in(d=self.value, keys=keys, value=value)
         )
 
     def drop(self, *keys: K) -> Self:
-        return self._new(value=cz.dicttoolz.dissoc(d=self.values, *keys))
+        return self._new(value=cz.dicttoolz.dissoc(d=self.value, *keys))
 
     def update_in(self, *keys: K, f: Callable[..., V]) -> Self:
-        return self._new(value=cz.dicttoolz.update_in(d=self.values, keys=keys, func=f))
+        return self._new(value=cz.dicttoolz.update_in(d=self.value, keys=keys, func=f))
+
+    def to_series(self) -> pl.Series:
+        return pl.Series(values=self.value)
+
+    def to_frame(self) -> pl.DataFrame:
+        return pl.DataFrame(data=self.value)
+
+    @lazy
+    def to_lazy_frame(self) -> pl.LazyFrame:
+        return pl.LazyFrame(data=self.value)
 
 
 @dataclass(slots=True, frozen=True)
 class IterDictChain[K, V](DictChain[K, IterChain[V]]):
-    values: dict[K, IterChain[V]]
-
     def collect(self) -> dict[K, list[V]]:
-        return self.map_values(f=lambda x: x.to.list()).values
+        return self.map_values(f=lambda x: x.to_list()).value
 
 
 @dataclass(slots=True, frozen=True)
@@ -384,8 +346,13 @@ class Aggregator[V]:
     def _to_scalar[V1](self, f: Callable[[Iterable[V]], V1]) -> ScalarChain[V1]:
         return ScalarChain(value=f(self.value))
 
+    def _to_numeric[V1: int | float](
+        self, f: Callable[[Iterable[V]], V1]
+    ) -> ScalarChain[V1]:
+        return ScalarChain(value=f(self.value))
+
     def len(self) -> ScalarChain[int]:
-        return self._to_scalar(f=cz.itertoolz.count)
+        return self._to_numeric(f=cz.itertoolz.count)
 
     def first(self) -> ScalarChain[V]:
         return self._to_scalar(f=cz.itertoolz.first)
@@ -400,13 +367,13 @@ class Aggregator[V]:
         return self._to_scalar(f=ft.partial(cz.itertoolz.nth, n=index))
 
     def sum(self) -> ScalarChain[V]:  # type: ignore
-        return self._to_scalar(f=sum)  # type: ignore
+        return self._to_numeric(f=sum)  # type: ignore
 
     def min(self) -> ScalarChain[V]:  # type: ignore
-        return self._to_scalar(f=min)  # type: ignore
+        return self._to_numeric(f=min)  # type: ignore
 
     def max(self) -> ScalarChain[V]:  # type: ignore
-        return self._to_scalar(f=max)  # type: ignore
+        return self._to_numeric(f=max)  # type: ignore
 
     def all(self, predicate: CheckFunc[V]) -> ScalarChain[bool]:
         return ScalarChain(value=all(map(predicate, self.value)))
