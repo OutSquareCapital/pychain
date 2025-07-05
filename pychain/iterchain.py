@@ -264,8 +264,8 @@ class IterChain[V]:
         return self._new(value=cz.itertoolz.drop(n, self.value))
 
     @lazy
-    def every(self, n: int) -> Self:
-        return self._new(value=cz.itertoolz.take_nth(n, self.value))
+    def every(self, index: int) -> Self:
+        return self._new(value=cz.itertoolz.take_nth(index, self.value))
 
     @lazy
     def repeat(self, n: int) -> Self:
@@ -326,6 +326,18 @@ class DictChain[K, V]:
     def map_values[V1](self, f: Callable[[V], V1]) -> "DictChain[K, V1]":
         return DictChain(values=cz.dicttoolz.valmap(func=f, d=self.values))
 
+    def filter_items(self, predicate: Callable[[tuple[K, V]], bool]) -> Self:
+        return self._new(value=cz.dicttoolz.itemfilter(predicate, self.values))
+
+    def filter_keys(self, predicate: CheckFunc[K]) -> Self:
+        return self._new(value=cz.dicttoolz.keyfilter(predicate, self.values))
+
+    def filter_values(self, predicate: CheckFunc[V]) -> Self:
+        return self._new(value=cz.dicttoolz.valfilter(predicate, self.values))
+
+    def merge(self, *others: dict[K, V]) -> Self:
+        return self._new(value=cz.dicttoolz.merge(self.values, *others))
+
     def merge_with[V1](
         self, f: Callable[..., V1], *others: dict[K, V]
     ) -> "DictChain[K, V1]":
@@ -334,23 +346,19 @@ class DictChain[K, V]:
     def get(self, key: K) -> V:
         return cz.itertoolz.get(key, seq=self.values)
 
-    def filter_on_item(self, predicate: Callable[[tuple[K, V]], bool]) -> Self:
-        return self._new(value=cz.dicttoolz.itemfilter(predicate, self.values))
-
-    def filter_on_key(self, predicate: CheckFunc[K]) -> Self:
-        return self._new(value=cz.dicttoolz.keyfilter(predicate, self.values))
-
-    def filter_on_value(self, predicate: CheckFunc[V]) -> Self:
-        return self._new(value=cz.dicttoolz.valfilter(predicate, self.values))
-
-    def drop(self, *keys: K) -> Self:
-        return self._new(value=cz.dicttoolz.dissoc(d=self.values, *keys))
+    def get_nested(self, *keys: Iterable[K]) -> V:
+        return cz.dicttoolz.get_in(*keys, coll=self.values)
 
     def with_key(self, key: K, value: V) -> Self:
         return self._new(value=cz.dicttoolz.assoc(self.values, key, value))
 
-    def stack(self, *others: dict[K, V]) -> Self:
-        return self._new(value=cz.dicttoolz.merge(self.values, *others))
+    def with_nested_key(self, keys: Iterable[K] | K, value: V) -> Self:
+        return self._new(
+            value=cz.dicttoolz.assoc_in(d=self.values, keys=keys, value=value)
+        )
+
+    def drop(self, *keys: K) -> Self:
+        return self._new(value=cz.dicttoolz.dissoc(d=self.values, *keys))
 
     def update_in(self, *keys: K, f: Callable[..., V]) -> Self:
         return self._new(value=cz.dicttoolz.update_in(d=self.values, keys=keys, func=f))
@@ -383,8 +391,8 @@ class Aggregator[V]:
     def last(self) -> ScalarChain[V]:
         return self._to_scalar(f=cz.itertoolz.last)
 
-    def nth(self, n: int) -> ScalarChain[V]:
-        return self._to_scalar(f=ft.partial(cz.itertoolz.nth, n=n))
+    def at(self, index: int) -> ScalarChain[V]:
+        return self._to_scalar(f=ft.partial(cz.itertoolz.nth, n=index))
 
     def sum(self) -> ScalarChain[V]:  # type: ignore
         return self._to_scalar(f=sum)  # type: ignore

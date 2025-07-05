@@ -33,12 +33,12 @@ def assoc[K, V](d: dict[K, V], key: K, value: V) -> dict[K, V]:
     """
     ...
 
-def assoc_in(
-    d: dict[Any, Any],
-    keys: Iterable[Any],
-    value: Any,
-    factory: Callable[[], dict[Any, Any]] = ...,
-) -> dict[Any, Any]:
+def assoc_in[K, V](
+    d: dict[K, V],
+    keys: Iterable[K] | K,
+    value: V,
+    factory: Callable[[], dict[Any, Any]] = dict,
+) -> dict[K, V]:
     """
     Return a new dict with new, potentially nested, key value pair
 
@@ -69,9 +69,9 @@ def dissoc[K, V](d: dict[K, V], *keys: K, **kwargs: Any) -> dict[K, V]:
     """
     ...
 
-def get_in[V](
-    keys: Iterable[V],
-    coll: Iterable[Iterable[V]],
+def get_in[K, V](
+    keys: Iterable[K] | K,
+    coll: Iterable[V] | dict[K, V],
     default: Any = ...,
     no_default: bool = ...,
 ) -> V:
