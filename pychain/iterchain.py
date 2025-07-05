@@ -83,13 +83,17 @@ class ScalarChain[V]:
             return self
 
     @lazy
-    def pipe_lazy[V1](self, *fns: Callable[[V], V1]) -> "ScalarChain[Callable[..., V1]]":
+    def pipe_lazy[V1](
+        self, *fns: Callable[[V], V1]
+    ) -> "ScalarChain[Callable[..., V1]]":
         return ScalarChain(value=cz.functoolz.compose_left(*fns))
 
     def pipe[V1](self, *fns: Callable[[V], V1]) -> "ScalarChain[V1]":
         return ScalarChain(value=cz.functoolz.pipe(self.value, *fns))
 
-    def thread_first[V1](self, *fns: Callable[..., V1] | tuple[Callable[..., V1], Any]) -> "ScalarChain[V1]":
+    def thread_first[V1](
+        self, *fns: Callable[..., V1] | tuple[Callable[..., V1], Any]
+    ) -> "ScalarChain[V1]":
         return ScalarChain(value=cz.functoolz.thread_first(self.value, *fns))
 
     def thread_last[V1](

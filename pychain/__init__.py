@@ -6,6 +6,7 @@ from pychain.main import (
     from_range,
 )
 from functools import partial
+
 __all__: list[str] = [
     "from_scalar",
     "from_iterable",
