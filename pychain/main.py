@@ -1,6 +1,8 @@
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Iterator
 
 from pychain.iterchain import DictChain, IterChain, ScalarChain
+import pychain.lazyfuncs as lf
+import cytoolz as cz
 
 
 def from_scalar[T](value: T) -> ScalarChain[T]:
@@ -23,3 +25,7 @@ def from_dict_of_iterables[K, V](
 
 def from_dict[K, V](data: dict[K, V]) -> DictChain[K, V]:
     return DictChain(_value=data)
+
+
+def iterate[T](value: T, f: lf.ProcessFunc[T]) -> Iterator[T]:
+    return cz.itertoolz.iterate(func=f, x=value)
