@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Any, Self
-
 import cytoolz as cz
 import functional as fn  # type: ignore
 import polars as pl

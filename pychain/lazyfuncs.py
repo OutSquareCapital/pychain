@@ -50,3 +50,17 @@ def merge_with[K, V, V1](
 
 def dissoc[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
     return cz.dicttoolz.dissoc(d=d, *keys)
+
+
+def map_items[K, V, K1, V1](
+    d: dict[K, V], func: TransformFunc[tuple[K, V], tuple[K1, V1]]
+):
+    return cz.dicttoolz.itemmap(d=d, func=func)
+
+
+def map_keys[K, V, K1](d: dict[K, V], func: TransformFunc[K, K1]):
+    return cz.dicttoolz.keymap(d=d, func=func)
+
+
+def map_values[K, V, V1](d: dict[K, V], func: TransformFunc[V, V1]):
+    return cz.dicttoolz.valmap(d=d, func=func)
