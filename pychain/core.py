@@ -68,27 +68,26 @@ class BaseChain[T](ABC):
         return self.do(f=ft.partial(lf.thread_last, fns=fns))
 
     def unwrap(self) -> T:
-        """Collects the current value by applying all functions in the pipeline and returns the final value."""
+        """Call collect and returns the final value."""
         return self.collect()._value
 
     def collect(self) -> Self:
-        """Applies all functions in the pipeline to the current value and returns a new instance of the class."""
+        """
+        If the pipeline is empty, returns the current instance.
+        Otherwise, applies all functions in the pipeline to the current value and returns a new instance of the class.
+        """
         if not self._pipeline:
             return self
         return self.__class__(_value=cz.functoolz.pipe(self._value, *self._pipeline))
 
     def to_series(self) -> pl.Series:
-        """Converts the current value to a Polars Series."""
         return pl.Series(values=self.unwrap())
 
     def to_frame(self) -> pl.DataFrame:
-        """Converts the current value to a Polars DataFrame."""
         return pl.DataFrame(data=self.unwrap())
 
     def to_lazy_frame(self) -> pl.LazyFrame:
-        """Converts the current value to a Polars LazyFrame."""
         return pl.LazyFrame(data=self.unwrap())
 
     def to_functional(self):
-        """Converts the current value to a functional sequence using the `fn` library."""
         return fn.seq(self.unwrap())
