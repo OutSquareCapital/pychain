@@ -18,7 +18,7 @@ functoolz
 - thread_last : Thread value through a sequence of functions/forms
 """
 
-from typing import Any
+from typing import Any, overload
 from collections.abc import Callable, MutableMapping
 
 def apply[T](func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
@@ -290,7 +290,15 @@ def pipe(data: Any, *funcs: Callable[..., Any]) -> Any:
     """
     ...
 
-def thread_first(val: Any, *forms: Any) -> Any:
+@overload
+def thread_first[T](
+    val: T, *forms: Callable[[T], T] | tuple[Callable[..., T], Any]
+) -> T:
+    ...
+@overload
+def thread_first[T, T1](
+    val: T, *forms: Callable[[T], T1] | tuple[Callable[..., T1], Any]
+) -> T1:
     """Thread value through a sequence of functions/forms
 
     >>> def double(x): return 2*x
@@ -316,7 +324,16 @@ def thread_first(val: Any, *forms: Any) -> Any:
     """
     ...
 
-def thread_last(val: Any, *forms: Any) -> Any:
+@overload
+def thread_last[T](
+    val: T, *forms: Callable[[T], T] | tuple[Callable[..., T], Any]
+) -> T:
+    ...
+
+@overload
+def thread_last[T, T1](
+    val: T, *forms: Callable[[T], T1] | tuple[Callable[..., T1], Any]
+) -> T1:
     """Thread value through a sequence of functions/forms
 
     >>> def double(x): return 2*x
