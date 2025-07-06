@@ -1,64 +1,13 @@
 import functools as ft
 import itertools as it
 import operator as op
-from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Self
 import cytoolz as cz
-import functional as fn  # type: ignore
-import polars as pl
 
 import pychain.lazyfuncs as lf
-
-
-@dataclass(slots=True, frozen=True)
-class BaseChain[T](ABC):
-    _value: T
-    _pipeline: list[lf.ProcessFunc[T]] = field(
-        default_factory=list[lf.ProcessFunc[T]], init=False
-    )
-
-    @lf.lazy
-    def do(self, f: lf.ProcessFunc[T]) -> Self:
-        self._pipeline.append(f)
-        return self
-
-    @abstractmethod
-    def transform[T1](self, f: Callable[[T], Any]) -> Any:
-        raise NotImplementedError
-
-    @lf.lazy
-    def pipe(self, *fns: lf.ProcessFunc[T]) -> Self:
-        return self.do(f=(cz.functoolz.compose_left(*fns)))
-
-    @lf.lazy
-    def thread_first(self, *fns: lf.ThreadFunc[T]) -> Self:
-        return self.do(f=ft.partial(lf.thread_first, fns=fns))
-
-    @lf.lazy
-    def thread_last(self, *fns: lf.ThreadFunc[T]) -> Self:
-        return self.do(f=ft.partial(lf.thread_last, fns=fns))
-
-    def unwrap(self) -> T:
-        return self.collect()._value
-
-    def collect(self) -> Self:
-        if not self._pipeline:
-            return self
-        return self.__class__(_value=cz.functoolz.pipe(self._value, *self._pipeline))
-
-    def to_series(self) -> pl.Series:
-        return pl.Series(values=self.unwrap())
-
-    def to_frame(self) -> pl.DataFrame:
-        return pl.DataFrame(data=self.unwrap())
-
-    def to_lazy_frame(self) -> pl.LazyFrame:
-        return pl.LazyFrame(data=self.unwrap())
-
-    def to_functional(self):
-        return fn.seq(self._value)
+from pychain.core import BaseChain
 
 
 @dataclass(slots=True, frozen=True)
@@ -97,12 +46,8 @@ class BaseDictChain[K, V](BaseChain[dict[K, V]]):
 
 
 @dataclass(slots=True, frozen=True)
-class BaseIterChain[V]:
+class BaseIterChain[V](BaseChain[Iterable[V]]):
     _value: Iterable[V]
-
-    @classmethod
-    def _new(cls, value: Iterable[V]) -> Self:
-        return cls(value)
 
     def take_while(self, predicate: lf.CheckFunc[V]) -> Self:
         return self._new(value=it.takewhile(predicate, self._value))
@@ -216,8 +161,10 @@ class BaseIterChain[V]:
             value=cz.itertoolz.merge_sorted(self._value, *others, key=sort_on)
         )
 
-    def to_list(self) -> list[V]:
-        return list(self._value)
+    @lf.lazy
+    def to_list(self) -> Self:
+        return self.do(list)
 
-    def to_tuple(self) -> tuple[V, ...]:
-        return tuple(self._value)
+    @lf.lazy
+    def to_tuple(self) -> Self:
+        return self.do(tuple)
