@@ -1,5 +1,5 @@
 import functools as ft
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from typing import Any, ParamSpec, Protocol, TypeVar
 
 import cytoolz as cz
@@ -16,7 +16,7 @@ def lazy(*func: Callable[P, R]) -> Callable[P, R]:
     def decorator(f: Callable[P, R]) -> Callable[P, R]:
         @ft.wraps(f)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            print(f"Lazy eval of {f.__name__} with args: {args}, kwargs: {kwargs}")
+            # print(f"Lazy eval of {f.__name__}\n with args: \n{args}, kwargs: \n{kwargs}")
             return f(*args, **kwargs)
 
         return wrapper
@@ -64,3 +64,59 @@ def map_keys[K, V, K1](d: dict[K, V], func: TransformFunc[K, K1]) -> dict[K1, V]
 
 def map_values[K, V, V1](d: dict[K, V], func: TransformFunc[V, V1]) -> dict[K, V1]:
     return cz.dicttoolz.valmap(d=d, func=func)
+
+
+def repeat[V](value: Iterable[V], n: int) -> Iterator[V]:
+    return cz.itertoolz.concat(seqs=map(lambda x: [x] * n, value))
+
+
+def concat[V](on: Iterable[V], others: Iterable[Iterable[V]]) -> Iterator[V]:
+    return cz.itertoolz.concat([on, *others])
+
+
+def interleave[V](on: Iterable[V], others: Iterable[Iterable[V]]) -> Iterator[V]:
+    return cz.itertoolz.interleave(seqs=[on, *others])
+
+
+def merge_sorted[V](
+    on: Iterable[V],
+    others: Iterable[Iterable[V]],
+    sort_on: Callable[[V], Any] | None = None,
+) -> Iterator[V]:
+    return cz.itertoolz.merge_sorted(on, *others, key=sort_on)
+
+
+def peek[T](seq: Iterable[T], note: str | None = None) -> Iterable[T]:
+    value, sequence = cz.itertoolz.peek(seq)
+    if note:
+        print(f"Peeked value ({note}): {value}")
+    else:
+        print(f"Peeked value: {value}")
+    return sequence
+
+
+def peekn[T](seq: Iterable[T], n: int, note: str | None = None) -> Iterable[T]:
+    values, sequence = cz.itertoolz.peekn(n, seq)
+    if note:
+        print(f"Peeked {n} values ({note}): {list(values)}")
+    else:
+        print(f"Peeked {n} values: {list(values)}")
+    return sequence
+
+
+def flat_map[V, V1](
+    value: Iterable[V], func: TransformFunc[V, Iterable[V1]]
+) -> Iterable[V1]:
+    return cz.itertoolz.concat(map(func, value))
+
+
+def diff_with[T, V](
+    value: Iterable[T], others: Iterable[Iterable[T]], key: ProcessFunc[V] | None = None
+) -> Iterable[tuple[T, ...]]:
+    return cz.itertoolz.diff(value, *others, key=key)
+
+
+def zip_with[T, V](
+    value: Iterable[T], others: Iterable[Iterable[V]], strict: bool
+) -> Iterable[tuple[T, V]]:
+    return zip(value, *others, strict=strict)

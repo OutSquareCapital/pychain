@@ -4,6 +4,7 @@ import operator as op
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Any, Self
+
 import cytoolz as cz
 
 import pychain.lazyfuncs as lf
@@ -50,121 +51,101 @@ class BaseIterChain[V](BaseChain[Iterable[V]]):
     _value: Iterable[V]
 
     def take_while(self, predicate: lf.CheckFunc[V]) -> Self:
-        return self._new(value=it.takewhile(predicate, self._value))
+        return self.do(f=ft.partial(it.takewhile, predicate))
 
     def drop_while(self, predicate: lf.CheckFunc[V]) -> Self:
-        return self._new(value=it.dropwhile(predicate, self._value))
+        return self.do(f=ft.partial(it.dropwhile, predicate))
 
     @lf.lazy
     def interleave(self, *others: Iterable[V]) -> Self:
-        return self._new(value=cz.itertoolz.interleave([self._value, *others]))
+        return self.do(f=ft.partial(lf.interleave, others=others))
 
     @lf.lazy
     def interpose(self, element: V) -> Self:
-        return self._new(value=cz.itertoolz.interpose(el=element, seq=self._value))
+        return self.do(f=ft.partial(cz.itertoolz.interpose, el=element))
 
     @lf.lazy
     def top_n(self, n: int, key: Callable[[V], Any] | None = None) -> Self:
-        return self._new(value=cz.itertoolz.topk(k=n, seq=self._value, key=key))
+        return self.do(f=ft.partial(cz.itertoolz.topk, k=n, key=key))
 
     @lf.lazy
     def random_sample(
         self, probability: float, state: lf.RandomProtocol | int | None = None
     ) -> Self:
-        return self._new(
-            value=cz.itertoolz.random_sample(
-                prob=probability, seq=self._value, random_state=state
+        return self.do(
+            f=ft.partial(
+                cz.itertoolz.random_sample, prob=probability, random_state=state
             )
         )
 
     @lf.lazy
-    def distinct_by[K](self, key: lf.TransformFunc[V, K]) -> Self:
-        def gen() -> Iterable[V]:
-            seen: set[K] = set()
-            for item in self._value:
-                k: K = key(item)
-                if k not in seen:
-                    seen.add(k)
-                    yield item
-
-        return self._new(value=gen())
-
-    @lf.lazy
     def concat(self, *others: Iterable[V]) -> Self:
-        return self._new(value=cz.itertoolz.concat([self._value, *others]))
+        return self.do(f=ft.partial(lf.concat, others=others))
 
     @lf.lazy
     def filter(self, f: lf.CheckFunc[V]) -> Self:
-        return self._new(value=filter(f, self._value))
-
-    @lf.lazy
-    def iterate(self, f: lf.ProcessFunc[V], arg: V) -> Self:
-        return self._new(value=cz.itertoolz.iterate(func=f, x=arg))
+        return self.do(f=ft.partial(filter, f))
 
     @lf.lazy
     def accumulate(self, f: Callable[[V, V], V]) -> Self:
-        return self._new(value=cz.itertoolz.accumulate(f, self._value))
+        return self.do(f=ft.partial(cz.itertoolz.accumulate, binop=f))
 
     @lf.lazy
     def cons(self, value: V) -> Self:
-        return self._new(value=cz.itertoolz.cons(value, self._value))
+        return self.do(f=ft.partial(cz.itertoolz.cons, el=value))
 
+    # TODO: check les side effects
     @lf.lazy
-    def peek(self) -> Self:
-        val, _ = cz.itertoolz.peek(self._value)
-        print(f"Peeked value: {val}")
-        return self
+    def peek(self, note: str | None = None) -> Self:
+        return self.do(f=ft.partial(lf.peek, note=note))
 
+    # TODO: check les side effects
     @lf.lazy
-    def peekn(self, n: int) -> Self:
-        values, _ = cz.itertoolz.peekn(n, self._value)
-        print(f"Peeked {n} values: {list(values)}")
-        return self
+    def peekn(self, n: int, note: str | None = None) -> Self:
+        return self.do(f=ft.partial(lf.peekn, n=n, note=note))
 
     @lf.lazy
     def head(self, n: int) -> Self:
-        return self._new(value=cz.itertoolz.take(n, self._value))
+        return self.do(f=ft.partial(cz.itertoolz.take, n=n))
 
     @lf.lazy
     def tail(self, n: int) -> Self:
-        return self._new(value=cz.itertoolz.tail(n, self._value))
+        return self.do(f=ft.partial(cz.itertoolz.tail, n=n))
 
     @lf.lazy
     def drop_first(self, n: int) -> Self:
-        return self._new(value=cz.itertoolz.drop(n, self._value))
+        return self.do(f=ft.partial(cz.itertoolz.drop, n=n))
 
     @lf.lazy
     def every(self, index: int) -> Self:
-        return self._new(value=cz.itertoolz.take_nth(index, self._value))
+        return self.do(f=ft.partial(cz.itertoolz.take_nth, n=index))
 
     @lf.lazy
     def repeat(self, n: int) -> Self:
-        return self._new(value=cz.itertoolz.concat(map(lambda x: [x] * n, self._value)))
+        return self.do(f=ft.partial(lf.repeat, n=n))
 
     @lf.lazy
     def unique(self) -> Self:
-        return self._new(value=cz.itertoolz.unique(self._value))
+        return self.do(f=cz.itertoolz.unique)
 
     @lf.lazy
     def cumsum(self) -> Self:
-        return self._new(value=cz.itertoolz.accumulate(op.add, self._value))
+        return self.do(f=ft.partial(cz.itertoolz.accumulate, binop=op.add))
 
     @lf.lazy
     def cumprod(self) -> Self:
-        return self._new(value=cz.itertoolz.accumulate(op.mul, self._value))
+        return self.do(f=ft.partial(cz.itertoolz.accumulate, binop=op.mul))
 
     @lf.lazy
     def merge_sorted(
         self, *others: Iterable[V], sort_on: Callable[[V], Any] | None = None
     ) -> Self:
-        return self._new(
-            value=cz.itertoolz.merge_sorted(self._value, *others, key=sort_on)
-        )
+        return self.do(f=ft.partial(lf.merge_sorted, others=others, sort_on=sort_on))
 
     @lf.lazy
     def to_list(self) -> Self:
-        return self.do(list)
+        return self.do(f=list)
 
     @lf.lazy
     def to_tuple(self) -> Self:
-        return self.do(tuple)
+        return self.do(f=tuple)

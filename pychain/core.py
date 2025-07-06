@@ -19,7 +19,7 @@ class BaseChain[T](ABC):
     for processing data.
 
     The class maintain an internal generic value `_value` and a list of processing functions `_pipeline`.
-    
+
     The execution strategy is the following:
 
     ### Case "do":

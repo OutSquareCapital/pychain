@@ -67,6 +67,7 @@ class IterChain[V](BaseIterChain[V]):
     ) -> "IterChain[V1]":
         return IterChain(_value=f(self.unwrap()))
 
+    # TODO: se decider a quoi faire avec
     def for_each[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
         new_data: list[V1] = []
         for item in self._value:
@@ -77,6 +78,7 @@ class IterChain[V](BaseIterChain[V]):
     def agg(self) -> "Aggregator[V]":
         return Aggregator(_value=self.unwrap())
 
+    # TODO: se decider a quoi faire avec
     def range(self, start: int = 0, stop: int = 1, step: int = 1) -> "IterChain[int]":
         return IterChain(_value=range(start, stop, step))
 
@@ -84,29 +86,29 @@ class IterChain[V](BaseIterChain[V]):
     def zip[V1](
         self, *others: Iterable[V1], strict: bool = False
     ) -> "IterChain[tuple[V, V1]]":
-        return IterChain(_value=zip(self._value, *others, strict=strict))
+        return self.transform(f=ft.partial(lf.zip_with, others=others, strict=strict))
 
     @lf.lazy
     def enumerate(self) -> "IterChain[tuple[int, V]]":
-        return IterChain(_value=enumerate(iterable=self._value))
+        return self.transform(f=enumerate)
 
     @lf.lazy
     def map[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
-        return IterChain(_value=map(f, self._value))
+        return self.transform(f=ft.partial(map, f))
 
     @lf.lazy
     def flat_map[V1](self, f: lf.TransformFunc[V, Iterable[V1]]) -> "IterChain[V1]":
-        return IterChain(_value=cz.itertoolz.concat(map(f, self._value)))
+        return self.transform(f=ft.partial(lf.flat_map, func=f))
 
     @lf.lazy
     def flatten(self) -> "IterChain[Any]":
-        return IterChain(_value=cz.itertoolz.concat(self._value))
+        return self.transform(f=cz.itertoolz.concat)
 
     @lf.lazy
     def diff(
-        self, *seqs: Iterable[V], key: lf.ProcessFunc[V] | None = None
+        self, *others: Iterable[V], key: lf.ProcessFunc[V] | None = None
     ) -> "IterChain[tuple[V, ...]]":
-        return IterChain(_value=cz.itertoolz.diff(self._value, *seqs, key=key))
+        return self.transform(f=ft.partial(lf.diff_with, others=others, key=key))
 
     @lf.lazy
     def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
@@ -132,8 +134,9 @@ class IterChain[V](BaseIterChain[V]):
     def frequencies(self) -> "DictChain[V, int]":
         return DictChain(_value=cz.itertoolz.frequencies(self.unwrap()))
 
+    @lf.lazy
     def to_lazy_dict[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
-        return DictChain.from_scalar(value=self.collect(), keys=keys)
+        return DictChain.from_scalar(value=self, keys=keys)
 
 
 @dataclass(slots=True, frozen=True)
