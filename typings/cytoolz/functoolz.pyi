@@ -293,8 +293,7 @@ def pipe(data: Any, *funcs: Callable[..., Any]) -> Any:
 @overload
 def thread_first[T](
     val: T, *forms: Callable[[T], T] | tuple[Callable[..., T], Any]
-) -> T:
-    ...
+) -> T: ...
 @overload
 def thread_first[T, T1](
     val: T, *forms: Callable[[T], T1] | tuple[Callable[..., T1], Any]
@@ -327,9 +326,7 @@ def thread_first[T, T1](
 @overload
 def thread_last[T](
     val: T, *forms: Callable[[T], T] | tuple[Callable[..., T], Any]
-) -> T:
-    ...
-
+) -> T: ...
 @overload
 def thread_last[T, T1](
     val: T, *forms: Callable[[T], T1] | tuple[Callable[..., T1], Any]
