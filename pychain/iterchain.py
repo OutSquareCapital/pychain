@@ -10,6 +10,7 @@ import pychain.lazyfuncs as lf
 from pychain.interfaces import BaseDictChain, BaseIterChain
 from pychain.core import BaseChain
 
+
 @dataclass(slots=True, frozen=True)
 class ScalarChain[T](BaseChain[T]):
     def transform[T1](self, f: lf.TransformFunc[T, T1]) -> "ScalarChain[T1]":
@@ -179,6 +180,6 @@ class Aggregator[V]:
 
     def is_distinct(self) -> ScalarChain[bool]:
         return ScalarChain(_value=cz.itertoolz.isdistinct(seq=self._value))
-    
+
     def is_iterable(self) -> ScalarChain[bool]:
         return ScalarChain(_value=cz.itertoolz.isiterable(self._value))
