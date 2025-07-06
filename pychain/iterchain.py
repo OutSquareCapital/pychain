@@ -7,8 +7,8 @@ from typing import Any
 import cytoolz as cz
 
 import pychain.lazyfuncs as lf
-from pychain.interfaces import BaseChain, BaseDictChain, BaseIterChain
-
+from pychain.interfaces import BaseDictChain, BaseIterChain
+from pychain.core import BaseChain
 
 @dataclass(slots=True, frozen=True)
 class ScalarChain[T](BaseChain[T]):
@@ -29,7 +29,7 @@ class ScalarChain[T](BaseChain[T]):
 class DictChain[K, V](BaseDictChain[K, V]):
     @classmethod
     def from_scalar[K1, V1](cls, value: V1, keys: Iterable[K1]) -> "DictChain[K1, V1]":
-        return DictChain({k: deepcopy(value) for k in keys})
+        return DictChain(_value={k: deepcopy(value) for k in keys})
 
     def transform[K1, V1](
         self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
@@ -61,6 +61,11 @@ class DictChain[K, V](BaseDictChain[K, V]):
 
 @dataclass(slots=True, frozen=True)
 class IterChain[V](BaseIterChain[V]):
+    def transform[V1](
+        self, f: lf.TransformFunc[Iterable[V], Iterable[V1]]
+    ) -> "IterChain[V1]":
+        return IterChain(_value=f(self.unwrap()))
+
     def for_each[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
         new_data: list[V1] = []
         for item in self._value:
@@ -69,7 +74,7 @@ class IterChain[V](BaseIterChain[V]):
 
     @property
     def agg(self) -> "Aggregator[V]":
-        return Aggregator(_value=self._value)
+        return Aggregator(_value=self.unwrap())
 
     def range(self, start: int = 0, stop: int = 1, step: int = 1) -> "IterChain[int]":
         return IterChain(_value=range(start, stop, step))
@@ -102,14 +107,17 @@ class IterChain[V](BaseIterChain[V]):
     ) -> "IterChain[tuple[V, ...]]":
         return IterChain(_value=cz.itertoolz.diff(self._value, *seqs, key=key))
 
+    @lf.lazy
     def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
-        return IterChain(_value=cz.itertoolz.partition(n=n, seq=self._value, pad=pad))
+        return self.transform(f=ft.partial(cz.itertoolz.partition, n=n, pad=pad))
 
+    @lf.lazy
     def partition_all(self, n: int) -> "IterChain[tuple[V, ...]]":
-        return IterChain(_value=cz.itertoolz.partition_all(n=n, seq=self._value))
+        return self.transform(f=ft.partial(cz.itertoolz.partition_all, n=n))
 
+    @lf.lazy
     def rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
-        return IterChain(_value=cz.itertoolz.sliding_window(n=length, seq=self._value))
+        return self.transform(f=ft.partial(cz.itertoolz.sliding_window, n=length))
 
     def group_by[K](self, on: lf.TransformFunc[V, K]) -> "DictChain[K, IterChain[V]]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self._value)
@@ -118,13 +126,13 @@ class IterChain[V](BaseIterChain[V]):
     def reduce_by[K](
         self, key: lf.TransformFunc[V, K], binop: Callable[[V, V], V]
     ) -> "DictChain[K, V]":
-        return DictChain(_value=cz.itertoolz.reduceby(key, binop, self._value))
+        return DictChain(_value=cz.itertoolz.reduceby(key, binop, self.unwrap()))
 
     def frequencies(self) -> "DictChain[V, int]":
-        return DictChain(_value=cz.itertoolz.frequencies(self._value))
+        return DictChain(_value=cz.itertoolz.frequencies(self.unwrap()))
 
     def to_lazy_dict[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
-        return DictChain.from_scalar(value=self, keys=keys)
+        return DictChain.from_scalar(value=self.collect(), keys=keys)
 
 
 @dataclass(slots=True, frozen=True)
@@ -171,3 +179,6 @@ class Aggregator[V]:
 
     def is_distinct(self) -> ScalarChain[bool]:
         return ScalarChain(_value=cz.itertoolz.isdistinct(seq=self._value))
+    
+    def is_iterable(self) -> ScalarChain[bool]:
+        return ScalarChain(_value=cz.itertoolz.isiterable(self._value))
