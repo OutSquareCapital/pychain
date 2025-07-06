@@ -1,6 +1,7 @@
 import functools as ft
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
+from copy import deepcopy
 from typing import Any
 
 import cytoolz as cz
@@ -18,16 +19,18 @@ class ScalarChain[T](BaseChain[T]):
         return IterChain(_value=iter([self.unwrap()]))
 
     def to_dict[K](self, *keys: K) -> "DictChain[K, T]":
-        val: T = self.unwrap()
-        return DictChain(_value={k: val for k in keys})
+        return DictChain.from_scalar(value=self.unwrap(), keys=keys)
 
     def to_lazy_dict[K](self, *keys: K) -> "DictChain[K, IterChain[T]]":
-        val: IterChain[T] = self.to_iter()
-        return DictChain(_value={k: val for k in keys})
+        return DictChain.from_scalar(value=self.to_iter(), keys=keys)
 
 
 @dataclass(slots=True, frozen=True)
 class DictChain[K, V](BaseDictChain[K, V]):
+    @classmethod
+    def from_scalar[K1, V1](cls, value: V1, keys: Iterable[K1]) -> "DictChain[K1, V1]":
+        return DictChain({k: deepcopy(value) for k in keys})
+
     def transform[K1, V1](
         self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
     ) -> "DictChain[K1, V1]":
@@ -42,13 +45,13 @@ class DictChain[K, V](BaseDictChain[K, V]):
     def map_items[K1, V1](
         self, f: lf.TransformFunc[tuple[K, V], tuple[K1, V1]]
     ) -> "DictChain[K1, V1]":
-        return self.transform(f=ft.partial(cz.dicttoolz.itemmap, func=f))
+        return self.transform(f=ft.partial(lf.map_items, func=f))
 
     def map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
-        return self.transform(f=ft.partial(cz.dicttoolz.keymap, func=f))
+        return self.transform(f=ft.partial(lf.map_keys, func=f))
 
     def map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
-        return self.transform(f=ft.partial(cz.dicttoolz.valmap, func=f))
+        return self.transform(f=ft.partial(lf.map_values, func=f))
 
     def merge_with[V1](
         self, f: Callable[..., V1], *others: dict[K, V]
@@ -121,7 +124,7 @@ class IterChain[V](BaseIterChain[V]):
         return DictChain(_value=cz.itertoolz.frequencies(self._value))
 
     def to_lazy_dict[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
-        return DictChain(_value={k: self for k in keys})
+        return DictChain.from_scalar(value=self, keys=keys)
 
 
 @dataclass(slots=True, frozen=True)
