@@ -1,7 +1,8 @@
-from collections.abc import Iterable, Mapping, Callable
+from collections.abc import Callable, Iterable, Mapping
+
+import cytoolz as cz
 
 from pychain.implementations import DictChain, IterChain, ScalarChain
-import cytoolz as cz
 
 
 def from_scalar[T](value: T) -> ScalarChain[T]:

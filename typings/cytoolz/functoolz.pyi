@@ -24,8 +24,10 @@ from collections.abc import Callable, MutableMapping
 def apply[T](func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     """Applies a function and returns the results
 
-    >>> def double(x): return 2*x
-    >>> def inc(x):    return x + 1
+    >>> def double(x):
+    ...     return 2 * x
+    >>> def inc(x):
+    ...     return x + 1
     >>> apply(double, 5)
     10
 
@@ -40,7 +42,8 @@ def complement(func: Callable[..., bool]) -> Callable[..., bool]:
     In other words, return a function that, for inputs that normally
     yield True, yields False, and vice-versa.
 
-    >>> def iseven(n): return n % 2 == 0
+    >>> def iseven(n):
+    ...     return n % 2 == 0
     >>> isodd = complement(iseven)
     >>> iseven(2)
     True
@@ -105,7 +108,7 @@ class curry:
 
     Also supports keyword arguments
 
-    >>> @curry                  # Can use curry as a decorator
+    >>> @curry  # Can use curry as a decorator
     ... def f(x, y, a=10):
     ...     return a * (x + y)
 
@@ -187,7 +190,6 @@ def flip[T](func: Callable[..., T], a: Any, b: Any) -> T:
 
     >>> def div(a, b):
     ...     return a // b
-    ...
     >>> flip(div, 2, 6)
     3
     >>> div_by_two = flip(div, 2)
@@ -198,7 +200,7 @@ def flip[T](func: Callable[..., T], a: Any, b: Any) -> T:
     in C extensions that accept positional only arguments. For example:
     isinstance, issubclass.
 
-    >>> data = [1, 'a', 'b', 2, 1.5, object(), 3]
+    >>> data = [1, "a", "b", 2, 1.5, object(), 3]
     >>> only_ints = list(filter(flip(isinstance, int), data))
     >>> only_ints
     [1, 2, 3]
@@ -237,7 +239,8 @@ def memoize[T](
         Trades memory for speed.
         Only use on pure functions.
 
-    >>> def add(x, y):  return x + y
+    >>> def add(x, y):
+    ...     return x + y
     >>> add = memoize(add)
 
     Or use as a decorator
@@ -263,7 +266,7 @@ def memoize[T](
     >>> @memoize(key=lambda args, kwargs: args)
     ... def add(x, y, verbose=False):
     ...     if verbose:
-    ...         print('Calculating %s + %s' % (x, y))
+    ...         print("Calculating %s + %s" % (x, y))
     ...     return x + y
     """
     ...
@@ -300,16 +303,20 @@ def thread_first[T, T1](
 ) -> T1:
     """Thread value through a sequence of functions/forms
 
-    >>> def double(x): return 2*x
-    >>> def inc(x):    return x + 1
+    >>> def double(x):
+    ...     return 2 * x
+    >>> def inc(x):
+    ...     return x + 1
     >>> thread_first(1, inc, double)
     4
 
     If the function expects more than one input you can specify those inputs
     in a tuple.  The value is used as the first input.
 
-    >>> def add(x, y): return x + y
-    >>> def pow(x, y): return x**y
+    >>> def add(x, y):
+    ...     return x + y
+    >>> def pow(x, y):
+    ...     return x**y
     >>> thread_first(1, (add, 4), (pow, 2))  # pow(add(1, 4), 2)
     25
 
@@ -333,16 +340,20 @@ def thread_last[T, T1](
 ) -> T1:
     """Thread value through a sequence of functions/forms
 
-    >>> def double(x): return 2*x
-    >>> def inc(x):    return x + 1
+    >>> def double(x):
+    ...     return 2 * x
+    >>> def inc(x):
+    ...     return x + 1
     >>> thread_last(1, inc, double)
     4
 
     If the function expects more than one input you can specify those inputs
     in a tuple.  The value is used as the last input.
 
-    >>> def add(x, y): return x + y
-    >>> def pow(x, y): return x**y
+    >>> def add(x, y):
+    ...     return x + y
+    >>> def pow(x, y):
+    ...     return x**y
     >>> thread_last(1, (add, 4), (pow, 2))  # pow(2, add(4, 1))
     32
 

@@ -12,10 +12,11 @@ from collections.abc import Callable, Iterable, Iterator
 def countby[T, KT](key: Callable[[T], KT], seq: Iterable[T]) -> dict[KT, int]:
     """Count elements of a collection by a key function
 
-    >>> countby(len, ['cat', 'mouse', 'dog'])
+    >>> countby(len, ["cat", "mouse", "dog"])
     {3: 2, 5: 1}
 
-    >>> def iseven(x): return x % 2 == 0
+    >>> def iseven(x):
+    ...     return x % 2 == 0
     >>> countby(iseven, [1, 2, 3])  # doctest:+SKIP
     {True: 1, False: 2}
 

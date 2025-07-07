@@ -1,13 +1,10 @@
 from collections.abc import Callable, Iterable, Iterator
-from typing import Any, ParamSpec, Protocol, TypeVar
+from typing import Any, Protocol
 
 import cytoolz as cz
 
-P = ParamSpec("P")
-R = TypeVar("R")
 
-
-class RandomProtocol(Protocol):
+class Random(Protocol):
     def random(self, *args: Any, **kwargs: Any) -> float: ...
 
 

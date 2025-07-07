@@ -26,9 +26,9 @@ def assoc[K, V](d: dict[K, V], key: K, value: V) -> dict[K, V]:
 
     New dict has d[key] set to value. Does not modify the initial dictionary.
 
-    >>> assoc({'x': 1}, 'x', 2)
+    >>> assoc({"x": 1}, "x", 2)
     {'x': 2}
-    >>> assoc({'x': 1}, 'y', 3)   # doctest: +SKIP
+    >>> assoc({"x": 1}, "y", 3)  # doctest: +SKIP
     {'x': 1, 'y': 3}
     """
     ...
@@ -42,11 +42,12 @@ def assoc_in[K, V](
     """
     Return a new dict with new, potentially nested, key value pair
 
-    >>> purchase = {'name': 'Alice',
-    ...             'order': {'items': ['Apple', 'Orange'],
-    ...                       'costs': [0.50, 1.25]},
-    ...             'credit card': '5555-1234-1234-1234'}
-    >>> assoc_in(purchase, ['order', 'costs'], [0.25, 1.00]) # doctest: +SKIP
+    >>> purchase = {
+    ...     "name": "Alice",
+    ...     "order": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
+    ...     "credit card": "5555-1234-1234-1234",
+    ... }
+    >>> assoc_in(purchase, ["order", "costs"], [0.25, 1.00])  # doctest: +SKIP
     {'credit card': '5555-1234-1234-1234',
     'name': 'Alice',
     'order': {'costs': [0.25, 1.00], 'items': ['Apple', 'Orange']}}
@@ -60,11 +61,11 @@ def dissoc[K, V](d: dict[K, V], *keys: K, **kwargs: Any) -> dict[K, V]:
     New dict has d[key] deleted for each supplied key.
     Does not modify the initial dictionary.
 
-    >>> dissoc({'x': 1, 'y': 2}, 'y')
+    >>> dissoc({"x": 1, "y": 2}, "y")
     {'x': 1}
-    >>> dissoc({'x': 1, 'y': 2}, 'y', 'x')
+    >>> dissoc({"x": 1, "y": 2}, "y", "x")
     {}
-    >>> dissoc({'x': 1}, 'y') # Ignores missing keys
+    >>> dissoc({"x": 1}, "y")  # Ignores missing keys
     {'x': 1}
     """
     ...
@@ -84,20 +85,21 @@ def get_in[K, V](
     ``get_in`` is a generalization of ``operator.getitem`` for nested data
     structures such as dictionaries and lists.
 
-    >>> transaction = {'name': 'Alice',
-    ...                'purchase': {'items': ['Apple', 'Orange'],
-    ...                             'costs': [0.50, 1.25]},
-    ...                'credit card': '5555-1234-1234-1234'}
-    >>> get_in(['purchase', 'items', 0], transaction)
+    >>> transaction = {
+    ...     "name": "Alice",
+    ...     "purchase": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
+    ...     "credit card": "5555-1234-1234-1234",
+    ... }
+    >>> get_in(["purchase", "items", 0], transaction)
     'Apple'
-    >>> get_in(['name'], transaction)
+    >>> get_in(["name"], transaction)
     'Alice'
-    >>> get_in(['purchase', 'total'], transaction)
-    >>> get_in(['purchase', 'items', 'apple'], transaction)
-    >>> get_in(['purchase', 'items', 10], transaction)
-    >>> get_in(['purchase', 'total'], transaction, 0)
+    >>> get_in(["purchase", "total"], transaction)
+    >>> get_in(["purchase", "items", "apple"], transaction)
+    >>> get_in(["purchase", "items", 10], transaction)
+    >>> get_in(["purchase", "total"], transaction, 0)
     0
-    >>> get_in(['y'], {}, no_default=True)
+    >>> get_in(["y"], {}, no_default=True)
     Traceback (most recent call last):
         ...
     KeyError: 'y'
@@ -187,7 +189,7 @@ def merge[K, V](*dicts: dict[K, V], **kwargs: Any) -> dict[K, V]:
     """
     Merge a collection of dictionaries
 
-    >>> merge({1: 'one'}, {2: 'two'})
+    >>> merge({1: "one"}, {2: "two"})
     {1: 'one', 2: 'two'}
 
     Later dictionaries have precedence
@@ -243,14 +245,15 @@ def update_in[K, V](
     specified by the keys, with the innermost value set to func(default).
 
     >>> inc = lambda x: x + 1
-    >>> update_in({'a': 0}, ['a'], inc)
+    >>> update_in({"a": 0}, ["a"], inc)
     {'a': 1}
 
-    >>> transaction = {'name': 'Alice',
-    ...                'purchase': {'items': ['Apple', 'Orange'],
-    ...                             'costs': [0.50, 1.25]},
-    ...                'credit card': '5555-1234-1234-1234'}
-    >>> update_in(transaction, ['purchase', 'costs'], sum) # doctest: +SKIP
+    >>> transaction = {
+    ...     "name": "Alice",
+    ...     "purchase": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
+    ...     "credit card": "5555-1234-1234-1234",
+    ... }
+    >>> update_in(transaction, ["purchase", "costs"], sum)  # doctest: +SKIP
     {'credit card': '5555-1234-1234-1234',
     'name': 'Alice',
     'purchase': {'costs': 1.75, 'items': ['Apple', 'Orange']}}
@@ -258,7 +261,7 @@ def update_in[K, V](
     >>> # updating a value when k0 is not in d
     >>> update_in({}, [1, 2, 3], str, default="bar")
     {1: {2: {3: 'bar'}}}
-    >>> update_in({1: 'foo'}, [2, 3, 4], inc, 0)
+    >>> update_in({1: "foo"}, [2, 3, 4], inc, 0)
     {1: 'foo', 2: {3: {4: 1}}}
     """
     ...

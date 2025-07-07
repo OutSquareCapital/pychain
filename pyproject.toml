@@ -11,3 +11,6 @@ dependencies = [
     "pyfunctional>=1.5.0",
     "toolz>=1.0.0",
 ]
+
+[tool.ruff.format]
+docstring-code-format = true

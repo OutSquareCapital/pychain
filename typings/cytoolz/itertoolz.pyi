@@ -17,7 +17,7 @@ def accumulate[T](
     cumulative sum:
 
     >>> from functools import partial, reduce
-    >>> sum    = partial(reduce, add)
+    >>> sum = partial(reduce, add)
     >>> cumsum = partial(accumulate, add)
 
     Accumulate also takes an optional argument that will be used as the first
@@ -100,7 +100,7 @@ def diff[T](*seqs: Iterable[T], **kwargs: Any) -> Iterator[tuple[T, ...]]:
     A ``key`` function may also be applied to each item to use during
     comparisons:
 
-    >>> list(diff(['apples', 'bananas'], ['Apples', 'Oranges'], key=str.lower))
+    >>> list(diff(["apples", "bananas"], ["Apples", "Oranges"], key=str.lower))
     [('bananas', 'Oranges')]
     """
     ...
@@ -122,7 +122,7 @@ def first[T](seq: Iterable[T]) -> T:
     """
     The first element in a sequence
 
-    >>> first('ABC')
+    >>> first("ABC")
     'A'
     """
     ...
@@ -131,7 +131,7 @@ def frequencies[T](seq: Iterable[T]) -> dict[T, int]:
     """
     Find number of occurrences of each value in seq
 
-    >>> frequencies(['cat', 'cat', 'ox', 'pig', 'pig', 'cat'])  #doctest: +SKIP
+    >>> frequencies(["cat", "cat", "ox", "pig", "pig", "cat"])  # doctest: +SKIP
     {'cat': 3, 'ox': 1, 'pig': 2}
 
     See Also:
@@ -154,7 +154,7 @@ def groupby[T, KT](key: Callable[[T], KT], seq: Iterable[T]) -> dict[KT, list[T]
     """
     Group a collection by a key function
 
-    >>> names = ['Alice', 'Bob', 'Charlie', 'Dan', 'Edith', 'Frank']
+    >>> names = ["Alice", "Bob", "Charlie", "Dan", "Edith", "Frank"]
     >>> groupby(len, names)  # doctest: +SKIP
     {3: ['Bob', 'Dan'], 5: ['Alice', 'Edith', 'Frank'], 7: ['Charlie']}
 
@@ -164,9 +164,14 @@ def groupby[T, KT](key: Callable[[T], KT], seq: Iterable[T]) -> dict[KT, list[T]
 
     Non-callable keys imply grouping on a member.
 
-    >>> groupby('gender', [{'name': 'Alice', 'gender': 'F'},
-    ...                    {'name': 'Bob', 'gender': 'M'},
-    ...                    {'name': 'Charlie', 'gender': 'M'}]) # doctest:+SKIP
+    >>> groupby(
+    ...     "gender",
+    ...     [
+    ...         {"name": "Alice", "gender": "F"},
+    ...         {"name": "Bob", "gender": "M"},
+    ...         {"name": "Charlie", "gender": "M"},
+    ...     ],
+    ... )  # doctest:+SKIP
     {'F': [{'gender': 'F', 'name': 'Alice'}],
      'M': [{'gender': 'M', 'name': 'Bob'},
            {'gender': 'M', 'name': 'Charlie'}]}
@@ -185,7 +190,7 @@ def interleave[T](seqs: Iterable[Iterable[T]]) -> Iterator[T]:
     >>> list(interleave([[1, 2], [3, 4]]))
     [1, 3, 2, 4]
 
-    >>> ''.join(interleave(('ABC', 'XY')))
+    >>> "".join(interleave(("ABC", "XY")))
     'AXBYC'
 
     Both the individual sequences and the sequence of sequences may be infinite
@@ -225,7 +230,7 @@ def isiterable(x: Any) -> bool:
 
     >>> isiterable([1, 2, 3])
     True
-    >>> isiterable('abc')
+    >>> isiterable("abc")
     True
     >>> isiterable(5)
     False
@@ -238,7 +243,8 @@ def iterate[T, T1](func: Callable[[T], T1], x: T) -> Iterator[T1]:
 
     Yields x, then func(x), then func(func(x)), then func(func(func(x))), etc..
 
-    >>> def inc(x):  return x + 1
+    >>> def inc(x):
+    ...     return x + 1
     >>> counter = iterate(inc, 0)
     >>> next(counter)
     0
@@ -278,24 +284,27 @@ def join[T1, T2, KT](
     (Note: If right_default is defined, then unique keys of rightseq
         will also be stored in memory.)
 
-    >>> friends = [('Alice', 'Edith'),
-    ...            ('Alice', 'Zhao'),
-    ...            ('Edith', 'Alice'),
-    ...            ('Zhao', 'Alice'),
-    ...            ('Zhao', 'Edith')]
+    >>> friends = [
+    ...     ("Alice", "Edith"),
+    ...     ("Alice", "Zhao"),
+    ...     ("Edith", "Alice"),
+    ...     ("Zhao", "Alice"),
+    ...     ("Zhao", "Edith"),
+    ... ]
 
-    >>> cities = [('Alice', 'NYC'),
-    ...           ('Alice', 'Chicago'),
-    ...           ('Dan', 'Sydney'),
-    ...           ('Edith', 'Paris'),
-    ...           ('Edith', 'Berlin'),
-    ...           ('Zhao', 'Shanghai')]
+    >>> cities = [
+    ...     ("Alice", "NYC"),
+    ...     ("Alice", "Chicago"),
+    ...     ("Dan", "Sydney"),
+    ...     ("Edith", "Paris"),
+    ...     ("Edith", "Berlin"),
+    ...     ("Zhao", "Shanghai"),
+    ... ]
 
     >>> # Vacation opportunities
     >>> # In what cities do people have friends?
-    >>> result = join(second, friends,
-    ...               first, cities)
-    >>> for ((a, b), (c, d)) in sorted(unique(result)):
+    >>> result = join(second, friends, first, cities)
+    >>> for (a, b), (c, d) in sorted(unique(result)):
     ...     print((a, d))
     ('Alice', 'Berlin')
     ('Alice', 'Paris')
@@ -312,9 +321,16 @@ def join[T1, T2, KT](
     are paired with None.
 
     >>> identity = lambda x: x
-    >>> list(join(identity, [1, 2, 3],
-    ...           identity, [2, 3, 4],
-    ...           left_default=None, right_default=None))
+    >>> list(
+    ...     join(
+    ...         identity,
+    ...         [1, 2, 3],
+    ...         identity,
+    ...         [2, 3, 4],
+    ...         left_default=None,
+    ...         right_default=None,
+    ...     )
+    ... )
     [(2, 2), (3, 3), (None, 4), (1, None)]
 
     Usually the key arguments are callables to be applied to the sequences.  If
@@ -333,7 +349,7 @@ def last[T](seq: Iterable[T]) -> T:
     """
     The last element in a sequence
 
-    >>> last('ABC')
+    >>> last("ABC")
     'C'
     """
     ...
@@ -344,8 +360,7 @@ def mapcat[T1, T2](
     """
     Apply func to each sequence in seqs, concatenating results.
 
-    >>> list(mapcat(lambda s: [c.upper() for c in s],
-    ...             [["a", "b"], ["c", "d", "e"]]))
+    >>> list(mapcat(lambda s: [c.upper() for c in s], [["a", "b"], ["c", "d", "e"]]))
     ['A', 'B', 'C', 'D', 'E']
     """
     ...
@@ -359,7 +374,7 @@ def merge_sorted[T](*seqs: Iterable[T], **kwargs: Any) -> Iterator[T]:
     >>> list(merge_sorted([1, 3, 5], [2, 4, 6]))
     [1, 2, 3, 4, 5, 6]
 
-    >>> ''.join(merge_sorted('abc', 'abc', 'abc'))
+    >>> "".join(merge_sorted("abc", "abc", "abc"))
     'aaabbbccc'
 
     The "key" function used to sort the input may be passed as a keyword.
@@ -373,7 +388,7 @@ def nth[T](n: int, seq: Iterable[T]) -> T:
     """
     The nth element in a sequence
 
-    >>> nth(1, 'ABC')
+    >>> nth(1, "ABC")
     'B'
     """
     ...
@@ -462,8 +477,8 @@ def pluck(ind: Any, seqs: Iterable[Any], default: Any = ...) -> Iterator[Any]:
 
     e.g.
 
-    >>> data = [{'id': 1, 'name': 'Cheese'}, {'id': 2, 'name': 'Pies'}]
-    >>> list(pluck('name', data))
+    >>> data = [{"id": 1, "name": "Cheese"}, {"id": 2, "name": "Pies"}]
+    >>> list(pluck("name", data))
     ['Cheese', 'Pies']
     >>> list(pluck([0, 1], [[1, 2, 3], [4, 5, 7]]))
     [(1, 2), (4, 5)]
@@ -487,9 +502,9 @@ def random_sample[T](
     next time it returned 6 items.
 
     >>> seq = list(range(100))
-    >>> list(random_sample(0.1, seq)) # doctest: +SKIP
+    >>> list(random_sample(0.1, seq))  # doctest: +SKIP
     [6, 9, 19, 35, 45, 50, 58, 62, 68, 72, 78, 86, 95]
-    >>> list(random_sample(0.1, seq)) # doctest: +SKIP
+    >>> list(random_sample(0.1, seq))  # doctest: +SKIP
     [6, 44, 54, 61, 69, 94]
 
     Providing an integer seed for ``random_state`` will result in
@@ -522,15 +537,15 @@ def reduceby[T, KT, VT](
 
     The computation:
 
-    >>> result = reduceby(key, binop, seq, init)      # doctest: +SKIP
+    >>> result = reduceby(key, binop, seq, init)  # doctest: +SKIP
 
     is equivalent to the following:
 
-    >>> def reduction(group):                           # doctest: +SKIP
-    ...     return reduce(binop, group, init)           # doctest: +SKIP
+    >>> def reduction(group):  # doctest: +SKIP
+    ...     return reduce(binop, group, init)  # doctest: +SKIP
 
-    >>> groups = groupby(key, seq)                    # doctest: +SKIP
-    >>> result = valmap(reduction, groups)              # doctest: +SKIP
+    >>> groups = groupby(key, seq)  # doctest: +SKIP
+    >>> result = valmap(reduction, groups)  # doctest: +SKIP
 
     But the former does not build the intermediate groups, allowing it to
     operate in much less space.  This makes it suitable for larger datasets
@@ -557,14 +572,19 @@ def reduceby[T, KT, VT](
     Complex Example
     ---------------
 
-    >>> projects = [{'name': 'build roads', 'state': 'CA', 'cost': 1000000},
-    ...             {'name': 'fight crime', 'state': 'IL', 'cost': 100000},
-    ...             {'name': 'help farmers', 'state': 'IL', 'cost': 2000000},
-    ...             {'name': 'help farmers', 'state': 'CA', 'cost': 200000}]
+    >>> projects = [
+    ...     {"name": "build roads", "state": "CA", "cost": 1000000},
+    ...     {"name": "fight crime", "state": "IL", "cost": 100000},
+    ...     {"name": "help farmers", "state": "IL", "cost": 2000000},
+    ...     {"name": "help farmers", "state": "CA", "cost": 200000},
+    ... ]
 
-    >>> reduceby('state',                        # doctest: +SKIP
-    ...          lambda acc, x: acc + x['cost'],
-    ...          projects, 0)
+    >>> reduceby(
+    ...     "state",  # doctest: +SKIP
+    ...     lambda acc, x: acc + x["cost"],
+    ...     projects,
+    ...     0,
+    ... )
     {'CA': 1200000, 'IL': 2100000}
 
     Example Using ``init``
@@ -595,7 +615,7 @@ def second[T](seq: Iterable[T]) -> T:
     """
     The second element in a sequence
 
-    >>> second('ABC')
+    >>> second("ABC")
     'B'
     """
     ...
@@ -664,7 +684,7 @@ def topk[T](
 
     Use a key function to change sorted order
 
-    >>> topk(2, ['Alice', 'Bob', 'Charlie', 'Dan'], key=len)
+    >>> topk(2, ["Alice", "Bob", "Charlie", "Dan"], key=len)
     ('Charlie', 'Alice')
 
     See also:
@@ -683,7 +703,7 @@ def unique[T](seq: Iterable[T], key: Callable[[T], Any] | None = ...) -> Iterato
 
     Uniqueness can be defined by key keyword
 
-    >>> tuple(unique(['cat', 'mouse', 'dog', 'hen'], key=len))
+    >>> tuple(unique(["cat", "mouse", "dog", "hen"], key=len))
     ('cat', 'mouse')
     """
     ...
