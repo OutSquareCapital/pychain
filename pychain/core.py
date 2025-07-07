@@ -67,28 +67,26 @@ class BaseChain[T](ABC):
         """Adds a lazy function to the pipeline that threads the value through the functions in a 'thread-last' manner."""
         return self.do(f=ft.partial(lf.thread_last, fns=fns))
 
-    def unwrap(self) -> T:
-        """Call collect and returns the final value."""
-        return self.collect()._value
-
-    def collect(self) -> Self:
+    def to_unwrap(self) -> T:
         """
-        If the pipeline is empty, returns the current instance.
+        Returns the final value.
+
+        If the pipeline is empty, returns the current instance value.
 
         Otherwise, applies all functions in the pipeline to the current value and returns a new instance of the class.
         """
         if not self._pipeline:
-            return self
-        return self.__class__(_value=cz.functoolz.pipe(self._value, *self._pipeline))
+            return self._value
+        return cz.functoolz.pipe(self._value, *self._pipeline)
 
     def to_series(self) -> pl.Series:
-        return pl.Series(values=self.unwrap())
+        return pl.Series(values=self.to_unwrap())
 
     def to_frame(self) -> pl.DataFrame:
-        return pl.DataFrame(data=self.unwrap())
+        return pl.DataFrame(data=self.to_unwrap())
 
     def to_lazy_frame(self) -> pl.LazyFrame:
-        return pl.LazyFrame(data=self.unwrap())
+        return pl.LazyFrame(data=self.to_unwrap())
 
     def to_functional(self):
-        return fn.seq(self.unwrap())
+        return fn.seq(self.to_unwrap())

@@ -49,10 +49,10 @@ class BaseDictChain[K, V](BaseChain[dict[K, V]]):
 @dataclass(slots=True, frozen=True)
 class BaseIterChain[V](BaseChain[Iterable[V]]):
     _value: Iterable[V]
-
+    @lf.lazy
     def take_while(self, predicate: lf.CheckFunc[V]) -> Self:
         return self.do(f=ft.partial(it.takewhile, predicate))
-
+    @lf.lazy
     def drop_while(self, predicate: lf.CheckFunc[V]) -> Self:
         return self.do(f=ft.partial(it.dropwhile, predicate))
 
@@ -94,12 +94,10 @@ class BaseIterChain[V](BaseChain[Iterable[V]]):
     def cons(self, value: V) -> Self:
         return self.do(f=ft.partial(cz.itertoolz.cons, el=value))
 
-    # TODO: check les side effects
     @lf.lazy
     def peek(self, note: str | None = None) -> Self:
         return self.do(f=ft.partial(lf.peek, note=note))
 
-    # TODO: check les side effects
     @lf.lazy
     def peekn(self, n: int, note: str | None = None) -> Self:
         return self.do(f=ft.partial(lf.peekn, n=n, note=note))
@@ -142,10 +140,8 @@ class BaseIterChain[V](BaseChain[Iterable[V]]):
     ) -> Self:
         return self.do(f=ft.partial(lf.merge_sorted, others=others, sort_on=sort_on))
 
-    @lf.lazy
-    def to_list(self) -> Self:
-        return self.do(f=list)
+    def to_list(self) -> list[V]:
+        return list(self.to_unwrap())
 
-    @lf.lazy
-    def to_tuple(self) -> Self:
-        return self.do(f=tuple)
+    def to_tuple(self) -> tuple[V, ...]:
+        return tuple(self.to_unwrap())

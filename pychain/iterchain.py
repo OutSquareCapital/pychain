@@ -14,13 +14,13 @@ from pychain.core import BaseChain
 @dataclass(slots=True, frozen=True)
 class ScalarChain[T](BaseChain[T]):
     def transform[T1](self, f: lf.TransformFunc[T, T1]) -> "ScalarChain[T1]":
-        return ScalarChain(_value=f(self.unwrap()))
+        return ScalarChain(_value=f(self.to_unwrap()))
 
     def to_iter(self) -> "IterChain[T]":
-        return IterChain(_value=iter([self.unwrap()]))
+        return IterChain(_value=iter([self.to_unwrap()]))
 
     def to_dict[K](self, *keys: K) -> "DictChain[K, T]":
-        return DictChain.from_scalar(value=self.unwrap(), keys=keys)
+        return DictChain.from_scalar(value=self.to_unwrap(), keys=keys)
 
     def to_lazy_dict[K](self, *keys: K) -> "DictChain[K, IterChain[T]]":
         return DictChain.from_scalar(value=self.to_iter(), keys=keys)
@@ -35,29 +35,29 @@ class DictChain[K, V](BaseDictChain[K, V]):
     def transform[K1, V1](
         self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
     ) -> "DictChain[K1, V1]":
-        return DictChain(_value=f(self.unwrap()))
-
-    def to_keys_iter(self) -> "IterChain[K]":
-        return IterChain(_value=self.unwrap().keys())
-
-    def to_values_iter(self) -> "IterChain[V]":
-        return IterChain(_value=self.unwrap().values())
+        return DictChain(_value=f(self.to_unwrap()))
 
     def map_items[K1, V1](
         self, f: lf.TransformFunc[tuple[K, V], tuple[K1, V1]]
     ) -> "DictChain[K1, V1]":
-        return self.transform(f=ft.partial(lf.map_items, func=f))
+        return self.transform(f=ft.partial(cz.dicttoolz.itemmap, f))
 
     def map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
-        return self.transform(f=ft.partial(lf.map_keys, func=f))
+        return self.transform(f=ft.partial(cz.dicttoolz.keymap, f))
 
     def map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
-        return self.transform(f=ft.partial(lf.map_values, func=f))
+        return self.transform(f=ft.partial(cz.dicttoolz.valmap, f))
 
     def merge_with[V1](
         self, f: Callable[..., V1], *others: dict[K, V]
     ) -> "DictChain[K, V1]":
         return self.transform(f=ft.partial(lf.merge_with, f=f, others=others))
+
+    def to_keys_iter(self) -> "IterChain[K]":
+        return IterChain(_value=self.to_unwrap().keys())
+
+    def to_values_iter(self) -> "IterChain[V]":
+        return IterChain(_value=self.to_unwrap().values())
 
 
 @dataclass(slots=True, frozen=True)
@@ -65,22 +65,19 @@ class IterChain[V](BaseIterChain[V]):
     def transform[V1](
         self, f: lf.TransformFunc[Iterable[V], Iterable[V1]]
     ) -> "IterChain[V1]":
-        return IterChain(_value=f(self.unwrap()))
-
-    # TODO: se decider a quoi faire avec
-    def for_each[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
-        new_data: list[V1] = []
-        for item in self._value:
-            new_data.append(f(item))
-        return IterChain(_value=new_data)
+        return IterChain(_value=f(self.to_unwrap()))
 
     @property
     def agg(self) -> "Aggregator[V]":
-        return Aggregator(_value=self.unwrap())
+        return Aggregator(_value=self.to_unwrap())
 
     # TODO: se decider a quoi faire avec
     def range(self, start: int = 0, stop: int = 1, step: int = 1) -> "IterChain[int]":
         return IterChain(_value=range(start, stop, step))
+
+    @lf.lazy
+    def for_each[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
+        return self.transform(f=ft.partial(lf.for_each, f=f))
 
     @lf.lazy
     def zip[V1](
@@ -120,7 +117,7 @@ class IterChain[V](BaseIterChain[V]):
 
     @lf.lazy
     def rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
-        return self.transform(f=ft.partial(cz.itertoolz.sliding_window, n=length))
+        return self.transform(f=ft.partial(cz.itertoolz.sliding_window, length))
 
     def group_by[K](self, on: lf.TransformFunc[V, K]) -> "DictChain[K, IterChain[V]]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self._value)
@@ -129,10 +126,10 @@ class IterChain[V](BaseIterChain[V]):
     def reduce_by[K](
         self, key: lf.TransformFunc[V, K], binop: Callable[[V, V], V]
     ) -> "DictChain[K, V]":
-        return DictChain(_value=cz.itertoolz.reduceby(key, binop, self.unwrap()))
+        return DictChain(_value=cz.itertoolz.reduceby(key, binop, self.to_unwrap()))
 
-    def frequencies(self) -> "DictChain[V, int]":
-        return DictChain(_value=cz.itertoolz.frequencies(self.unwrap()))
+    def to_frequencies(self) -> "DictChain[V, int]":
+        return DictChain(_value=cz.itertoolz.frequencies(self.to_unwrap()))
 
     @lf.lazy
     def to_lazy_dict[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
