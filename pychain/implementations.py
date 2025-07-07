@@ -13,7 +13,7 @@ from pychain.iter_base import BaseIterChain
 
 @dataclass(slots=True, frozen=True)
 class ScalarChain[T](BaseChain[T]):
-    def transform[T1](self, f: lf.TransformFunc[T, T1]) -> "ScalarChain[T1]":
+    def apply[T1](self, f: lf.TransformFunc[T, T1]) -> "ScalarChain[T1]":
         return ScalarChain(_value=f(self.to_unwrap()))
 
     def to_iter(self) -> "IterChain[T]":
@@ -38,7 +38,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
     ) -> "DictChain[K1, IterChain[V1]]":
         return DictChain(_value={k: IterChain(_value=v) for k, v in value.items()})
 
-    def transform[K1, V1](
+    def apply[K1, V1](
         self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
     ) -> "DictChain[K1, V1]":
         return DictChain(_value=f(self.to_unwrap()))
@@ -70,7 +70,7 @@ class IterChain[V](BaseIterChain[V]):
     def to_scalar[V1](self, f: lf.TransformFunc[Iterable[V], V1]) -> ScalarChain[V1]:
         return ScalarChain(_value=f(self.to_unwrap()))
 
-    def transform[V1](
+    def apply[V1](
         self, f: lf.TransformFunc[Iterable[V], Iterable[V1]]
     ) -> "IterChain[V1]":
         return IterChain(_value=f(self.to_unwrap()))
@@ -111,14 +111,14 @@ class IterChain[V](BaseIterChain[V]):
     def to_max(self) -> ScalarChain[V]:
         return self.to_scalar(f=max)  # type: ignore
 
-    def check_all(self, predicate: lf.CheckFunc[V]) -> bool:
+    def is_all(self, predicate: lf.CheckFunc[V]) -> bool:
         return all(self.to_unwrap())
 
-    def check_any(self, predicate: lf.CheckFunc[V]) -> bool:
+    def is_any(self, predicate: lf.CheckFunc[V]) -> bool:
         return any(self.to_unwrap())
 
-    def check_distinct(self) -> bool:
+    def is_distinct(self) -> bool:
         return cz.itertoolz.isdistinct(self.to_unwrap())
 
-    def check_iterable(self) -> bool:
+    def is_iterable(self) -> bool:
         return cz.itertoolz.isiterable(self.to_unwrap())

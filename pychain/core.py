@@ -32,7 +32,7 @@ class BaseChain[T](ABC):
         Considered a factory function.
         They are available either as the public function at the lib level, or as a class method.
 
-    ### with
+    ### apply
 
         Considered a transformation function.
         Henceforth, it will collect internally the function, before returning a new instance of the class with the transformed value.
@@ -42,7 +42,7 @@ class BaseChain[T](ABC):
         Considered a terminal function that will go out of the current class.
         It may return a new instance of another pychain class, a python built-in type, or another library type.
 
-    ### check
+    ### is
 
         Considered a check function.
         It will return a boolean value indicating whether the condition is met for the current value.
@@ -53,14 +53,13 @@ class BaseChain[T](ABC):
         default_factory=list[lf.ProcessFunc[T]], init=False
     )
 
-    def do(self, f: lf.ProcessFunc[T]) -> Self:
+    def lazy(self, f: lf.ProcessFunc[T]) -> Self:
         """Adds a same-type lazy function to the pipeline."""
         self._pipeline.append(f)
         return self
 
-    # TODO: trouver meilleur nom pour cette méthode
     @abstractmethod
-    def transform[T1](self, f: Callable[[T], Any]) -> Any:
+    def apply[T1](self, f: Callable[[T], Any]) -> Any:
         """
         Applies a transformation function to the current value.
 
@@ -70,15 +69,15 @@ class BaseChain[T](ABC):
 
     def pipe(self, *fns: lf.ProcessFunc[T]) -> Self:
         """Adds a composed lazy function to the pipeline by combining multiple functions."""
-        return self.do(f=(cz.functoolz.compose_left(*fns)))
+        return self.lazy(f=(cz.functoolz.compose_left(*fns)))
 
     def thread_first(self, *fns: lf.ThreadFunc[T]) -> Self:
         """Adds a lazy function to the pipeline that threads the value through the functions in a 'thread-first' manner."""
-        return self.do(f=ft.partial(lf.thread_first, fns=fns))
+        return self.lazy(f=ft.partial(lf.thread_first, fns=fns))
 
     def thread_last(self, *fns: lf.ThreadFunc[T]) -> Self:
         """Adds a lazy function to the pipeline that threads the value through the functions in a 'thread-last' manner."""
-        return self.do(f=ft.partial(lf.thread_last, fns=fns))
+        return self.lazy(f=ft.partial(lf.thread_last, fns=fns))
 
     def to_unwrap(self) -> T:
         """
