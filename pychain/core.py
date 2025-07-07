@@ -37,7 +37,6 @@ class BaseChain[T](ABC):
         default_factory=list[lf.ProcessFunc[T]], init=False
     )
 
-    @lf.lazy
     def do(self, f: lf.ProcessFunc[T]) -> Self:
         """Adds a same-type lazy function to the pipeline."""
         self._pipeline.append(f)
@@ -52,17 +51,14 @@ class BaseChain[T](ABC):
         """
         raise NotImplementedError
 
-    @lf.lazy
     def pipe(self, *fns: lf.ProcessFunc[T]) -> Self:
         """Adds a composed lazy function to the pipeline by combining multiple functions."""
         return self.do(f=(cz.functoolz.compose_left(*fns)))
 
-    @lf.lazy
     def thread_first(self, *fns: lf.ThreadFunc[T]) -> Self:
         """Adds a lazy function to the pipeline that threads the value through the functions in a 'thread-first' manner."""
         return self.do(f=ft.partial(lf.thread_first, fns=fns))
 
-    @lf.lazy
     def thread_last(self, *fns: lf.ThreadFunc[T]) -> Self:
         """Adds a lazy function to the pipeline that threads the value through the functions in a 'thread-last' manner."""
         return self.do(f=ft.partial(lf.thread_last, fns=fns))

@@ -71,47 +71,37 @@ class IterChain[V](BaseIterChain[V]):
     def agg(self) -> "Aggregator[V]":
         return Aggregator(_value=self.to_unwrap())
 
-    @lf.lazy
     def for_each[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
         return self.transform(f=ft.partial(lf.for_each, f=f))
 
-    @lf.lazy
     def zip[V1](
         self, *others: Iterable[V1], strict: bool = False
     ) -> "IterChain[tuple[V, V1]]":
         return self.transform(f=ft.partial(lf.zip_with, others=others, strict=strict))
 
-    @lf.lazy
     def enumerate(self) -> "IterChain[tuple[int, V]]":
         return self.transform(f=enumerate)
 
-    @lf.lazy
     def map[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
         return self.transform(f=ft.partial(map, f))
 
-    @lf.lazy
     def flat_map[V1](self, f: lf.TransformFunc[V, Iterable[V1]]) -> "IterChain[V1]":
         return self.transform(f=ft.partial(lf.flat_map, func=f))
 
-    @lf.lazy
     def flatten(self) -> "IterChain[Any]":
         return self.transform(f=cz.itertoolz.concat)
 
-    @lf.lazy
     def diff(
         self, *others: Iterable[V], key: lf.ProcessFunc[V] | None = None
     ) -> "IterChain[tuple[V, ...]]":
         return self.transform(f=ft.partial(lf.diff_with, others=others, key=key))
 
-    @lf.lazy
     def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
         return self.transform(f=ft.partial(cz.itertoolz.partition, n=n, pad=pad))
 
-    @lf.lazy
     def partition_all(self, n: int) -> "IterChain[tuple[V, ...]]":
         return self.transform(f=ft.partial(cz.itertoolz.partition_all, n=n))
 
-    @lf.lazy
     def rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
         return self.transform(f=ft.partial(cz.itertoolz.sliding_window, length))
 
@@ -127,7 +117,6 @@ class IterChain[V](BaseIterChain[V]):
     def to_frequencies(self) -> "DictChain[V, int]":
         return DictChain(_value=cz.itertoolz.frequencies(self.to_unwrap()))
 
-    @lf.lazy
     def to_lazy_dict[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
         return DictChain.from_scalar(value=self, keys=keys)
 

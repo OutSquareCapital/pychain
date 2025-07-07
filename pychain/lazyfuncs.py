@@ -1,4 +1,3 @@
-import functools as ft
 from collections.abc import Callable, Iterable, Iterator
 from typing import Any, ParamSpec, Protocol, TypeVar
 
@@ -10,18 +9,6 @@ R = TypeVar("R")
 
 class RandomProtocol(Protocol):
     def random(self, *args: Any, **kwargs: Any) -> float: ...
-
-
-def lazy(*func: Callable[P, R]) -> Callable[P, R]:
-    def decorator(f: Callable[P, R]) -> Callable[P, R]:
-        @ft.wraps(f)
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            # print(f"Lazy eval of {f.__name__}\n with args: \n{args}, kwargs: \n{kwargs}")
-            return f(*args, **kwargs)
-
-        return wrapper
-
-    return decorator(*func)
 
 
 type CheckFunc[T] = Callable[[T], bool]
