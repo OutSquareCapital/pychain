@@ -51,6 +51,7 @@ def merge_with[K, V, V1](
 def dissoc[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
     return cz.dicttoolz.dissoc(d=d, *keys)
 
+
 def repeat[V](value: Iterable[V], n: int) -> Iterator[V]:
     return cz.itertoolz.concat(seqs=map(lambda x: [x] * n, value))
 
@@ -106,7 +107,8 @@ def zip_with[T, V](
 ) -> Iterable[tuple[T, V]]:
     return zip(value, *others, strict=strict)
 
-def for_each[T, T1](value: Iterable[T], f: TransformFunc[T, T1])  -> list[T1]:
+
+def for_each[T, T1](value: Iterable[T], f: TransformFunc[T, T1]) -> list[T1]:
     new_data: list[T1] = []
     for item in value:
         new_data.append(f(item))

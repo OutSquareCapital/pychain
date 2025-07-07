@@ -71,10 +71,6 @@ class IterChain[V](BaseIterChain[V]):
     def agg(self) -> "Aggregator[V]":
         return Aggregator(_value=self.to_unwrap())
 
-    # TODO: se decider a quoi faire avec
-    def range(self, start: int = 0, stop: int = 1, step: int = 1) -> "IterChain[int]":
-        return IterChain(_value=range(start, stop, step))
-
     @lf.lazy
     def for_each[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
         return self.transform(f=ft.partial(lf.for_each, f=f))
