@@ -43,19 +43,19 @@ class BaseDictChain[K, V](BaseChain[dict[K, V]]):
     def drop(self, *keys: K) -> Self:
         return self.do(f=ft.partial(lf.dissoc, keys=keys))
 
-    def map_items[K1, V1](
+    def with_map_items[K1, V1](
         self,
         f: lf.TransformFunc[tuple[K, V], tuple[K1, V1]],
     ) -> "DictChain[K1, V1]":
         return self.transform(f=ft.partial(cz.dicttoolz.itemmap, f))
 
-    def map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
+    def with_map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
         return self.transform(f=ft.partial(cz.dicttoolz.keymap, f))
 
-    def map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
+    def with_map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
         return self.transform(f=ft.partial(cz.dicttoolz.valmap, f))
 
-    def merge_with[V1](
+    def with_merge[V1](
         self, f: Callable[..., V1], *others: dict[K, V]
     ) -> "DictChain[K, V1]":
         return self.transform(f=ft.partial(lf.merge_with, f=f, others=others))

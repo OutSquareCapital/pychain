@@ -17,7 +17,7 @@ class ScalarChain[T](BaseChain[T]):
         return ScalarChain(_value=f(self.to_unwrap()))
 
     def to_iter(self) -> "IterChain[T]":
-        return IterChain(_value=iter([self.to_unwrap()]))
+        return IterChain.from_scalar(value=self.to_unwrap())
 
     def to_dict[K](self, *keys: K) -> "DictChain[K, T]":
         return DictChain.from_scalar(value=self.to_unwrap(), keys=keys)
@@ -32,9 +32,11 @@ class DictChain[K, V](BaseDictChain[K, V]):
     def from_scalar[K1, V1](cls, value: V1, keys: Iterable[K1]) -> "DictChain[K1, V1]":
         return DictChain(_value={k: deepcopy(value) for k in keys})
 
-    @property
-    def agg(self) -> "Aggregator[V]":
-        return Aggregator(_value=self.to_unwrap().values())
+    @classmethod
+    def from_dict_of_iterables[K1, V1](
+        cls, value: dict[K1, Iterable[V1]]
+    ) -> "DictChain[K1, IterChain[V1]]":
+        return DictChain(_value={k: IterChain(_value=v) for k, v in value.items()})
 
     def transform[K1, V1](
         self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
@@ -50,20 +52,34 @@ class DictChain[K, V](BaseDictChain[K, V]):
 
 @dataclass(slots=True, frozen=True)
 class IterChain[V](BaseIterChain[V]):
+    @classmethod
+    def from_scalar[T](cls, value: T) -> "IterChain[T]":
+        return IterChain(_value=iter([value]))
+
+    @classmethod
+    def from_func[T, T1](cls, value: T, f: Callable[[T], T1]) -> "IterChain[T1]":
+        return IterChain(_value=cz.itertoolz.iterate(func=f, x=value))
+
+    @classmethod
+    def from_range(cls, start: int, stop: int, step: int = 1) -> "IterChain[int]":
+        return IterChain(_value=range(start, stop, step))
+
+    def to_dict[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
+        return DictChain.from_scalar(value=self, keys=keys)
+
+    def to_scalar[V1](self, f: lf.TransformFunc[Iterable[V], V1]) -> ScalarChain[V1]:
+        return ScalarChain(_value=f(self.to_unwrap()))
+
     def transform[V1](
         self, f: lf.TransformFunc[Iterable[V], Iterable[V1]]
     ) -> "IterChain[V1]":
         return IterChain(_value=f(self.to_unwrap()))
 
-    @property
-    def agg(self) -> "Aggregator[V]":
-        return Aggregator(_value=self.to_unwrap())
-
-    def group_by[K](self, on: lf.TransformFunc[V, K]) -> "DictChain[K, IterChain[V]]":
+    def to_groups[K](self, on: lf.TransformFunc[V, K]) -> "DictChain[K, IterChain[V]]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self._value)
         return DictChain(_value={k: IterChain(v) for k, v in grouped.items()})
 
-    def reduce_by[K](
+    def to_reduced_groups[K](
         self, key: lf.TransformFunc[V, K], binop: Callable[[V, V], V]
     ) -> "DictChain[K, V]":
         return DictChain(_value=cz.itertoolz.reduceby(key, binop, self.to_unwrap()))
@@ -71,54 +87,38 @@ class IterChain[V](BaseIterChain[V]):
     def to_frequencies(self) -> "DictChain[V, int]":
         return DictChain(_value=cz.itertoolz.frequencies(self.to_unwrap()))
 
-    def to_lazy_dict[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
-        return DictChain.from_scalar(value=self, keys=keys)
+    def to_value_first(self) -> ScalarChain[V]:
+        return self.to_scalar(f=cz.itertoolz.first)
 
+    def to_value_second(self) -> ScalarChain[V]:
+        return self.to_scalar(f=cz.itertoolz.second)
 
-@dataclass(slots=True, frozen=True)
-class Aggregator[V]:
-    _value: Iterable[V]
+    def to_value_last(self) -> ScalarChain[V]:
+        return self.to_scalar(f=cz.itertoolz.last)
 
-    def _to_scalar[V1](self, f: lf.TransformFunc[Iterable[V], V1]) -> ScalarChain[V1]:
-        return ScalarChain(_value=f(self._value))
+    def to_value_at(self, index: int) -> ScalarChain[V]:
+        return self.to_scalar(f=ft.partial(cz.itertoolz.nth, n=index))
 
-    def _to_numeric[V1: int | float](
-        self, f: lf.TransformFunc[Iterable[V], V1]
-    ) -> ScalarChain[V1]:
-        return ScalarChain(_value=f(self._value))
+    def to_len(self) -> ScalarChain[int]:
+        return self.to_scalar(f=cz.itertoolz.count)
 
-    def len(self) -> ScalarChain[int]:
-        return self._to_numeric(f=cz.itertoolz.count)
+    def to_sum(self) -> ScalarChain[V]:
+        return self.to_scalar(f=sum)  # type: ignore
 
-    def first(self) -> ScalarChain[V]:
-        return self._to_scalar(f=cz.itertoolz.first)
+    def to_min(self) -> ScalarChain[V]:
+        return self.to_scalar(f=min)  # type: ignore
 
-    def second(self) -> ScalarChain[V]:
-        return self._to_scalar(f=cz.itertoolz.second)
+    def to_max(self) -> ScalarChain[V]:
+        return self.to_scalar(f=max)  # type: ignore
 
-    def last(self) -> ScalarChain[V]:
-        return self._to_scalar(f=cz.itertoolz.last)
+    def check_all(self, predicate: lf.CheckFunc[V]) -> bool:
+        return all(self.to_unwrap())
 
-    def at(self, index: int) -> ScalarChain[V]:
-        return self._to_scalar(f=ft.partial(cz.itertoolz.nth, n=index))
+    def check_any(self, predicate: lf.CheckFunc[V]) -> bool:
+        return any(self.to_unwrap())
 
-    def sum(self) -> ScalarChain[V]:  # type: ignore
-        return self._to_numeric(f=sum)  # type: ignore
+    def check_distinct(self) -> bool:
+        return cz.itertoolz.isdistinct(self.to_unwrap())
 
-    def min(self) -> ScalarChain[V]:  # type: ignore
-        return self._to_numeric(f=min)  # type: ignore
-
-    def max(self) -> ScalarChain[V]:  # type: ignore
-        return self._to_numeric(f=max)  # type: ignore
-
-    def all(self, predicate: lf.CheckFunc[V]) -> ScalarChain[bool]:
-        return ScalarChain(_value=all(map(predicate, self._value)))
-
-    def any(self, predicate: lf.CheckFunc[V]) -> ScalarChain[bool]:
-        return ScalarChain(_value=any(map(predicate, self._value)))
-
-    def is_distinct(self) -> ScalarChain[bool]:
-        return ScalarChain(_value=cz.itertoolz.isdistinct(seq=self._value))
-
-    def is_iterable(self) -> ScalarChain[bool]:
-        return ScalarChain(_value=cz.itertoolz.isiterable(self._value))
+    def check_iterable(self) -> bool:
+        return cz.itertoolz.isiterable(self.to_unwrap())

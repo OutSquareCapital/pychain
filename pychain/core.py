@@ -20,16 +20,29 @@ class BaseChain[T](ABC):
 
     The class maintain an internal generic value `_value` and a list of processing functions `_pipeline`.
 
-    The execution strategy is the following:
+    ## from
 
-    ### Case "do":
-        If the function return the same type as the current value(ProcessFunc), it is added to the pipeline (lazy evaluation, same instance).
+    If the method starts with "from_", it is considered a factory function.
+    They are available either as the public function at the lib level, or as a class method.
 
-    ### Case "transform":
-        If the function returns a different type(TransformFunc), the pipeline is collected, the transformation is applied, and a new instance of the class is created with the transformed value(eager evaluation, new instance, new type).
+    ## lazy
 
-    ### Case "_new":
-        - If the value itself is an iterable(lazy value in itself), we create a new instance of the class with the new value.
+    Most of the methods are lazy evaluated, so when they are called, they will just add the function to the pipeline, and return the current instance.
+
+    ## with
+
+    If the method starts with "with_", it is considered a transformation function.
+    Henceforth, it will collect internally the function, before returning a new instance of the class with the transformed value.
+
+    ## to
+
+    If the method starts with "to_", it is considered a terminal function that will go out of the current class.
+    It may return a new instance of another pychain class, a python built-in type, or another library type.
+
+    ## check
+
+    If the method starts with "check_", it is considered a check function.
+    It will return a boolean value indicating whether the condition is met for the current value.
     """
 
     _value: T
@@ -42,6 +55,7 @@ class BaseChain[T](ABC):
         self._pipeline.append(f)
         return self
 
+    #TODO: trouver meilleur nom pour cette méthode
     @abstractmethod
     def transform[T1](self, f: Callable[[T], Any]) -> Any:
         """

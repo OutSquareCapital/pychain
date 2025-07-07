@@ -84,60 +84,58 @@ class BaseIterChain[V](BaseChain[Iterable[V]]):
         return self.do(f=cz.itertoolz.unique)
 
     def cumsum(self) -> Self:
-        return self.do(f=ft.partial(cz.itertoolz.accumulate, binop=op.add))
+        return self.do(f=ft.partial(cz.itertoolz.accumulate, op.add))
 
     def cumprod(self) -> Self:
-        return self.do(f=ft.partial(cz.itertoolz.accumulate, binop=op.mul))
+        return self.do(f=ft.partial(cz.itertoolz.accumulate, op.mul))
 
     def merge_sorted(
         self, *others: Iterable[V], sort_on: Callable[[V], Any] | None = None
     ) -> Self:
         return self.do(f=ft.partial(lf.merge_sorted, others=others, sort_on=sort_on))
 
-    def as_list(self) -> Self:
-        return self.do(list)
-
-    def as_tuple(self) -> Self:
-        return self.do(tuple)
-
-    def to_list(self) -> list[V]:
-        return list(self.to_unwrap())
-
-    def to_tuple(self) -> tuple[V, ...]:
-        return tuple(self.to_unwrap())
-
-    def for_each[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
+    def with_for_each[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
         return self.transform(f=ft.partial(lf.for_each, f=f))
 
-    def zip(
+    def with_zip(
         self, *others: Iterable[Any], strict: bool = False
     ) -> "IterChain[tuple[V, ...]]":
         return self.transform(f=ft.partial(lf.zip_with, others=others, strict=strict))
 
-    def enumerate(self) -> "IterChain[tuple[int, V]]":
+    def with_enumerate(self) -> "IterChain[tuple[int, V]]":
         return self.transform(f=enumerate)
 
-    def map[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
+    def with_map[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
         return self.transform(f=ft.partial(map, f))
 
-    def flat_map[V1](self, f: lf.TransformFunc[V, Iterable[V1]]) -> "IterChain[V1]":
+    def with_flat_map[V1](
+        self, f: lf.TransformFunc[V, Iterable[V1]]
+    ) -> "IterChain[V1]":
         return self.transform(f=ft.partial(lf.flat_map, func=f))
 
-    def flatten(self) -> "IterChain[Any]":
+    def with_flatten(self) -> "IterChain[Any]":
         return self.transform(f=cz.itertoolz.concat)
 
-    def diff(
+    def with_diff(
         self,
         *others: Iterable[V],
         key: lf.ProcessFunc[V] | None = None,
     ) -> "IterChain[tuple[V, ...]]":
         return self.transform(f=ft.partial(lf.diff_with, others=others, key=key))
 
-    def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
+    def with_partition(
+        self, n: int, pad: V | None = None
+    ) -> "IterChain[tuple[V, ...]]":
         return self.transform(f=ft.partial(cz.itertoolz.partition, n=n, pad=pad))
 
-    def partition_all(self, n: int) -> "IterChain[tuple[V, ...]]":
+    def with_partition_all(self, n: int) -> "IterChain[tuple[V, ...]]":
         return self.transform(f=ft.partial(cz.itertoolz.partition_all, n=n))
 
-    def rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
+    def with_rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
         return self.transform(f=ft.partial(cz.itertoolz.sliding_window, length))
+
+    def to_list(self) -> list[V]:
+        return list(self.to_unwrap())
+
+    def to_tuple(self) -> tuple[V, ...]:
+        return tuple(self.to_unwrap())

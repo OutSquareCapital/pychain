@@ -1,6 +1,4 @@
-from collections.abc import Callable, Iterable, Mapping
-
-import cytoolz as cz
+from collections.abc import Callable, Iterable
 
 from pychain.implementations import DictChain, IterChain, ScalarChain
 
@@ -14,17 +12,17 @@ def from_iterable[T](data: Iterable[T]) -> IterChain[T]:
 
 
 def from_func[T, T1](value: T, f: Callable[[T], T1]) -> IterChain[T1]:
-    return IterChain(_value=cz.itertoolz.iterate(func=f, x=value))
+    return IterChain.from_func(value=value, f=f)
 
 
 def from_range(start: int, stop: int, step: int = 1) -> IterChain[int]:
-    return IterChain(_value=range(start, stop, step))
+    return IterChain.from_range(start=start, stop=stop, step=step)
 
 
 def from_dict_of_iterables[K, V](
-    data: Mapping[K, Iterable[V]],
+    data: dict[K, Iterable[V]],
 ) -> DictChain[K, IterChain[V]]:
-    return DictChain(_value={k: from_iterable(data=v) for k, v in data.items()})
+    return DictChain.from_dict_of_iterables(value=data)
 
 
 def from_dict[K, V](data: dict[K, V]) -> DictChain[K, V]:
