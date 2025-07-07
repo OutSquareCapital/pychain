@@ -232,7 +232,7 @@ def isiterable(x: Any) -> bool:
     """
     ...
 
-def iterate[T](func: Callable[[T], T], x: T) -> Iterator[T]:
+def iterate[T, T1](func: Callable[[T], T1], x: T) -> Iterator[T1]:
     """
     Repeatedly apply a function func onto an original input
 
