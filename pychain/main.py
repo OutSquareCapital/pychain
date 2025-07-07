@@ -1,6 +1,6 @@
 from collections.abc import Iterable, Mapping, Callable
 
-from pychain.iterchain import DictChain, IterChain, ScalarChain
+from pychain.implementations import DictChain, IterChain, ScalarChain
 import cytoolz as cz
 
 
