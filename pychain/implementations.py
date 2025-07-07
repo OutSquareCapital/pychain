@@ -1,14 +1,14 @@
 import functools as ft
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
 from copy import deepcopy
-from typing import Any
+from dataclasses import dataclass
 
 import cytoolz as cz
 
 import pychain.lazyfuncs as lf
-from pychain.interfaces import BaseDictChain, BaseIterChain
 from pychain.core import BaseChain
+from pychain.dict_base import BaseDictChain
+from pychain.iter_base import BaseIterChain
 
 
 @dataclass(slots=True, frozen=True)
@@ -32,26 +32,14 @@ class DictChain[K, V](BaseDictChain[K, V]):
     def from_scalar[K1, V1](cls, value: V1, keys: Iterable[K1]) -> "DictChain[K1, V1]":
         return DictChain(_value={k: deepcopy(value) for k in keys})
 
+    @property
+    def agg(self) -> "Aggregator[V]":
+        return Aggregator(_value=self.to_unwrap().values())
+
     def transform[K1, V1](
         self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
     ) -> "DictChain[K1, V1]":
         return DictChain(_value=f(self.to_unwrap()))
-
-    def map_items[K1, V1](
-        self, f: lf.TransformFunc[tuple[K, V], tuple[K1, V1]]
-    ) -> "DictChain[K1, V1]":
-        return self.transform(f=ft.partial(cz.dicttoolz.itemmap, f))
-
-    def map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
-        return self.transform(f=ft.partial(cz.dicttoolz.keymap, f))
-
-    def map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
-        return self.transform(f=ft.partial(cz.dicttoolz.valmap, f))
-
-    def merge_with[V1](
-        self, f: Callable[..., V1], *others: dict[K, V]
-    ) -> "DictChain[K, V1]":
-        return self.transform(f=ft.partial(lf.merge_with, f=f, others=others))
 
     def to_keys_iter(self) -> "IterChain[K]":
         return IterChain(_value=self.to_unwrap().keys())
@@ -70,40 +58,6 @@ class IterChain[V](BaseIterChain[V]):
     @property
     def agg(self) -> "Aggregator[V]":
         return Aggregator(_value=self.to_unwrap())
-
-    def for_each[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
-        return self.transform(f=ft.partial(lf.for_each, f=f))
-
-    def zip[V1](
-        self, *others: Iterable[V1], strict: bool = False
-    ) -> "IterChain[tuple[V, V1]]":
-        return self.transform(f=ft.partial(lf.zip_with, others=others, strict=strict))
-
-    def enumerate(self) -> "IterChain[tuple[int, V]]":
-        return self.transform(f=enumerate)
-
-    def map[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
-        return self.transform(f=ft.partial(map, f))
-
-    def flat_map[V1](self, f: lf.TransformFunc[V, Iterable[V1]]) -> "IterChain[V1]":
-        return self.transform(f=ft.partial(lf.flat_map, func=f))
-
-    def flatten(self) -> "IterChain[Any]":
-        return self.transform(f=cz.itertoolz.concat)
-
-    def diff(
-        self, *others: Iterable[V], key: lf.ProcessFunc[V] | None = None
-    ) -> "IterChain[tuple[V, ...]]":
-        return self.transform(f=ft.partial(lf.diff_with, others=others, key=key))
-
-    def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
-        return self.transform(f=ft.partial(cz.itertoolz.partition, n=n, pad=pad))
-
-    def partition_all(self, n: int) -> "IterChain[tuple[V, ...]]":
-        return self.transform(f=ft.partial(cz.itertoolz.partition_all, n=n))
-
-    def rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
-        return self.transform(f=ft.partial(cz.itertoolz.sliding_window, length))
 
     def group_by[K](self, on: lf.TransformFunc[V, K]) -> "DictChain[K, IterChain[V]]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self._value)
