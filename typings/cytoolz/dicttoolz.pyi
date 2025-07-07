@@ -202,9 +202,9 @@ def merge[K, V](*dicts: dict[K, V], **kwargs: Any) -> dict[K, V]:
     """
     ...
 
-def merge_with[K, V, V1](
-    func: Callable[[list[V]], V1], *dicts: dict[K, V], **kwargs: Any
-) -> dict[K, V1]:
+def merge_with[K, V](
+    func: Callable[[list[V]], V], *dicts: dict[K, V], **kwargs: Any
+) -> dict[K, V]:
     """
     Merge dictionaries and apply function to combined values
 

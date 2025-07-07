@@ -26,9 +26,9 @@ def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
     return cz.dicttoolz.merge(*others, on)
 
 
-def merge_with[K, V, V1](
-    f: Callable[..., V1], on: dict[K, V], others: Iterable[dict[K, V]]
-) -> dict[K, V1]:
+def merge_with[K, V](
+    f: Callable[..., V], on: dict[K, V], others: Iterable[dict[K, V]]
+) -> dict[K, V]:
     return cz.dicttoolz.merge_with(f, on, *others)
 
 
