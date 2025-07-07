@@ -18,31 +18,34 @@ class BaseChain[T](ABC):
     BaseChain is an abstract base class that provides a framework for creating a chainable, lazy evaluation pipeline
     for processing data.
 
-    The class maintain an internal generic value `_value` and a list of processing functions `_pipeline`.
+    ## Attributes
+    - `_value`: The initial value of the chain, which can be of any type.
+    - `_pipeline`: A list of functions that will be applied to the value in a lazy manner.
 
-    ## from
-
-    If the method starts with "from_", it is considered a factory function.
-    They are available either as the public function at the lib level, or as a class method.
-
-    ## lazy
-
+    ## Methods
     Most of the methods are lazy evaluated, so when they are called, they will just add the function to the pipeline, and return the current instance.
 
-    ## with
+    However, if a method name start in one of the following ways, you can expect a specific behavior:
 
-    If the method starts with "with_", it is considered a transformation function.
-    Henceforth, it will collect internally the function, before returning a new instance of the class with the transformed value.
+    ### from
 
-    ## to
+        Considered a factory function.
+        They are available either as the public function at the lib level, or as a class method.
 
-    If the method starts with "to_", it is considered a terminal function that will go out of the current class.
-    It may return a new instance of another pychain class, a python built-in type, or another library type.
+    ### with
 
-    ## check
+        Considered a transformation function.
+        Henceforth, it will collect internally the function, before returning a new instance of the class with the transformed value.
 
-    If the method starts with "check_", it is considered a check function.
-    It will return a boolean value indicating whether the condition is met for the current value.
+    ### to
+
+        Considered a terminal function that will go out of the current class.
+        It may return a new instance of another pychain class, a python built-in type, or another library type.
+
+    ### check
+
+        Considered a check function.
+        It will return a boolean value indicating whether the condition is met for the current value.
     """
 
     _value: T
@@ -55,7 +58,7 @@ class BaseChain[T](ABC):
         self._pipeline.append(f)
         return self
 
-    #TODO: trouver meilleur nom pour cette méthode
+    # TODO: trouver meilleur nom pour cette méthode
     @abstractmethod
     def transform[T1](self, f: Callable[[T], Any]) -> Any:
         """
