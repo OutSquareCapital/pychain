@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import cytoolz as cz
 
 import pychain.lazyfuncs as lf
-from pychain.core import BaseChain
+from pychain.core import AbstractChain
 from pychain.dict_base import BaseDictChain
 from pychain.iter_base import BaseIterChain
 from pychain.executors import GetterBase
@@ -17,7 +17,7 @@ class Getter[V](GetterBase[V]):
 
 
 @dataclass(slots=True, frozen=True, repr=False)
-class ScalarChain[T](BaseChain[T]):
+class ScalarChain[T](AbstractChain[T]):
     def into[T1](self, f: lf.TransformFunc[T, T1]) -> "ScalarChain[T1]":
         return ScalarChain(
             _value=self._value,

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Self
 import cytoolz as cz
 
 import pychain.lazyfuncs as lf
-from pychain.core import BaseChain
+from pychain.core import AbstractChain
 from pychain.executors import Checker, Converter
 
 if TYPE_CHECKING:
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(slots=True, frozen=True, repr=False)
-class BaseDictChain[K, V](BaseChain[dict[K, V]]):
+class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
     @property
     def convert_values_to(self) -> Converter[V]:
         return Converter(_value=self.unwrap().values())

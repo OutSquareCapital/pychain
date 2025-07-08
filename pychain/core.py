@@ -10,7 +10,7 @@ import pychain.lazyfuncs as lf
 
 
 @dataclass(slots=True, frozen=True, repr=False)
-class BaseChain[T]:
+class AbstractChain[T]:
     _value: T
     _pipeline: list[Callable[[T], Any]] = field(default_factory=list[lf.ProcessFunc[T]])
 

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Self
 import cytoolz as cz
 
 import pychain.lazyfuncs as lf
-from pychain.core import BaseChain
+from pychain.core import AbstractChain
 from pychain.executors import Checker, Converter
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(slots=True, frozen=True, repr=False)
-class BaseIterChain[V](BaseChain[Iterable[V]]):
+class BaseIterChain[V](AbstractChain[Iterable[V]]):
     _value: Iterable[V]
 
     @property
