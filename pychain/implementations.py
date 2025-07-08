@@ -19,10 +19,10 @@ class ScalarChain[T](BaseChain[T]):
         )  # type: ignore
 
     def to_iter(self, n: int) -> "IterChain[T]":
-        return IterChain(_value=iter([self.to_unwrap()])).repeat(n=n)
+        return IterChain(_value=iter([self.unwrap()])).repeat(n=n)
 
     def to_dict(self, n: int) -> "DictChain[int, T]":
-        val = self.to_unwrap()
+        val = self.unwrap()
         return DictChain(_value={i: val for i in range(n)})
 
     def to_iter_dict[K](self, n: int, *keys: K) -> "DictChain[K, IterChain[T]]":
@@ -33,10 +33,10 @@ class ScalarChain[T](BaseChain[T]):
 @dataclass(slots=True, frozen=True, repr=False)
 class IterChain[V](BaseIterChain[V]):
     def to_scalar[V1](self, f: lf.AggFunc[V, V1]) -> ScalarChain[V1]:
-        return ScalarChain(_value=f(self.to_unwrap()))
+        return ScalarChain(_value=f(self.unwrap()))
 
     def to_dict(self) -> "DictChain[int, V]":
-        return DictChain(_value={i: v for i, v in enumerate(self.to_unwrap())})
+        return DictChain(_value={i: v for i, v in enumerate(self.unwrap())})
 
     def to_iter_dict[K](self, n: int) -> "DictChain[int, IterChain[V]]":
         return DictChain(_value={k: self for k in range(n)})
@@ -53,16 +53,16 @@ class IterChain[V](BaseIterChain[V]):
         )  # type: ignore
 
     def to_groups[K](self, on: lf.TransformFunc[V, K]) -> "DictChain[K, IterChain[V]]":
-        grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.to_unwrap())
+        grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.unwrap())
         return DictChain(_value={k: IterChain(v) for k, v in grouped.items()})
 
     def to_reduced_groups[K](
         self, key: lf.TransformFunc[V, K], binop: Callable[[V, V], V]
     ) -> "DictChain[K, V]":
-        return DictChain(_value=cz.itertoolz.reduceby(key, binop, self.to_unwrap()))
+        return DictChain(_value=cz.itertoolz.reduceby(key, binop, self.unwrap()))
 
     def to_frequencies(self) -> "DictChain[V, int]":
-        return DictChain(_value=cz.itertoolz.frequencies(self.to_unwrap()))
+        return DictChain(_value=cz.itertoolz.frequencies(self.unwrap()))
 
     def to_value_first(self) -> ScalarChain[V]:
         return self.to_scalar(f=cz.itertoolz.first)
@@ -89,16 +89,16 @@ class IterChain[V](BaseIterChain[V]):
         return self.to_scalar(f=max)  # type: ignore
 
     def is_all(self) -> bool:
-        return all(self.to_unwrap())
+        return all(self.unwrap())
 
     def is_any(self) -> bool:
-        return any(self.to_unwrap())
+        return any(self.unwrap())
 
     def is_distinct(self) -> bool:
-        return cz.itertoolz.isdistinct(self.to_unwrap())
+        return cz.itertoolz.isdistinct(self.unwrap())
 
     def is_iterable(self) -> bool:
-        return cz.itertoolz.isiterable(self.to_unwrap())
+        return cz.itertoolz.isiterable(self.unwrap())
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -112,21 +112,21 @@ class DictChain[K, V](BaseDictChain[K, V]):
         )  # type: ignore
 
     def to_scalar_value[V1](self, f: lf.AggFunc[V, V1]) -> ScalarChain[V1]:
-        return ScalarChain(_value=f(self.to_unwrap().values()))
+        return ScalarChain(_value=f(self.unwrap().values()))
 
     def to_scalar_key[K1](self, f: lf.AggFunc[K, K1]) -> ScalarChain[K1]:
-        return ScalarChain(_value=f(self.to_unwrap().keys()))
+        return ScalarChain(_value=f(self.unwrap().keys()))
 
     def to_scalar_items[K1, V1](
         self, f: lf.AggFunc[tuple[K, V], tuple[K1, V1]]
     ) -> ScalarChain[tuple[K1, V1]]:
-        return ScalarChain(_value=f(self.to_unwrap().items()))
+        return ScalarChain(_value=f(self.unwrap().items()))
 
     def to_iter_keys(self) -> "IterChain[K]":
-        return IterChain(_value=self.to_unwrap().keys())
+        return IterChain(_value=self.unwrap().keys())
 
     def to_iter_values(self) -> "IterChain[V]":
-        return IterChain(_value=self.to_unwrap().values())
+        return IterChain(_value=self.unwrap().values())
 
     def to_iter_items(self) -> "IterChain[tuple[K, V]]":
-        return IterChain(_value=self.to_unwrap().items())
+        return IterChain(_value=self.unwrap().items())

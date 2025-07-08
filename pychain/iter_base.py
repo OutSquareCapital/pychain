@@ -133,7 +133,7 @@ class BaseIterChain[V](BaseChain[Iterable[V]]):
         return self.apply(f=ft.partial(cz.itertoolz.sliding_window, length))
 
     def to_list(self) -> list[V]:
-        return list(self.to_unwrap())
+        return list(self.unwrap())
 
     def to_tuple(self) -> tuple[V, ...]:
-        return tuple(self.to_unwrap())
+        return tuple(self.unwrap())

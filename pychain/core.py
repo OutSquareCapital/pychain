@@ -85,7 +85,7 @@ class BaseChain[T](ABC):
     def clone(self) -> Self:
         return self.__class__(deepcopy(self._value), deepcopy(self._pipeline))
 
-    def to_unwrap(self) -> T:
+    def unwrap(self) -> T:
         """
         Returns the final value.
 
@@ -98,13 +98,13 @@ class BaseChain[T](ABC):
         return cz.functoolz.pipe(self._value, *self._pipeline)
 
     def to_series(self) -> pl.Series:
-        return pl.Series(values=self.to_unwrap())
+        return pl.Series(values=self.unwrap())
 
     def to_frame(self) -> pl.DataFrame:
-        return pl.DataFrame(data=self.to_unwrap())
+        return pl.DataFrame(data=self.unwrap())
 
     def to_lazy_frame(self) -> pl.LazyFrame:
-        return pl.LazyFrame(data=self.to_unwrap())
+        return pl.LazyFrame(data=self.unwrap())
 
     def to_functional(self):
-        return fn.seq(self.to_unwrap())
+        return fn.seq(self.unwrap())
