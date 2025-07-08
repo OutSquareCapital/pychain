@@ -7,6 +7,7 @@ import cytoolz as cz
 
 import pychain.lazyfuncs as lf
 from pychain.core import BaseChain
+from pychain.executors import Checker, Converter
 
 if TYPE_CHECKING:
     from pychain.implementations import DictChain
@@ -14,7 +15,31 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True, repr=False)
 class BaseDictChain[K, V](BaseChain[dict[K, V]]):
-    def do_as[K1, V1](
+    @property
+    def convert_values_to(self) -> Converter[V]:
+        return Converter(_value=self.unwrap().values())
+
+    @property
+    def convert_keys_to(self) -> Converter[K]:
+        return Converter(_value=self.unwrap().keys())
+
+    @property
+    def convert_items_to(self) -> Converter[tuple[K, V]]:
+        return Converter(_value=self.unwrap().items())
+
+    @property
+    def check_if_values(self) -> Checker[V]:
+        return Checker(_value=self.unwrap().values())
+
+    @property
+    def check_if_keys(self) -> Checker[K]:
+        return Checker(_value=self.unwrap().keys())
+
+    @property
+    def check_if_items(self) -> Checker[tuple[K, V]]:
+        return Checker(_value=self.unwrap().items())
+
+    def into[K1, V1](
         self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
     ) -> "DictChain[K1, V1]":
         return self.__class__(
@@ -26,13 +51,13 @@ class BaseDictChain[K, V](BaseChain[dict[K, V]]):
         self,
         f: lf.TransformFunc[tuple[K, V], tuple[K1, V1]],
     ) -> "DictChain[K1, V1]":
-        return self.do_as(f=ft.partial(cz.dicttoolz.itemmap, f))
+        return self.into(f=ft.partial(cz.dicttoolz.itemmap, f))
 
     def map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
-        return self.do_as(f=ft.partial(cz.dicttoolz.keymap, f))
+        return self.into(f=ft.partial(cz.dicttoolz.keymap, f))
 
     def map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
-        return self.do_as(f=ft.partial(cz.dicttoolz.valmap, f))
+        return self.into(f=ft.partial(cz.dicttoolz.valmap, f))
 
     def filter_items(self, predicate: lf.CheckFunc[tuple[K, V]]) -> Self:
         return self.do(f=ft.partial(cz.dicttoolz.itemfilter, predicate=predicate))

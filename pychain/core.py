@@ -1,19 +1,16 @@
 import functools as ft
-from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, Self
 from copy import deepcopy
 
 import cytoolz as cz
-import functional as fn  # type: ignore
-import polars as pl
 
 import pychain.lazyfuncs as lf
 
 
 @dataclass(slots=True, frozen=True, repr=False)
-class BaseChain[T](ABC):
+class BaseChain[T]:
     _value: T
     _pipeline: list[Callable[[T], Any]] = field(default_factory=list[lf.ProcessFunc[T]])
 
@@ -25,9 +22,11 @@ class BaseChain[T](ABC):
         self._pipeline.append(f)
         return self
 
-    @abstractmethod
-    def do_as[T1](self, f: Callable[[T], Any]) -> Any:
-        raise NotImplementedError
+    def into(self, f: lf.TransformFunc[T, Any]):
+        return self.__class__(
+            _value=self._value,
+            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
+        )
 
     def compose(self, *fns: lf.ProcessFunc[T]) -> Self:
         return self.do(f=(cz.functoolz.compose_left(*fns)))
@@ -45,15 +44,3 @@ class BaseChain[T](ABC):
         if not self._pipeline:
             return self._value
         return cz.functoolz.pipe(self._value, *self._pipeline)
-
-    def to_series(self) -> pl.Series:
-        return pl.Series(values=self.unwrap())
-
-    def to_frame(self) -> pl.DataFrame:
-        return pl.DataFrame(data=self.unwrap())
-
-    def to_lazy_frame(self) -> pl.LazyFrame:
-        return pl.LazyFrame(data=self.unwrap())
-
-    def to_functional(self):
-        return fn.seq(self.unwrap())
