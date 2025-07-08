@@ -92,6 +92,7 @@ def zip_with[T, V](
 ) -> Iterable[tuple[T, V]]:
     return zip(value, *others, strict=strict)
 
+
 def tap[V](value: Iterable[V], func: Callable[[V], Any]) -> Iterator[V]:
     for item in value:
         func(item)

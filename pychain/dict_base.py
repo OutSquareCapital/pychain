@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True, repr=False)
 class BaseDictChain[K, V](BaseChain[dict[K, V]]):
-    def apply[K1, V1](
+    def do_as[K1, V1](
         self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
     ) -> "DictChain[K1, V1]":
         return self.__class__(
@@ -26,37 +26,37 @@ class BaseDictChain[K, V](BaseChain[dict[K, V]]):
         self,
         f: lf.TransformFunc[tuple[K, V], tuple[K1, V1]],
     ) -> "DictChain[K1, V1]":
-        return self.apply(f=ft.partial(cz.dicttoolz.itemmap, f))
+        return self.do_as(f=ft.partial(cz.dicttoolz.itemmap, f))
 
     def map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
-        return self.apply(f=ft.partial(cz.dicttoolz.keymap, f))
+        return self.do_as(f=ft.partial(cz.dicttoolz.keymap, f))
 
     def map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
-        return self.apply(f=ft.partial(cz.dicttoolz.valmap, f))
+        return self.do_as(f=ft.partial(cz.dicttoolz.valmap, f))
 
     def filter_items(self, predicate: lf.CheckFunc[tuple[K, V]]) -> Self:
-        return self.lazy(f=ft.partial(cz.dicttoolz.itemfilter, predicate=predicate))
+        return self.do(f=ft.partial(cz.dicttoolz.itemfilter, predicate=predicate))
 
     def filter_keys(self, predicate: lf.CheckFunc[K]) -> Self:
-        return self.lazy(f=ft.partial(cz.dicttoolz.keyfilter, predicate=predicate))
+        return self.do(f=ft.partial(cz.dicttoolz.keyfilter, predicate=predicate))
 
     def filter_values(self, predicate: lf.CheckFunc[V]) -> Self:
-        return self.lazy(f=ft.partial(cz.dicttoolz.valfilter, predicate=predicate))
+        return self.do(f=ft.partial(cz.dicttoolz.valfilter, predicate=predicate))
 
     def with_key(self, key: K, value: V) -> Self:
-        return self.lazy(f=ft.partial(cz.dicttoolz.assoc, key=key, value=value))
+        return self.do(f=ft.partial(cz.dicttoolz.assoc, key=key, value=value))
 
     def with_nested_key(self, keys: Iterable[K] | K, value: V) -> Self:
-        return self.lazy(f=ft.partial(cz.dicttoolz.assoc_in, keys=keys, value=value))
+        return self.do(f=ft.partial(cz.dicttoolz.assoc_in, keys=keys, value=value))
 
     def update_in(self, *keys: K, f: lf.ProcessFunc[V]) -> Self:
-        return self.lazy(f=ft.partial(cz.dicttoolz.update_in, keys=keys, func=f))
+        return self.do(f=ft.partial(cz.dicttoolz.update_in, keys=keys, func=f))
 
     def merge(self, *others: dict[K, V]) -> Self:
-        return self.lazy(f=ft.partial(lf.merge, others=others))
+        return self.do(f=ft.partial(lf.merge, others=others))
 
     def merge_with(self, f: Callable[..., V], *others: dict[K, V]) -> Self:
-        return self.lazy(f=ft.partial(lf.merge_with, f=f, others=others))
+        return self.do(f=ft.partial(lf.merge_with, f=f, others=others))
 
     def drop(self, *keys: K) -> Self:
-        return self.lazy(f=ft.partial(lf.dissoc, keys=keys))
+        return self.do(f=ft.partial(lf.dissoc, keys=keys))

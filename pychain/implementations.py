@@ -12,7 +12,7 @@ from pychain.iter_base import BaseIterChain
 
 @dataclass(slots=True, frozen=True, repr=False)
 class ScalarChain[T](BaseChain[T]):
-    def apply[T1](self, f: lf.TransformFunc[T, T1]) -> "ScalarChain[T1]":
+    def do_as[T1](self, f: lf.TransformFunc[T, T1]) -> "ScalarChain[T1]":
         return ScalarChain(
             _value=self._value,
             _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],

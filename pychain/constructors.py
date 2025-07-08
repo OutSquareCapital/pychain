@@ -27,6 +27,7 @@ def read_ndjson(file_path: str) -> DictChain[str, list[Any]]:
 def from_pl(df: pl.DataFrame) -> DictChain[str, list[Any]]:
     return DictChain(df.to_dict(as_series=False))
 
+
 def from_pd(df: pd.DataFrame) -> DictChain[Hashable, list[Any]]:
     return DictChain(df.to_dict(orient="list"))  # type: ignore
 
@@ -34,11 +35,14 @@ def from_pd(df: pd.DataFrame) -> DictChain[Hashable, list[Any]]:
 def from_np[T: NDArray[Any]](arr: T) -> IterChain[T]:
     return IterChain(_value=arr)
 
+
 def from_func[T, T1](value: T, f: Callable[[T], T1]) -> IterChain[T1]:
     return IterChain(cz.itertoolz.iterate(func=f, x=value))
 
+
 def from_range(start: int, stop: int, step: int = 1) -> IterChain[int]:
     return IterChain(range(start, stop, step))
+
 
 def from_dict_of_iterables[K, V](
     data: dict[K, Iterable[V]],
