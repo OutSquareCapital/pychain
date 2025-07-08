@@ -7,10 +7,10 @@ import functional as fn  # type: ignore
 import numpy as np
 from numpy.typing import NDArray
 from typing import TYPE_CHECKING, Any
-from pychain.lazyfuncs import TransformFunc, CheckFunc
+from src.lazyfuncs import TransformFunc, CheckFunc
 
 if TYPE_CHECKING:
-    from pychain.implementations import ScalarChain
+    from src.implementations import ScalarChain
 
 
 @dataclass(slots=True, frozen=True)

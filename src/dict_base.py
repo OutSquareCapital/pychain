@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING, Self
 
 import cytoolz as cz
 
-import pychain.lazyfuncs as lf
-from pychain.core import AbstractChain
-from pychain.executors import Checker, Converter
+import src.lazyfuncs as lf
+from src.core import AbstractChain
+from src.executors import Checker, Converter
 
 if TYPE_CHECKING:
-    from pychain.implementations import DictChain
+    from src.implementations import DictChain
 
 
 @dataclass(slots=True, frozen=True, repr=False)

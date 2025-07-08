@@ -6,7 +6,7 @@ from copy import deepcopy
 
 import cytoolz as cz
 
-import pychain.lazyfuncs as lf
+import src.lazyfuncs as lf
 
 
 @dataclass(slots=True, frozen=True, repr=False)
