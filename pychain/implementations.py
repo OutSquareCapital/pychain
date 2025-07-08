@@ -1,6 +1,5 @@
 import functools as ft
 from collections.abc import Callable, Iterable
-from copy import deepcopy
 from dataclasses import dataclass
 
 import cytoolz as cz
@@ -11,10 +10,20 @@ from pychain.dict_base import BaseDictChain
 from pychain.iter_base import BaseIterChain
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True, frozen=True, repr=False)
 class ScalarChain[T](BaseChain[T]):
+
+    @classmethod
+    def from_iterable[V, V1](
+        cls, value: Iterable[V], f: lf.AggFunc[V, V1]
+    ) -> "ScalarChain[V1]":
+        return ScalarChain(_value=f(value))
+
     def apply[T1](self, f: lf.TransformFunc[T, T1]) -> "ScalarChain[T1]":
-        return ScalarChain(_value=f(self.to_unwrap()))
+        return ScalarChain(
+            _value=self._value,
+            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
+        )  # type: ignore
 
     def to_iter(self) -> "IterChain[T]":
         return IterChain.from_scalar(value=self.to_unwrap())
@@ -26,11 +35,15 @@ class ScalarChain[T](BaseChain[T]):
         return DictChain.from_scalar(value=self.to_iter(), keys=keys)
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True, frozen=True, repr=False)
 class DictChain[K, V](BaseDictChain[K, V]):
     @classmethod
     def from_scalar[K1, V1](cls, value: V1, keys: Iterable[K1]) -> "DictChain[K1, V1]":
-        return DictChain(_value={k: deepcopy(value) for k in keys})
+        return DictChain(_value={k: value for k in keys})
+
+    @classmethod
+    def from_iterable[V1](cls, value: Iterable[V1]) -> "DictChain[int, V1]":
+        return DictChain(_value={i: v for i, v in enumerate(value)})
 
     @classmethod
     def from_dict_of_iterables[K1, V1](
@@ -41,7 +54,10 @@ class DictChain[K, V](BaseDictChain[K, V]):
     def apply[K1, V1](
         self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
     ) -> "DictChain[K1, V1]":
-        return DictChain(_value=f(self.to_unwrap()))
+        return DictChain(
+            _value=self._value,
+            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
+        )  # type: ignore
 
     def to_keys_iter(self) -> "IterChain[K]":
         return IterChain(_value=self.to_unwrap().keys())
@@ -50,7 +66,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
         return IterChain(_value=self.to_unwrap().values())
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True, frozen=True, repr=False)
 class IterChain[V](BaseIterChain[V]):
     @classmethod
     def from_scalar[T](cls, value: T) -> "IterChain[T]":
@@ -67,13 +83,16 @@ class IterChain[V](BaseIterChain[V]):
     def to_dict[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
         return DictChain.from_scalar(value=self, keys=keys)
 
-    def to_scalar[V1](self, f: lf.TransformFunc[Iterable[V], V1]) -> ScalarChain[V1]:
-        return ScalarChain(_value=f(self.to_unwrap()))
+    def to_scalar[V1](self, f: lf.AggFunc[V, V1]) -> ScalarChain[V1]:
+        return ScalarChain.from_iterable(value=self.to_unwrap(), f=f)
 
     def apply[V1](
         self, f: lf.TransformFunc[Iterable[V], Iterable[V1]]
     ) -> "IterChain[V1]":
-        return IterChain(_value=f(self.to_unwrap()))
+        return IterChain(
+            _value=self._value,
+            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
+        )  # type: ignore
 
     def to_groups[K](self, on: lf.TransformFunc[V, K]) -> "DictChain[K, IterChain[V]]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.to_unwrap())
@@ -111,10 +130,10 @@ class IterChain[V](BaseIterChain[V]):
     def to_max(self) -> ScalarChain[V]:
         return self.to_scalar(f=max)  # type: ignore
 
-    def is_all(self, predicate: lf.CheckFunc[V]) -> bool:
+    def is_all(self) -> bool:
         return all(self.to_unwrap())
 
-    def is_any(self, predicate: lf.CheckFunc[V]) -> bool:
+    def is_any(self) -> bool:
         return any(self.to_unwrap())
 
     def is_distinct(self) -> bool:
