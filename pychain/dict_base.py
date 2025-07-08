@@ -15,20 +15,23 @@ if TYPE_CHECKING:
 @dataclass(slots=True, frozen=True, repr=False)
 class BaseDictChain[K, V](BaseChain[dict[K, V]]):
     def apply[K1, V1](
-        self, f: Callable[[dict[K, V]], dict[K1, V1]]
+        self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
     ) -> "DictChain[K1, V1]":
-        raise NotImplementedError
+        return self.__class__(
+            _value=self._value,
+            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
+        )  # type: ignore
 
-    def apply_map_items[K1, V1](
+    def map_items[K1, V1](
         self,
         f: lf.TransformFunc[tuple[K, V], tuple[K1, V1]],
     ) -> "DictChain[K1, V1]":
         return self.apply(f=ft.partial(cz.dicttoolz.itemmap, f))
 
-    def apply_map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
+    def map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
         return self.apply(f=ft.partial(cz.dicttoolz.keymap, f))
 
-    def apply_map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
+    def map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
         return self.apply(f=ft.partial(cz.dicttoolz.valmap, f))
 
     def filter_items(self, predicate: lf.CheckFunc[tuple[K, V]]) -> Self:
@@ -39,15 +42,6 @@ class BaseDictChain[K, V](BaseChain[dict[K, V]]):
 
     def filter_values(self, predicate: lf.CheckFunc[V]) -> Self:
         return self.lazy(f=ft.partial(cz.dicttoolz.valfilter, predicate=predicate))
-
-    def map_items(self, f: lf.ProcessFunc[tuple[K, V]]) -> Self:
-        return self.lazy(f=ft.partial(cz.dicttoolz.itemmap, f))
-
-    def map_keys(self, f: lf.TransformFunc[K, K]) -> Self:
-        return self.lazy(f=ft.partial(cz.dicttoolz.keymap, f))
-
-    def map_values(self, f: lf.TransformFunc[V, V]) -> Self:
-        return self.lazy(f=ft.partial(cz.dicttoolz.valmap, f))
 
     def with_key(self, key: K, value: V) -> Self:
         return self.lazy(f=ft.partial(cz.dicttoolz.assoc, key=key, value=value))

@@ -18,8 +18,13 @@ if TYPE_CHECKING:
 class BaseIterChain[V](BaseChain[Iterable[V]]):
     _value: Iterable[V]
 
-    def apply[V1](self, f: Callable[[Iterable[V]], Iterable[V1]]) -> "IterChain[V1]":
-        raise NotImplementedError
+    def apply[V1](
+        self, f: lf.TransformFunc[Iterable[V], Iterable[V1]]
+    ) -> "IterChain[V1]":
+        return self.__class__(
+            _value=self._value,
+            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
+        )  # type: ignore
 
     def take_while(self, predicate: lf.CheckFunc[V]) -> Self:
         return self.lazy(f=ft.partial(it.takewhile, predicate))
@@ -95,41 +100,37 @@ class BaseIterChain[V](BaseChain[Iterable[V]]):
     def tap(self, func: Callable[[V], None]) -> Self:
         return self.lazy(f=ft.partial(lf.tap, func=func))
 
-    def apply_zip(
+    def zip(
         self, *others: Iterable[Any], strict: bool = False
     ) -> "IterChain[tuple[V, ...]]":
         return self.apply(f=ft.partial(lf.zip_with, others=others, strict=strict))
 
-    def apply_enumerate(self) -> "IterChain[tuple[int, V]]":
+    def enumerate(self) -> "IterChain[tuple[int, V]]":
         return self.apply(f=enumerate)
 
-    def apply_map[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
+    def map[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
         return self.apply(f=ft.partial(map, f))
 
-    def apply_flat_map[V1](
-        self, f: lf.TransformFunc[V, Iterable[V1]]
-    ) -> "IterChain[V1]":
+    def flat_map[V1](self, f: lf.TransformFunc[V, Iterable[V1]]) -> "IterChain[V1]":
         return self.apply(f=ft.partial(lf.flat_map, func=f))
 
-    def apply_flatten(self) -> "IterChain[Any]":
+    def flatten(self) -> "IterChain[Any]":
         return self.apply(f=cz.itertoolz.concat)
 
-    def apply_diff(
+    def diff(
         self,
         *others: Iterable[V],
         key: lf.ProcessFunc[V] | None = None,
     ) -> "IterChain[tuple[V, ...]]":
         return self.apply(f=ft.partial(lf.diff_with, others=others, key=key))
 
-    def apply_partition(
-        self, n: int, pad: V | None = None
-    ) -> "IterChain[tuple[V, ...]]":
+    def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
         return self.apply(f=ft.partial(cz.itertoolz.partition, n=n, pad=pad))
 
-    def apply_partition_all(self, n: int) -> "IterChain[tuple[V, ...]]":
+    def partition_all(self, n: int) -> "IterChain[tuple[V, ...]]":
         return self.apply(f=ft.partial(cz.itertoolz.partition_all, n=n))
 
-    def apply_rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
+    def rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
         return self.apply(f=ft.partial(cz.itertoolz.sliding_window, length))
 
     def to_list(self) -> list[V]:

@@ -1,5 +1,5 @@
 import functools as ft
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import cytoolz as cz
@@ -43,14 +43,6 @@ class IterChain[V](BaseIterChain[V]):
 
     def to_iter_dict_with_keys[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
         return DictChain(_value={k: self for k in keys})
-
-    def apply[V1](
-        self, f: lf.TransformFunc[Iterable[V], Iterable[V1]]
-    ) -> "IterChain[V1]":
-        return IterChain(
-            _value=self._value,
-            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
-        )  # type: ignore
 
     def to_groups[K](self, on: lf.TransformFunc[V, K]) -> "DictChain[K, IterChain[V]]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.unwrap())
@@ -103,14 +95,6 @@ class IterChain[V](BaseIterChain[V]):
 
 @dataclass(slots=True, frozen=True, repr=False)
 class DictChain[K, V](BaseDictChain[K, V]):
-    def apply[K1, V1](
-        self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
-    ) -> "DictChain[K1, V1]":
-        return DictChain(
-            _value=self._value,
-            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
-        )  # type: ignore
-
     def to_scalar_value[V1](self, f: lf.AggFunc[V, V1]) -> ScalarChain[V1]:
         return ScalarChain(_value=f(self.unwrap().values()))
 
