@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any, Self
+from copy import deepcopy
 
 import cytoolz as cz
 import functional as fn  # type: ignore
@@ -11,7 +12,7 @@ import polars as pl
 import pychain.lazyfuncs as lf
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True, frozen=True, repr=False)
 class BaseChain[T](ABC):
     """
     # BaseChain class
@@ -49,9 +50,11 @@ class BaseChain[T](ABC):
     """
 
     _value: T
-    _pipeline: list[lf.ProcessFunc[T]] = field(
-        default_factory=list[lf.ProcessFunc[T]], init=False
-    )
+    _pipeline: list[Callable[[T], Any]] = field(default_factory=list[lf.ProcessFunc[T]])
+
+    def __repr__(self) -> str:
+        pipeline_repr: str = ",\n".join(f"{str(f)}" for f in self._pipeline)
+        return f"class {self.__class__.__name__}(value={self._value},pipeline:[\n{pipeline_repr}\n])"
 
     def lazy(self, f: lf.ProcessFunc[T]) -> Self:
         """Adds a same-type lazy function to the pipeline."""
@@ -78,6 +81,9 @@ class BaseChain[T](ABC):
     def thread_last(self, *fns: lf.ThreadFunc[T]) -> Self:
         """Adds a lazy function to the pipeline that threads the value through the functions in a 'thread-last' manner."""
         return self.lazy(f=ft.partial(lf.thread_last, fns=fns))
+
+    def clone(self) -> Self:
+        return self.__class__(deepcopy(self._value), deepcopy(self._pipeline))
 
     def to_unwrap(self) -> T:
         """

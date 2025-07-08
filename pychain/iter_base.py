@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from pychain.implementations import IterChain
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True, frozen=True, repr=False)
 class BaseIterChain[V](BaseChain[Iterable[V]]):
     _value: Iterable[V]
 

@@ -12,12 +12,24 @@ if TYPE_CHECKING:
     from pychain.implementations import DictChain
 
 
-@dataclass(slots=True, frozen=True)
+@dataclass(slots=True, frozen=True, repr=False)
 class BaseDictChain[K, V](BaseChain[dict[K, V]]):
     def apply[K1, V1](
         self, f: Callable[[dict[K, V]], dict[K1, V1]]
     ) -> "DictChain[K1, V1]":
         raise NotImplementedError
+
+    def apply_map_items[K1, V1](
+        self,
+        f: lf.TransformFunc[tuple[K, V], tuple[K1, V1]],
+    ) -> "DictChain[K1, V1]":
+        return self.apply(f=ft.partial(cz.dicttoolz.itemmap, f))
+
+    def apply_map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
+        return self.apply(f=ft.partial(cz.dicttoolz.keymap, f))
+
+    def apply_map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
+        return self.apply(f=ft.partial(cz.dicttoolz.valmap, f))
 
     def filter_items(self, predicate: lf.CheckFunc[tuple[K, V]]) -> Self:
         return self.lazy(f=ft.partial(cz.dicttoolz.itemfilter, predicate=predicate))
@@ -54,15 +66,3 @@ class BaseDictChain[K, V](BaseChain[dict[K, V]]):
 
     def drop(self, *keys: K) -> Self:
         return self.lazy(f=ft.partial(lf.dissoc, keys=keys))
-
-    def apply_map_items[K1, V1](
-        self,
-        f: lf.TransformFunc[tuple[K, V], tuple[K1, V1]],
-    ) -> "DictChain[K1, V1]":
-        return self.apply(f=ft.partial(cz.dicttoolz.itemmap, f))
-
-    def apply_map_keys[K1](self, f: lf.TransformFunc[K, K1]) -> "DictChain[K1, V]":
-        return self.apply(f=ft.partial(cz.dicttoolz.keymap, f))
-
-    def apply_map_values[V1](self, f: lf.TransformFunc[V, V1]) -> "DictChain[K, V1]":
-        return self.apply(f=ft.partial(cz.dicttoolz.valmap, f))
