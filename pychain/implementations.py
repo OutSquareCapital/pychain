@@ -12,79 +12,37 @@ from pychain.iter_base import BaseIterChain
 
 @dataclass(slots=True, frozen=True, repr=False)
 class ScalarChain[T](BaseChain[T]):
-
-    @classmethod
-    def from_iterable[V, V1](
-        cls, value: Iterable[V], f: lf.AggFunc[V, V1]
-    ) -> "ScalarChain[V1]":
-        return ScalarChain(_value=f(value))
-
     def apply[T1](self, f: lf.TransformFunc[T, T1]) -> "ScalarChain[T1]":
         return ScalarChain(
             _value=self._value,
             _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
         )  # type: ignore
 
-    def to_iter(self) -> "IterChain[T]":
-        return IterChain.from_scalar(value=self.to_unwrap())
+    def to_iter(self, n: int) -> "IterChain[T]":
+        return IterChain(_value=iter([self.to_unwrap()])).repeat(n=n)
 
-    def to_dict[K](self, *keys: K) -> "DictChain[K, T]":
-        return DictChain.from_scalar(value=self.to_unwrap(), keys=keys)
+    def to_dict(self, n: int) -> "DictChain[int, T]":
+        val = self.to_unwrap()
+        return DictChain(_value={i: val for i in range(n)})
 
-    def to_lazy_dict[K](self, *keys: K) -> "DictChain[K, IterChain[T]]":
-        return DictChain.from_scalar(value=self.to_iter(), keys=keys)
-
-
-@dataclass(slots=True, frozen=True, repr=False)
-class DictChain[K, V](BaseDictChain[K, V]):
-    @classmethod
-    def from_scalar[K1, V1](cls, value: V1, keys: Iterable[K1]) -> "DictChain[K1, V1]":
-        return DictChain(_value={k: value for k in keys})
-
-    @classmethod
-    def from_iterable[V1](cls, value: Iterable[V1]) -> "DictChain[int, V1]":
-        return DictChain(_value={i: v for i, v in enumerate(value)})
-
-    @classmethod
-    def from_dict_of_iterables[K1, V1](
-        cls, value: dict[K1, Iterable[V1]]
-    ) -> "DictChain[K1, IterChain[V1]]":
-        return DictChain(_value={k: IterChain(_value=v) for k, v in value.items()})
-
-    def apply[K1, V1](
-        self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
-    ) -> "DictChain[K1, V1]":
-        return DictChain(
-            _value=self._value,
-            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
-        )  # type: ignore
-
-    def to_keys_iter(self) -> "IterChain[K]":
-        return IterChain(_value=self.to_unwrap().keys())
-
-    def to_values_iter(self) -> "IterChain[V]":
-        return IterChain(_value=self.to_unwrap().values())
+    def to_iter_dict[K](self, n: int, *keys: K) -> "DictChain[K, IterChain[T]]":
+        val = self.to_iter(n=n)
+        return DictChain(_value={k: val for k in keys})
 
 
 @dataclass(slots=True, frozen=True, repr=False)
 class IterChain[V](BaseIterChain[V]):
-    @classmethod
-    def from_scalar[T](cls, value: T) -> "IterChain[T]":
-        return IterChain(_value=iter([value]))
-
-    @classmethod
-    def from_func[T, T1](cls, value: T, f: Callable[[T], T1]) -> "IterChain[T1]":
-        return IterChain(_value=cz.itertoolz.iterate(func=f, x=value))
-
-    @classmethod
-    def from_range(cls, start: int, stop: int, step: int = 1) -> "IterChain[int]":
-        return IterChain(_value=range(start, stop, step))
-
-    def to_dict[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
-        return DictChain.from_scalar(value=self, keys=keys)
-
     def to_scalar[V1](self, f: lf.AggFunc[V, V1]) -> ScalarChain[V1]:
-        return ScalarChain.from_iterable(value=self.to_unwrap(), f=f)
+        return ScalarChain(_value=f(self.to_unwrap()))
+
+    def to_dict(self) -> "DictChain[int, V]":
+        return DictChain(_value={i: v for i, v in enumerate(self.to_unwrap())})
+
+    def to_iter_dict[K](self, n: int) -> "DictChain[int, IterChain[V]]":
+        return DictChain(_value={k: self for k in range(n)})
+
+    def to_iter_dict_with_keys[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
+        return DictChain(_value={k: self for k in keys})
 
     def apply[V1](
         self, f: lf.TransformFunc[Iterable[V], Iterable[V1]]
@@ -141,3 +99,34 @@ class IterChain[V](BaseIterChain[V]):
 
     def is_iterable(self) -> bool:
         return cz.itertoolz.isiterable(self.to_unwrap())
+
+
+@dataclass(slots=True, frozen=True, repr=False)
+class DictChain[K, V](BaseDictChain[K, V]):
+    def apply[K1, V1](
+        self, f: lf.TransformFunc[dict[K, V], dict[K1, V1]]
+    ) -> "DictChain[K1, V1]":
+        return DictChain(
+            _value=self._value,
+            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
+        )  # type: ignore
+
+    def to_scalar_value[V1](self, f: lf.AggFunc[V, V1]) -> ScalarChain[V1]:
+        return ScalarChain(_value=f(self.to_unwrap().values()))
+
+    def to_scalar_key[K1](self, f: lf.AggFunc[K, K1]) -> ScalarChain[K1]:
+        return ScalarChain(_value=f(self.to_unwrap().keys()))
+
+    def to_scalar_items[K1, V1](
+        self, f: lf.AggFunc[tuple[K, V], tuple[K1, V1]]
+    ) -> ScalarChain[tuple[K1, V1]]:
+        return ScalarChain(_value=f(self.to_unwrap().items()))
+
+    def to_iter_keys(self) -> "IterChain[K]":
+        return IterChain(_value=self.to_unwrap().keys())
+
+    def to_iter_values(self) -> "IterChain[V]":
+        return IterChain(_value=self.to_unwrap().values())
+
+    def to_iter_items(self) -> "IterChain[tuple[K, V]]":
+        return IterChain(_value=self.to_unwrap().items())

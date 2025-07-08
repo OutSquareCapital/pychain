@@ -1,24 +1,19 @@
 from functools import partial
 
-from pychain.main import (
-    from_dict,
+from pychain.implementations import DictChain, IterChain, ScalarChain
+from pychain.constructors import (
     from_dict_of_iterables,
     from_func,
-    from_iterable,
     from_np,
     from_pd,
     from_pl,
     from_range,
-    from_scalar,
     read_csv,
     read_json,
-    read_ndjson
+    read_ndjson,
 )
 
 __all__: list[str] = [
-    "from_scalar",
-    "from_iterable",
-    "from_dict",
     "from_dict_of_iterables",
     "from_range",
     "partial",
@@ -29,4 +24,7 @@ __all__: list[str] = [
     "read_csv",
     "read_json",
     "read_ndjson",
+    "DictChain",
+    "IterChain",
+    "ScalarChain",
 ]
