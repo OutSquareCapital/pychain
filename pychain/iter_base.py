@@ -92,8 +92,8 @@ class BaseIterChain[V](BaseChain[Iterable[V]]):
     ) -> Self:
         return self.lazy(f=ft.partial(lf.merge_sorted, others=others, sort_on=sort_on))
 
-    def apply_for_each[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
-        return self.apply(f=ft.partial(lf.for_each, f=f))
+    def tap(self, func: Callable[[V], None]) -> Self:
+        return self.lazy(f=ft.partial(lf.tap, func=func))
 
     def apply_zip(
         self, *others: Iterable[Any], strict: bool = False

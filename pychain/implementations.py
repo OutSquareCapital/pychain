@@ -76,7 +76,7 @@ class IterChain[V](BaseIterChain[V]):
         return IterChain(_value=f(self.to_unwrap()))
 
     def to_groups[K](self, on: lf.TransformFunc[V, K]) -> "DictChain[K, IterChain[V]]":
-        grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self._value)
+        grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.to_unwrap())
         return DictChain(_value={k: IterChain(v) for k, v in grouped.items()})
 
     def to_reduced_groups[K](

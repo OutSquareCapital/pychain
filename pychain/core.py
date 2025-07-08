@@ -67,7 +67,7 @@ class BaseChain[T](ABC):
         """
         raise NotImplementedError
 
-    def pipe(self, *fns: lf.ProcessFunc[T]) -> Self:
+    def compose(self, *fns: lf.ProcessFunc[T]) -> Self:
         """Adds a composed lazy function to the pipeline by combining multiple functions."""
         return self.lazy(f=(cz.functoolz.compose_left(*fns)))
 

@@ -91,9 +91,7 @@ def zip_with[T, V](
 ) -> Iterable[tuple[T, V]]:
     return zip(value, *others, strict=strict)
 
-
-def for_each[T, T1](value: Iterable[T], f: TransformFunc[T, T1]) -> list[T1]:
-    new_data: list[T1] = []
+def tap[V](value: Iterable[V], func: Callable[[V], Any]) -> Iterator[V]:
     for item in value:
-        new_data.append(f(item))
-    return new_data
+        func(item)
+        yield item
