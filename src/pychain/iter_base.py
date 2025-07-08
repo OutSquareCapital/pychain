@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING, Any, Self
 
 import cytoolz as cz
 
-import pychain.lazyfuncs as lf
-from pychain.core import AbstractChain
-from pychain.executors import Checker, Converter
+import src.pychain.lazyfuncs as lf
+from src.pychain.core import AbstractChain
+from src.pychain.executors import Checker, Converter
 
 if TYPE_CHECKING:
-    from pychain.implementations import IterChain
+    from src.pychain.implementations import IterChain
 
 
 @dataclass(slots=True, frozen=True, repr=False)

@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 import cytoolz as cz
 
-import pychain.lazyfuncs as lf
-from pychain.core import AbstractChain
-from pychain.dict_base import BaseDictChain
-from pychain.iter_base import BaseIterChain
-from pychain.executors import GetterBase
+import src.pychain.lazyfuncs as lf
+from src.pychain.core import AbstractChain
+from src.pychain.dict_base import BaseDictChain
+from src.pychain.iter_base import BaseIterChain
+from src.pychain.executors import GetterBase
 
 
 @dataclass(slots=True, frozen=True)
