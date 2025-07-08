@@ -5,7 +5,7 @@ import pandas as pd
 import polars as pl
 from numpy.typing import NDArray
 import cytoolz as cz
-from src.implementations import DictChain, IterChain
+from pychain.implementations import DictChain, IterChain
 
 
 def read_parquet(file_path: str) -> DictChain[str, list[Any]]:
