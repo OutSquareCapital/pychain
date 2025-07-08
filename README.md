@@ -1,6 +1,12 @@
 # pychain
 
-pychain is a lightweight project, leveraging cytoolz and toolz, aimed at introducing a more declarative way of using Python.
+pychain is a project aimed at introducing a more declarative way of using Python, leveraging cytoolz and toolz functions.
+
+## Installation
+
+````None
+uv add git+https://github.com/OutSquareCapital/pychain.git
+````
 
 ## Example
 
