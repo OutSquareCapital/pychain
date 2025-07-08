@@ -7,12 +7,27 @@ from typing import TYPE_CHECKING, Any, Self
 
 import cytoolz as cz
 
-import src.pychain._lazyfuncs as lf
-from .core import AbstractChain
-from .executors import Checker, Converter
+from ._lazyfuncs import (
+    TransformFunc,
+    CheckFunc,
+    Random,
+    ProcessFunc,
+    interleave,
+    concat,
+    repeat,
+    merge_sorted,
+    zip_with,
+    diff_with,
+    flat_map,
+    peek,
+    peekn,
+    tap,
+)
+from ._core import AbstractChain
+from ._executors import Checker, Converter
 
 if TYPE_CHECKING:
-    from .implementations import IterChain
+    from ._implementations import IterChain
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -27,22 +42,20 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
     def check_if(self) -> Checker[V]:
         return Checker(_value=self.unwrap())
 
-    def into[V1](
-        self, f: lf.TransformFunc[Iterable[V], Iterable[V1]]
-    ) -> "IterChain[V1]":
+    def into[V1](self, f: TransformFunc[Iterable[V], Iterable[V1]]) -> "IterChain[V1]":
         return self.__class__(
             _value=self._value,
             _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
         )  # type: ignore
 
-    def take_while(self, predicate: lf.CheckFunc[V]) -> Self:
+    def take_while(self, predicate: CheckFunc[V]) -> Self:
         return self.do(f=ft.partial(it.takewhile, predicate))
 
-    def drop_while(self, predicate: lf.CheckFunc[V]) -> Self:
+    def drop_while(self, predicate: CheckFunc[V]) -> Self:
         return self.do(f=ft.partial(it.dropwhile, predicate))
 
     def interleave(self, *others: Iterable[V]) -> Self:
-        return self.do(f=ft.partial(lf.interleave, others=others))
+        return self.do(f=ft.partial(interleave, others=others))
 
     def interpose(self, element: V) -> Self:
         return self.do(f=ft.partial(cz.itertoolz.interpose, el=element))
@@ -51,7 +64,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         return self.do(f=ft.partial(cz.itertoolz.topk, k=n, key=key))
 
     def random_sample(
-        self, probability: float, state: lf.Random | int | None = None
+        self, probability: float, state: Random | int | None = None
     ) -> Self:
         return self.do(
             f=ft.partial(
@@ -60,9 +73,9 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         )
 
     def concat(self, *others: Iterable[V]) -> Self:
-        return self.do(f=ft.partial(lf.concat, others=others))
+        return self.do(f=ft.partial(concat, others=others))
 
-    def filter(self, f: lf.CheckFunc[V]) -> Self:
+    def filter(self, f: CheckFunc[V]) -> Self:
         return self.do(f=ft.partial(filter, f))
 
     def accumulate(self, f: Callable[[V, V], V]) -> Self:
@@ -72,10 +85,10 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         return self.do(f=ft.partial(cz.itertoolz.cons, el=value))
 
     def peek(self, note: str | None = None) -> Self:
-        return self.do(f=ft.partial(lf.peek, note=note))
+        return self.do(f=ft.partial(peek, note=note))
 
     def peekn(self, n: int, note: str | None = None) -> Self:
-        return self.do(f=ft.partial(lf.peekn, n=n, note=note))
+        return self.do(f=ft.partial(peekn, n=n, note=note))
 
     def head(self, n: int) -> Self:
         return self.do(f=ft.partial(cz.itertoolz.take, n=n))
@@ -90,7 +103,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         return self.do(f=ft.partial(cz.itertoolz.take_nth, n=index))
 
     def repeat(self, n: int) -> Self:
-        return self.do(f=ft.partial(lf.repeat, n=n))
+        return self.do(f=ft.partial(repeat, n=n))
 
     def unique(self) -> Self:
         return self.do(f=cz.itertoolz.unique)
@@ -104,24 +117,24 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
     def merge_sorted(
         self, *others: Iterable[V], sort_on: Callable[[V], Any] | None = None
     ) -> Self:
-        return self.do(f=ft.partial(lf.merge_sorted, others=others, sort_on=sort_on))
+        return self.do(f=ft.partial(merge_sorted, others=others, sort_on=sort_on))
 
     def tap(self, func: Callable[[V], None]) -> Self:
-        return self.do(f=ft.partial(lf.tap, func=func))
+        return self.do(f=ft.partial(tap, func=func))
 
     def zip(
         self, *others: Iterable[Any], strict: bool = False
     ) -> "IterChain[tuple[V, ...]]":
-        return self.into(f=ft.partial(lf.zip_with, others=others, strict=strict))
+        return self.into(f=ft.partial(zip_with, others=others, strict=strict))
 
     def enumerate(self) -> "IterChain[tuple[int, V]]":
         return self.into(f=enumerate)
 
-    def map[V1](self, f: lf.TransformFunc[V, V1]) -> "IterChain[V1]":
+    def map[V1](self, f: TransformFunc[V, V1]) -> "IterChain[V1]":
         return self.into(f=ft.partial(map, f))
 
-    def flat_map[V1](self, f: lf.TransformFunc[V, Iterable[V1]]) -> "IterChain[V1]":
-        return self.into(f=ft.partial(lf.flat_map, func=f))
+    def flat_map[V1](self, f: TransformFunc[V, Iterable[V1]]) -> "IterChain[V1]":
+        return self.into(f=ft.partial(flat_map, func=f))
 
     def flatten(self) -> "IterChain[Any]":
         return self.into(f=cz.itertoolz.concat)
@@ -129,9 +142,9 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
     def diff(
         self,
         *others: Iterable[V],
-        key: lf.ProcessFunc[V] | None = None,
+        key: ProcessFunc[V] | None = None,
     ) -> "IterChain[tuple[V, ...]]":
-        return self.into(f=ft.partial(lf.diff_with, others=others, key=key))
+        return self.into(f=ft.partial(diff_with, others=others, key=key))
 
     def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
         return self.into(f=ft.partial(cz.itertoolz.partition, n=n, pad=pad))

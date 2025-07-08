@@ -3,11 +3,11 @@ from dataclasses import dataclass
 
 import cytoolz as cz
 
-import src.pychain._lazyfuncs as lf
-from .core import AbstractChain
-from .dict_base import BaseDictChain
-from .iter_base import BaseIterChain
-from .executors import GetterBase
+from ._lazyfuncs import TransformFunc, AggFunc
+from ._core import AbstractChain
+from ._dict_base import BaseDictChain
+from ._iter_base import BaseIterChain
+from ._executors import GetterBase
 
 
 @dataclass(slots=True, frozen=True)
@@ -18,7 +18,7 @@ class Getter[V](GetterBase[V]):
 
 @dataclass(slots=True, frozen=True, repr=False)
 class ScalarChain[T](AbstractChain[T]):
-    def into[T1](self, f: lf.TransformFunc[T, T1]) -> "ScalarChain[T1]":
+    def into[T1](self, f: TransformFunc[T, T1]) -> "ScalarChain[T1]":
         return ScalarChain(
             _value=self._value,
             _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
@@ -42,7 +42,7 @@ class IterChain[V](BaseIterChain[V]):
     def get(self) -> Getter[V]:
         return Getter(_value=self.unwrap())
 
-    def agg[V1](self, on: lf.AggFunc[V, V1]) -> ScalarChain[V1]:
+    def agg[V1](self, on: AggFunc[V, V1]) -> ScalarChain[V1]:
         return ScalarChain(_value=on(self.unwrap()))
 
     def into_dict(self) -> "DictChain[int, V]":
@@ -54,14 +54,12 @@ class IterChain[V](BaseIterChain[V]):
     def into_dict_iter_with_keys[K](self, *keys: K) -> "DictChain[K, IterChain[V]]":
         return DictChain(_value={k: self for k in keys})
 
-    def into_groups[K](
-        self, on: lf.TransformFunc[V, K]
-    ) -> "DictChain[K, IterChain[V]]":
+    def into_groups[K](self, on: TransformFunc[V, K]) -> "DictChain[K, IterChain[V]]":
         grouped: dict[K, list[V]] = cz.itertoolz.groupby(key=on, seq=self.unwrap())
         return DictChain(_value={k: IterChain(v) for k, v in grouped.items()})
 
     def into_reduced_groups[K](
-        self, key: lf.TransformFunc[V, K], binop: Callable[[V, V], V]
+        self, key: TransformFunc[V, K], binop: Callable[[V, V], V]
     ) -> "DictChain[K, V]":
         return DictChain(_value=cz.itertoolz.reduceby(key, binop, self.unwrap()))
 
@@ -83,13 +81,13 @@ class DictChain[K, V](BaseDictChain[K, V]):
     def get_item(self) -> Getter[tuple[K, V]]:
         return Getter(_value=self.unwrap().items())
 
-    def agg_keys[K1](self, on: lf.AggFunc[K, K1]) -> ScalarChain[K1]:
+    def agg_keys[K1](self, on: AggFunc[K, K1]) -> ScalarChain[K1]:
         return ScalarChain(_value=on(self.unwrap().keys()))
 
-    def agg_values[V1](self, on: lf.AggFunc[V, V1]) -> ScalarChain[V1]:
+    def agg_values[V1](self, on: AggFunc[V, V1]) -> ScalarChain[V1]:
         return ScalarChain(_value=on(self.unwrap().values()))
 
-    def agg_items[V1](self, on: lf.AggFunc[tuple[K, V], V1]) -> ScalarChain[V1]:
+    def agg_items[V1](self, on: AggFunc[tuple[K, V], V1]) -> ScalarChain[V1]:
         return ScalarChain(_value=on(self.unwrap().items()))
 
     def into_iter_keys(self) -> "IterChain[K]":

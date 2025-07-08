@@ -1,7 +1,7 @@
 from functools import partial
 
-from .implementations import DictChain, IterChain, ScalarChain
-from .constructors import (
+from ._implementations import DictChain, IterChain, ScalarChain
+from ._constructors import (
     from_dict_of_iterables,
     from_func,
     from_np,
