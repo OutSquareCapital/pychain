@@ -7,17 +7,17 @@ import functional as fn  # type: ignore
 import numpy as np
 from numpy.typing import NDArray
 from typing import TYPE_CHECKING, Any
-from src.pychain.lazyfuncs import TransformFunc, CheckFunc
+import src.pychain._lazyfuncs as lf
 
 if TYPE_CHECKING:
-    from src.pychain.implementations import ScalarChain
+    from .implementations import ScalarChain
 
 
 @dataclass(slots=True, frozen=True)
 class GetterBase[V]:
     _value: Iterable[V]
 
-    def __call__[V1](self, f: TransformFunc[Iterable[V], V1]) -> "ScalarChain[V1]":
+    def __call__[V1](self, f: lf.TransformFunc[Iterable[V], V1]) -> "ScalarChain[V1]":
         raise NotImplementedError
 
     def first(self) -> "ScalarChain[V]":
@@ -40,7 +40,7 @@ class GetterBase[V]:
 class Checker[V]:
     _value: Iterable[V]
 
-    def __call__[V1](self, f: CheckFunc[Iterable[V]]) -> bool:
+    def __call__[V1](self, f: lf.CheckFunc[Iterable[V]]) -> bool:
         return f(self._value)
 
     def all(self) -> bool:
