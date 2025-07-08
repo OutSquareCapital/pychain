@@ -48,6 +48,9 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
         )  # type: ignore
 
+    def in_range(self, n: int):
+        return self.flat_map(lambda x: (x for _ in range(n)))
+
     def take_while(self, predicate: CheckFunc[V]) -> Self:
         return self.do(f=ft.partial(it.takewhile, predicate))
 

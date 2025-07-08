@@ -11,7 +11,7 @@ from ._lazyfuncs import (
     TransformFunc,
     CheckFunc,
 )
-
+from collections import deque
 
 if TYPE_CHECKING:
     from ._implementations import ScalarChain
@@ -66,6 +66,10 @@ class Converter[V]:
 
     def __call__[V1](self, f: Callable[[Iterable[V]], V1]) -> Any:
         return f(self._value)
+    
+    def consumed(self) -> None:
+        for _ in self._value:
+            pass
 
     def list(self) -> list[V]:
         return list(self._value)
@@ -75,6 +79,9 @@ class Converter[V]:
 
     def tuple(self) -> tuple[V, ...]:
         return tuple(self._value)
+    
+    def deque(self) -> deque[V]:
+        return deque(self._value)
 
     def array(self) -> NDArray[Any]:
         return np.array(self._value)
