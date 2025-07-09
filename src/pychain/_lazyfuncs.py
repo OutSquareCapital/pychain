@@ -26,13 +26,6 @@ def thread_last[T](val: T, fns: Iterable[ThreadFunc[T]]) -> T:
 def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
     return cz.dicttoolz.merge(on, *others)
 
-
-def merge_with[K, V](
-    f: Callable[..., V], on: dict[K, V], others: Iterable[dict[K, V]]
-) -> dict[K, V]:
-    return cz.dicttoolz.merge_with(f, on, *others)
-
-
 def dissoc[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
     return cz.dicttoolz.dissoc(d, *keys)
 

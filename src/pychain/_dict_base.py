@@ -10,7 +10,6 @@ from ._lazyfuncs import (
     CheckFunc,
     ProcessFunc,
     merge,
-    merge_with,
     dissoc,
 )
 from ._core import AbstractChain
@@ -140,7 +139,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.filter_items(lambda kv: kv[1] > 1).unwrap()
             {'b': 2}
         """
-        return self.do(f=ft.partial(cz.dicttoolz.itemfilter, predicate=predicate))
+        return self.do(f=ft.partial(cz.dicttoolz.itemfilter, predicate))
 
     def filter_keys(self, predicate: CheckFunc[K]) -> Self:
         """
@@ -151,18 +150,17 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.filter_keys(lambda k: k == "a").unwrap()
             {'a': 1}
         """
-        return self.do(f=ft.partial(cz.dicttoolz.keyfilter, predicate=predicate))
+        return self.do(f=ft.partial(cz.dicttoolz.keyfilter, predicate))
 
     def filter_values(self, predicate: CheckFunc[V]) -> Self:
         """
         Filters values by predicate (see cytoolz.valfilter).
 
         Example:
-            >>> chain = BaseDictChain({"a": 1, "b": 2})
-            >>> chain.filter_values(lambda v: v > 1).unwrap()
+            >>> BaseDictChain({"a": 1, "b": 2}).filter_values(lambda v: v > 1).unwrap()
             {'b': 2}
         """
-        return self.do(f=ft.partial(cz.dicttoolz.valfilter, predicate=predicate))
+        return self.do(f=ft.partial(cz.dicttoolz.valfilter, predicate))
 
     def with_key(self, key: K, value: V) -> Self:
         """
@@ -202,8 +200,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Merges with other dicts (see cytoolz.merge).
 
         Example:
-            >>> chain = BaseDictChain({"a": 1})
-            >>> chain.merge({"b": 2}).unwrap()
+            >>> BaseDictChain({"a": 1}).merge({"b": 2}).unwrap()
             {'a': 1, 'b': 2}
         """
         return self.do(f=ft.partial(merge, others=others))
@@ -213,11 +210,14 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Merges with other dicts, combining values with a function (see cytoolz.merge_with).
 
         Example:
-            >>> chain = BaseDictChain({"a": 1})
-            >>> chain.merge_with(sum, {"a": 10, "b": 2}).unwrap()
-            {'a': 11, 'b': 2}
+            >>> BaseDictChain({"first": 1, "second": 2}).merge_with(
+            ...     sum,
+            ...     {"first": 1, "second": 2},
+            ...     {"first": 1, "second": 2, "third": 3},
+            ... ).unwrap()
+            {'first': 3, 'second': 6, 'third': 3}
         """
-        return self.do(f=ft.partial(merge_with, f=f, others=others))
+        return self.do(f=ft.partial(cz.dicttoolz.merge_with, f, *others))
 
     def drop(self, *keys: K) -> Self:
         """
