@@ -2,6 +2,7 @@ import src.pychain as pc
 import polars as pl
 import numpy as np
 
+
 def basic_example() -> None:
     result = (
         pc.from_range(1, 6)  # [1, 2, 3, 4, 5]
@@ -40,10 +41,10 @@ def data_agg_and_transform() -> None:
         .map_values(lambda v: v.map(lambda d: d.value).agg(sum).unwrap())
         .unwrap()
     )
-    assert py_result == chain_result == {'A': 40, 'B': 60}
+    assert py_result == chain_result == {"A": 40, "B": 60}
+
 
 def grouping_and_reducing() -> None:
-
     words: list[str] = ["apple", "banana", "apricot", "blueberry", "avocado"]
 
     result = (
@@ -52,10 +53,10 @@ def grouping_and_reducing() -> None:
         .map_values(lambda chain: chain.agg(len).unwrap())  # type: ignore
         .unwrap()
     )
-    assert result == {'a': 3, 'b': 2}
+    assert result == {"a": 3, "b": 2}
+
 
 def nested_chaining_with_dictchain() -> None:
-        
     data: dict[str, list[int]] = {
         "a": [1, 2, 3],
         "b": [4, 5, 6],
@@ -66,7 +67,8 @@ def nested_chaining_with_dictchain() -> None:
         .map_values(lambda chain: pc.IterChain(chain).cumsum().convert_to.list())
         .unwrap()
     )
-    assert result == {'a': [1, 3, 6], 'b': [4, 9, 15]}
+    assert result == {"a": [1, 3, 6], "b": [4, 9, 15]}
+
 
 def get_polars_frame() -> None:
     results: dict[str, np.ndarray] = {
@@ -79,7 +81,7 @@ def get_polars_frame() -> None:
             key_name="Library",
             index_name="Index",
             value_name="Values",
-            value_extractor=lambda arr: arr[:, 0]
+            value_extractor=lambda arr: arr[:, 0],
         )
         .convert_to.dataframe()
     )
@@ -96,6 +98,7 @@ def get_polars_frame() -> None:
         }
     )
     assert df.equals(df2)
+
 
 if __name__ == "__main__":
     basic_example()

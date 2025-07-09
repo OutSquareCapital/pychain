@@ -75,7 +75,7 @@ class Converter[V]:
 
     _value: Iterable[V]
 
-    def __call__[V1](self, f: Callable[[Iterable[V]], V1]) -> Any:
+    def __call__[V1](self, f: Callable[[Iterable[V]], V1]) -> V1:
         """
         Apply a function to the iterable and return the result.
         """

@@ -234,6 +234,30 @@ class IterChain[V](BaseIterChain[V]):
         """
         return DictChain(_value=cz.itertoolz.frequencies(self.unwrap()))
 
+    def to_columns[T](
+        self, column_extractors: dict[str, Callable[[V], T]]
+    ) -> "DictChain[str, list[T]]":
+        """
+        Transforms a chain of records into a dictionary of columns (lists).
+
+        Example:
+            >>> from typing import NamedTuple
+            >>> class Point(NamedTuple):
+            ...     x: int
+            ...     y: int
+            >>> data = [Point(1, 2), Point(10, 20)]
+            >>> IterChain(data).to_columns(
+            ...     {"X_vals": lambda p: p.x, "Y_vals": lambda p: p.y}
+            ... ).unwrap()
+            {'X_vals': [1, 10], 'Y_vals': [2, 20]}
+        """
+        columns: dict[str, list[T]] = {name: [] for name in column_extractors.keys()}
+        for item in self.unwrap():
+            for name, extractor in column_extractors.items():
+                columns[name].append(extractor(item))
+
+        return DictChain(_value=columns)
+
 
 @dataclass(slots=True, frozen=True, repr=False)
 class DictChain[K, V](BaseDictChain[K, V]):

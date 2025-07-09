@@ -8,6 +8,7 @@ import src.pychain._implementations as _implementations
 import src.pychain._iter_base as _iter_base
 import src.pychain._lazyfuncs as _lazyfuncs
 
+
 def run_all_doctests() -> None:
     """
     Test all doctest examples in the pychain library.
