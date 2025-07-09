@@ -1,81 +1,13 @@
 from dataclasses import dataclass
 from collections.abc import Callable, Iterable
-import functools as ft
 import cytoolz as cz
 import polars as pl
 import functional as fn  # type: ignore
 import numpy as np
 from numpy.typing import NDArray
-from typing import TYPE_CHECKING, Any
-from ._lazyfuncs import (
-    TransformFunc,
-    CheckFunc,
-)
+from typing import Any
+from ._lazyfuncs import CheckFunc
 from collections import deque
-
-if TYPE_CHECKING:
-    from ._implementations import ScalarChain
-
-
-@dataclass(slots=True, frozen=True)
-class GetterBase[V]:
-    _value: Iterable[V]
-
-    def __call__[V1](self, f: TransformFunc[Iterable[V], V1]) -> "ScalarChain[V1]":
-        """
-        Apply a function to the iterable and return a ScalarChain.
-        """
-        raise NotImplementedError
-
-    def first(self) -> "ScalarChain[V]":
-        """
-        Return the first element of the iterable (see cytoolz.first).
-
-        Example:
-            >>> GetterBase([1, 2, 3]).first().unwrap()
-            1
-        """
-        return self(f=cz.itertoolz.first)
-
-    def second(self) -> "ScalarChain[V]":
-        """
-        Return the second element of the iterable (see cytoolz.second).
-
-        Example:
-            >>> GetterBase([1, 2, 3]).second().unwrap()
-            2
-        """
-        return self(f=cz.itertoolz.second)
-
-    def last(self) -> "ScalarChain[V]":
-        """
-        Return the last element of the iterable (see cytoolz.last).
-
-        Example:
-            >>> GetterBase([1, 2, 3]).last().unwrap()
-            3
-        """
-        return self(f=cz.itertoolz.last)
-
-    def at_index(self, index: int) -> "ScalarChain[V]":
-        """
-        Return the element at the given index (see cytoolz.nth).
-
-        Example:
-            >>> GetterBase([1, 2, 3]).at_index(1).unwrap()
-            2
-        """
-        return self(f=ft.partial(cz.itertoolz.nth, n=index))
-
-    def len(self) -> "ScalarChain[int]":
-        """
-        Return the length of the iterable (see cytoolz.count).
-
-        Example:
-            >>> GetterBase([1, 2, 3]).len().unwrap()
-            3
-        """
-        return self(f=cz.itertoolz.count)
 
 
 @dataclass(slots=True, frozen=True)
@@ -221,10 +153,8 @@ class Converter[V]:
         Convert the iterable into a Polars Series.
 
         Example:
-            >>> Converter([1, 2, 3]).series()
-            shape: (3,)
-            Series: '' [i64]
-            [1, 2, 3]
+            >>> Converter([1, 2, 3]).series().shape
+            (3,)
         """
         return pl.Series(values=self._value)
 

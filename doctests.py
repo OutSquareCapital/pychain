@@ -1,21 +1,20 @@
-"""
-Test all doctest examples in the pychain library.
-Run with: python test_doctest.py
-"""
-
 import doctest
 import sys
 
-import src.pychain._core as core
-import src.pychain._iter_base as iter_base
-import src.pychain._dict_base as dict_base
-import src.pychain._implementations as implementations
-import src.pychain._executors as executors
 import src.pychain._constructors as constructors
+import src.pychain._core as core
+import src.pychain._dict_base as dict_base
+import src.pychain._executors as executors
+import src.pychain._implementations as implementations
+import src.pychain._iter_base as iter_base
 import src.pychain._lazyfuncs as lazyfuncs
 
 
-def run_all_doctests():
+def run_all_doctests() -> None:
+    """
+    Test all doctest examples in the pychain library.
+    Run with: python test_doctest.py
+    """
     modules = [
         lazyfuncs,
         core,

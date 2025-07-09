@@ -1,30 +1,13 @@
+import functools as ft
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
 import cytoolz as cz
 
-from ._lazyfuncs import TransformFunc, AggFunc
 from ._core import AbstractChain
 from ._dict_base import BaseDictChain
 from ._iter_base import BaseIterChain
-from ._executors import GetterBase
-
-
-@dataclass(slots=True, frozen=True)
-class Getter[V](GetterBase[V]):
-    """
-    Extract elements or properties from an iterable in a chainable way.
-    """
-
-    def __call__[V1](self, f: Callable[[Iterable[V]], V1]) -> "ScalarChain[V1]":
-        """
-        Apply a function to the iterable and wrap the result in a ScalarChain.
-
-        Example:
-            >>> Getter([1, 2, 3])(sum).unwrap()
-            6
-        """
-        return ScalarChain(_value=f(self._value))
+from ._lazyfuncs import AggFunc, TransformFunc
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -79,6 +62,74 @@ class ScalarChain[T](AbstractChain[T]):
         """
         val: IterChain[T] = self.into_iter(n=n)
         return DictChain(_value={k: val for k in keys})
+
+
+@dataclass(slots=True, frozen=True)
+class Getter[V]:
+    _value: Iterable[V]
+    """
+    Extract elements or properties from an iterable in a chainable way.
+    """
+
+    def __call__[V1](self, f: Callable[[Iterable[V]], V1]) -> ScalarChain[V1]:
+        """
+        Apply a function to the iterable and wrap the result in a ScalarChain.
+
+        Example:
+            >>> Getter([1, 2, 3])(sum).unwrap()
+            6
+        """
+        return ScalarChain(_value=f(self._value))
+
+    def first(self) -> ScalarChain[V]:
+        """
+        Return the first element of the iterable (see cytoolz.first).
+
+        Example:
+            >>> Getter([1, 2, 3]).first().unwrap()
+            1
+        """
+        return self(f=cz.itertoolz.first)
+
+    def second(self) -> ScalarChain[V]:
+        """
+        Return the second element of the iterable (see cytoolz.second).
+
+        Example:
+            >>> Getter([1, 2, 3]).second().unwrap()
+            2
+        """
+        return self(f=cz.itertoolz.second)
+
+    def last(self) -> ScalarChain[V]:
+        """
+        Return the last element of the iterable (see cytoolz.last).
+
+        Example:
+            >>> Getter([1, 2, 3]).last().unwrap()
+            3
+        """
+        return self(f=cz.itertoolz.last)
+
+    def at_index(self, index: int) -> ScalarChain[V]:
+        """
+        Return the element at the given index (see cytoolz.nth).
+
+        Example:
+            >>> Getter([1, 2, 3]).at_index(1).unwrap()
+            2
+        """
+        return self(f=ft.partial(cz.itertoolz.nth, index))
+
+    def len(self) -> ScalarChain[int]:
+        """
+        Return the length of the iterable (see cytoolz.count).
+
+        Example:
+            >>> Getter([1, 2, 3]).len().unwrap()
+            3
+        """
+        return self(f=cz.itertoolz.count)
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -159,11 +210,17 @@ class IterChain[V](BaseIterChain[V]):
         """
         Group by key and reduce each group with a binary operation.
 
-        Example:
-            >>> IterChain([1, 2, 3, 4]).into_reduced_groups(
-            ...     lambda x: x % 2, sum
+        Examples:
+            >>> IterChain(["bob", "cathy", "claude", "clara"]).into_reduced_groups(
+            ...     key=lambda x: x.startswith("c"), binop=lambda x, y: x + " and " + y
             ... ).unwrap()
-            {1: 4, 0: 6}
+            {False: 'bob', True: 'cathy and claude and clara'}
+
+        With numbers:
+            >>> IterChain([1, 2, 3, 4, 5]).into_reduced_groups(
+            ...     key=lambda x: x < 3, binop=lambda x, y: x + y
+            ... ).unwrap()
+            {True: 3, False: 12}
         """
         return DictChain(_value=cz.itertoolz.reduceby(key, binop, self.unwrap()))
 
