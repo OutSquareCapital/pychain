@@ -1,5 +1,3 @@
-from functools import partial
-
 from ._constructors import (
     from_dict_of_iterables,
     from_func,
@@ -58,7 +56,6 @@ __all__: list[str] = [
     "item",
     "from_dict_of_iterables",
     "from_range",
-    "partial",
     "from_func",
     "from_np",
     "from_pd",
