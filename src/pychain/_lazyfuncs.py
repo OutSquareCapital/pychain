@@ -57,7 +57,7 @@ def merge_sorted[V](
     return cz.itertoolz.merge_sorted(on, *others, key=sort_on)
 
 
-def peek[T](seq: Iterable[T], note: str | None = None) -> Iterable[T]:
+def peek[T](seq: Iterable[T], note: str | None = None) -> Iterator[T]:
     value, sequence = cz.itertoolz.peek(seq)
     if note:
         print(f"Peeked value ({note}): {value}")
@@ -66,7 +66,7 @@ def peek[T](seq: Iterable[T], note: str | None = None) -> Iterable[T]:
     return sequence
 
 
-def peekn[T](seq: Iterable[T], n: int, note: str | None = None) -> Iterable[T]:
+def peekn[T](seq: Iterable[T], n: int, note: str | None = None) -> Iterator[T]:
     values, sequence = cz.itertoolz.peekn(n, seq)
     if note:
         print(f"Peeked {n} values ({note}): {list(values)}")

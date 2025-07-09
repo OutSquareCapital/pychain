@@ -83,6 +83,9 @@ class Converter[V]:
     def deque(self) -> deque[V]:
         return deque(self._value)
 
+    def dict(self):
+        return dict(self._value) # type: ignore
+
     def array(self) -> NDArray[Any]:
         return np.array(self._value)
 
