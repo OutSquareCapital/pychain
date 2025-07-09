@@ -130,13 +130,12 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Randomly samples elements with given probability (see cytoolz.random_sample).
 
         Example:
-            >>> len(
-            ...     BaseIterChain(range(100)).random_sample(0.1).convert_to.list()
-            ... )  # ~10
+            >>> BaseIterChain(range(100)).random_sample(probability=0.01, state=1).convert_to.list()
+            [13, 91]
         """
         return self.do(
             f=ft.partial(
-                cz.itertoolz.random_sample, prob=probability, random_state=state
+                cz.itertoolz.random_sample, probability, random_state=state
             )
         )
 
