@@ -26,6 +26,7 @@ def thread_last[T](val: T, fns: Iterable[ThreadFunc[T]]) -> T:
 def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
     return cz.dicttoolz.merge(on, *others)
 
+
 def dissoc[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
     return cz.dicttoolz.dissoc(d, *keys)
 
@@ -45,6 +46,7 @@ def merge_sorted[V](
 ) -> Iterator[V]:
     return cz.itertoolz.merge_sorted(on, *others, key=sort_on)
 
+
 def diff_with[T, V](
     value: Iterable[T],
     others: Iterable[Iterable[T]],
@@ -52,6 +54,7 @@ def diff_with[T, V](
     key: ProcessFunc[V] | None = None,
 ) -> Iterable[tuple[T, ...]]:
     return cz.itertoolz.diff(*(value, *others), default=default, key=key)
+
 
 def repeat[V](value: Iterable[V], n: int) -> Iterator[V]:
     """
@@ -62,6 +65,7 @@ def repeat[V](value: Iterable[V], n: int) -> Iterator[V]:
         [1, 1, 2, 2]
     """
     return cz.itertoolz.concat(seqs=map(lambda x: [x] * n, value))
+
 
 def peek[T](seq: Iterable[T], note: str | None = None) -> Iterator[T]:
     """
