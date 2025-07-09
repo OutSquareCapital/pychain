@@ -94,6 +94,16 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
         )  # type: ignore
 
+    def filter_on_key(self, key: K, predicate: CheckFunc[V]) -> Self:
+        """
+        Filter items where predicate is True for the given key.
+        Example:
+            >>> chain = BaseDictChain({"a": 1, "b": 2, "c": 3})
+            >>> chain.filter_on_key("b", lambda v: v > 1).unwrap()
+            {'b': 2}
+        """
+        return self.filter_items(lambda kv: kv[0] == key and predicate(kv[1]))
+
     def map_items[K1, V1](
         self,
         f: TransformFunc[tuple[K, V], tuple[K1, V1]],

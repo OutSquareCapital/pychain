@@ -1,14 +1,12 @@
 import doctest
 import sys
-
-import src.pychain._constructors as constructors
-import src.pychain._core as core
-import src.pychain._dict_base as dict_base
-import src.pychain._executors as executors
-import src.pychain._implementations as implementations
-import src.pychain._iter_base as iter_base
-import src.pychain._lazyfuncs as lazyfuncs
-
+import src.pychain._constructors as _constructors
+import src.pychain._core as _core
+import src.pychain._dict_base as _dict_base
+import src.pychain._executors as _executors
+import src.pychain._implementations as _implementations
+import src.pychain._iter_base as _iter_base
+import src.pychain._lazyfuncs as _lazyfuncs
 
 def run_all_doctests() -> None:
     """
@@ -16,13 +14,13 @@ def run_all_doctests() -> None:
     Run with: python test_doctest.py
     """
     modules = [
-        lazyfuncs,
-        core,
-        iter_base,
-        dict_base,
-        implementations,
-        executors,
-        constructors,
+        _lazyfuncs,
+        _core,
+        _iter_base,
+        _dict_base,
+        _implementations,
+        _executors,
+        _constructors,
     ]
     failures = 0
     for mod in modules:
