@@ -245,7 +245,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> chain.head(2).convert_to.list()
             [1, 2]
         """
-        return self.do(f=ft.partial(cz.itertoolz.take, n=n))
+        return self.do(f=ft.partial(cz.itertoolz.take, n))
 
     def tail(self, n: int) -> Self:
         """
