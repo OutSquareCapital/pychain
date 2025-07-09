@@ -40,8 +40,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Returns a Converter for the iterable, providing methods to convert to list, set, array, etc.
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.convert_to.list()
+            >>> BaseIterChain([1, 2, 3]).convert_to.list()
             [1, 2, 3]
         """
         return Converter(_value=self.unwrap())
@@ -52,8 +51,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Returns a Checker for the iterable, providing boolean checks like all, any, distinct, etc.
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.check_if.all()
+            >>> BaseIterChain([1, 2, 3]).check_if.all()
             True
         """
         return Checker(_value=self.unwrap())
@@ -63,8 +61,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Transforms the iterable using the provided function, returning a new chain.
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.into(reversed).convert_to.list()
+            >>> BaseIterChain([1, 2, 3]).into(reversed).convert_to.list()
             [3, 2, 1]
         """
         return self.__class__(
@@ -72,24 +69,14 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
         )  # type: ignore
 
-    def in_range(self, n: int):
-        """
-        Repeats each element in the iterable n times.
-
-        Example:
-            >>> chain = BaseIterChain([1, 2])
-            >>> chain.in_range(2).convert_to.list()
-            [1, 1, 2, 2]
-        """
-        return self.flat_map(lambda x: (x for _ in range(n)))
-
     def take_while(self, predicate: CheckFunc[V]) -> Self:
         """
         Takes elements while predicate is true (like itertools.takewhile).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3, 2])
-            >>> chain.take_while(lambda x: x < 3).convert_to.list()
+            >>> BaseIterChain([1, 2, 3, 2]).take_while(
+            ...     lambda x: x < 3
+            ... ).convert_to.list()
             [1, 2]
         """
         return self.do(f=ft.partial(it.takewhile, predicate))
@@ -99,8 +86,9 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Drops elements while predicate is true (like itertools.dropwhile).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3, 2])
-            >>> chain.drop_while(lambda x: x < 3).convert_to.list()
+            >>> BaseIterChain([1, 2, 3, 2]).drop_while(
+            ...     lambda x: x < 3
+            ... ).convert_to.list()
             [3, 2]
         """
         return self.do(f=ft.partial(it.dropwhile, predicate))
@@ -110,8 +98,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Interleaves the iterable with other iterables (see cytoolz.interleave).
 
         Example:
-            >>> chain = BaseIterChain([1, 2])
-            >>> chain.interleave([10, 20]).convert_to.list()
+            >>> BaseIterChain([1, 2]).interleave([10, 20]).convert_to.list()
             [1, 10, 2, 20]
         """
         return self.do(f=ft.partial(interleave, others=others))
@@ -121,19 +108,17 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Inserts the given element between each pair of elements (see cytoolz.interpose).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.interpose(0).convert_to.list()
+            >>> BaseIterChain([1, 2, 3]).interpose(0).convert_to.list()
             [1, 0, 2, 0, 3]
         """
-        return self.do(f=ft.partial(cz.itertoolz.interpose, el=element))
+        return self.do(f=ft.partial(cz.itertoolz.interpose, element))
 
     def top_n(self, n: int, key: Callable[[V], Any] | None = None) -> Self:
         """
         Returns the top n elements based on the key (see cytoolz.topk).
 
         Example:
-            >>> chain = BaseIterChain([1, 5, 3, 2])
-            >>> chain.top_n(2).convert_to.list()
+            >>> BaseIterChain([1, 5, 3, 2]).top_n(2).convert_to.list()
             [5, 3]
         """
         return self.do(f=ft.partial(cz.itertoolz.topk, n, key=key))
@@ -145,8 +130,9 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Randomly samples elements with given probability (see cytoolz.random_sample).
 
         Example:
-            >>> chain = BaseIterChain(range(100))
-            >>> len(chain.random_sample(0.1).convert_to.list())  # ~10
+            >>> len(
+            ...     BaseIterChain(range(100)).random_sample(0.1).convert_to.list()
+            ... )  # ~10
         """
         return self.do(
             f=ft.partial(
@@ -159,8 +145,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Concatenates the iterable with others (see cytoolz.concat).
 
         Example:
-            >>> chain = BaseIterChain([1, 2])
-            >>> chain.concat([3, 4]).convert_to.list()
+            >>> BaseIterChain([1, 2]).concat([3, 4]).convert_to.list()
             [1, 2, 3, 4]
         """
         return self.do(f=ft.partial(concat, others=others))
@@ -170,8 +155,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Filters elements by predicate (like built-in filter).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.filter(lambda x: x > 1).convert_to.list()
+            >>> BaseIterChain([1, 2, 3]).filter(lambda x: x > 1).convert_to.list()
             [2, 3]
         """
         return self.do(f=ft.partial(filter, f))
@@ -181,8 +165,9 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Accumulates values using binary function (see cytoolz.accumulate).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.accumulate(lambda x, y: x + y).convert_to.list()
+            >>> BaseIterChain([1, 2, 3]).accumulate(
+            ...     lambda x, y: x + y
+            ... ).convert_to.list()
             [1, 3, 6]
         """
         return self.do(f=ft.partial(cz.itertoolz.accumulate, f))
@@ -192,8 +177,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Prepends a value (see cytoolz.cons).
 
         Example:
-            >>> chain = BaseIterChain([2, 3])
-            >>> chain.insert_left(1).convert_to.list()
+            >>> BaseIterChain([2, 3]).insert_left(1).convert_to.list()
             [1, 2, 3]
         """
         return self.do(f=ft.partial(cz.itertoolz.cons, value))
@@ -203,9 +187,8 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Peeks at elements, printing them optionally with a note.
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.peek("step1").convert_to.list()
-            step1: [1, 2, 3]
+            >>> BaseIterChain([1, 2, 3]).peek("step 1").convert_to.list()
+            Peeked value (step 1): 1
             [1, 2, 3]
         """
         return self.do(f=ft.partial(peek, note=note))
@@ -215,9 +198,9 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Peeks at first n elements, printing them optionally with a note.
 
         Example:
-            >>> chain = BaseIterChain(range(10))
-            >>> chain.peekn(3).convert_to.list()
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+            >>> BaseIterChain([1, 2, 3, 4, 5, 6]).peekn(3, "step 1").convert_to.list()
+            Peeked 3 values (step 1): [1, 2, 3]
+            [1, 2, 3, 4, 5, 6]
         """
         return self.do(f=ft.partial(peekn, n=n, note=note))
 
@@ -226,8 +209,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Takes first n elements (see cytoolz.take).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3, 4])
-            >>> chain.head(2).convert_to.list()
+            >>> BaseIterChain([1, 2, 3, 4]).head(2).convert_to.list()
             [1, 2]
         """
         return self.do(f=ft.partial(cz.itertoolz.take, n))
@@ -237,8 +219,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Takes last n elements (see cytoolz.tail).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3, 4])
-            >>> chain.tail(2).convert_to.list()
+            >>> BaseIterChain([1, 2, 3, 4]).tail(2).convert_to.list()
             [3, 4]
         """
         return self.do(f=ft.partial(cz.itertoolz.tail, n))
@@ -248,8 +229,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Drops first n elements (see cytoolz.drop).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3, 4])
-            >>> chain.drop_first(2).convert_to.list()
+            >>> BaseIterChain([1, 2, 3, 4]).drop_first(2).convert_to.list()
             [3, 4]
         """
         return self.do(f=ft.partial(cz.itertoolz.drop, n))
@@ -259,8 +239,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Takes every index-th element (see cytoolz.take_nth).
 
         Example:
-            >>> chain = BaseIterChain([0, 1, 2, 3, 4])
-            >>> chain.every(2).convert_to.list()
+            >>> BaseIterChain([0, 1, 2, 3, 4]).every(2).convert_to.list()
             [0, 2, 4]
         """
         return self.do(f=ft.partial(cz.itertoolz.take_nth, index))
@@ -270,9 +249,8 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Repeats the iterable n times (see cytoolz.repeat).
 
         Example:
-            >>> chain = BaseIterChain([1, 2])
-            >>> chain.repeat(2).convert_to.list()
-            [1, 2, 1, 2]
+            >>> BaseIterChain([1, 2]).repeat(2).convert_to.list()
+            [1, 1, 2, 2]
         """
         return self.do(f=ft.partial(repeat, n=n))
 
@@ -281,8 +259,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Returns unique elements (see cytoolz.unique).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 2, 3])
-            >>> chain.unique().convert_to.list()
+            >>> BaseIterChain([1, 2, 2, 3]).unique().convert_to.list()
             [1, 2, 3]
         """
         return self.do(f=cz.itertoolz.unique)
@@ -292,8 +269,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Computes cumulative sum (see cytoolz.accumulate with operator.add).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.cumsum().convert_to.list()
+            >>> BaseIterChain([1, 2, 3]).cumsum().convert_to.list()
             [1, 3, 6]
         """
         return self.do(f=ft.partial(cz.itertoolz.accumulate, op.add))
@@ -303,8 +279,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Computes cumulative product (see cytoolz.accumulate with operator.mul).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.cumprod().convert_to.list()
+            >>> BaseIterChain([1, 2, 3]).cumprod().convert_to.list()
             [1, 2, 6]
         """
         return self.do(f=ft.partial(cz.itertoolz.accumulate, op.mul))
@@ -316,8 +291,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Merges and sorts with other iterables (see cytoolz.merge_sorted).
 
         Example:
-            >>> chain = BaseIterChain([1, 3])
-            >>> chain.merge_sorted([2, 4]).convert_to.list()
+            >>> BaseIterChain([1, 3]).merge_sorted([2, 4]).convert_to.list()
             [1, 2, 3, 4]
         """
         return self.do(f=ft.partial(merge_sorted, others=others, sort_on=sort_on))
@@ -327,8 +301,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Applies a side-effect function to each element (see cytoolz.do/tap).
 
         Example:
-            >>> chain = BaseIterChain([1, 2])
-            >>> chain.tap(print).convert_to.list()
+            >>> BaseIterChain([1, 2]).tap(print).convert_to.list()
             1
             2
             [1, 2]
@@ -342,8 +315,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Zips with other iterables (like built-in zip).
 
         Example:
-            >>> chain = BaseIterChain([1, 2])
-            >>> chain.zip([10, 20]).convert_to.list()
+            >>> BaseIterChain([1, 2]).zip([10, 20]).convert_to.list()
             [(1, 10), (2, 20)]
         """
         return self.into(f=ft.partial(zip_with, others=others, strict=strict))
@@ -353,8 +325,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Enumerates the iterable (like built-in enumerate).
 
         Example:
-            >>> chain = BaseIterChain(["a", "b"])
-            >>> chain.enumerate().convert_to.list()
+            >>> BaseIterChain(["a", "b"]).enumerate().convert_to.list()
             [(0, 'a'), (1, 'b')]
         """
         return self.into(f=enumerate)
@@ -364,8 +335,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Maps a function over elements (like built-in map).
 
         Example:
-            >>> chain = BaseIterChain([1, 2])
-            >>> chain.map(lambda x: x * 2).convert_to.list()
+            >>> BaseIterChain([1, 2]).map(lambda x: x * 2).convert_to.list()
             [2, 4]
         """
         return self.into(f=ft.partial(map, f))
@@ -375,8 +345,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Maps a function and flattens the result (see cytoolz.concatmap).
 
         Example:
-            >>> chain = BaseIterChain([1, 2])
-            >>> chain.flat_map(lambda x: [x, x + 10]).convert_to.list()
+            >>> BaseIterChain([1, 2]).flat_map(lambda x: [x, x + 10]).convert_to.list()
             [1, 11, 2, 12]
         """
         return self.into(f=ft.partial(flat_map, func=f))
@@ -386,8 +355,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Flattens nested iterables (see cytoolz.concat).
 
         Example:
-            >>> chain = BaseIterChain([[1, 2], [3, 4]])
-            >>> chain.flatten().convert_to.list()
+            >>> BaseIterChain([[1, 2], [3, 4]]).flatten().convert_to.list()
             [1, 2, 3, 4]
         """
         return self.into(f=cz.itertoolz.concat)
@@ -395,37 +363,42 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
     def diff(
         self,
         *others: Iterable[V],
+        default: Any | None = None,
         key: ProcessFunc[V] | None = None,
     ) -> "IterChain[tuple[V, ...]]":
         """
         Compute the difference between iterables (see cytoolz.diff).
 
         Return those items that differ between sequences.
+
         Example:
-            >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.diff([1, 2, 10, 100]).convert_to.list()
+            >>> BaseIterChain([1, 2, 3]).diff([1, 2, 10, 100]).convert_to.list()
             [(3, 10), (None, 100)]
 
             You can replace `None` with a custom default value:
 
-            >>> chain.diff([1, 2, 10, 100], default="default").convert_to.list()
-            [(3, 10), ('default', 100)]
+            >>> BaseIterChain([1, 2, 3]).diff(
+            ...     [1, 2, 10, 100], default="foo"
+            ... ).convert_to.list()
+            [(3, 10), ('foo', 100)]
 
             A key function may also be applied to each item to use during comparisons:
 
-            >>> chain = BaseIterChain(["apples", "bananas"])
-            >>> chain.diff(["Apples", "Oranges"], key=str.lower).convert_to.list()
+            >>> BaseIterChain(["apples", "bananas"]).diff(
+            ...     ["Apples", "Oranges"], key=str.lower
+            ... ).convert_to.list()
             [('bananas', 'Oranges')]
         """
-        return self.into(f=ft.partial(diff_with, others=others, key=key))
+        return self.into(
+            f=ft.partial(diff_with, others=others, default=default, key=key)
+        )
 
     def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
         """
         Partitions into chunks of size n, padding last if needed (see cytoolz.partition).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3, 4, 5])
-            >>> chain.partition(2, pad=0).convert_to.list()
+            >>> BaseIterChain([1, 2, 3, 4, 5]).partition(2, pad=0).convert_to.list()
             [(1, 2), (3, 4), (5, 0)]
         """
         return self.into(f=ft.partial(cz.itertoolz.partition, n, pad=pad))
@@ -435,8 +408,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Partitions into chunks of size n, last chunk may be smaller (see cytoolz.partition_all).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3, 4, 5])
-            >>> chain.partition_all(2).convert_to.list()
+            >>> BaseIterChain([1, 2, 3, 4, 5]).partition_all(2).convert_to.list()
             [(1, 2), (3, 4), (5,)]
         """
         return self.into(f=ft.partial(cz.itertoolz.partition_all, n))
@@ -446,8 +418,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Creates a sliding window of given length (see cytoolz.sliding_window).
 
         Example:
-            >>> chain = BaseIterChain([1, 2, 3, 4])
-            >>> chain.rolling(3).convert_to.list()
+            >>> BaseIterChain([1, 2, 3, 4]).rolling(3).convert_to.list()
             [(1, 2, 3), (2, 3, 4)]
         """
         return self.into(f=ft.partial(cz.itertoolz.sliding_window, length))
