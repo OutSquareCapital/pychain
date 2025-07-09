@@ -41,10 +41,15 @@ def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
     Merge multiple dictionaries into one (see cytoolz.merge).
 
     Example:
-        >>> merge({'a': 1}, [{'b': 2}, {'c': 3}])
-        {'a': 1, 'b': 2, 'c': 3}
+        >>> merge(on={1: "one"}, others=({2: "two"}, {3: "three"}))
+        {1: 'one', 2: 'two', 3: 'three'}
+
+        Later dictionaries have precedence
+
+        >>> merge(on={"a": 1}, others=({"b": 2}, {"c": 3}, {"c": 4}))
+        {'a': 1, 'b': 2, 'c': 4}
     """
-    return cz.dicttoolz.merge(*others, on)
+    return cz.dicttoolz.merge(on, *others)
 
 
 def merge_with[K, V](
@@ -68,7 +73,7 @@ def dissoc[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
         >>> dissoc({'a': 1, 'b': 2}, ['a'])
         {'b': 2}
     """
-    return cz.dicttoolz.dissoc(d=d, *keys)
+    return cz.dicttoolz.dissoc(d, *keys)
 
 
 def repeat[V](value: Iterable[V], n: int) -> Iterator[V]:
@@ -169,16 +174,29 @@ def flat_map[V, V1](
 
 
 def diff_with[T, V](
-    value: Iterable[T], others: Iterable[Iterable[T]], key: ProcessFunc[V] | None = None
+    value: Iterable[T], others: Iterable[Iterable[T]], default: Any|None = None, key: ProcessFunc[V] | None = None
 ) -> Iterable[tuple[T, ...]]:
     """
     Compute the difference between iterables (see cytoolz.diff).
 
+    Return those items that differ between sequences.
+
     Example:
-        >>> list(diff_with([1, 2, 3], [[2, 3, 4]]))
-        [(1, 4)]
+        >>> list(diff_with(value=[1, 2, 3], others=[[1, 2, 10, 100]]))
+        [(3, 10), (None, 100)]
+
+        You can replace `None` with a custom default value:
+
+        >>> list(diff_with(value=[1, 2, 3], others=[[1, 2, 10, 100]], default="default"))
+        [(3, 10), ('default', 100)]
+
+        A key function may also be applied to each item to use during comparisons:
+
+        >>> list(diff_with(value=["apples", "bananas"], others=[["Apples", "Oranges"]], key=str.lower))
+        [('bananas', 'Oranges')]
     """
-    return cz.itertoolz.diff(value, *others, key=key)
+    return cz.itertoolz.diff(*(value, *others), default=default, key=key)
+
 
 
 def zip_with[T, V](

@@ -80,13 +80,12 @@ class AbstractChain[T]:
 
         Example:
         >>> def add(x: int, y: int) -> int:
-                return x + y
+        ...     return x + y
         >>> def pow(x: int, y: int) -> int:
-                return x**y
-
-            >>> chain = AbstractChain(1).thread_first((add, 4), (pow, 2))
-            >>> chain.unwrap()
-            25
+        ...     return x**y
+        >>> chain = AbstractChain(1).thread_first((add, 4), (pow, 2))
+        >>> chain.unwrap()
+        25
         """
         return self.do(f=ft.partial(thread_first, fns=fns))
 
