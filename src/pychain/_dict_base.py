@@ -22,17 +22,6 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True, repr=False)
 class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
-    """
-    BaseDictChain provides a fluent interface for chaining transformations on dictionaries.
-    Inspired by cytoolz.dicttoolz, it enables functional-style processing of dicts.
-
-    Example:
-        >>> chain = BaseDictChain({"a": 1, "b": 2})
-        >>> result = chain.map_values(lambda v: v * 10).convert_items_to.list()
-        >>> print(result)
-        [('a', 10), ('b', 20)]
-    """
-
     @property
     def convert_values_to(self) -> Converter[V]:
         """

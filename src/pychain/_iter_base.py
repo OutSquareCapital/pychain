@@ -32,21 +32,6 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True, repr=False)
 class BaseIterChain[V](AbstractChain[Iterable[V]]):
-    """
-    BaseIterChain provides a fluent interface for chaining transformations on iterables.
-    Inspired by cytoolz, it enables functional-style data processing with immutable pipelines.
-
-    Example:
-        >>> chain = BaseIterChain([1, 2, 3, 4])
-        >>> result = (
-        ...     chain.filter(lambda x: x % 2 == 0)
-        ...     .map(lambda x: x * 10)
-        ...     .convert_to.list()
-        ... )
-        >>> print(result)
-        [20, 40]
-    """
-
     _value: Iterable[V]
 
     @property
@@ -200,7 +185,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> chain.accumulate(lambda x, y: x + y).convert_to.list()
             [1, 3, 6]
         """
-        return self.do(f=ft.partial(cz.itertoolz.accumulate, binop=f))
+        return self.do(f=ft.partial(cz.itertoolz.accumulate, f))
 
     def cons(self, value: V) -> Self:
         """

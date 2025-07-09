@@ -19,11 +19,6 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True)
 class GetterBase[V]:
-    """
-    GetterBase provides methods to extract elements or properties from an iterable.
-    Useful for retrieving specific elements or properties in a chainable way.
-    """
-
     _value: Iterable[V]
 
     def __call__[V1](self, f: TransformFunc[Iterable[V], V1]) -> "ScalarChain[V1]":

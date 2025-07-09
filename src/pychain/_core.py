@@ -17,19 +17,6 @@ from ._lazyfuncs import (
 
 @dataclass(slots=True, frozen=True, repr=False)
 class AbstractChain[T]:
-    """
-    Immutable chain for functional pipelines on a value.
-    Allows chaining, composing, and threading of functions, similar to cytoolz.pipe.
-
-    Example:
-        >>> chain = AbstractChain([1, 2, 3])
-        >>> chain = chain.do(lambda x: [i * 2 for i in x])
-        >>> chain = chain.do(sum)
-        >>> result = chain.unwrap()
-        >>> print(result)
-        12
-    """
-
     _value: T
     _pipeline: list[Callable[[T], Any]] = field(default_factory=list[ProcessFunc[T]])
 

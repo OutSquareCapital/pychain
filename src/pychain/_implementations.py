@@ -13,7 +13,8 @@ from ._executors import GetterBase
 @dataclass(slots=True, frozen=True)
 class Getter[V](GetterBase[V]):
     """
-    Getter extends GetterBase to extract elements or properties from an iterable and return them as ScalarChain.
+    Getter provides methods to extract elements or properties from an iterable.
+    Useful for retrieving specific elements or properties in a chainable way.
 
     Example:
         >>> Getter([1, 2, 3]).first().unwrap()  # 1
