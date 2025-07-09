@@ -79,11 +79,14 @@ class AbstractChain[T]:
         Thread value as first argument through functions (see cytoolz.thread_first).
 
         Example:
-            >>> chain = AbstractChain([1, 2, 3]).thread_first(
-            ...     (map, lambda x: x + 1), sum
-            ... )
+        >>> def add(x: int, y: int) -> int:
+                return x + y
+        >>> def pow(x: int, y: int) -> int:
+                return x**y
+
+            >>> chain = AbstractChain(1).thread_first((add, 4), (pow, 2))
             >>> chain.unwrap()
-            9
+            25
         """
         return self.do(f=ft.partial(thread_first, fns=fns))
 
