@@ -201,7 +201,7 @@ class Converter[V]:
         Convert the iterable into a dictionary (see built-in dict).
 
         Example:
-            >>> Converter([('a', 1), ('b', 2)]).dict()
+            >>> Converter([("a", 1), ("b", 2)]).dict()
             {'a': 1, 'b': 2}
         """
         return dict(self._value)  # type: ignore
@@ -233,7 +233,7 @@ class Converter[V]:
         Convert the iterable into a Polars DataFrame.
 
         Example:
-            >>> Converter({'a': [1, 2], 'b': [3, 4]}).dataframe()
+            >>> Converter({"a": [1, 2], "b": [3, 4]}).dataframe()
             shape: (2, 2)
             ┌─────┬─────┐
             │ a   ┆ b   │
@@ -251,7 +251,7 @@ class Converter[V]:
         Convert the iterable into a Polars LazyFrame.
 
         Example:
-            >>> Converter({'a': [1, 2], 'b': [3, 4]}).lazyframe()  # doctest: +SKIP
+            >>> Converter({"a": [1, 2], "b": [3, 4]}).lazyframe()  # doctest: +SKIP
             <class 'polars.lazyframe.frame.LazyFrame'>
         """
         return pl.LazyFrame(data=self._value)

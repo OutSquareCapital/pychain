@@ -2,6 +2,7 @@
 Test all doctest examples in the pychain library.
 Run with: python test_doctest.py
 """
+
 import doctest
 import sys
 
@@ -12,6 +13,7 @@ import src.pychain._implementations as implementations
 import src.pychain._executors as executors
 import src.pychain._constructors as constructors
 import src.pychain._lazyfuncs as lazyfuncs
+
 
 def run_all_doctests():
     modules = [
@@ -33,6 +35,7 @@ def run_all_doctests():
         else:
             print(f"\nSome doctests failed. ❌ ({failures} failures)")
             sys.exit(1)
+
 
 if __name__ == "__main__":
     run_all_doctests()

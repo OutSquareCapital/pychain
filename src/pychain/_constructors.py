@@ -13,7 +13,7 @@ def read_parquet(file_path: str) -> DictChain[str, list[Any]]:
     Read a Parquet file into a DictChain (columnar format).
 
     Example:
-        >>> read_parquet('data.parquet').convert_keys_to.list()  # doctest: +SKIP
+        >>> read_parquet("data.parquet").convert_keys_to.list()  # doctest: +SKIP
         ['col1', 'col2', ...]
     """
     return from_pl(pl.read_parquet(file_path))
@@ -24,7 +24,7 @@ def read_csv(file_path: str) -> DictChain[str, list[Any]]:
     Read a CSV file into a DictChain (columnar format).
 
     Example:
-        >>> read_csv('data.csv').convert_keys_to.list()  # doctest: +SKIP
+        >>> read_csv("data.csv").convert_keys_to.list()  # doctest: +SKIP
         ['col1', 'col2', ...]
     """
     return from_pl(pl.read_csv(file_path))
@@ -35,7 +35,7 @@ def read_json(file_path: str) -> DictChain[str, list[Any]]:
     Read a JSON file into a DictChain (columnar format).
 
     Example:
-        >>> read_json('data.json').convert_keys_to.list()  # doctest: +SKIP
+        >>> read_json("data.json").convert_keys_to.list()  # doctest: +SKIP
         ['col1', 'col2', ...]
     """
     return from_pl(pl.read_json(file_path))
@@ -46,7 +46,7 @@ def read_ndjson(file_path: str) -> DictChain[str, list[Any]]:
     Read a newline-delimited JSON file into a DictChain (columnar format).
 
     Example:
-        >>> read_ndjson('data.ndjson').convert_keys_to.list()  # doctest: +SKIP
+        >>> read_ndjson("data.ndjson").convert_keys_to.list()  # doctest: +SKIP
         ['col1', 'col2', ...]
     """
     return from_pl(pl.read_ndjson(file_path))
@@ -57,7 +57,7 @@ def from_pl(df: pl.DataFrame) -> DictChain[str, list[Any]]:
     Convert a Polars DataFrame to a DictChain (columnar format).
 
     Example:
-        >>> from_pl(pl.DataFrame({'a': [1, 2]})).unwrap()  # doctest: +SKIP
+        >>> from_pl(pl.DataFrame({"a": [1, 2]})).unwrap()  # doctest: +SKIP
         {'a': [1, 2]}
     """
     return DictChain(df.to_dict(as_series=False))
@@ -68,7 +68,7 @@ def from_pd(df: pd.DataFrame) -> DictChain[Hashable, list[Any]]:
     Convert a pandas DataFrame to a DictChain (columnar format).
 
     Example:
-        >>> from_pd(pd.DataFrame({'a': [1, 2]})).unwrap()  # doctest: +SKIP
+        >>> from_pd(pd.DataFrame({"a": [1, 2]})).unwrap()  # doctest: +SKIP
         {'a': [1, 2]}
     """
     return DictChain(df.to_dict(orient="list"))  # type: ignore
@@ -114,7 +114,7 @@ def from_dict_of_iterables[K, V](
     Convert a dict of iterables to a DictChain of IterChains.
 
     Example:
-        >>> from_dict_of_iterables({'a': [1, 2]}).unwrap()['a'].convert_to.list()
+        >>> from_dict_of_iterables({"a": [1, 2]}).unwrap()["a"].convert_to.list()
         [1, 2]
     """
     return DictChain(_value={k: IterChain(_value=v) for k, v in data.items()})
