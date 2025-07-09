@@ -12,26 +12,34 @@ from ._constructors import (
     read_ndjson,
 )
 from ._expressions import (
-    attr,
-    item,
-    method,
     add,
+    attr,
     eq,
     floordiv,
+    floordiv_r,
     ge,
     gt,
+    item,
     le,
     lt,
+    method,
     mod,
     mul,
     ne,
+    neg,
     pow,
     sub,
+    sub_r,
     truediv,
+    truediv_r,
 )
 from ._implementations import DictChain, IterChain, ScalarChain
 
 __all__: list[str] = [
+    "neg",
+    "sub_r",
+    "truediv_r",
+    "floordiv_r",
     "attr",
     "method",
     "add",

@@ -89,7 +89,6 @@ These expressions are composable, type-safe, and make your code more declarative
 - `pc.eq(value)`, `pc.ne(value)`, `pc.gt(value)`, `pc.ge(value)`, `pc.lt(value)`, `pc.le(value)`
 - `pc.isin(values)`, `pc.notin(values)`
 - `pc.is_none()`, `pc.not_none()`
-- `pc.and_(*predicates)`, `pc.or_(*predicates)`, `pc.not_(predicate)`
 
 #### Attribute & Item Access
 
@@ -99,19 +98,7 @@ These expressions are composable, type-safe, and make your code more declarative
 
 #### Arithmetic & Math
 
-- `pc.add(value)`, `pc.sub(value)`, `pc.mul(value)`, `pc.truediv(value)`, `pc.floordiv(value)`, `pc.mod(value)`, `pc.pow(value)`
-- `pc.neg()`, `pc.abs()`
-
-#### Function Composition
-
-- `pc.pipe(*funcs)`: Compose multiple functions left-to-right
-- `pc.compose(*funcs)`: Compose multiple functions right-to-left
-
-#### Utility
-
-- `pc.identity()`: Returns the input unchanged
-- `pc.const(value)`: Always returns the given value
-- `pc.call(func, *args, **kwargs)`: Calls a function with arguments
+- `pc.add(value)`, `pc.sub(value)`, `pc.mul(value)`, `pc.truediv(value)`, `pc.floordiv(value)`, `pc.mod(value)`, `pc.pow(value)`, `pc.neg()`
 
 ### Examples
 
