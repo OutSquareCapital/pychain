@@ -1,4 +1,6 @@
 import src.pychain as pc
+import polars as pl
+import numpy as np
 
 def basic_example() -> None:
     result = (
@@ -66,9 +68,38 @@ def nested_chaining_with_dictchain() -> None:
     )
     assert result == {'a': [1, 3, 6], 'b': [4, 9, 15]}
 
+def get_polars_frame() -> None:
+    results: dict[str, np.ndarray] = {
+        "Library1": np.array([[1, 2, 3], [4, 5, 6]]),
+        "Library2": np.array([[7, 8, 9], [10, 11, 12]]),
+    }
+    df = pl.DataFrame(
+        data=pc.DictChain(results)
+        .unpivot(
+            key_name="Library",
+            index_name="Index",
+            value_name="Values",
+            value_extractor=lambda arr: arr[:, 0]
+        )
+        .convert_to.dataframe()
+    )
+
+    df2 = pl.DataFrame(
+        {
+            "Library": [
+                lib for lib in results.keys() for _ in range(results[lib].shape[0])
+            ],
+            "Index": [
+                i for lib in results.keys() for i in range(results[lib].shape[0])
+            ],
+            "Values": [value for lib in results.keys() for value in results[lib][:, 0]],
+        }
+    )
+    assert df.equals(df2)
 
 if __name__ == "__main__":
     basic_example()
     data_agg_and_transform()
     grouping_and_reducing()
     nested_chaining_with_dictchain()
+    get_polars_frame()

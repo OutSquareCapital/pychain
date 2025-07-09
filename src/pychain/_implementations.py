@@ -1,7 +1,7 @@
 import functools as ft
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-
+from typing import Any
 import cytoolz as cz
 
 from ._core import AbstractChain
@@ -333,3 +333,58 @@ class DictChain[K, V](BaseDictChain[K, V]):
             [('a', 1), ('b', 2)]
         """
         return IterChain(_value=self.unwrap().items())
+
+    def to_rows[R](self, row_factory: Callable[[K, V], Iterable[R]]) -> "IterChain[R]":
+        """
+        For each (key, value) pair, applies `row_factory` to produce an
+        iterable of new values (rows), and flattens the results into a
+        single chain of rows.
+
+        This is a powerful method for unpivoting or restructuring dictionary data.
+
+        Example:
+            >>> data = {"A": [1, 2], "B": [3]}
+            >>> DictChain(data).to_rows(
+            ...     lambda key, values: [(key, val) for val in values]
+            ... ).convert_to.list()
+            [('A', 1), ('A', 2), ('B', 3)]
+        """
+        return self.into_iter_items().flat_map(
+            lambda pair: row_factory(pair[0], pair[1])
+        )
+
+    def unpivot[T](
+        self,
+        value_extractor: Callable[[V], Iterable[T]],
+        key_name: str = "key",
+        index_name: str = "index",
+        value_name: str = "value",
+    ) -> IterChain[dict[str, T]]:
+        """
+        Unpivots a dictionary of iterables into a chain of row-dictionaries.
+
+        This is a high-level convenience function for common unpivoting tasks.
+        For each key-value pair in the source dictionary, it generates multiple
+        output rows.
+
+        Each output row is a dictionary containing:
+        - The original key.
+        - The index of the value within the extracted iterable.
+        - The value itself.
+
+        Example:
+            >>> data = {"A": "hi", "B": "world"}
+            >>> DictChain(data).unpivot(
+            ...     value_extractor=lambda s: list(s),  # extract characters
+            ...     key_name="letter_group",
+            ...     value_name="char",
+            ... ).convert_to.list()
+            [{'letter_group': 'A', 'index': 0, 'char': 'h'}, {'letter_group': 'A', 'index': 1, 'char': 'i'}, {'letter_group': 'B', 'index': 0, 'char': 'w'}, {'letter_group': 'B', 'index': 1, 'char': 'o'}, {'letter_group': 'B', 'index': 2, 'char': 'r'}, {'letter_group': 'B', 'index': 3, 'char': 'l'}, {'letter_group': 'B', 'index': 4, 'char': 'd'}]
+
+        """
+
+        def row_factory(key: K, container: V) -> Iterable[dict[str, Any]]:
+            for i, value in enumerate(value_extractor(container)):
+                yield {key_name: key, index_name: i, value_name: value}
+
+        return self.to_rows(row_factory=row_factory)
