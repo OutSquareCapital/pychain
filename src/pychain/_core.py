@@ -17,6 +17,19 @@ from ._lazyfuncs import (
 
 @dataclass(slots=True, frozen=True, repr=False)
 class AbstractChain[T]:
+    """
+    Immutable chain for functional pipelines on a value.
+    Allows chaining, composing, and threading of functions, similar to cytoolz.pipe.
+
+    Example:
+        >>> chain = AbstractChain([1, 2, 3])
+        >>> chain = chain.do(lambda x: [i * 2 for i in x])
+        >>> chain = chain.do(sum)
+        >>> result = chain.unwrap()
+        >>> print(result)
+        12
+    """
+
     _value: T
     _pipeline: list[Callable[[T], Any]] = field(default_factory=list[ProcessFunc[T]])
 
@@ -25,28 +38,84 @@ class AbstractChain[T]:
         return f"class {self.__class__.__name__}(value={self._value},pipeline:[\n{pipeline_repr}\n])"
 
     def do(self, f: ProcessFunc[T]) -> Self:
+        """
+        Add a function to the pipeline. Returns self for chaining.
+
+        Example:
+            >>> chain = AbstractChain([1, 2, 3]).do(sum)
+            >>> chain.unwrap()
+            6
+        """
         self._pipeline.append(f)
         return self
 
     def into(self, f: TransformFunc[T, Any]):
+        """
+        Return a new chain with the function composed onto the pipeline.
+
+        Example:
+            >>> chain = AbstractChain([1, 2, 3]).into(reversed)
+            >>> list(chain.unwrap())
+            [3, 2, 1]
+        """
         return self.__class__(
             _value=self._value,
             _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
         )
 
     def compose(self, *fns: ProcessFunc[T]) -> Self:
+        """
+        Compose multiple functions and add to pipeline.
+
+        Example:
+            >>> chain = AbstractChain([1, 2, 3]).compose(sum, lambda x: x * 10)
+            >>> chain.unwrap()
+            60
+        """
         return self.do(f=(cz.functoolz.compose_left(*fns)))
 
     def thread_first(self, *fns: ThreadFunc[T]) -> Self:
+        """
+        Thread value as first argument through functions (see cytoolz.thread_first).
+
+        Example:
+            >>> chain = AbstractChain([1, 2, 3]).thread_first(
+            ...     (map, lambda x: x + 1), sum
+            ... )
+            >>> chain.unwrap()
+            9
+        """
         return self.do(f=ft.partial(thread_first, fns=fns))
 
     def thread_last(self, *fns: ThreadFunc[T]) -> Self:
+        """
+        Thread value as last argument through functions (see cytoolz.thread_last).
+
+        Example:
+            >>> chain = AbstractChain([1, 2, 3]).thread_last(
+            ...     (map, lambda x: x + 1), sum
+            ... )
+            >>> chain.unwrap()
+            9
+        """
         return self.do(f=ft.partial(thread_last, fns=fns))
 
     def clone(self) -> Self:
+        """
+        Return a deep copy of the chain and its pipeline.
+        """
         return self.__class__(deepcopy(self._value), deepcopy(self._pipeline))
 
     def unwrap(self) -> T:
+        """
+        Execute the pipeline on the value and return the result.
+        If pipeline is empty, return the value.
+
+        Example:
+            >>> chain = AbstractChain([1, 2, 3]).do(sum)
+            >>> chain.unwrap()
+            6
+        """
         if not self._pipeline:
             return self._value
         return cz.functoolz.pipe(self._value, *self._pipeline)
