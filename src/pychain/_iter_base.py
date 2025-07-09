@@ -136,7 +136,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> chain.top_n(2).convert_to.list()
             [5, 3]
         """
-        return self.do(f=ft.partial(cz.itertoolz.topk, k=n, key=key))
+        return self.do(f=ft.partial(cz.itertoolz.topk, n, key=key))
 
     def random_sample(
         self, probability: float, state: Random | int | None = None
@@ -187,16 +187,16 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         """
         return self.do(f=ft.partial(cz.itertoolz.accumulate, f))
 
-    def cons(self, value: V) -> Self:
+    def insert_left(self, value: V) -> Self:
         """
         Prepends a value (see cytoolz.cons).
 
         Example:
             >>> chain = BaseIterChain([2, 3])
-            >>> chain.cons(1).convert_to.list()
+            >>> chain.insert_left(1).convert_to.list()
             [1, 2, 3]
         """
-        return self.do(f=ft.partial(cz.itertoolz.cons, el=value))
+        return self.do(f=ft.partial(cz.itertoolz.cons, value))
 
     def peek(self, note: str | None = None) -> Self:
         """
@@ -241,7 +241,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> chain.tail(2).convert_to.list()
             [3, 4]
         """
-        return self.do(f=ft.partial(cz.itertoolz.tail, n=n))
+        return self.do(f=ft.partial(cz.itertoolz.tail, n))
 
     def drop_first(self, n: int) -> Self:
         """
@@ -252,7 +252,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> chain.drop_first(2).convert_to.list()
             [3, 4]
         """
-        return self.do(f=ft.partial(cz.itertoolz.drop, n=n))
+        return self.do(f=ft.partial(cz.itertoolz.drop, n))
 
     def every(self, index: int) -> Self:
         """
@@ -263,7 +263,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> chain.every(2).convert_to.list()
             [0, 2, 4]
         """
-        return self.do(f=ft.partial(cz.itertoolz.take_nth, n=index))
+        return self.do(f=ft.partial(cz.itertoolz.take_nth, index))
 
     def repeat(self, n: int) -> Self:
         """
@@ -398,12 +398,24 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         key: ProcessFunc[V] | None = None,
     ) -> "IterChain[tuple[V, ...]]":
         """
-        Computes the difference with other iterables (see cytoolz.diff).
+        Compute the difference between iterables (see cytoolz.diff).
 
+        Return those items that differ between sequences.
         Example:
             >>> chain = BaseIterChain([1, 2, 3])
-            >>> chain.diff([2, 3, 4]).convert_to.list()
-            [(1, 4)]
+            >>> chain.diff([1, 2, 10, 100]).convert_to.list()
+            [(3, 10), (None, 100)]
+
+            You can replace `None` with a custom default value:
+
+            >>> chain.diff([1, 2, 10, 100], default="default").convert_to.list()
+            [(3, 10), ('default', 100)]
+
+            A key function may also be applied to each item to use during comparisons:
+
+            >>> chain = BaseIterChain(["apples", "bananas"])
+            >>> chain.diff(["Apples", "Oranges"], key=str.lower).convert_to.list()
+            [('bananas', 'Oranges')]
         """
         return self.into(f=ft.partial(diff_with, others=others, key=key))
 
@@ -416,7 +428,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> chain.partition(2, pad=0).convert_to.list()
             [(1, 2), (3, 4), (5, 0)]
         """
-        return self.into(f=ft.partial(cz.itertoolz.partition, n=n, pad=pad))
+        return self.into(f=ft.partial(cz.itertoolz.partition, n, pad=pad))
 
     def partition_all(self, n: int) -> "IterChain[tuple[V, ...]]":
         """
@@ -427,7 +439,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> chain.partition_all(2).convert_to.list()
             [(1, 2), (3, 4), (5,)]
         """
-        return self.into(f=ft.partial(cz.itertoolz.partition_all, n=n))
+        return self.into(f=ft.partial(cz.itertoolz.partition_all, n))
 
     def rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
         """
