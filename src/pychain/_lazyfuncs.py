@@ -30,17 +30,6 @@ def dissoc[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
     return cz.dicttoolz.dissoc(d, *keys)
 
 
-def repeat[V](value: Iterable[V], n: int) -> Iterator[V]:
-    """
-    Repeat each element in the iterable n times (see cytoolz.repeat, cytoolz.concat).
-
-    Example:
-        >>> list(repeat([1, 2], 2))
-        [1, 1, 2, 2]
-    """
-    return cz.itertoolz.concat(seqs=map(lambda x: [x] * n, value))
-
-
 def concat[V](on: Iterable[V], others: Iterable[Iterable[V]]) -> Iterator[V]:
     return cz.itertoolz.concat([on, *others])
 
@@ -56,6 +45,23 @@ def merge_sorted[V](
 ) -> Iterator[V]:
     return cz.itertoolz.merge_sorted(on, *others, key=sort_on)
 
+def diff_with[T, V](
+    value: Iterable[T],
+    others: Iterable[Iterable[T]],
+    default: Any | None = None,
+    key: ProcessFunc[V] | None = None,
+) -> Iterable[tuple[T, ...]]:
+    return cz.itertoolz.diff(*(value, *others), default=default, key=key)
+
+def repeat[V](value: Iterable[V], n: int) -> Iterator[V]:
+    """
+    Repeat each element in the iterable n times (see cytoolz.repeat, cytoolz.concat).
+
+    Example:
+        >>> list(repeat([1, 2], 2))
+        [1, 1, 2, 2]
+    """
+    return cz.itertoolz.concat(seqs=map(lambda x: [x] * n, value))
 
 def peek[T](seq: Iterable[T], note: str | None = None) -> Iterator[T]:
     """
@@ -96,16 +102,14 @@ def peekn[T](seq: Iterable[T], n: int, note: str | None = None) -> Iterator[T]:
 def flat_map[V, V1](
     value: Iterable[V], func: TransformFunc[V, Iterable[V1]]
 ) -> Iterable[V1]:
+    """
+    Map a function over an iterable and flatten the result one level.
+
+    Example:
+        >>> list(flat_map([1, 2], lambda x: [x, x * 10]))
+        [1, 10, 2, 20]
+    """
     return cz.itertoolz.concat(map(func, value))
-
-
-def diff_with[T, V](
-    value: Iterable[T],
-    others: Iterable[Iterable[T]],
-    default: Any | None = None,
-    key: ProcessFunc[V] | None = None,
-) -> Iterable[tuple[T, ...]]:
-    return cz.itertoolz.diff(*(value, *others), default=default, key=key)
 
 
 def zip_with[T, V](
