@@ -67,6 +67,77 @@ uv add git+https://github.com/OutSquareCapital/pychain.git
 - **IterChain**: for iterables (lists, arrays, generators, etc.)
 - **DictChain**: for dictionaries (key/value mappings)
 
+---
+
+## Guide: Built-in Expressions for Functional Pipelines
+
+A key feature of **pychain** is its rich set of built-in expressions that eliminate the need for trivial lambdas in your pipelines.
+
+These expressions are composable, type-safe, and make your code more declarative and readable.
+
+### Why Use Built-in Expressions?
+
+- **No more `lambda x: ...` for common operations**: Write `pc.gt(5)` instead of `lambda x: x > 5`, `pc.item(0)` instead of `lambda x: x[0]`, etc.
+- **Composability**: Expressions can be combined and nested.
+- **Readability**: Pipelines are easier to read and maintain.
+- **Type safety**: Expressions are typed and checked.
+
+### Core Expression Families
+
+#### Comparison & Logic
+
+- `pc.eq(value)`, `pc.ne(value)`, `pc.gt(value)`, `pc.ge(value)`, `pc.lt(value)`, `pc.le(value)`
+- `pc.isin(values)`, `pc.notin(values)`
+- `pc.is_none()`, `pc.not_none()`
+- `pc.and_(*predicates)`, `pc.or_(*predicates)`, `pc.not_(predicate)`
+
+#### Attribute & Item Access
+
+- `pc.item(idx)`: Get item at index/key (e.g., `item(0)` for first element)
+- `pc.attr(name)`: Get attribute (e.g., `attr('foo')`)
+- `pc.method(name, *args, **kwargs)`: Call method (e.g., `method('lower')`)
+
+#### Arithmetic & Math
+
+- `pc.add(value)`, `pc.sub(value)`, `pc.mul(value)`, `pc.truediv(value)`, `pc.floordiv(value)`, `pc.mod(value)`, `pc.pow(value)`
+- `pc.neg()`, `pc.abs()`
+
+#### Function Composition
+
+- `pc.pipe(*funcs)`: Compose multiple functions left-to-right
+- `pc.compose(*funcs)`: Compose multiple functions right-to-left
+
+#### Utility
+
+- `pc.identity()`: Returns the input unchanged
+- `pc.const(value)`: Always returns the given value
+- `pc.call(func, *args, **kwargs)`: Calls a function with arguments
+
+### Examples
+
+#### Filtering with Expressions
+
+```python
+import src.pychain as pc
+
+result = (
+    pc.from_range(1, 10)
+    .filter(pc.gt(5))  # instead of .filter(lambda x: x > 5)
+    .convert_to.list()
+)
+# result: [6, 7, 8, 9]
+```
+
+### When to Use Expressions
+
+- Whenever you would write a trivial lambda (e.g., `lambda x: x > 5`, `lambda x: x[0]`, `lambda x: x.foo()`)
+- When you want to compose or combine simple operations
+- To improve readability and maintainability of your pipelines
+
+For a full list, see the `src/pychain/expressions.py` file or the API documentation.
+
+---
+
 ## Integration & Interoperability
 
 - **NumPy**: easy conversion via `from_np()` and `.convert_to.array()`

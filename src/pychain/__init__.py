@@ -1,6 +1,5 @@
 from functools import partial
 
-from ._implementations import DictChain, IterChain, ScalarChain
 from ._constructors import (
     from_dict_of_iterables,
     from_func,
@@ -12,8 +11,43 @@ from ._constructors import (
     read_json,
     read_ndjson,
 )
+from ._expressions import (
+    attr,
+    item,
+    method,
+    add,
+    eq,
+    floordiv,
+    ge,
+    gt,
+    le,
+    lt,
+    mod,
+    mul,
+    ne,
+    pow,
+    sub,
+    truediv,
+)
+from ._implementations import DictChain, IterChain, ScalarChain
 
 __all__: list[str] = [
+    "attr",
+    "method",
+    "add",
+    "sub",
+    "mul",
+    "truediv",
+    "floordiv",
+    "mod",
+    "pow",
+    "lt",
+    "le",
+    "eq",
+    "ne",
+    "gt",
+    "ge",
+    "item",
     "from_dict_of_iterables",
     "from_range",
     "partial",
