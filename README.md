@@ -42,7 +42,10 @@ uv add git+https://github.com/OutSquareCapital/pychain.git
 - All transformations are lazy where possible, supporting method chaining.
 - Data can be unwrapped at any time using `.unwrap()` or converted to standard types with `.convert_to` or `.convert_keys_to`.
 - File readers (read_csv, read_parquet, etc.) return columnar DictChain objects for easy column-wise processing.
-- All methods are discoverable via tab-completion on `chain`.
+- Always start with `chain` for new data pipelines.
+- Prefer method chaining over intermediate variables for clarity.
+- Use `.unwrap()` or `.convert_to` only at the end of a pipeline.
+- Using list comprehensions, for loops and generators inside pychain methods is considered an anti-pattern
 
 #### API Structure
 
@@ -66,23 +69,6 @@ uv add git+https://github.com/OutSquareCapital/pychain.git
 #### Integration
 
 - Designed to interoperate with pandas, polars, NumPy, and standard Python collections.
-
-#### Best Practices
-
-- Always start with `chain` for new data pipelines.
-- Prefer method chaining over intermediate variables for clarity.
-- Use `.unwrap()` or `.convert_to` only at the end of a pipeline.
-- For custom data sources, implement a conversion to a supported type and wrap with `chain`.
-
-#### Performance
-
-- Internally optimized for large data via lazy evaluation and efficient backends.
-- File readers use vectorized IO where possible.
-
-#### Limitations
-
-- Not all methods are available for all chain types; use tab-completion to discover available methods.
-- Some conversions may be lossy (e.g., DataFrame to dict for non-string keys).
 
 #### Further Reading
 
