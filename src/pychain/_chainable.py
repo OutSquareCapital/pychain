@@ -3,151 +3,142 @@ from collections.abc import Callable, Container
 from dataclasses import dataclass, field
 from typing import Any, Self
 from functools import partial
-import cytoolz as cz
 
 from . import fn
 
 
 @dataclass(slots=True, frozen=True)
 class ChainableOp:
-    _pipeline: list[Callable[..., Any]] = field(
-        default_factory=list[Callable[..., Any]]
-    )
+    _pipeline: Callable[[Any], Any] = field(default=lambda x: x)
 
     def __call__(self, value: Any) -> Any:
-        """
-        Apply the chained operations to the input value.
+        return self._pipeline(value)
 
-        Example:
-            >>> ChainableOp([lambda x: x + 1])(2)
-            3
-        """
-        if not self._pipeline:
-            return value
-        return cz.functoolz.pipe(value, *self._pipeline)
+    def _chain(self, new_op: Callable[[Any], Any]) -> Self:
+        def composed(x: Any) -> Any:
+            return new_op(self._pipeline(x))
 
-    def _chain(self, new_op: Callable[..., Any]) -> Self:
-        return self.__class__(self._pipeline + [new_op])
+        return self.__class__(_pipeline=composed)
 
     def __add__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return self(value) + other(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __radd__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return other + self(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __sub__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return self(value) - other(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __rsub__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return other - self(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __mul__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return self(value) * other(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __rmul__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return other * self(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __truediv__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return self(value) / other(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __rtruediv__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return other / self(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __floordiv__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return self(value) // other(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __rfloordiv__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return other // self(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __mod__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return self(value) % other(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __rmod__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return other % self(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __pow__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return self(value) ** other(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __rpow__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return other ** self(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __neg__(self) -> Self:
         def neg_logic(value: Any) -> Any:
             return -self(value)
 
-        return self.__class__(_pipeline=[neg_logic])
+        return self.__class__(_pipeline=neg_logic)
 
     def __pos__(self) -> Self:
         def pos_logic(value: Any) -> Any:
             return +self(value)
 
-        return self.__class__(_pipeline=[pos_logic])
+        return self.__class__(_pipeline=pos_logic)
 
     def __invert__(self) -> Self:
         def invert_logic(value: Any) -> Any:
             return ~self(value)
 
-        return self.__class__(_pipeline=[invert_logic])
+        return self.__class__(_pipeline=invert_logic)
 
     def __and__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return self(value) and other(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __or__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return self(value) or other(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def __xor__(self, other: Self) -> Self:
         def combined_logic(value: Any) -> bool:
             return self(value) ^ other(value)
 
-        return self.__class__(_pipeline=[combined_logic])
+        return self.__class__(_pipeline=combined_logic)
 
     def attr(self, *names: str) -> Self:
         """
@@ -287,7 +278,7 @@ class ChainableOp:
             >>> ChainableOp().neg()(5)
             -5
         """
-        return self._chain(fn.neg)
+        return self._chain(fn.neg())
 
     def is_true(self) -> Self:
         """
@@ -347,7 +338,7 @@ class ChainableOp:
             >>> ChainableOp().is_distinct()([1, 2, 3])
             True
         """
-        return self._chain(fn.is_distinct)
+        return self._chain(fn.is_distinct())
 
     def is_iterable(self) -> Self:
         """
@@ -357,7 +348,7 @@ class ChainableOp:
             >>> ChainableOp().is_iterable()([1, 2, 3])
             True
         """
-        return self._chain(fn.is_iterable)
+        return self._chain(fn.is_iterable())
 
     def is_all(self) -> Self:
         """
@@ -367,7 +358,7 @@ class ChainableOp:
             >>> ChainableOp().is_all()([1, 2, 3])
             True
         """
-        return self._chain(fn.is_all)
+        return self._chain(fn.is_all())
 
     def is_any(self) -> Self:
         """
@@ -377,7 +368,7 @@ class ChainableOp:
             >>> ChainableOp().is_any()([0, 1, 2])
             True
         """
-        return self._chain(fn.is_any)
+        return self._chain(fn.is_any())
 
     def eq(self, value: Any) -> Self:
         """
