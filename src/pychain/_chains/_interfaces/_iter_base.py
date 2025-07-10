@@ -77,7 +77,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain(data).starmap(add).convert_to.list()
             [3, 7]
         """
-        return self.into(f=ft.partial(it.starmap, f)) # type: ignore
+        return self.into(f=ft.partial(it.starmap, f))  # type: ignore
 
     def compose[V1](self, *fns: TransformFunc[V, V1]) -> "IterChain[V1]":
         return self.into(f=ft.partial(map, cz.functoolz.compose_left(*fns)))
@@ -423,4 +423,4 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> chain.product(range(2), ["a", "b"]).convert_to.list()
             [(0, 'a'), (0, 'b'), (1, 'a'), (1, 'b')]
         """
-        return self.into(ft.partial(it.product, other)) # type: ignore
+        return self.into(ft.partial(it.product, other))  # type: ignore

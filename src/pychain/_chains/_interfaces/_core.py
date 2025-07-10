@@ -7,7 +7,7 @@ from typing import Any, Self
 import cytoolz as cz
 
 from ... import fn
-from ..._protocols import ProcessFunc, ThreadFunc, TransformFunc
+from ..._protocols import ProcessFunc, ThreadFunc
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -30,20 +30,6 @@ class AbstractChain[T]:
         """
         self._pipeline.append(f)
         return self
-
-    def into(self, f: TransformFunc[T, Any]):
-        """
-        Return a new chain with the function composed onto the pipeline.
-
-        Example:
-            >>> chain = AbstractChain([1, 2, 3]).into(reversed)
-            >>> list(chain.unwrap())
-            [3, 2, 1]
-        """
-        return self.__class__(
-            _value=self._value,
-            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
-        )
 
     def thread_first(self, *fns: ThreadFunc[T]) -> Self:
         """

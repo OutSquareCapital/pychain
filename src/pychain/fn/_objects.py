@@ -4,7 +4,7 @@ from typing import Any
 
 import cytoolz as cz
 
-from .._protocols import ThreadFunc
+from .._protocols import ThreadFunc, ProcessFunc
 
 
 def attr[T](*names: str) -> Callable[[T], T]:
@@ -33,3 +33,7 @@ def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
 
 def dissoc[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
     return cz.dicttoolz.dissoc(d, *keys)
+
+
+def compose[T1](*fns: ProcessFunc[T1]):
+    return cz.functoolz.compose_left(*fns)

@@ -1,9 +1,9 @@
-from .aggregator import BaseAggregator
-from .getter import BaseGetter
+from .aggregator import Aggregator
+from .getter import Getter
 from .converter import Converter
 
 __all__ = [
-    "BaseAggregator",
-    "BaseGetter",
+    "Aggregator",
+    "Getter",
     "Converter",
 ]

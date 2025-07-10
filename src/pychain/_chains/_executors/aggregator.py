@@ -1,21 +1,18 @@
 from dataclasses import dataclass
 from collections.abc import Callable, Iterable
-from typing import Any, Literal, TYPE_CHECKING
+from typing import Any, Literal
 from functools import partial
 import statistics as stats
 
-if TYPE_CHECKING:
-    from .._main import ScalarChain
-
 
 @dataclass(slots=True, frozen=True)
-class BaseAggregator[T]:
+class Aggregator[T]:
     _value: Iterable[T]
 
-    def __call__(self, func: Callable[[Iterable[Any]], Any]) -> "ScalarChain[Any]":
-        raise NotImplementedError
+    def __call__(self, on: Callable[[Iterable[Any]], Any]):
+        return on(self._value)
 
-    def mean(self) -> "ScalarChain[float]":
+    def mean(self) -> float | int:
         """
         Calculate the mean of the input data.
 
@@ -25,7 +22,7 @@ class BaseAggregator[T]:
         """
         return self(stats.mean)
 
-    def median(self) -> "ScalarChain[float]":
+    def median(self) -> float | int:
         """
         Calculate the median of the input data.
 
@@ -35,7 +32,7 @@ class BaseAggregator[T]:
         """
         return self(stats.median)
 
-    def mode(self) -> "ScalarChain[Any]":
+    def mode(self) -> T:
         """
         Calculate the mode of the input data.
 
@@ -45,7 +42,7 @@ class BaseAggregator[T]:
         """
         return self(stats.mode)
 
-    def stdev(self) -> "ScalarChain[float]":
+    def stdev(self) -> float | int:
         """
         Calculate the sample standard deviation of the input data.
 
@@ -55,7 +52,7 @@ class BaseAggregator[T]:
         """
         return self(stats.stdev)
 
-    def variance(self) -> "ScalarChain[float]":
+    def variance(self) -> float | int:
         """
         Calculate the sample variance of the input data.
 
@@ -65,7 +62,7 @@ class BaseAggregator[T]:
         """
         return self(stats.variance)
 
-    def pvariance(self) -> "ScalarChain[float]":
+    def pvariance(self) -> float | int:
         """
         Calculate the population variance of the input data.
 
@@ -75,7 +72,9 @@ class BaseAggregator[T]:
         """
         return self(stats.pvariance)
 
-    def quantiles(self, n: int, method: Literal["inclusive", "exclusive"]):
+    def quantiles(
+        self, n: int, method: Literal["inclusive", "exclusive"]
+    ) -> list[float | int]:
         """
         Calculate quantiles of the input data.
 
@@ -88,7 +87,7 @@ class BaseAggregator[T]:
         """
         return self(partial(stats.quantiles, n=n, method=method))
 
-    def median_low(self) -> "ScalarChain[float]":
+    def median_low(self) -> float | int:
         """
         Calculate the low median of the input data.
 
@@ -98,7 +97,7 @@ class BaseAggregator[T]:
         """
         return self(stats.median_low)
 
-    def median_high(self) -> "ScalarChain[float]":
+    def median_high(self) -> float | int:
         """
         Calculate the high median of the input data.
 
@@ -108,7 +107,7 @@ class BaseAggregator[T]:
         """
         return self(stats.median_high)
 
-    def median_grouped(self) -> "ScalarChain[float]":
+    def median_grouped(self) -> float:
         """
         Calculate the median of grouped data.
 
@@ -118,7 +117,7 @@ class BaseAggregator[T]:
         """
         return self(stats.median_grouped)
 
-    def sum(self) -> "ScalarChain[Any]":
+    def sum(self) -> T:
         """
         Calculate the sum of the input data.
 
@@ -128,7 +127,7 @@ class BaseAggregator[T]:
         """
         return self(sum)
 
-    def min(self) -> "ScalarChain[float]":
+    def min(self) -> T:
         """
         Find the minimum value in the input data.
 
@@ -138,7 +137,7 @@ class BaseAggregator[T]:
         """
         return self(min)
 
-    def max(self) -> "ScalarChain[float]":
+    def max(self) -> T:
         """
         Find the maximum value in the input data.
 

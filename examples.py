@@ -1,6 +1,6 @@
 import numpy as np
 import polars as pl
-from src.pychain import op, chain, fn
+from src.pychain import chain, fn
 
 
 def basic_example() -> None:
@@ -36,9 +36,9 @@ def data_agg_and_transform() -> None:
     py_result: dict[str, int] = {k: sum(v) for k, v in grouped.items()}
 
     chain_result: dict[str, int] = (
-        chain.from_iter(data)
+        chain(data)
         .into_groups(lambda d: d.category)
-        .map_values(lambda v: v.map(op("value")).agg.sum().unwrap())
+        .map_values(lambda v: v.map(lambda x: x.value).agg.sum())
         .unwrap()
     )
     assert py_result == chain_result == {"A": 40, "B": 60}
@@ -48,9 +48,9 @@ def grouping_and_reducing() -> None:
     words: list[str] = ["apple", "banana", "apricot", "blueberry", "avocado"]
 
     result = (
-        chain.from_iter(words)
+        chain(words)
         .into_groups(fn.item(0))  # group by first letter
-        .map_values(lambda chain: chain.get.len().unwrap())
+        .map_values(lambda chain: chain.get.len())
         .unwrap()
     )
     assert result == {"a": 3, "b": 2}
@@ -64,7 +64,7 @@ def nested_chaining_with_dictchain() -> None:
 
     result: dict[str, list[int]] = (
         chain.from_dict(data)
-        .map_values(lambda v: chain.from_iter(v).cumsum().convert_to.list())
+        .map_values(lambda v: chain(v).cumsum().convert_to.list())
         .unwrap()
     )
     assert result == {"a": [1, 3, 6], "b": [4, 9, 15]}

@@ -4,85 +4,12 @@ from typing import Any
 
 import cytoolz as cz
 
-from ._executors import BaseAggregator, BaseGetter
+from .._protocols import AggFunc, TransformFunc
+from ._executors import Aggregator, Getter
 from ._interfaces import (
-    AbstractChain,
     BaseDictChain,
     BaseIterChain,
 )
-from .._protocols import TransformFunc, AggFunc, ProcessFunc
-
-
-@dataclass(slots=True, frozen=True, repr=False)
-class ScalarChain[T](AbstractChain[T]):
-    """
-    Chain and transform single (scalar) values.
-    """
-
-    def compose[T1](self, *fns: ProcessFunc[T1]) -> "ScalarChain[T1]":
-        """
-        Compose multiple functions and add to pipeline.
-        """
-        return self.into(f=(cz.functoolz.compose_left(*fns)))
-
-    def into[T1](self, f: TransformFunc[T, T1]) -> "ScalarChain[T1]":
-        """
-        Transform the scalar value and return a new ScalarChain.
-
-        Example:
-            >>> ScalarChain(2).into(lambda x: x + 3).unwrap()
-            5
-        """
-        return ScalarChain(
-            _value=self._value,
-            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
-        )  # type: ignore
-
-    def into_iter(self, n: int) -> "IterChain[T]":
-        """
-        Repeat the scalar value n times as an IterChain.
-
-        Example:
-            >>> ScalarChain(1).into_iter(3).convert_to.list()
-            [1, 1, 1]
-        """
-        return IterChain(_value=iter([self.unwrap()])).repeat(n=n)
-
-    def into_dict(self, n: int) -> "DictChain[int, T]":
-        """
-        Create a DictChain with n keys, all mapped to the scalar value.
-
-        Example:
-            >>> ScalarChain("x").into_dict(2).unwrap()
-            {0: 'x', 1: 'x'}
-        """
-        val: T = self.unwrap()
-        return DictChain(_value={i: val for i in range(n)})
-
-    def into_dict_iter[K](self, n: int, *keys: K) -> "DictChain[K, IterChain[T]]":
-        """
-        Map each key to an IterChain of the scalar value repeated n times.
-
-        Example:
-            >>> ScalarChain(1).into_dict_iter(2, "a", "b").unwrap()[
-            ...     "a"
-            ... ].convert_to.list()
-            [1, 1]
-        """
-        val: IterChain[T] = self.into_iter(n=n)
-        return DictChain(_value={k: val for k in keys})
-
-
-@dataclass(slots=True, frozen=True)
-class Getter[V](BaseGetter[V]):
-    def __call__[V1](self, f: Callable[[Iterable[V]], V1]) -> ScalarChain[V1]:
-        return ScalarChain(_value=f(self._value))
-
-
-@dataclass(slots=True, frozen=True)
-class Aggregator[T](BaseAggregator[T]):
-    def __call__(self, on: Callable[[Iterable[T]], Any]) -> ScalarChain[Any]:
-        return ScalarChain(_value=on(self._value))
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -252,7 +179,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
         """
         return Getter(_value=self.unwrap().items())
 
-    def agg_keys[K1](self, on: AggFunc[K, K1]) -> ScalarChain[K1]:
+    def agg_keys[K1](self, on: AggFunc[K, K1]) -> K1:
         """
         Aggregate the dictionary's keys with a function.
 
@@ -260,9 +187,9 @@ class DictChain[K, V](BaseDictChain[K, V]):
             >>> DictChain({"a": 1, "b": 2}).agg_keys(list).unwrap()
             ['a', 'b']
         """
-        return ScalarChain(_value=on(self.unwrap().keys()))
+        return on(self.unwrap().keys())
 
-    def agg_values[V1](self, on: AggFunc[V, V1]) -> ScalarChain[V1]:
+    def agg_values[V1](self, on: AggFunc[V, V1]) -> V1:
         """
         Aggregate the dictionary's values with a function.
 
@@ -270,9 +197,9 @@ class DictChain[K, V](BaseDictChain[K, V]):
             >>> DictChain({"a": 1, "b": 2}).agg_values(sum).unwrap()
             3
         """
-        return ScalarChain(_value=on(self.unwrap().values()))
+        return on(self.unwrap().values())
 
-    def agg_items[V1](self, on: AggFunc[tuple[K, V], V1]) -> ScalarChain[V1]:
+    def agg_items[V1](self, on: AggFunc[tuple[K, V], V1]) -> V1:
         """
         Aggregate the dictionary's items with a function.
 
@@ -280,7 +207,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
             >>> DictChain({"a": 1, "b": 2}).agg_items(len).unwrap()
             2
         """
-        return ScalarChain(_value=on(self.unwrap().items()))
+        return on(self.unwrap().items())
 
     def into_iter_keys(self) -> "IterChain[K]":
         """

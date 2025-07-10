@@ -7,22 +7,22 @@ import pandas as pd
 import polars as pl
 from numpy.typing import NDArray
 
-from ._chains import DictChain, IterChain, ScalarChain
+from ._chains import DictChain, IterChain
 from ._chainable import ChainableOp
 
 
 @dataclass(slots=True)
 class ChainConstructor:
-    def __call__[V](self, value: V) -> ScalarChain[V]:
+    def __call__[V](self, value: Iterable[V]) -> IterChain[V]:
         """
-        Wrap a scalar value in a ScalarChain for chainable operations.
+        Convert an iterable to an IterChain.
 
         Example:
             >>> chain = ChainConstructor()
-            >>> chain(42).unwrap()
-            42
+            >>> chain([1, 2, 3]).convert_to.list()
+            [1, 2, 3]
         """
-        return ScalarChain(_value=value)
+        return IterChain(value)
 
     def read_parquet(self, file_path: str) -> DictChain[str, list[Any]]:
         """
@@ -71,17 +71,6 @@ class ChainConstructor:
             ['col1', 'col2', ...]
         """
         return self.from_pl(pl.read_ndjson(file_path))
-
-    def from_iter[V](self, iterable: Iterable[V]) -> IterChain[V]:
-        """
-        Convert an iterable to an IterChain.
-
-        Example:
-            >>> chain = ChainConstructor()
-            >>> chain.from_iter([1, 2, 3]).convert_to.list()
-            [1, 2, 3]
-        """
-        return IterChain(iterable)
 
     def from_pl(self, df: pl.DataFrame) -> DictChain[str, list[Any]]:
         """
