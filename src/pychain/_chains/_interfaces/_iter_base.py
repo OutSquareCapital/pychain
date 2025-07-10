@@ -45,6 +45,29 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
         )  # type: ignore
 
+    def map[V1](self, f: TransformFunc[V, V1]) -> "IterChain[V1]":
+        """
+        Maps a function over elements (like built-in map).
+
+        Example:
+            >>> BaseIterChain([1, 2]).map(lambda x: x * 2).convert_to.list()
+            [2, 4]
+        """
+        return self.into(f=ft.partial(map, f))
+
+    def flat_map[V1](self, f: TransformFunc[V, Iterable[V1]]) -> "IterChain[V1]":
+        """
+        Maps a function and flattens the result (see cytoolz.concatmap).
+
+        Example:
+            >>> BaseIterChain([1, 2]).flat_map(lambda x: [x, x + 10]).convert_to.list()
+            [1, 11, 2, 12]
+        """
+        return self.into(f=ft.partial(fn.flat_map, func=f))
+
+    def compose[V1](self, *fns: TransformFunc[V, V1]) -> "IterChain[V1]":
+        return self.into(f=ft.partial(map, cz.functoolz.compose_left(*fns)))
+
     def take_while(self, predicate: CheckFunc[V]) -> Self:
         """
         Takes elements while predicate is true (like itertools.takewhile).
@@ -304,26 +327,6 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             [(0, 'a'), (1, 'b')]
         """
         return self.into(f=enumerate)
-
-    def map[V1](self, f: TransformFunc[V, V1]) -> "IterChain[V1]":
-        """
-        Maps a function over elements (like built-in map).
-
-        Example:
-            >>> BaseIterChain([1, 2]).map(lambda x: x * 2).convert_to.list()
-            [2, 4]
-        """
-        return self.into(f=ft.partial(map, f))
-
-    def flat_map[V1](self, f: TransformFunc[V, Iterable[V1]]) -> "IterChain[V1]":
-        """
-        Maps a function and flattens the result (see cytoolz.concatmap).
-
-        Example:
-            >>> BaseIterChain([1, 2]).flat_map(lambda x: [x, x + 10]).convert_to.list()
-            [1, 11, 2, 12]
-        """
-        return self.into(f=ft.partial(fn.flat_map, func=f))
 
     def flatten(self) -> "IterChain[Any]":
         """

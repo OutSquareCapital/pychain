@@ -10,7 +10,7 @@ from ._interfaces import (
     BaseDictChain,
     BaseIterChain,
 )
-from .._protocols import TransformFunc, AggFunc
+from .._protocols import TransformFunc, AggFunc, ProcessFunc
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -18,6 +18,12 @@ class ScalarChain[T](AbstractChain[T]):
     """
     Chain and transform single (scalar) values.
     """
+
+    def compose[T1](self, *fns: ProcessFunc[T1]) -> "ScalarChain[T1]":
+        """
+        Compose multiple functions and add to pipeline.
+        """
+        return self.into(f=(cz.functoolz.compose_left(*fns)))
 
     def into[T1](self, f: TransformFunc[T, T1]) -> "ScalarChain[T1]":
         """

@@ -45,17 +45,6 @@ class AbstractChain[T]:
             _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
         )
 
-    def compose(self, *fns: ProcessFunc[T]) -> Self:
-        """
-        Compose multiple functions and add to pipeline.
-
-        Example:
-            >>> chain = AbstractChain([1, 2, 3]).compose(sum, lambda x: x * 10)
-            >>> chain.unwrap()
-            60
-        """
-        return self.do(f=(cz.functoolz.compose_left(*fns)))
-
     def thread_first(self, *fns: ThreadFunc[T]) -> Self:
         """
         Thread value as first argument through functions (see cytoolz.thread_first).
