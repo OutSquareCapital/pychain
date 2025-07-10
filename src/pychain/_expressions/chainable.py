@@ -420,5 +420,13 @@ class ChainableOp:
         """
         return self._chain(le(value))
 
+class OpSelector:
+    def __call__(self, name: str|None=None) -> ChainableOp:
+        if not name:
+            return ChainableOp()
+        return ChainableOp().attr(name)
+    
+    def __getattr__(self, name: str) -> ChainableOp:
+        return self(name)
 
-op = ChainableOp()
+op = OpSelector()

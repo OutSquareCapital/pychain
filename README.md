@@ -77,39 +77,46 @@ These expressions are composable, type-safe, and make your code more declarative
 
 ### Why Use Built-in Expressions?
 
-- **No more `lambda x: ...` for common operations**: Write `pc.gt(5)` instead of `lambda x: x > 5`, `pc.item(0)` instead of `lambda x: x[0]`, etc.
+- **No more `lambda x: ...` for common operations**: Write `op().gt(5)` instead of `lambda x: x > 5`, `op().item(0)` instead of `lambda x: x[0]`, etc.
 - **Composability**: Expressions can be combined and nested.
 - **Readability**: Pipelines are easier to read and maintain.
-- **Type safety**: Expressions are typed and checked.
 
 ### Core Expression Families
 
 #### Comparison & Logic
 
-- `pc.eq(value)`, `pc.ne(value)`, `pc.gt(value)`, `pc.ge(value)`, `pc.lt(value)`, `pc.le(value)`
-- `pc.isin(values)`, `pc.notin(values)`
-- `pc.is_none()`, `pc.not_none()`
+- `eq(value)`, `ne(value)`, `gt(value)`, `ge(value)`, `lt(value)`, `le(value)`
+- `isin(values)`, `notin(values)`
+- `is_none()`, `not_none()`
 
 #### Attribute & Item Access
 
-- `pc.item(idx)`: Get item at index/key (e.g., `item(0)` for first element)
-- `pc.attr(name)`: Get attribute (e.g., `attr('foo')`)
-- `pc.method(name, *args, **kwargs)`: Call method (e.g., `method('lower')`)
+- `item(idx)`: Get item at index/key (e.g., `item(0)` for first element)
+- `attr(name)`: Get attribute (e.g., `attr('foo')`)
+- `method(name, *args, **kwargs)`: Call method (e.g., `method('lower')`)
 
 #### Arithmetic & Math
 
-- `pc.add(value)`, `pc.sub(value)`, `pc.mul(value)`, `pc.truediv(value)`, `pc.floordiv(value)`, `pc.mod(value)`, `pc.pow(value)`, `pc.neg()`
+- `add(value)`, `sub(value)`, `mul(value)`, `truediv(value)`, `floordiv(value)`, `mod(value)`, `pow(value)`, `neg()`
 
 ### Examples
 
 #### Filtering with Expressions
 
 ```python
-import src.pychain as pc
+from typing import NamedTuple, TypedDict
+import pychain as pc
+from pychain import op
 
-result = (
+class Point(NamedTuple):
+    x: int
+    y: int
+
+(
     pc.from_range(1, 10)
-    .filter(pc.gt(5))  # instead of .filter(lambda x: x > 5)
+    .map(lambda x: Point(x, x * 2))
+    .filter(op("x").gt(5))  # instead of .filter(lambda point: point.x > 5)
+    .map(op("x")) # instead of .map(lambda point: point.x)
     .convert_to.list()
 )
 # result: [6, 7, 8, 9]

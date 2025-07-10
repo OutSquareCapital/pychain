@@ -3,11 +3,12 @@ import polars as pl
 
 import src.pychain as pc
 from src.pychain import op
+
 def basic_example() -> None:
     result = (
         pc.from_range(1, 6)  # [1, 2, 3, 4, 5]
-        .map(op.mul(2))  # [2, 4, 6, 8, 10]
-        .filter(op.gt(5))  # [6, 8, 10]
+        .map(op().mul(2))  # [2, 4, 6, 8, 10]
+        .filter(op().gt(5))  # [6, 8, 10]
         .cumsum()  # [6, 14, 24]
         .convert_to.list()  # [6, 14, 24]
     )
@@ -49,8 +50,8 @@ def grouping_and_reducing() -> None:
 
     result = (
         pc.IterChain(words)
-        .into_groups(op.item(0))  # group by first letter
-        .map_values(lambda chain: chain.agg(len).unwrap()) # type: ignore
+        .into_groups(op().item(0))  # group by first letter
+        .map_values(lambda chain: chain.agg(len).unwrap())  # type: ignore
         .unwrap()
     )
     assert result == {"a": 3, "b": 2}

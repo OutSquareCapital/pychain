@@ -1,6 +1,6 @@
 [project]
 name = "pychain"
-version = "0.3.61"
+version = "0.3.7"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
