@@ -12,6 +12,7 @@ from .._executors import Converter
 from ... import fn
 from ..._protocols import CheckFunc, ProcessFunc, TransformFunc
 from ._core import AbstractChain
+from .._executors import Aggregator, Getter
 
 if TYPE_CHECKING:
     from .._main import IterChain
@@ -20,6 +21,28 @@ if TYPE_CHECKING:
 @dataclass(slots=True, frozen=True, repr=False)
 class BaseIterChain[V](AbstractChain[Iterable[V]]):
     _value: Iterable[V]
+
+    @property
+    def get(self) -> Getter[V]:
+        """
+        Return a Getter for extracting from the iterable.
+
+        Example:
+            >>> BaseIterChain([1, 2, 3]).get.first()
+            1
+        """
+        return Getter(_value=self.unwrap())
+
+    @property
+    def agg(self) -> Aggregator[V]:
+        """
+        Aggregate the iterable using a function.
+
+        Example:
+            >>> BaseIterChain([1, 2, 3]).agg(sum)
+            6
+        """
+        return Aggregator(_value=self.unwrap())
 
     @property
     def convert_to(self) -> Converter[V]:

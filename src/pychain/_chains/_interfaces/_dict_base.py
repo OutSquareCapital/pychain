@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING, Self
 
 import cytoolz as cz
 
-from ..._protocols import TransformFunc, CheckFunc, ProcessFunc
+from ..._protocols import TransformFunc, CheckFunc, ProcessFunc, AggFunc
 from ._core import AbstractChain
-from .._executors import Converter
+from .._executors import Converter, Getter
 from ... import fn
 
 if TYPE_CHECKING:
@@ -16,6 +16,69 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True, repr=False)
 class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
+    @property
+    def get_key(self) -> Getter[K]:
+        """
+        Return a Getter for the dictionary's keys.
+
+        Example:
+            >>> BaseDictChain({"a": 1}).get_key.first()
+            'a'
+        """
+        return Getter(_value=self.unwrap().keys())
+
+    @property
+    def get_value(self) -> Getter[V]:
+        """
+        Return a Getter for the dictionary's values.
+
+        Example:
+            >>> BaseDictChain({"a": 1}).get_value.first()
+            1
+        """
+        return Getter(_value=self.unwrap().values())
+
+    @property
+    def get_item(self) -> Getter[tuple[K, V]]:
+        """
+        Return a Getter for the dictionary's items.
+
+        Example:
+            >>> BaseDictChain({"a": 1}).get_item.first()
+            ('a', 1)
+        """
+        return Getter(_value=self.unwrap().items())
+
+    def agg_keys[K1](self, on: AggFunc[K, K1]) -> K1:
+        """
+        Aggregate the dictionary's keys with a function.
+
+        Example:
+            >>> BaseDictChain({"a": 1, "b": 2}).agg_keys(list)
+            ['a', 'b']
+        """
+        return on(self.unwrap().keys())
+
+    def agg_values[V1](self, on: AggFunc[V, V1]) -> V1:
+        """
+        Aggregate the dictionary's values with a function.
+
+        Example:
+            >>> BaseDictChain({"a": 1, "b": 2}).agg_values(sum)
+            3
+        """
+        return on(self.unwrap().values())
+
+    def agg_items[V1](self, on: AggFunc[tuple[K, V], V1]) -> V1:
+        """
+        Aggregate the dictionary's items with a function.
+
+        Example:
+            >>> BaseDictChain({"a": 1, "b": 2}).agg_items(len)
+            2
+        """
+        return on(self.unwrap().items())
+
     @property
     def convert_values_to(self) -> Converter[V]:
         """

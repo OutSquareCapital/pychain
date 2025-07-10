@@ -4,8 +4,7 @@ from typing import Any
 
 import cytoolz as cz
 
-from .._protocols import AggFunc, TransformFunc
-from ._executors import Aggregator, Getter
+from .._protocols import TransformFunc
 from ._interfaces import (
     BaseDictChain,
     BaseIterChain,
@@ -18,28 +17,6 @@ class IterChain[V](BaseIterChain[V]):
     Chain, transform, and aggregate iterables.
     """
 
-    @property
-    def get(self) -> Getter[V]:
-        """
-        Return a Getter for extracting from the iterable.
-
-        Example:
-            >>> IterChain([1, 2, 3]).get.first()
-            1
-        """
-        return Getter(_value=self.unwrap())
-
-    @property
-    def agg(self) -> Aggregator[V]:
-        """
-        Aggregate the iterable using a function.
-
-        Example:
-            >>> IterChain([1, 2, 3]).agg(sum)
-            6
-        """
-        return Aggregator(_value=self.unwrap())
-
     def into_dict(self) -> "DictChain[int, V]":
         """
         Convert the iterable into a DictChain with integer keys.
@@ -50,7 +27,7 @@ class IterChain[V](BaseIterChain[V]):
         """
         return DictChain(_value={i: v for i, v in enumerate(self.unwrap())})
 
-    def into_dict_iter[K](self, n: int) -> "DictChain[int, IterChain[V]]":
+    def into_dict_iter(self, n: int) -> "DictChain[int, IterChain[V]]":
         """
         Map each integer key to this IterChain, n times.
 
@@ -145,69 +122,6 @@ class DictChain[K, V](BaseDictChain[K, V]):
     """
     Chain, transform, and aggregate dictionaries.
     """
-
-    @property
-    def get_key(self) -> Getter[K]:
-        """
-        Return a Getter for the dictionary's keys.
-
-        Example:
-            >>> DictChain({"a": 1}).get_key.first()
-            'a'
-        """
-        return Getter(_value=self.unwrap().keys())
-
-    @property
-    def get_value(self) -> Getter[V]:
-        """
-        Return a Getter for the dictionary's values.
-
-        Example:
-            >>> DictChain({"a": 1}).get_value.first()
-            1
-        """
-        return Getter(_value=self.unwrap().values())
-
-    @property
-    def get_item(self) -> Getter[tuple[K, V]]:
-        """
-        Return a Getter for the dictionary's items.
-
-        Example:
-            >>> DictChain({"a": 1}).get_item.first()
-            ('a', 1)
-        """
-        return Getter(_value=self.unwrap().items())
-
-    def agg_keys[K1](self, on: AggFunc[K, K1]) -> K1:
-        """
-        Aggregate the dictionary's keys with a function.
-
-        Example:
-            >>> DictChain({"a": 1, "b": 2}).agg_keys(list)
-            ['a', 'b']
-        """
-        return on(self.unwrap().keys())
-
-    def agg_values[V1](self, on: AggFunc[V, V1]) -> V1:
-        """
-        Aggregate the dictionary's values with a function.
-
-        Example:
-            >>> DictChain({"a": 1, "b": 2}).agg_values(sum)
-            3
-        """
-        return on(self.unwrap().values())
-
-    def agg_items[V1](self, on: AggFunc[tuple[K, V], V1]) -> V1:
-        """
-        Aggregate the dictionary's items with a function.
-
-        Example:
-            >>> DictChain({"a": 1, "b": 2}).agg_items(len)
-            2
-        """
-        return on(self.unwrap().items())
 
     def into_iter_keys(self) -> "IterChain[K]":
         """
