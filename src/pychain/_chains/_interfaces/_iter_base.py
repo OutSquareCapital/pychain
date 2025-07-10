@@ -65,6 +65,20 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         """
         return self.into(f=ft.partial(fn.flat_map, func=f))
 
+    def starmap[V1](self, f: TransformFunc[V, V1]) -> "IterChain[V1]":
+        """
+        Maps a function over elements, unpacking each tuple element as arguments
+        (like itertools.starmap).
+
+        Example:
+            >>> data = [(1, 2), (3, 4)]
+            >>> def add(x, y):
+            ...     return x + y
+            >>> BaseIterChain(data).starmap(add).convert_to.list()
+            [3, 7]
+        """
+        return self.into(f=ft.partial(it.starmap, f)) # type: ignore
+
     def compose[V1](self, *fns: TransformFunc[V, V1]) -> "IterChain[V1]":
         return self.into(f=ft.partial(map, cz.functoolz.compose_left(*fns)))
 
@@ -400,3 +414,13 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             [(1, 2, 3), (2, 3, 4)]
         """
         return self.into(f=ft.partial(cz.itertoolz.sliding_window, length))
+
+    def product[V1](self, other: Iterable[V1]) -> "IterChain[tuple[V, V1]]":
+        """
+        Creates an IterChain from the Cartesian product of input iterables.
+
+        Example:
+            >>> chain.product(range(2), ["a", "b"]).convert_to.list()
+            [(0, 'a'), (0, 'b'), (1, 'a'), (1, 'b')]
+        """
+        return self.into(ft.partial(it.product, other)) # type: ignore
