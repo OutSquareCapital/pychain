@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING, Self
 
 import cytoolz as cz
 
-from .._protocols import TransformFunc, CheckFunc, ProcessFunc
+from ..._protocols import TransformFunc, CheckFunc, ProcessFunc
 from ._core import AbstractChain
 from .._executors import Converter
-from ..fn import merge, dissoc
+from ... import fn
 
 if TYPE_CHECKING:
     from .._main import DictChain
@@ -187,7 +187,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> BaseDictChain({"a": 1}).merge({"b": 2}).unwrap()
             {'a': 1, 'b': 2}
         """
-        return self.do(f=ft.partial(merge, others=others))
+        return self.do(f=ft.partial(fn.merge, others=others))
 
     def merge_with(self, f: Callable[..., V], *others: dict[K, V]) -> Self:
         """
@@ -212,4 +212,4 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.drop("a").unwrap()
             {'b': 2}
         """
-        return self.do(f=ft.partial(dissoc, keys=keys))
+        return self.do(f=ft.partial(fn.dissoc, keys=keys))

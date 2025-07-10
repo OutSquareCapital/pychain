@@ -1,11 +1,11 @@
 import doctest
 import sys
 import src.pychain._constructors as _constructors
-import src.pychain._interfaces._core as _core
-import src.pychain._interfaces._dict_base as _dict_base
-import src.pychain._executors as _executors
-import src.pychain._main as _main
-import src.pychain._interfaces._iter_base as _iter_base
+import src.pychain._chains._interfaces._core as _core
+import src.pychain._chains._interfaces._dict_base as _dict_base
+import src.pychain._chains._executors as _executors
+import src.pychain._chains._main as _main
+import src.pychain._chains._interfaces._iter_base as _iter_base
 
 
 def run_all_doctests() -> None:

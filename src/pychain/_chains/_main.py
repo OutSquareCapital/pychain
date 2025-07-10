@@ -10,7 +10,7 @@ from ._interfaces import (
     BaseDictChain,
     BaseIterChain,
 )
-from ._protocols import TransformFunc, AggFunc
+from .._protocols import TransformFunc, AggFunc
 
 
 @dataclass(slots=True, frozen=True, repr=False)

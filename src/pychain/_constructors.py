@@ -7,7 +7,8 @@ import pandas as pd
 import polars as pl
 from numpy.typing import NDArray
 
-from ._main import DictChain, IterChain, ScalarChain
+from ._chains import DictChain, IterChain, ScalarChain
+from ._chainable import ChainableOp
 
 
 @dataclass(slots=True)
@@ -29,7 +30,9 @@ class ChainConstructor:
 
         Example:
             >>> chain = ChainConstructor()
-            >>> chain.read_parquet("data.parquet").convert_keys_to.list()  # doctest: +SKIP
+            >>> chain.read_parquet(
+            ...     "data.parquet"
+            ... ).convert_keys_to.list()  # doctest: +SKIP
             ['col1', 'col2', ...]
         """
         return self.from_pl(pl.read_parquet(file_path))
@@ -62,7 +65,9 @@ class ChainConstructor:
 
         Example:
             >>> chain = ChainConstructor()
-            >>> chain.read_ndjson("data.ndjson").convert_keys_to.list()  # doctest: +SKIP
+            >>> chain.read_ndjson(
+            ...     "data.ndjson"
+            ... ).convert_keys_to.list()  # doctest: +SKIP
             ['col1', 'col2', ...]
         """
         return self.from_pl(pl.read_ndjson(file_path))
@@ -141,10 +146,23 @@ class ChainConstructor:
 
         Example:
             >>> chain = ChainConstructor()
-            >>> chain.from_dict_of_iterables({"a": [1, 2]}).unwrap()["a"].convert_to.list()
+            >>> chain.from_dict_of_iterables({"a": [1, 2]}).unwrap()[
+            ...     "a"
+            ... ].convert_to.list()
             [1, 2]
         """
         return DictChain(_value={k: IterChain(_value=v) for k, v in data.items()})
 
 
+class OpConstructor:
+    def __call__(self, name: str | None = None) -> ChainableOp:
+        if not name:
+            return ChainableOp()
+        return ChainableOp().attr(name)
+
+    def __getattr__(self, name: str) -> ChainableOp:
+        return self(name)
+
+
+op = OpConstructor()
 chain = ChainConstructor()

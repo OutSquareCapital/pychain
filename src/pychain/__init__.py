@@ -1,6 +1,5 @@
 from . import fn
-from ._chainable import op
-from ._constructors import chain
+from ._constructors import chain, op
 
 __all__ = [
     "fn",

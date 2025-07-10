@@ -7,6 +7,7 @@ import cytoolz as cz
 
 from . import fn
 
+
 @dataclass(slots=True, frozen=True)
 class ChainableOp:
     _pipeline: list[Callable[..., Any]] = field(
@@ -337,7 +338,7 @@ class ChainableOp:
             True
         """
         return self._chain(fn.is_not_in(values))
-    
+
     def is_distinct(self) -> Self:
         """
         Check if the input is distinct (not repeated).
@@ -347,7 +348,7 @@ class ChainableOp:
             True
         """
         return self._chain(fn.is_distinct)
-    
+
     def is_iterable(self) -> Self:
         """
         Check if the input is iterable.
@@ -357,7 +358,7 @@ class ChainableOp:
             True
         """
         return self._chain(fn.is_iterable)
-    
+
     def is_all(self) -> Self:
         """
         Check if all elements in the input iterable are truthy.
@@ -367,7 +368,7 @@ class ChainableOp:
             True
         """
         return self._chain(fn.is_all)
-    
+
     def is_any(self) -> Self:
         """
         Check if any element in the input iterable is truthy.
@@ -437,16 +438,3 @@ class ChainableOp:
             True
         """
         return self._chain(fn.le(value))
-
-
-class OpSelector:
-    def __call__(self, name: str | None = None) -> ChainableOp:
-        if not name:
-            return ChainableOp()
-        return ChainableOp().attr(name)
-
-    def __getattr__(self, name: str) -> ChainableOp:
-        return self(name)
-
-
-op = OpSelector()
