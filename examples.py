@@ -1,14 +1,12 @@
 import numpy as np
 import polars as pl
-
-import src.pychain as pc
-from src.pychain import op
+from src.pychain import op, chain, fn
 
 def basic_example() -> None:
     result = (
-        pc.from_range(1, 6)  # [1, 2, 3, 4, 5]
-        .map(op().mul(2))  # [2, 4, 6, 8, 10]
-        .filter(op().gt(5))  # [6, 8, 10]
+        chain.from_range(1, 6)  # [1, 2, 3, 4, 5]
+        .map(fn.mul(2))  # [2, 4, 6, 8, 10]
+        .filter(fn.gt(5))  # [6, 8, 10]
         .cumsum()  # [6, 14, 24]
         .convert_to.list()  # [6, 14, 24]
     )
@@ -37,9 +35,9 @@ def data_agg_and_transform() -> None:
     py_result: dict[str, int] = {k: sum(v) for k, v in grouped.items()}
 
     chain_result: dict[str, int] = (
-        pc.IterChain(data)
+        chain.from_iter(data)
         .into_groups(lambda d: d.category)
-        .map_values(lambda v: v.map(lambda d: d.value).agg(sum).unwrap())
+        .map_values(lambda v: v.map(op("value")).agg.sum().unwrap())
         .unwrap()
     )
     assert py_result == chain_result == {"A": 40, "B": 60}
@@ -49,9 +47,9 @@ def grouping_and_reducing() -> None:
     words: list[str] = ["apple", "banana", "apricot", "blueberry", "avocado"]
 
     result = (
-        pc.IterChain(words)
-        .into_groups(op().item(0))  # group by first letter
-        .map_values(lambda chain: chain.agg(len).unwrap())  # type: ignore
+        chain.from_iter(words)
+        .into_groups(fn.item(0))  # group by first letter
+        .map_values(lambda chain: chain.get.len().unwrap())
         .unwrap()
     )
     assert result == {"a": 3, "b": 2}
@@ -64,8 +62,8 @@ def nested_chaining_with_dictchain() -> None:
     }
 
     result: dict[str, list[int]] = (
-        pc.DictChain(data)
-        .map_values(lambda chain: pc.IterChain(chain).cumsum().convert_to.list())
+        chain.from_dict(data)
+        .map_values(lambda v: chain.from_iter(v).cumsum().convert_to.list())
         .unwrap()
     )
     assert result == {"a": [1, 3, 6], "b": [4, 9, 15]}
@@ -78,7 +76,7 @@ def get_polars_frame() -> None:
     }
 
     df = pl.DataFrame(
-        data=pc.DictChain(results)
+        data=chain.from_dict(results)
         .unpivot(
             key_name="Library",
             index_name="Index",

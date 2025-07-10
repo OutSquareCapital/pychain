@@ -1,69 +1,12 @@
-from dataclasses import dataclass
+from collections import deque
 from collections.abc import Callable, Iterable
-import cytoolz as cz
-import polars as pl
+from dataclasses import dataclass
+from typing import Any
+
 import functional as fn  # type: ignore
 import numpy as np
+import polars as pl
 from numpy.typing import NDArray
-from typing import Any
-from ._lazyfuncs import CheckFunc
-from collections import deque
-
-
-@dataclass(slots=True, frozen=True)
-class Checker[V]:
-    """
-    Checker provides boolean checks for iterables, such as all, any, distinct, and iterable.
-    Enables validation and inspection of iterables in a chainable way.
-    """
-
-    _value: Iterable[V]
-
-    def __call__[V1](self, f: CheckFunc[Iterable[V]]) -> bool:
-        """
-        Apply a boolean function to the iterable.
-        """
-        return f(self._value)
-
-    def all(self) -> bool:
-        """
-        Return True if all elements are truthy (see built-in all).
-
-        Example:
-            >>> Checker([1, 2, 3]).all()
-            True
-        """
-        return all(self._value)
-
-    def any(self) -> bool:
-        """
-        Return True if any element is truthy (see built-in any).
-
-        Example:
-            >>> Checker([0, 1, 2]).any()
-            True
-        """
-        return any(self._value)
-
-    def distinct(self) -> bool:
-        """
-        Return True if all elements are distinct (see cytoolz.isdistinct).
-
-        Example:
-            >>> Checker([1, 2, 2]).distinct()
-            False
-        """
-        return cz.itertoolz.isdistinct(self._value)
-
-    def iterable(self) -> bool:
-        """
-        Return True if the value is iterable (see cytoolz.isiterable).
-
-        Example:
-            >>> Checker([1, 2, 3]).iterable()
-            True
-        """
-        return cz.itertoolz.isiterable(self._value)
 
 
 @dataclass(slots=True, frozen=True)

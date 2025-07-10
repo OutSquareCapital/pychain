@@ -1,13 +1,16 @@
-import functools as ft
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Any
+
 import cytoolz as cz
 
-from ._core import AbstractChain
-from ._dict_base import BaseDictChain
-from ._iter_base import BaseIterChain
-from ._lazyfuncs import AggFunc, TransformFunc
+from ._executors import BaseAggregator, BaseGetter
+from ._interfaces import (
+    AbstractChain,
+    BaseDictChain,
+    BaseIterChain,
+)
+from ._protocols import TransformFunc, AggFunc
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -65,71 +68,15 @@ class ScalarChain[T](AbstractChain[T]):
 
 
 @dataclass(slots=True, frozen=True)
-class Getter[V]:
-    _value: Iterable[V]
-    """
-    Extract elements or properties from an iterable in a chainable way.
-    """
-
+class Getter[V](BaseGetter[V]):
     def __call__[V1](self, f: Callable[[Iterable[V]], V1]) -> ScalarChain[V1]:
-        """
-        Apply a function to the iterable and wrap the result in a ScalarChain.
-
-        Example:
-            >>> Getter([1, 2, 3])(sum).unwrap()
-            6
-        """
         return ScalarChain(_value=f(self._value))
 
-    def first(self) -> ScalarChain[V]:
-        """
-        Return the first element of the iterable (see cytoolz.first).
 
-        Example:
-            >>> Getter([1, 2, 3]).first().unwrap()
-            1
-        """
-        return self(f=cz.itertoolz.first)
-
-    def second(self) -> ScalarChain[V]:
-        """
-        Return the second element of the iterable (see cytoolz.second).
-
-        Example:
-            >>> Getter([1, 2, 3]).second().unwrap()
-            2
-        """
-        return self(f=cz.itertoolz.second)
-
-    def last(self) -> ScalarChain[V]:
-        """
-        Return the last element of the iterable (see cytoolz.last).
-
-        Example:
-            >>> Getter([1, 2, 3]).last().unwrap()
-            3
-        """
-        return self(f=cz.itertoolz.last)
-
-    def at_index(self, index: int) -> ScalarChain[V]:
-        """
-        Return the element at the given index (see cytoolz.nth).
-
-        Example:
-            >>> Getter([1, 2, 3]).at_index(1).unwrap()
-            2
-        """
-        return self(f=ft.partial(cz.itertoolz.nth, index))
-
-    def len(self) -> ScalarChain[int]:
-        """
-        Return the length of the iterable (see cytoolz.count).
-
-        Example:
-            >>> Getter([1, 2, 3]).len().unwrap()
-            3
-        """
-        return self(f=cz.itertoolz.count)
+@dataclass(slots=True, frozen=True)
+class Aggregator[T](BaseAggregator[T]):
+    def __call__(self, on: Callable[[Iterable[T]], Any]) -> ScalarChain[Any]:
+        return ScalarChain(_value=on(self._value))
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -149,7 +96,8 @@ class IterChain[V](BaseIterChain[V]):
         """
         return Getter(_value=self.unwrap())
 
-    def agg[V1](self, on: AggFunc[V, V1]) -> ScalarChain[V1]:
+    @property
+    def agg(self) -> Aggregator[V]:
         """
         Aggregate the iterable using a function.
 
@@ -157,7 +105,7 @@ class IterChain[V](BaseIterChain[V]):
             >>> IterChain([1, 2, 3]).agg(sum).unwrap()
             6
         """
-        return ScalarChain(_value=on(self.unwrap()))
+        return Aggregator(_value=self.unwrap())
 
     def into_dict(self) -> "DictChain[int, V]":
         """

@@ -1,13 +1,11 @@
 import doctest
 import sys
 import src.pychain._constructors as _constructors
-import src.pychain._core as _core
-import src.pychain._dict_base as _dict_base
+import src.pychain._interfaces._core as _core
+import src.pychain._interfaces._dict_base as _dict_base
 import src.pychain._executors as _executors
-import src.pychain._implementations as _implementations
-import src.pychain._iter_base as _iter_base
-import src.pychain._lazyfuncs as _lazyfuncs
-import src.pychain._expressions.chainable as chainable
+import src.pychain._main as _main
+import src.pychain._interfaces._iter_base as _iter_base
 
 
 def run_all_doctests() -> None:
@@ -16,12 +14,10 @@ def run_all_doctests() -> None:
     Run with: python test_doctest.py
     """
     modules = [
-        chainable,
-        _lazyfuncs,
         _core,
         _iter_base,
         _dict_base,
-        _implementations,
+        _main,
         _executors,
         _constructors,
     ]
@@ -34,7 +30,6 @@ def run_all_doctests() -> None:
             print(f"\nSome doctests failed. ❌ ({failures} failures)")
             sys.exit(1)
     print("\nAll doctests passed! ✅")
-
 
 
 if __name__ == "__main__":

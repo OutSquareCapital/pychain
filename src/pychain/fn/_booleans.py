@@ -1,7 +1,8 @@
 import operator
-from collections.abc import Callable, Container
+from collections.abc import Callable, Container, Iterable
 from typing import Any
 from functools import partial
+import cytoolz as cz
 
 
 def is_true() -> Callable[[Any], bool]:
@@ -14,6 +15,22 @@ def is_none() -> Callable[[Any], bool]:
 
 def is_not_none() -> Callable[[Any], bool]:
     return partial(operator.is_not, None)
+
+
+def is_all() -> Callable[[Iterable[Any]], bool]:
+    return lambda x: all(x)
+
+
+def is_any() -> Callable[[Iterable[Any]], bool]:
+    return lambda x: any(x)
+
+
+def is_distinct() -> Callable[[Iterable[Any]], bool]:
+    return lambda x: cz.itertoolz.isdistinct(x)
+
+
+def is_iterable() -> Callable[[Any], bool]:
+    return lambda x: cz.itertoolz.isiterable(x)
 
 
 def is_in[T](value: Container[T]) -> Callable[[T], bool]:

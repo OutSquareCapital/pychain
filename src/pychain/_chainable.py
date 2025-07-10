@@ -5,29 +5,7 @@ from typing import Any, Self
 from functools import partial
 import cytoolz as cz
 
-from .booleans import (
-    eq,
-    ge,
-    gt,
-    is_in,
-    is_not_in,
-    le,
-    lt,
-    ne,
-)
-from .maths import (
-    add,
-    floordiv,
-    floordiv_r,
-    mod,
-    mul,
-    pow,
-    sub,
-    sub_r,
-    truediv,
-    truediv_r,
-)
-
+from . import fn
 
 @dataclass(slots=True, frozen=True)
 class ChainableOp:
@@ -175,7 +153,7 @@ class ChainableOp:
         Access attribute(s) of the input value.
 
         Example:
-            >>> ChainableOp().attr('real')(3+4j)
+            >>> ChainableOp().attr("real")(3 + 4j)
             3.0
         """
         return self._chain(operator.attrgetter(*names))
@@ -195,7 +173,7 @@ class ChainableOp:
         Call a method of the input value with given arguments.
 
         Example:
-            >>> ChainableOp().method('upper')('abc')
+            >>> ChainableOp().method("upper")("abc")
             'ABC'
         """
         return self._chain(operator.methodcaller(name, *args, **kwargs))
@@ -208,7 +186,7 @@ class ChainableOp:
             >>> ChainableOp().add(5)(2)
             7
         """
-        return self._chain(add(value))
+        return self._chain(fn.add(value))
 
     def sub(self, value: Any) -> Self:
         """
@@ -218,7 +196,7 @@ class ChainableOp:
             >>> ChainableOp().sub(3)(10)
             7
         """
-        return self._chain(sub(value))
+        return self._chain(fn.sub(value))
 
     def mul(self, value: Any) -> Self:
         """
@@ -228,7 +206,7 @@ class ChainableOp:
             >>> ChainableOp().mul(4)(3)
             12
         """
-        return self._chain(new_op=mul(value))
+        return self._chain(fn.mul(value))
 
     def truediv(self, value: Any) -> Self:
         """
@@ -238,7 +216,7 @@ class ChainableOp:
             >>> ChainableOp().truediv(2)(8)
             4.0
         """
-        return self._chain(truediv(value))
+        return self._chain(fn.truediv(value))
 
     def floordiv(self, value: Any) -> Self:
         """
@@ -248,7 +226,7 @@ class ChainableOp:
             >>> ChainableOp().floordiv(3)(10)
             3
         """
-        return self._chain(floordiv(value))
+        return self._chain(fn.floordiv(value))
 
     def sub_r(self, value: Any) -> Self:
         """
@@ -258,7 +236,7 @@ class ChainableOp:
             >>> ChainableOp().sub_r(10)(3)
             7
         """
-        return self._chain(sub_r(value))
+        return self._chain(fn.sub_r(value))
 
     def truediv_r(self, value: Any) -> Self:
         """
@@ -268,7 +246,7 @@ class ChainableOp:
             >>> ChainableOp().truediv_r(8)(2)
             4.0
         """
-        return self._chain(truediv_r(value))
+        return self._chain(fn.truediv_r(value))
 
     def floordiv_r(self, value: Any) -> Self:
         """
@@ -278,7 +256,7 @@ class ChainableOp:
             >>> ChainableOp().floordiv_r(9)(2)
             4
         """
-        return self._chain(floordiv_r(value))
+        return self._chain(fn.floordiv_r(value))
 
     def mod(self, value: Any) -> Self:
         """
@@ -288,7 +266,7 @@ class ChainableOp:
             >>> ChainableOp().mod(4)(10)
             2
         """
-        return self._chain(mod(value))
+        return self._chain(fn.mod(value))
 
     def pow(self, value: Any) -> Self:
         """
@@ -298,7 +276,7 @@ class ChainableOp:
             >>> ChainableOp().pow(3)(2)
             8
         """
-        return self._chain(pow(value))
+        return self._chain(fn.pow(value))
 
     def neg(self) -> Self:
         """
@@ -308,7 +286,7 @@ class ChainableOp:
             >>> ChainableOp().neg()(5)
             -5
         """
-        return self._chain(operator.neg)
+        return self._chain(fn.neg)
 
     def is_true(self) -> Self:
         """
@@ -348,7 +326,7 @@ class ChainableOp:
             >>> ChainableOp().is_in({1, 2, 3})(2)
             True
         """
-        return self._chain(is_in(values))
+        return self._chain(fn.is_in(values))
 
     def is_not_in(self, values: Container[Any]) -> Self:
         """
@@ -358,7 +336,47 @@ class ChainableOp:
             >>> ChainableOp().is_not_in({1, 2, 3})(4)
             True
         """
-        return self._chain(is_not_in(values))
+        return self._chain(fn.is_not_in(values))
+    
+    def is_distinct(self) -> Self:
+        """
+        Check if the input is distinct (not repeated).
+
+        Example:
+            >>> ChainableOp().is_distinct()([1, 2, 3])
+            True
+        """
+        return self._chain(fn.is_distinct)
+    
+    def is_iterable(self) -> Self:
+        """
+        Check if the input is iterable.
+
+        Example:
+            >>> ChainableOp().is_iterable()([1, 2, 3])
+            True
+        """
+        return self._chain(fn.is_iterable)
+    
+    def is_all(self) -> Self:
+        """
+        Check if all elements in the input iterable are truthy.
+
+        Example:
+            >>> ChainableOp().is_all()([1, 2, 3])
+            True
+        """
+        return self._chain(fn.is_all)
+    
+    def is_any(self) -> Self:
+        """
+        Check if any element in the input iterable is truthy.
+
+        Example:
+            >>> ChainableOp().is_any()([0, 1, 2])
+            True
+        """
+        return self._chain(fn.is_any)
 
     def eq(self, value: Any) -> Self:
         """
@@ -368,7 +386,7 @@ class ChainableOp:
             >>> ChainableOp().eq(5)(5)
             True
         """
-        return self._chain(eq(value))
+        return self._chain(fn.eq(value))
 
     def ne(self, value: Any) -> Self:
         """
@@ -378,7 +396,7 @@ class ChainableOp:
             >>> ChainableOp().ne(5)(3)
             True
         """
-        return self._chain(ne(value))
+        return self._chain(fn.ne(value))
 
     def gt(self, value: Any) -> Self:
         """
@@ -388,7 +406,7 @@ class ChainableOp:
             >>> ChainableOp().gt(2)(5)
             True
         """
-        return self._chain(gt(value))
+        return self._chain(fn.gt(value))
 
     def ge(self, value: Any) -> Self:
         """
@@ -398,7 +416,7 @@ class ChainableOp:
             >>> ChainableOp().ge(2)(2)
             True
         """
-        return self._chain(ge(value))
+        return self._chain(fn.ge(value))
 
     def lt(self, value: Any) -> Self:
         """
@@ -408,7 +426,7 @@ class ChainableOp:
             >>> ChainableOp().lt(5)(3)
             True
         """
-        return self._chain(lt(value))
+        return self._chain(fn.lt(value))
 
     def le(self, value: Any) -> Self:
         """
@@ -418,15 +436,17 @@ class ChainableOp:
             >>> ChainableOp().le(5)(5)
             True
         """
-        return self._chain(le(value))
+        return self._chain(fn.le(value))
+
 
 class OpSelector:
-    def __call__(self, name: str|None=None) -> ChainableOp:
+    def __call__(self, name: str | None = None) -> ChainableOp:
         if not name:
             return ChainableOp()
         return ChainableOp().attr(name)
-    
+
     def __getattr__(self, name: str) -> ChainableOp:
         return self(name)
+
 
 op = OpSelector()

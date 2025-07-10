@@ -3,31 +3,29 @@ import itertools as it
 import operator as op
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
+from random import Random
 from typing import TYPE_CHECKING, Any, Self
 
 import cytoolz as cz
 
-from ._lazyfuncs import (
-    TransformFunc,
-    CheckFunc,
-    Random,
-    ProcessFunc,
-    interleave,
+from .._executors import Converter
+from ..fn import (
     concat,
-    repeat,
-    merge_sorted,
-    zip_with,
     diff_with,
     flat_map,
+    interleave,
+    merge_sorted,
     peek,
     peekn,
+    repeat,
     tap,
+    zip_with,
 )
+from .._protocols import CheckFunc, ProcessFunc, TransformFunc
 from ._core import AbstractChain
-from ._executors import Checker, Converter
 
 if TYPE_CHECKING:
-    from ._implementations import IterChain
+    from .._main import IterChain
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -44,17 +42,6 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             [1, 2, 3]
         """
         return Converter(_value=self.unwrap())
-
-    @property
-    def check_if(self) -> Checker[V]:
-        """
-        Returns a Checker for the iterable, providing boolean checks like all, any, distinct, etc.
-
-        Example:
-            >>> BaseIterChain([1, 2, 3]).check_if.all()
-            True
-        """
-        return Checker(_value=self.unwrap())
 
     def into[V1](self, f: TransformFunc[Iterable[V], Iterable[V1]]) -> "IterChain[V1]":
         """

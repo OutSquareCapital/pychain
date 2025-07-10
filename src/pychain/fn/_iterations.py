@@ -1,34 +1,7 @@
 from collections.abc import Callable, Iterable, Iterator
-from typing import Any, Protocol
-
+from typing import Any
 import cytoolz as cz
-
-
-class Random(Protocol):
-    def random(self, *args: Any, **kwargs: Any) -> float: ...
-
-
-type CheckFunc[T] = Callable[[T], bool]
-type ProcessFunc[T] = Callable[[T], T]
-type TransformFunc[T, T1] = Callable[[T], T1]
-type AggFunc[V, V1] = Callable[[Iterable[V]], V1]
-type ThreadFunc[T] = Callable[..., T] | tuple[Callable[..., T], Any]
-
-
-def thread_first[T](val: T, fns: Iterable[ThreadFunc[T]]) -> T:
-    return cz.functoolz.thread_first(val, *fns)
-
-
-def thread_last[T](val: T, fns: Iterable[ThreadFunc[T]]) -> T:
-    return cz.functoolz.thread_last(val, *fns)
-
-
-def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
-    return cz.dicttoolz.merge(on, *others)
-
-
-def dissoc[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
-    return cz.dicttoolz.dissoc(d, *keys)
+from .._protocols import ProcessFunc, TransformFunc
 
 
 def concat[V](on: Iterable[V], others: Iterable[Iterable[V]]) -> Iterator[V]:

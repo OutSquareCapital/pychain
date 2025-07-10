@@ -5,18 +5,13 @@ from typing import TYPE_CHECKING, Self
 
 import cytoolz as cz
 
-from ._lazyfuncs import (
-    TransformFunc,
-    CheckFunc,
-    ProcessFunc,
-    merge,
-    dissoc,
-)
+from .._protocols import TransformFunc, CheckFunc, ProcessFunc
 from ._core import AbstractChain
-from ._executors import Checker, Converter
+from .._executors import Converter
+from ..fn import merge, dissoc
 
 if TYPE_CHECKING:
-    from ._implementations import DictChain
+    from .._main import DictChain
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -56,27 +51,6 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             [('a', 1), ('b', 2)]
         """
         return Converter(_value=self.unwrap().items())
-
-    @property
-    def check_if_values(self) -> Checker[V]:
-        """
-        Returns a Checker for the dictionary's values.
-        """
-        return Checker(_value=self.unwrap().values())
-
-    @property
-    def check_if_keys(self) -> Checker[K]:
-        """
-        Returns a Checker for the dictionary's keys.
-        """
-        return Checker(_value=self.unwrap().keys())
-
-    @property
-    def check_if_items(self) -> Checker[tuple[K, V]]:
-        """
-        Returns a Checker for the dictionary's items.
-        """
-        return Checker(_value=self.unwrap().items())
 
     def into[K1, V1](
         self, f: TransformFunc[dict[K, V], dict[K1, V1]]

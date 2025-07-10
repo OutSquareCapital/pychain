@@ -4,39 +4,6 @@
 
 ---
 
-## Philosophy & Design Goals
-
-- **pychain** is not meant to replace DataFrames (pandas, Polars, etc.), but to offer a new syntax for pure Python data manipulation, focusing on readability, composability, and type safety.
-- Emphasizes **declarative programming** and **functional composition**: each transformation is an explicit, chainable step.
-- **Lazy evaluation**: pipelines are only executed when explicitly unwrapped, avoiding unnecessary intermediate allocations.
-- **Uniformity**: a consistent interface for scalars, iterables, and mappings, with generic, type-safe methods.
-- **Interoperability**: designed to integrate easily with NumPy, pandas, Polars, and functional libraries (toolz/cytoolz).
-- **Strongly typed**: All steps will (most of the time) infer the correct type, so you don't have to fight with the type checkers.
-
----
-
-## Core Principles & Guidelines
-
-1. **Maximize chaining**: prefer chain methods (`.map()`, `.filter()`, `.flat_map()`, etc.) over list comprehensions or intermediate loops.
-2. **Leverage lazy evaluation**: build pipelines without materializing data until the final step (e.g., `.convert_to.list()`, `.convert_to.set()`, etc.).
-3. **Favor composability**: write pure, reusable functions to pass into chain methods.
-4. **Avoid mixing paradigms**: stay within the chain/functional paradigm in a given block, without alternating with loops or comprehensions.
-5. **Immutability**: pychain favors transformations without side effects, for safe and predictable pipelines.
-6. **Readability first**: each pipeline step should be explicit and easy to understand.
-
----
-
-## Key Features
-
-- **Chainable transformations** for scalars, iterables, and dictionaries
-- **Declarative pipelines**: compose, map, filter, group, aggregate, and more
-- **Type safety** with static typing and generics
-- **Integration** with NumPy, pandas, Polars, and functional libraries
-- **Lazy evaluation**: execution is deferred until conversion or iteration
-- **Rich conversion and checking utilities** for all data types
-
----
-
 ## Installation
 
 ```bash
@@ -51,121 +18,79 @@ uv add git+https://github.com/OutSquareCapital/pychain.git
 
 ## API Overview
 
-### Constructors
+### chain
 
-- `from_range(start, stop, step=1)` — Create an IterChain from a range
-- `from_dict_of_iterables(d)` — Transform a dict of iterables into a DictChain of IterChains
-- `from_np(arr)` — NumPy array to IterChain
-- `from_pd(df)` — pandas DataFrame to DictChain
-- `from_pl(df)` — Polars DataFrame to DictChain
-- `from_func(value, f)` — Infinite IterChain by iterating `f`
-- `read_csv(path)` / `read_json(path)` / `read_parquet(path)` — File readers
+  Central factory for all chain-based data structures and conversions in pychain.
 
-### Chain Types
-
-- **ScalarChain**: for non-iterables (scalars, objects)
-- **IterChain**: for iterables (lists, arrays, generators, etc.)
-- **DictChain**: for dictionaries (key/value mappings)
+  The `chain` singleton is the main entry point for all user operations in pychain. It provides a unified, discoverable, and consistent API for constructing, converting, and manipulating data in a functional, chainable style. All public functionality is accessible via `chain`, `fns`, and `op`.
 
 ---
 
-## Guide: Built-in Expressions for Functional Pipelines
+#### Overview
 
-A key feature of **pychain** is its rich set of built-in expressions that eliminate the need for trivial lambdas in your pipelines.
+`chain` exposes methods to:
 
-These expressions are composable, type-safe, and make your code more declarative and readable.
+- Wrap scalars, iterables, dicts, DataFrames, arrays, etc. into chainable objects.
+- Read data from files (CSV, Parquet, JSON, NDJSON) into chainable forms.
+- Convert between data representations (iterable, dict, DataFrame, etc.).
+- Generate infinite or finite sequences (from_func, from_range).
+- Compose and chain operations fluently, with a focus on readability and composability.
 
-### Why Use Built-in Expressions?
+#### Usage Patterns
 
-- **No more `lambda x: ...` for common operations**: Write `op().gt(5)` instead of `lambda x: x > 5`, `op().item(0)` instead of `lambda x: x[0]`, etc.
-- **Composability**: Expressions can be combined and nested.
-- **Readability**: Pipelines are easier to read and maintain.
+- Use `chain` to wrap any data structure and immediately access chain methods.
+- All transformations are lazy where possible, supporting method chaining.
+- Data can be unwrapped at any time using `.unwrap()` or converted to standard types with `.convert_to` or `.convert_keys_to`.
+- File readers (read_csv, read_parquet, etc.) return columnar DictChain objects for easy column-wise processing.
+- All methods are discoverable via tab-completion on `chain`.
 
-### Core Expression Families
+#### API Structure
 
-#### Comparison & Logic
+- Scalar: `chain(value)` wraps a scalar value.
+- Iterable: `chain.from_iter(iterable)` wraps any iterable.
+- Dict: `chain.from_dict(dict_obj)` wraps a dict.
+- DataFrame: `chain.from_pd(df)`, `chain.from_pl(df)` for pandas/polars.
+- NumPy: `chain.from_np(array)` wraps a NumPy array.
+- File IO: `chain.read_csv(path)`, `chain.read_parquet(path)`, etc.
+- Infinite: `chain.from_func(seed, func)` for infinite iterators.
+- Range: `chain.from_range(start, stop, step)` for integer ranges.
+- Dict of iterables: `chain.from_dict_of_iterables(d)` for nested chains.
 
-- `eq(value)`, `ne(value)`, `gt(value)`, `ge(value)`, `lt(value)`, `le(value)`
-- `isin(values)`, `notin(values)`
-- `is_none()`, `not_none()`
+#### Chaining and Conversion
 
-#### Attribute & Item Access
+- All chain objects support method chaining for transformations, filtering, mapping, reducing, etc.
+- Use `.convert_to` and `.convert_keys_to` for conversion to standard Python types.
+- Use `.unwrap()` to extract the underlying data.
+- All chains are immutable and side-effect free.
 
-- `item(idx)`: Get item at index/key (e.g., `item(0)` for first element)
-- `attr(name)`: Get attribute (e.g., `attr('foo')`)
-- `method(name, *args, **kwargs)`: Call method (e.g., `method('lower')`)
+#### Integration
 
-#### Arithmetic & Math
+- Designed to interoperate with pandas, polars, NumPy, and standard Python collections.
 
-- `add(value)`, `sub(value)`, `mul(value)`, `truediv(value)`, `floordiv(value)`, `mod(value)`, `pow(value)`, `neg()`
+#### Best Practices
 
-### Examples
+- Always start with `chain` for new data pipelines.
+- Prefer method chaining over intermediate variables for clarity.
+- Use `.unwrap()` or `.convert_to` only at the end of a pipeline.
+- For custom data sources, implement a conversion to a supported type and wrap with `chain`.
 
-#### Filtering with Expressions
+#### Performance
 
-```python
-from typing import NamedTuple, TypedDict
-import pychain as pc
-from pychain import op
+- Internally optimized for large data via lazy evaluation and efficient backends.
+- File readers use vectorized IO where possible.
 
-class Point(NamedTuple):
-    x: int
-    y: int
+#### Limitations
 
-(
-    pc.from_range(1, 10)
-    .map(lambda x: Point(x, x * 2))
-    .filter(op("x").gt(5))  # instead of .filter(lambda point: point.x > 5)
-    .map(op("x")) # instead of .map(lambda point: point.x)
-    .convert_to.list()
-)
-# result: [6, 7, 8, 9]
-```
+- Not all methods are available for all chain types; use tab-completion to discover available methods.
+- Some conversions may be lossy (e.g., DataFrame to dict for non-string keys).
 
-### When to Use Expressions
+#### Further Reading
 
-- Whenever you would write a trivial lambda (e.g., `lambda x: x > 5`, `lambda x: x[0]`, `lambda x: x.foo()`)
-- When you want to compose or combine simple operations
-- To improve readability and maintainability of your pipelines
-
-For a full list, see the `src/pychain/expressions.py` file or the API documentation.
-
----
-
-## Integration & Interoperability
-
-- **NumPy**: easy conversion via `from_np()` and `.convert_to.array()`
-- **pandas**: conversion via `from_pd()`
-- **Polars**: conversion via `from_pl()` and `.convert_to.dataframe()`
-- **cytoolz/toolz**: Almost all the library is wrapped inside pychain methods.
-- **Files**: direct reading of CSV, JSON, Parquet into chainable pipelines. Use polars engine.
+- Methods have docstrings and types hints.
+- For functional programming utilities, see `fns`.
+- For operator utilities, see `op`.
 
 ---
-
-## Patterns & Best Practices
-
-- **Data cleaning**: normalize and filter lists or dicts before converting to a DataFrame
-- **Streaming**: connect `from_func()` or `from_range()` with `.filter()` and `.map()` without materializing the full dataset
-- **Avoid side effects**: each step should be deterministic
-
----
-
-## Limitations & When Not to Use
-
-- **Very large datasets** (use a DataFrame engine)
-- **Complex joins, windowing, SQL analytics** (use a DataFrame engine)
-- **Scenarios requiring in-place updates**: pychain favors immutability
-
----
-
-## How to Think in pychain
-
-- **Decompose** each transformation into an explicit step
-- **Compose** functions, avoid complex inline lambdas
-- **Keep the pipeline readable**: each step = clear intent
-- **Anti-patterns**:
-  - Mixing chain and list comprehensions
-  - Trying to replace a full DataFrame with a DictChain for advanced analytics
 
 ## Tests
 

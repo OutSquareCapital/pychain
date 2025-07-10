@@ -1,18 +1,13 @@
 import functools as ft
 from collections.abc import Callable
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Self
-from copy import deepcopy
 
 import cytoolz as cz
 
-from ._lazyfuncs import (
-    TransformFunc,
-    ProcessFunc,
-    ThreadFunc,
-    thread_first,
-    thread_last,
-)
+from ..fn import thread_first, thread_last
+from .._protocols import ProcessFunc, ThreadFunc, TransformFunc
 
 
 @dataclass(slots=True, frozen=True, repr=False)
