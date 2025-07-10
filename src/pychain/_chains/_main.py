@@ -24,7 +24,7 @@ class IterChain[V](BaseIterChain[V]):
         Return a Getter for extracting from the iterable.
 
         Example:
-            >>> IterChain([1, 2, 3]).get.first().unwrap()
+            >>> IterChain([1, 2, 3]).get.first()
             1
         """
         return Getter(_value=self.unwrap())
@@ -35,7 +35,7 @@ class IterChain[V](BaseIterChain[V]):
         Aggregate the iterable using a function.
 
         Example:
-            >>> IterChain([1, 2, 3]).agg(sum).unwrap()
+            >>> IterChain([1, 2, 3]).agg(sum)
             6
         """
         return Aggregator(_value=self.unwrap())
@@ -152,7 +152,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
         Return a Getter for the dictionary's keys.
 
         Example:
-            >>> DictChain({"a": 1}).get_key.first().unwrap()
+            >>> DictChain({"a": 1}).get_key.first()
             'a'
         """
         return Getter(_value=self.unwrap().keys())
@@ -163,7 +163,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
         Return a Getter for the dictionary's values.
 
         Example:
-            >>> DictChain({"a": 1}).get_value.first().unwrap()
+            >>> DictChain({"a": 1}).get_value.first()
             1
         """
         return Getter(_value=self.unwrap().values())
@@ -174,7 +174,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
         Return a Getter for the dictionary's items.
 
         Example:
-            >>> DictChain({"a": 1}).get_item.first().unwrap()
+            >>> DictChain({"a": 1}).get_item.first()
             ('a', 1)
         """
         return Getter(_value=self.unwrap().items())
@@ -184,7 +184,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
         Aggregate the dictionary's keys with a function.
 
         Example:
-            >>> DictChain({"a": 1, "b": 2}).agg_keys(list).unwrap()
+            >>> DictChain({"a": 1, "b": 2}).agg_keys(list)
             ['a', 'b']
         """
         return on(self.unwrap().keys())
@@ -194,7 +194,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
         Aggregate the dictionary's values with a function.
 
         Example:
-            >>> DictChain({"a": 1, "b": 2}).agg_values(sum).unwrap()
+            >>> DictChain({"a": 1, "b": 2}).agg_values(sum)
             3
         """
         return on(self.unwrap().values())
@@ -204,7 +204,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
         Aggregate the dictionary's items with a function.
 
         Example:
-            >>> DictChain({"a": 1, "b": 2}).agg_items(len).unwrap()
+            >>> DictChain({"a": 1, "b": 2}).agg_items(len)
             2
         """
         return on(self.unwrap().items())

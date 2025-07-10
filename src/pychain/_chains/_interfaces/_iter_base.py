@@ -420,7 +420,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         Creates an IterChain from the Cartesian product of input iterables.
 
         Example:
-            >>> chain.product(range(2), ["a", "b"]).convert_to.list()
-            [(0, 'a'), (0, 'b'), (1, 'a'), (1, 'b')]
+            >>> BaseIterChain(range(0, 2)).product(["a", "b"]).convert_to.list()
+            [('a', 0), ('a', 1), ('b', 0), ('b', 1)]
         """
         return self.into(ft.partial(it.product, other))  # type: ignore
