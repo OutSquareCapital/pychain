@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Self
 from functools import partial
 
-from . import fn
+from .. import fn
 
 
 @dataclass(slots=True, frozen=True)
