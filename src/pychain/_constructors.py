@@ -8,7 +8,7 @@ import polars as pl
 from numpy.typing import NDArray
 
 from ._chains import DictChain, IterChain
-from ._exprs import ChainableOp, When
+from ._exprs import ChainableOp, When, OpConstructor
 
 
 @dataclass(slots=True)
@@ -141,17 +141,6 @@ class ChainConstructor:
             [1, 2]
         """
         return DictChain(_value={k: IterChain(_value=v) for k, v in data.items()})
-
-
-class OpConstructor:
-    def __call__(self, name: str | None = None) -> ChainableOp:
-        if not name:
-            return ChainableOp()
-        return ChainableOp().attr(name)
-
-    def __getattr__(self, name: str) -> ChainableOp:
-        return self(name)
-
 
 def when[T, R](predicate: ChainableOp | Callable[[T], bool]) -> When[T, Any]:
     return When[T, R](predicate)

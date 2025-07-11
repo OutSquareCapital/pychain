@@ -39,7 +39,7 @@ class BaseThen[T, R]:
                     return result_spec(x) if callable(result_spec) else result_spec
             return default_result(x) if callable(default_result) else default_result
 
-        return ChainableOp(_pipeline=conditional_logic)
+        return ChainableOp(pipeline=conditional_logic)
 
 
 @dataclass(slots=True)
