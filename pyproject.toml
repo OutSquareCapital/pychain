@@ -5,11 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "cython>=3.1.2",
     "cytoolz>=1.0.1",
     "ipykernel>=6.29.5",
     "pandas>=2.3.1",
     "polars>=1.31.0",
-    "pyfunctional>=1.5.0",
     "toolz>=1.0.0",
 ]
 

@@ -3,7 +3,6 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Any
 
-import functional as fn  # type: ignore
 import numpy as np
 import polars as pl
 from numpy.typing import NDArray
@@ -128,13 +127,3 @@ class Converter[V]:
             <class 'polars.lazyframe.frame.LazyFrame'>
         """
         return pl.LazyFrame(data=self._value)
-
-    def functional(self):  # type: ignore
-        """
-        Convert the iterable into a functional sequence using the `fn` library.
-
-        Example:
-            >>> Converter([1, 2, 3]).functional().map(lambda x: x * 2).to_list()
-            [2, 4, 6]
-        """
-        return fn.seq(self._value)  # type: ignore
