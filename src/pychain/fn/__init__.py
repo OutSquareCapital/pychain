@@ -5,6 +5,9 @@ from ._booleans import (
     is_all,
     is_any,
     is_distinct,
+    is_true,
+    is_none,
+    is_not_none,
     is_in,
     is_iterable,
     is_not_in,
@@ -49,6 +52,10 @@ from ._operations import (
 )
 
 __all__ = [
+    "flatten_recursive",
+    "is_true",
+    "is_none",
+    "is_not_none",
     "attr",
     "item",
     "method",
