@@ -6,7 +6,7 @@ from typing import Any, Self
 
 import cytoolz as cz
 
-from ... import fn
+from ... import _fn
 from ..._protocols import ProcessFunc, ThreadFunc
 
 
@@ -44,7 +44,7 @@ class AbstractChain[T]:
         >>> chain.unwrap()
         25
         """
-        return self.do(f=ft.partial(fn.thread_first, fns=fns))
+        return self.do(f=ft.partial(_fn.thread_first, fns=fns))
 
     def thread_last(self, *fns: ThreadFunc[T]) -> Self:
         """
@@ -57,7 +57,7 @@ class AbstractChain[T]:
             >>> chain.unwrap()
             9
         """
-        return self.do(f=ft.partial(fn.thread_last, fns=fns))
+        return self.do(f=ft.partial(_fn.thread_last, fns=fns))
 
     def clone(self) -> Self:
         """

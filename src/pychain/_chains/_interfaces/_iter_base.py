@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Self
 import cytoolz as cz
 
 from .._executors import Converter
-from ... import fn
+from ... import _fn
 from ..._protocols import CheckFunc, ProcessFunc, TransformFunc
 from ._core import AbstractChain
 from .._executors import Aggregator, Getter
@@ -86,7 +86,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).flat_map(lambda x: [x, x + 10]).convert_to.list()
             [1, 11, 2, 12]
         """
-        return self.into(f=ft.partial(fn.flat_map, func=f))
+        return self.into(f=ft.partial(_fn.flat_map, func=f))
 
     def starmap[V1](self, f: TransformFunc[V, V1]) -> "IterChain[V1]":
         """
@@ -137,7 +137,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).interleave([10, 20]).convert_to.list()
             [1, 10, 2, 20]
         """
-        return self.do(f=ft.partial(fn.interleave, others=others))
+        return self.do(f=ft.partial(_fn.interleave, others=others))
 
     def interpose(self, element: V) -> Self:
         """
@@ -183,7 +183,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).concat([3, 4]).convert_to.list()
             [1, 2, 3, 4]
         """
-        return self.do(f=ft.partial(fn.concat, others=others))
+        return self.do(f=ft.partial(_fn.concat, others=others))
 
     def filter(self, f: CheckFunc[V]) -> Self:
         """
@@ -226,7 +226,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             Peeked value (step 1): 1
             [1, 2, 3]
         """
-        return self.do(f=ft.partial(fn.peek, note=note))
+        return self.do(f=ft.partial(_fn.peek, note=note))
 
     def peekn(self, n: int, note: str | None = None) -> Self:
         """
@@ -237,7 +237,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             Peeked 3 values (step 1): [1, 2, 3]
             [1, 2, 3, 4, 5, 6]
         """
-        return self.do(f=ft.partial(fn.peekn, n=n, note=note))
+        return self.do(f=ft.partial(_fn.peekn, n=n, note=note))
 
     def head(self, n: int) -> Self:
         """
@@ -287,7 +287,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).repeat(2).convert_to.list()
             [1, 1, 2, 2]
         """
-        return self.do(f=ft.partial(fn.repeat, n=n))
+        return self.do(f=ft.partial(_fn.repeat, n=n))
 
     def unique(self) -> Self:
         """
@@ -329,7 +329,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 3]).merge_sorted([2, 4]).convert_to.list()
             [1, 2, 3, 4]
         """
-        return self.do(f=ft.partial(fn.merge_sorted, others=others, sort_on=sort_on))
+        return self.do(f=ft.partial(_fn.merge_sorted, others=others, sort_on=sort_on))
 
     def tap(self, func: Callable[[V], None]) -> Self:
         """
@@ -341,7 +341,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             2
             [1, 2]
         """
-        return self.do(f=ft.partial(fn.tap, func=func))
+        return self.do(f=ft.partial(_fn.tap, func=func))
 
     def zip(
         self, *others: Iterable[Any], strict: bool = False
@@ -353,7 +353,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).zip([10, 20]).convert_to.list()
             [(1, 10), (2, 20)]
         """
-        return self.into(f=ft.partial(fn.zip_with, others=others, strict=strict))
+        return self.into(f=ft.partial(_fn.zip_with, others=others, strict=strict))
 
     def enumerate(self) -> "IterChain[tuple[int, V]]":
         """
@@ -405,7 +405,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             [('bananas', 'Oranges')]
         """
         return self.into(
-            f=ft.partial(fn.diff_with, others=others, default=default, key=key)
+            f=ft.partial(_fn.diff_with, others=others, default=default, key=key)
         )
 
     def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":

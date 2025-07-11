@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Self
 
 import cytoolz as cz
 
-from ... import fn
+from ... import _fn
 from ..._protocols import AggFunc, CheckFunc, ProcessFunc, TransformFunc
 from .._executors import Converter, Getter
 from ._core import AbstractChain
@@ -250,7 +250,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> BaseDictChain({"a": 1}).merge({"b": 2}).unwrap()
             {'a': 1, 'b': 2}
         """
-        return self.do(f=ft.partial(fn.merge, others=others))
+        return self.do(f=ft.partial(_fn.merge, others=others))
 
     def merge_with(self, f: Callable[..., V], *others: dict[K, V]) -> Self:
         """
@@ -278,4 +278,4 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         return self.do(f=ft.partial(cz.dicttoolz.dissoc, keys=keys))
 
     def flatten_keys(self) -> "DictChain[str, V]":
-        return self.into(ft.partial(fn.flatten_recursive))
+        return self.into(ft.partial(_fn.flatten_recursive))

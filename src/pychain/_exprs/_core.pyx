@@ -3,7 +3,7 @@
 from collections.abc import Callable, Container
 import statistics as stats
 from typing import Any
-from .. import fn
+from .. import _fn
 
 cdef identity(x: Any):
     return x
@@ -26,91 +26,91 @@ cdef class ChainableOp:
         return self.__class__(pipeline=composed)
     
     def attr(self, *names: str):
-        return self._chain(fn.attr(*names))
+        return self._chain(_fn.attr(*names))
 
     def item(self, *keys: Any):
-        return self._chain(fn.item(*keys))
+        return self._chain(_fn.item(*keys))
 
     def method(self, name: str, *args: Any, **kwargs: Any):
-        return self._chain(fn.method(name, *args, **kwargs))
+        return self._chain(_fn.method(name, *args, **kwargs))
 
     def add(self, value: Any):
-        return self._chain(fn.add(value))
+        return self._chain(_fn.add(value))
 
     def sub(self, value: Any):
-        return self._chain(fn.sub(value))
+        return self._chain(_fn.sub(value))
 
     def mul(self, value: Any):
-        return self._chain(fn.mul(value))
+        return self._chain(_fn.mul(value))
 
     def truediv(self, value: Any):
-        return self._chain(fn.truediv(value))
+        return self._chain(_fn.truediv(value))
 
     def floordiv(self, value: Any):
-        return self._chain(fn.floordiv(value))
+        return self._chain(_fn.floordiv(value))
 
     def sub_r(self, value: Any):
-        return self._chain(fn.sub_r(value))
+        return self._chain(_fn.sub_r(value))
 
     def truediv_r(self, value: Any):
-        return self._chain(fn.truediv_r(value))
+        return self._chain(_fn.truediv_r(value))
 
     def floordiv_r(self, value: Any):
-        return self._chain(fn.floordiv_r(value))
+        return self._chain(_fn.floordiv_r(value))
 
     def mod(self, value: Any):
-        return self._chain(fn.mod(value))
+        return self._chain(_fn.mod(value))
 
     def pow(self, value: Any):
-        return self._chain(fn.pow(value))
+        return self._chain(_fn.pow(value))
 
     def neg(self):
-        return self._chain(fn.neg)
+        return self._chain(_fn.neg)
 
     def is_true(self):
-        return self._chain(fn.is_true)
+        return self._chain(_fn.is_true)
 
     def is_none(self):
-        return self._chain(fn.is_none())
+        return self._chain(_fn.is_none())
 
     def is_not_none(self):
-        return self._chain(fn.is_not_none())
+        return self._chain(_fn.is_not_none())
 
     def is_in(self, values: Container[Any]):
-        return self._chain(fn.is_in(values))
+        return self._chain(_fn.is_in(values))
 
     def is_not_in(self, values: Container[Any]):
-        return self._chain(fn.is_not_in(values))
+        return self._chain(_fn.is_not_in(values))
 
     def is_distinct(self):
-        return self._chain(fn.is_distinct)
+        return self._chain(_fn.is_distinct)
 
     def is_iterable(self):
-        return self._chain(fn.is_iterable)
+        return self._chain(_fn.is_iterable)
 
     def is_all(self):
-        return self._chain(fn.is_all)
+        return self._chain(_fn.is_all)
 
     def is_any(self):
-        return self._chain(fn.is_any)
+        return self._chain(_fn.is_any)
 
     def eq(self, value: Any):
-        return self._chain(fn.eq(value))
+        return self._chain(_fn.eq(value))
 
     def ne(self, value: Any):
-        return self._chain(fn.ne(value))
+        return self._chain(_fn.ne(value))
 
     def gt(self, value: Any):
-        return self._chain(fn.gt(value))
+        return self._chain(_fn.gt(value))
 
     def ge(self, value: Any):
-        return self._chain(fn.ge(value))
+        return self._chain(_fn.ge(value))
 
     def lt(self, value: Any):
-        return self._chain(fn.lt(value))
+        return self._chain(_fn.lt(value))
 
     def le(self, value: Any):
-        return self._chain(fn.le(value))
+        return self._chain(_fn.le(value))
 
     def mean(self):
         return self._chain(stats.mean)
@@ -140,7 +140,7 @@ cdef class ChainableOp:
         return self._chain(stats.median_grouped)
 
     def quantiles(self, *args: Any):
-        return self._chain(fn.quantiles(*args))
+        return self._chain(_fn.quantiles(*args))
 
     def min(self):
         return self._chain(min)

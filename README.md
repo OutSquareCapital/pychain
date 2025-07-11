@@ -5,13 +5,19 @@
 ## Quickstart
 
 ````python
-    result = (
-        chain.from_range(1, 6)  # [1, 2, 3, 4, 5]
-        .map(fn.mul(2))  # [2, 4, 6, 8, 10]
-        .filter(fn.gt(5))  # [6, 8, 10]
-        .cumsum()  # [6, 14, 24]
-        .convert_to.list()  # [6, 14, 24]
-    )
+(
+    chain.from_range(1, 6)  # range from 1 to 5
+    .map(op().mul(2).pow(2))  # [4, 16, 36, 64, 100]
+    .filter(op().gt(5))  # [16, 36, 64, 100]
+    .cumsum()  # [16, 52, 116, 216]
+    .enumerate()  # [(0, 16), (1, 52), (2, 116), (3, 216)]
+    .flatten()  # [0, 16, 1, 52, 2, 116, 3, 216]
+    .rolling(2)  # [(0, 16), (16, 1), (1, 52), (52, 2), (2, 116), (116, 3), (3, 216)]
+    .map(
+        lambda x: f"index: {x[0]}, value: {x[1]}"
+    )  # ['index: 0, value: 16', 'index: 1, value: 52', 'index: 2, value: 116', 'index: 3, value: 216']
+    .convert_to.list()  # Computation only happens here! Otherwise it's simply a list of functions, a range, and pychain objects (py classes with slots, or cython class)
+)
 ````
 
 ---
@@ -46,12 +52,14 @@ It is callable, and this can allow you to directly wrap an iterable around
 - Generate infinite or finite sequences (from_func, from_range).
 - Compose and chain operations fluently, with a focus on readability and composability.
 
-### fn
+### op
 
-pychain provide a namespace fn, containing many functions that return callable, avoiding lambda boilerplate when not necessary.
+pychain provide a powerful expression builder, directly inspired from polars. Goal is to give access to common operations without the repetitive lambda syntax, and to allow expressions chaining.
+All the expressions generated are reusable callables.
+The underlying class is implemented in Cython to reduce instanciation costs.
 
 ````python
-from src.pychain import chain, fn
+from src.pychain import chain, op
 
 def pychain_lambdas():
     return (
@@ -63,11 +71,11 @@ def pychain_lambdas():
     )
 
 
-def pychain_fn():
+def pychain_op():
     return (
         chain.from_range(1, 10)
-        .filter(fn.gt(5))
-        .compose(fn.add(5), fn.truediv(2))
+        .filter(op().gt(5))
+        .compose(op().add(5).truediv(2))
         .map(lambda x: f"result is: {x}")
         .convert_to.list()
     )
