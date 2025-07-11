@@ -275,7 +275,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.drop("a").unwrap()
             {'b': 2}
         """
-        return self.do(f=ft.partial(fn.dissoc, keys=keys))
+        return self.do(f=ft.partial(cz.dicttoolz.dissoc, keys=keys))
 
     def flatten_keys(self) -> "DictChain[str, V]":
         return self.into(ft.partial(fn.flatten_recursive))

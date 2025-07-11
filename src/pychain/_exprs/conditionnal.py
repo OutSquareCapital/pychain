@@ -2,7 +2,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from .._protocols import CheckFunc
-from ._chainable import ChainableOp
+from ._core import ChainableOp
 
 
 @dataclass(slots=True)

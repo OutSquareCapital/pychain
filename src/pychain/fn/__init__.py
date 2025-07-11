@@ -29,7 +29,6 @@ from ._iterations import (
 )
 from ._objects import (
     attr,
-    dissoc,
     item,
     merge,
     method,
@@ -43,13 +42,14 @@ from ._operations import (
     floordiv_r,
     mod,
     mul,
-    neg,
     pow,
     sub,
     sub_r,
     truediv,
     truediv_r,
 )
+
+from operator import neg
 
 __all__ = [
     "flatten_recursive",
@@ -62,7 +62,6 @@ __all__ = [
     "thread_first",
     "thread_last",
     "merge",
-    "dissoc",
     "add",
     "sub",
     "sub_r",

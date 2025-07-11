@@ -1,4 +1,4 @@
-from ._chainable import ChainableOp
+from ._core import ChainableOp
 from .conditionnal import When
 
 __all__ = [

@@ -1,22 +1,16 @@
 import operator
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from typing import Any
 
 import cytoolz as cz
 
-from .._protocols import ThreadFunc, ProcessFunc
+from .._protocols import ThreadFunc
 
-
-def attr[T](*names: str) -> Callable[[T], T]:
-    return operator.attrgetter(*names)  # type: ignore[return-value]
-
-
-def item[T](*keys: Any) -> Callable[[Iterable[T]], T]:
-    return operator.itemgetter(*keys)  # type: ignore[return-value]
-
-
-def method[P](name: str, *args: P, **kwargs: P) -> Callable[[P], Any]:
-    return operator.methodcaller(name, *args, **kwargs)
+call = operator.call
+attr = operator.attrgetter
+item = operator.itemgetter
+method = operator.methodcaller
+compose = cz.functoolz.compose_left
 
 
 def thread_first[T](val: T, fns: Iterable[ThreadFunc[T]]) -> T:
@@ -29,14 +23,6 @@ def thread_last[T](val: T, fns: Iterable[ThreadFunc[T]]) -> T:
 
 def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
     return cz.dicttoolz.merge(on, *others)
-
-
-def dissoc[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
-    return cz.dicttoolz.dissoc(d, *keys)
-
-
-def compose[T1](*fns: ProcessFunc[T1]):
-    return cz.functoolz.compose_left(*fns)
 
 
 def flatten_recursive[V](
