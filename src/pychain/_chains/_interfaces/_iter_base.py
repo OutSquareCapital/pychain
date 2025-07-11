@@ -438,12 +438,12 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         """
         return self.into(f=ft.partial(cz.itertoolz.sliding_window, length))
 
-    def product[V1](self, other: Iterable[V1]) -> "IterChain[tuple[V, V1]]":
+    def cross_join[V1](self, other: Iterable[V1]) -> "IterChain[tuple[V, V1]]":
         """
         Creates an IterChain from the Cartesian product of input iterables.
 
         Example:
-            >>> BaseIterChain(range(0, 2)).product(["a", "b"]).convert_to.list()
+            >>> BaseIterChain(range(0, 2)).cross_join(["a", "b"]).convert_to.list()
             [('a', 0), ('a', 1), ('b', 0), ('b', 1)]
         """
         return self.into(ft.partial(it.product, other))  # type: ignore
