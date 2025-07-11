@@ -48,6 +48,10 @@ from ._operations import (
     truediv,
     truediv_r,
 )
+from .stats import (
+    quantiles,
+)
+
 
 from operator import neg
 
@@ -96,4 +100,5 @@ __all__ = [
     "is_distinct",
     "is_iterable",
     "flatten_recursive",
+    "quantiles",
 ]

@@ -1,6 +1,7 @@
 # distutils: language=c++
 
 from collections.abc import Callable, Container
+import statistics as stats
 from typing import Any
 from .. import fn
 
@@ -110,6 +111,45 @@ cdef class ChainableOp:
 
     def le(self, value: Any):
         return self._chain(fn.le(value))
+
+    def mean(self):
+        return self._chain(stats.mean)
+
+    def median(self):
+        return self._chain(stats.median)
+
+    def mode(self):
+        return self._chain(stats.mode)
+
+    def stdev(self):
+        return self._chain(stats.stdev)
+
+    def variance(self):
+        return self._chain(stats.variance)
+    
+    def pvariance(self):
+        return self._chain(stats.pvariance)
+
+    def median_low(self):
+        return self._chain(stats.median_low)
+
+    def median_high(self):
+        return self._chain(stats.median_high)
+
+    def median_grouped(self):
+        return self._chain(stats.median_grouped)
+
+    def quantiles(self, *args: Any):
+        return self._chain(fn.quantiles(*args))
+
+    def min(self):
+        return self._chain(min)
+
+    def max(self):
+        return self._chain(max)
+
+    def sum(self):
+        return self._chain(sum)
 
 
 cdef class OpConstructor:
