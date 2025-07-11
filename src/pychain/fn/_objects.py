@@ -37,3 +37,17 @@ def dissoc[K, V](d: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
 
 def compose[T1](*fns: ProcessFunc[T1]):
     return cz.functoolz.compose_left(*fns)
+
+
+def flatten_recursive[V](
+    d: dict[Any, Any], parent_key: str = "", sep: str = "."
+) -> dict[str, Any]:
+    items: dict[str, V] = {}
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if hasattr(v, "items"):
+            items.update(flatten_recursive(v, new_key, sep))
+        else:
+            v: Any
+            items[new_key] = v
+    return items

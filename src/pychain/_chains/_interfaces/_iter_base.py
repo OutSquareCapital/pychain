@@ -447,3 +447,16 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             [('a', 0), ('a', 1), ('b', 0), ('b', 1)]
         """
         return self.into(ft.partial(it.product, other))  # type: ignore
+
+    def transpose(self) -> "IterChain[tuple[V, ...]]":
+        """
+        Transpose un itérable de lignes en un itérable de colonnes.
+        Équivalent à `zip(*iterable)`.
+        """
+        return self.into(lambda iterable: zip(*iterable))
+
+    def to_records(self, keys: list[str]) -> "IterChain[dict[str, Any]]":
+        """
+        Convertit un itérable de tuples/listes en un itérable de dictionnaires.
+        """
+        return self.map(lambda row: dict(zip(keys, row)))  # type: ignore

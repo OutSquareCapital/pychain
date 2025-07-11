@@ -2,15 +2,15 @@ from ._booleans import (
     eq,
     ge,
     gt,
+    is_all,
+    is_any,
+    is_distinct,
     is_in,
+    is_iterable,
     is_not_in,
     le,
     lt,
     ne,
-    is_distinct,
-    is_iterable,
-    is_all,
-    is_any,
 )
 from ._iterations import (
     concat,
@@ -24,7 +24,16 @@ from ._iterations import (
     tap,
     zip_with,
 )
-from ._objects import attr, dissoc, item, merge, method, thread_first, thread_last
+from ._objects import (
+    attr,
+    dissoc,
+    item,
+    merge,
+    method,
+    thread_first,
+    thread_last,
+    flatten_recursive,
+)
 from ._operations import (
     add,
     floordiv,
@@ -80,4 +89,5 @@ __all__ = [
     "is_any",
     "is_distinct",
     "is_iterable",
+    "flatten_recursive",
 ]

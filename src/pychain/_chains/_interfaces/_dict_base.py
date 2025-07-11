@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING, Self
 
 import cytoolz as cz
 
-from ..._protocols import TransformFunc, CheckFunc, ProcessFunc, AggFunc
-from ._core import AbstractChain
-from .._executors import Converter, Getter
 from ... import fn
+from ..._protocols import AggFunc, CheckFunc, ProcessFunc, TransformFunc
+from .._executors import Converter, Getter
+from ._core import AbstractChain
 
 if TYPE_CHECKING:
     from .._main import DictChain
@@ -276,3 +276,6 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             {'b': 2}
         """
         return self.do(f=ft.partial(fn.dissoc, keys=keys))
+
+    def flatten_keys(self) -> "DictChain[str, V]":
+        return self.into(ft.partial(fn.flatten_recursive))
