@@ -2,6 +2,7 @@ import statistics as stats
 from functools import partial
 from typing import Literal
 
+
 def quantiles(n: int, method: Literal["inclusive", "exclusive"]):
     """
     Calculate quantiles of the input data.

@@ -2,6 +2,7 @@ import numpy as np
 import polars as pl
 from pychain import chain, op
 
+
 def basic_example() -> None:
     result = (
         chain.from_range(1, 6)  # [1, 2, 3, 4, 5]

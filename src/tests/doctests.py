@@ -5,6 +5,7 @@ from types import ModuleType
 import pkgutil
 from tqdm import tqdm
 
+
 def run_all_doctests(package: str) -> None:
     modules: list[ModuleType] = []
     pkg: ModuleType = importlib.import_module(package)
@@ -26,6 +27,7 @@ def run_all_doctests(package: str) -> None:
                 sys.exit(1)
             pbar.update(1)
     print("\nAll doctests passed! ✅")
+
 
 if __name__ == "__main__":
     run_all_doctests(package="pychain")

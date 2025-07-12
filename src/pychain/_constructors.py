@@ -142,6 +142,7 @@ class ChainConstructor:
         """
         return DictChain(_value={k: IterChain(_value=v) for k, v in data.items()})
 
+
 def when[T, R](predicate: ChainableOp | Callable[[T], bool]) -> When[T, Any]:
     return When[T, R](predicate)
 

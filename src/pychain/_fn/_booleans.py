@@ -42,16 +42,16 @@ def ne[T](value: T) -> Callable[[T], bool]:
 
 
 def gt[T](value: T) -> Callable[[T], bool]:
-    return partial(operator.lt, value) # type: ignore
+    return partial(operator.lt, value)  # type: ignore
 
 
 def ge[T](value: T) -> Callable[[T], bool]:
-    return partial(operator.le, value) # type: ignore
+    return partial(operator.le, value)  # type: ignore
 
 
 def lt[T](value: T) -> Callable[[T], bool]:
-    return partial(operator.gt, value) # type: ignore
+    return partial(operator.gt, value)  # type: ignore
 
 
 def le[T](value: T) -> Callable[[T], bool]:
-    return partial(operator.ge, value) # type: ignore
+    return partial(operator.ge, value)  # type: ignore
