@@ -1,18 +1,12 @@
-import functools as ft
-import itertools as it
-import operator as op
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from random import Random
 from typing import TYPE_CHECKING, Any, Self
 
-import cytoolz as cz
-
-from .._executors import Converter
-from ... import _fn
+from ..._fn import it, compose_on_iter, compose
 from ..._protocols import CheckFunc, ProcessFunc, TransformFunc
+from .._executors import Converter, Getter
 from ._core import AbstractChain
-from .._executors import Getter
 
 if TYPE_CHECKING:
     from .._main import IterChain
@@ -57,7 +51,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         """
         return self.__class__(
             _value=self._value,
-            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
+            _pipeline=[compose(*self._pipeline, f)],
         )  # type: ignore
 
     def map[V1](self, f: TransformFunc[V, V1]) -> "IterChain[V1]":
@@ -68,7 +62,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).map(lambda x: x * 2).convert_to.list()
             [2, 4]
         """
-        return self.into(f=ft.partial(map, f))
+        return self.into(f=it.partial_map(f))
 
     def flat_map[V1](self, f: TransformFunc[V, Iterable[V1]]) -> "IterChain[V1]":
         """
@@ -78,7 +72,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).flat_map(lambda x: [x, x + 10]).convert_to.list()
             [1, 11, 2, 12]
         """
-        return self.into(f=ft.partial(_fn.flat_map, func=f))
+        return self.into(f=it.flat_map(f))
 
     def starmap[V1](self, f: TransformFunc[V, V1]) -> "IterChain[V1]":
         """
@@ -92,10 +86,10 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain(data).starmap(add).convert_to.list()
             [3, 7]
         """
-        return self.into(f=ft.partial(it.starmap, f))  # type: ignore
+        return self.into(f=it.starmap(f))
 
     def compose[V1](self, *fns: TransformFunc[V, V1]) -> "IterChain[V1]":
-        return self.into(f=ft.partial(map, cz.functoolz.compose_left(*fns)))
+        return self.into(f=compose_on_iter(*fns))
 
     def take_while(self, predicate: CheckFunc[V]) -> Self:
         """
@@ -107,7 +101,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             ... ).convert_to.list()
             [1, 2]
         """
-        return self.do(f=ft.partial(it.takewhile, predicate))
+        return self.do(f=it.take_while(predicate))
 
     def drop_while(self, predicate: CheckFunc[V]) -> Self:
         """
@@ -119,7 +113,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             ... ).convert_to.list()
             [3, 2]
         """
-        return self.do(f=ft.partial(it.dropwhile, predicate))
+        return self.do(f=it.drop_while(predicate))
 
     def interleave(self, *others: Iterable[V]) -> Self:
         """
@@ -129,7 +123,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).interleave([10, 20]).convert_to.list()
             [1, 10, 2, 20]
         """
-        return self.do(f=ft.partial(_fn.interleave, others=others))
+        return self.do(f=it.interleave(others))
 
     def interpose(self, element: V) -> Self:
         """
@@ -139,7 +133,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3]).interpose(0).convert_to.list()
             [1, 0, 2, 0, 3]
         """
-        return self.do(f=ft.partial(cz.itertoolz.interpose, element))
+        return self.do(f=it.interpose(element))
 
     def top_n(self, n: int, key: Callable[[V], Any] | None = None) -> Self:
         """
@@ -149,7 +143,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 5, 3, 2]).top_n(2).convert_to.list()
             [5, 3]
         """
-        return self.do(f=ft.partial(cz.itertoolz.topk, n, key=key))
+        return self.do(f=it.top_n(n=n, key=key))
 
     def random_sample(
         self, probability: float, state: Random | int | None = None
@@ -163,9 +157,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             ... ).convert_to.list()
             [13, 91]
         """
-        return self.do(
-            f=ft.partial(cz.itertoolz.random_sample, probability, random_state=state)
-        )
+        return self.do(f=it.random_sample(probability=probability, state=state))
 
     def concat(self, *others: Iterable[V]) -> Self:
         """
@@ -175,7 +167,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).concat([3, 4]).convert_to.list()
             [1, 2, 3, 4]
         """
-        return self.do(f=ft.partial(_fn.concat, others=others))
+        return self.do(f=it.concat(others))
 
     def filter(self, f: CheckFunc[V]) -> Self:
         """
@@ -185,7 +177,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3]).filter(lambda x: x > 1).convert_to.list()
             [2, 3]
         """
-        return self.do(f=ft.partial(filter, f))
+        return self.do(f=it.partial_filter(f))
 
     def accumulate(self, f: Callable[[V, V], V]) -> Self:
         """
@@ -197,7 +189,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             ... ).convert_to.list()
             [1, 3, 6]
         """
-        return self.do(f=ft.partial(cz.itertoolz.accumulate, f))
+        return self.do(f=it.accumulate(f=f))
 
     def insert_left(self, value: V) -> Self:
         """
@@ -207,7 +199,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([2, 3]).insert_left(1).convert_to.list()
             [1, 2, 3]
         """
-        return self.do(f=ft.partial(cz.itertoolz.cons, value))
+        return self.do(f=it.insert_left(value))
 
     def peek(self, note: str | None = None) -> Self:
         """
@@ -218,7 +210,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             Peeked value (step 1): 1
             [1, 2, 3]
         """
-        return self.do(f=ft.partial(_fn.peek, note=note))
+        return self.do(f=it.peek(note=note))
 
     def peekn(self, n: int, note: str | None = None) -> Self:
         """
@@ -229,7 +221,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             Peeked 3 values (step 1): [1, 2, 3]
             [1, 2, 3, 4, 5, 6]
         """
-        return self.do(f=ft.partial(_fn.peekn, n=n, note=note))
+        return self.do(f=it.peekn(n=n, note=note))
 
     def head(self, n: int) -> Self:
         """
@@ -239,7 +231,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3, 4]).head(2).convert_to.list()
             [1, 2]
         """
-        return self.do(f=ft.partial(cz.itertoolz.take, n))
+        return self.do(f=it.head(n=n))
 
     def tail(self, n: int) -> Self:
         """
@@ -249,7 +241,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3, 4]).tail(2).convert_to.list()
             [3, 4]
         """
-        return self.do(f=ft.partial(cz.itertoolz.tail, n))
+        return self.do(f=it.tail(n=n))
 
     def drop_first(self, n: int) -> Self:
         """
@@ -259,7 +251,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3, 4]).drop_first(2).convert_to.list()
             [3, 4]
         """
-        return self.do(f=ft.partial(cz.itertoolz.drop, n))
+        return self.do(f=it.drop_first(n=n))
 
     def every(self, index: int) -> Self:
         """
@@ -269,7 +261,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([0, 1, 2, 3, 4]).every(2).convert_to.list()
             [0, 2, 4]
         """
-        return self.do(f=ft.partial(cz.itertoolz.take_nth, index))
+        return self.do(f=it.every(index=index))
 
     def repeat(self, n: int) -> Self:
         """
@@ -279,7 +271,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).repeat(2).convert_to.list()
             [1, 1, 2, 2]
         """
-        return self.do(f=ft.partial(_fn.repeat, n=n))
+        return self.do(f=it.repeat(n=n))
 
     def unique(self) -> Self:
         """
@@ -289,7 +281,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 2, 3]).unique().convert_to.list()
             [1, 2, 3]
         """
-        return self.do(f=cz.itertoolz.unique)
+        return self.do(f=it.unique)
 
     def cumsum(self) -> Self:
         """
@@ -299,7 +291,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3]).cumsum().convert_to.list()
             [1, 3, 6]
         """
-        return self.do(f=ft.partial(cz.itertoolz.accumulate, op.add))
+        return self.do(f=it.cumsum())
 
     def cumprod(self) -> Self:
         """
@@ -309,7 +301,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3]).cumprod().convert_to.list()
             [1, 2, 6]
         """
-        return self.do(f=ft.partial(cz.itertoolz.accumulate, op.mul))
+        return self.do(f=it.cumprod())
 
     def merge_sorted(
         self, *others: Iterable[V], sort_on: Callable[[V], Any] | None = None
@@ -321,7 +313,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 3]).merge_sorted([2, 4]).convert_to.list()
             [1, 2, 3, 4]
         """
-        return self.do(f=ft.partial(_fn.merge_sorted, others=others, sort_on=sort_on))
+        return self.do(f=it.merge_sorted(others=others, sort_on=sort_on))
 
     def tap(self, func: Callable[[V], None]) -> Self:
         """
@@ -333,7 +325,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             2
             [1, 2]
         """
-        return self.do(f=ft.partial(_fn.tap, func=func))
+        return self.do(f=it.tap(func=func))
 
     def zip(
         self, *others: Iterable[Any], strict: bool = False
@@ -345,7 +337,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).zip([10, 20]).convert_to.list()
             [(1, 10), (2, 20)]
         """
-        return self.into(f=ft.partial(_fn.zip_with, others=others, strict=strict))
+        return self.into(f=it.zip_with(others=others, strict=strict))
 
     def enumerate(self) -> "IterChain[tuple[int, V]]":
         """
@@ -365,7 +357,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([[1, 2], [3, 4]]).flatten().convert_to.list()
             [1, 2, 3, 4]
         """
-        return self.into(f=cz.itertoolz.concat)
+        return self.into(f=it.flatten)
 
     def diff(
         self,
@@ -396,9 +388,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             ... ).convert_to.list()
             [('bananas', 'Oranges')]
         """
-        return self.into(
-            f=ft.partial(_fn.diff_with, others=others, default=default, key=key)
-        )
+        return self.into(f=it.diff(others=others, default=default, key=key))
 
     def partition(self, n: int, pad: V | None = None) -> "IterChain[tuple[V, ...]]":
         """
@@ -408,7 +398,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3, 4, 5]).partition(2, pad=0).convert_to.list()
             [(1, 2), (3, 4), (5, 0)]
         """
-        return self.into(f=ft.partial(cz.itertoolz.partition, n, pad=pad))
+        return self.into(f=it.partition(n=n, pad=pad))
 
     def partition_all(self, n: int) -> "IterChain[tuple[V, ...]]":
         """
@@ -418,7 +408,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3, 4, 5]).partition_all(2).convert_to.list()
             [(1, 2), (3, 4), (5,)]
         """
-        return self.into(f=ft.partial(cz.itertoolz.partition_all, n))
+        return self.into(f=it.partition_all(n))
 
     def rolling(self, length: int) -> "IterChain[tuple[V, ...]]":
         """
@@ -428,9 +418,9 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3, 4]).rolling(3).convert_to.list()
             [(1, 2, 3), (2, 3, 4)]
         """
-        return self.into(f=ft.partial(cz.itertoolz.sliding_window, length))
+        return self.into(f=it.rolling(length=length))
 
-    def cross_join[V1](self, other: Iterable[V1]) -> "IterChain[tuple[V, V1]]":
+    def cross_join[V1](self, other: Iterable[V1]) -> "IterChain[tuple[V1, V]]":
         """
         Creates an IterChain from the Cartesian product of input iterables.
 
@@ -438,17 +428,10 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain(range(0, 2)).cross_join(["a", "b"]).convert_to.list()
             [('a', 0), ('a', 1), ('b', 0), ('b', 1)]
         """
-        return self.into(ft.partial(it.product, other))  # type: ignore
+        return self.into(it.cross_join(other=other))
 
     def transpose(self) -> "IterChain[tuple[V, ...]]":
-        """
-        Transpose un itérable de lignes en un itérable de colonnes.
-        Équivalent à `zip(*iterable)`.
-        """
-        return self.into(lambda iterable: zip(*iterable))
+        return self.into(f=it.transpose())  # type: ignore
 
     def to_records(self, keys: list[str]) -> "IterChain[dict[str, Any]]":
-        """
-        Convertit un itérable de tuples/listes en un itérable de dictionnaires.
-        """
         return self.map(lambda row: dict(zip(keys, row)))  # type: ignore

@@ -1,3 +1,5 @@
+from operator import neg
+
 from ._booleans import (
     eq,
     ge,
@@ -5,39 +7,28 @@ from ._booleans import (
     is_all,
     is_any,
     is_distinct,
-    is_true,
-    is_none,
-    is_not_none,
     is_in,
     is_iterable,
+    is_none,
     is_not_in,
+    is_not_none,
+    is_true,
     le,
     lt,
     ne,
 )
-from ._iterations import (
-    concat,
-    diff_with,
-    flat_map,
-    interleave,
-    merge_sorted,
-    peek,
-    peekn,
-    repeat,
-    tap,
-    zip_with,
-)
+from . import _iterations as it
+from . import _dicts as dc
 from ._objects import (
+    pipe,
+    attr,
     call,
     compose,
-    dissoc,
-    attr,
     item,
-    merge,
     method,
     thread_first,
     thread_last,
-    flatten_recursive,
+    compose_on_iter
 )
 from ._operations import (
     add,
@@ -55,11 +46,8 @@ from .stats import (
     quantiles,
 )
 
-
-from operator import neg
-
 __all__ = [
-    "flatten_recursive",
+    "pipe",
     "is_true",
     "is_none",
     "is_not_none",
@@ -68,7 +56,6 @@ __all__ = [
     "method",
     "thread_first",
     "thread_last",
-    "merge",
     "add",
     "sub",
     "sub_r",
@@ -80,16 +67,6 @@ __all__ = [
     "floordiv_r",
     "pow",
     "neg",
-    "concat",
-    "diff_with",
-    "flat_map",
-    "interleave",
-    "merge_sorted",
-    "peek",
-    "peekn",
-    "repeat",
-    "tap",
-    "zip_with",
     "eq",
     "ge",
     "gt",
@@ -102,14 +79,13 @@ __all__ = [
     "is_any",
     "is_distinct",
     "is_iterable",
-    "flatten_recursive",
     "quantiles",
-    "dissoc",
     "call",
     "compose",
-    "merge",
     "attr",
     "item",
     "method",
-    "dissoc",
+    "compose_on_iter",
+    "it",
+    "dc",
 ]

@@ -1,11 +1,8 @@
-import functools as ft
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Self
 
-import cytoolz as cz
-
-from ... import _fn
+from ..._fn import compose, dc
 from ..._protocols import AggFunc, CheckFunc, ProcessFunc, TransformFunc
 from .._executors import Converter, Getter
 from ._core import AbstractChain
@@ -128,7 +125,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         """
         return self.__class__(
             _value=self._value,
-            _pipeline=[cz.functoolz.compose_left(*self._pipeline, f)],
+            _pipeline=[compose(*self._pipeline, f)],
         )  # type: ignore
 
     def filter_on_key(self, key: K, predicate: CheckFunc[V]) -> Self:
@@ -140,7 +137,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.filter_on_key("b", lambda v: v > 1).unwrap()
             {'b': 2}
         """
-        return self.filter_items(lambda kv: kv[0] == key and predicate(kv[1]))
+        return self.do(dc.filter_on_key(key=key, predicate=predicate))
 
     def map_items[K1, V1](
         self,
@@ -154,7 +151,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.map_items(lambda kv: (kv[0].upper(), kv[1] * 2)).unwrap()
             {'A': 2}
         """
-        return self.into(f=ft.partial(cz.dicttoolz.itemmap, f))
+        return self.into(f=dc.map_items(f=f))
 
     def map_keys[K1](self, f: TransformFunc[K, K1]) -> "DictChain[K1, V]":
         """
@@ -165,7 +162,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.map_keys(str.upper).unwrap()
             {'A': 1}
         """
-        return self.into(f=ft.partial(cz.dicttoolz.keymap, f))
+        return self.into(f=dc.map_keys(f))
 
     def map_values[V1](self, f: TransformFunc[V, V1]) -> "DictChain[K, V1]":
         """
@@ -176,7 +173,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.map_values(lambda v: v + 10).unwrap()
             {'a': 11}
         """
-        return self.into(f=ft.partial(cz.dicttoolz.valmap, f))
+        return self.into(f=dc.map_values(f=f))
 
     def filter_items(self, predicate: CheckFunc[tuple[K, V]]) -> Self:
         """
@@ -187,7 +184,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.filter_items(lambda kv: kv[1] > 1).unwrap()
             {'b': 2}
         """
-        return self.do(f=ft.partial(cz.dicttoolz.itemfilter, predicate))
+        return self.do(f=dc.filter_items(predicate=predicate))
 
     def filter_keys(self, predicate: CheckFunc[K]) -> Self:
         """
@@ -198,7 +195,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.filter_keys(lambda k: k == "a").unwrap()
             {'a': 1}
         """
-        return self.do(f=ft.partial(cz.dicttoolz.keyfilter, predicate))
+        return self.do(f=dc.filter_keys(predicate=predicate))
 
     def filter_values(self, predicate: CheckFunc[V]) -> Self:
         """
@@ -208,7 +205,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> BaseDictChain({"a": 1, "b": 2}).filter_values(lambda v: v > 1).unwrap()
             {'b': 2}
         """
-        return self.do(f=ft.partial(cz.dicttoolz.valfilter, predicate))
+        return self.do(f=dc.filter_values(predicate=predicate))
 
     def with_key(self, key: K, value: V) -> Self:
         """
@@ -219,7 +216,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.with_key("b", 2).unwrap()
             {'a': 1, 'b': 2}
         """
-        return self.do(f=ft.partial(cz.dicttoolz.assoc, key=key, value=value))
+        return self.do(f=dc.with_key(key=key, value=value))
 
     def with_nested_key(self, keys: Iterable[K] | K, value: V) -> Self:
         """
@@ -230,7 +227,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.with_nested_key(["a", "c"], 2).unwrap()
             {'a': {'b': 1, 'c': 2}}
         """
-        return self.do(f=ft.partial(cz.dicttoolz.assoc_in, keys=keys, value=value))
+        return self.do(f=dc.with_nested_key(keys=keys, value=value))
 
     def update_in(self, *keys: K, f: ProcessFunc[V]) -> Self:
         """
@@ -241,7 +238,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.update_in("a", "b", f=lambda v: v + 10).unwrap()
             {'a': {'b': 11}}
         """
-        return self.do(f=ft.partial(cz.dicttoolz.update_in, keys=keys, func=f))
+        return self.do(f=dc.update_in(*keys, f=f))
 
     def merge(self, *others: dict[K, V]) -> Self:
         """
@@ -251,7 +248,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> BaseDictChain({"a": 1}).merge({"b": 2}).unwrap()
             {'a': 1, 'b': 2}
         """
-        return self.do(f=ft.partial(_fn.merge, others=others))
+        return self.do(f=dc.merge(others=others))
 
     def merge_with(self, f: Callable[..., V], *others: dict[K, V]) -> Self:
         """
@@ -265,7 +262,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             ... ).unwrap()
             {'first': 3, 'second': 6, 'third': 3}
         """
-        return self.do(f=ft.partial(cz.dicttoolz.merge_with, f, *others))
+        return self.do(f=dc.merge_with(f, *others))
 
     def drop(self, *keys: K) -> Self:
         """
@@ -276,7 +273,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             >>> chain.drop("a").unwrap()
             {'b': 2}
         """
-        return self.do(f=ft.partial(_fn.dissoc, keys=keys))
+        return self.do(f=dc.drop(keys=keys))
 
     def flatten_keys(self) -> "DictChain[str, V]":
-        return self.into(ft.partial(_fn.flatten_recursive))
+        return self.into(f=dc.flatten_keys())

@@ -1,10 +1,7 @@
-import functools as ft
 from collections.abc import Callable
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Self
-
-import cytoolz as cz
 
 from ... import _fn
 from ..._protocols import ProcessFunc, ThreadFunc
@@ -44,7 +41,7 @@ class AbstractChain[T]:
         >>> chain.unwrap()
         25
         """
-        return self.do(f=ft.partial(_fn.thread_first, fns=fns))
+        return self.do(f=_fn.thread_first(fns=fns))
 
     def thread_last(self, *fns: ThreadFunc[T]) -> Self:
         """
@@ -57,7 +54,7 @@ class AbstractChain[T]:
             >>> chain.unwrap()
             9
         """
-        return self.do(f=ft.partial(_fn.thread_last, fns=fns))
+        return self.do(f=_fn.thread_last(fns=fns))
 
     def clone(self) -> Self:
         """
@@ -77,4 +74,4 @@ class AbstractChain[T]:
         """
         if not self._pipeline:
             return self._value
-        return cz.functoolz.pipe(self._value, *self._pipeline)
+        return _fn.pipe(self._value, *self._pipeline)
