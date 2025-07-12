@@ -38,7 +38,7 @@ def data_agg_and_transform() -> None:
     chain_result: dict[str, int] = (
         chain(data)
         .into_groups(lambda d: d.category)
-        .map_values(lambda v: v.map(lambda x: x.value).agg.sum())
+        .map_values(lambda v: v.map(lambda x: x.value).agg(sum))
         .unwrap()
     )
     assert py_result == chain_result == {"A": 40, "B": 60}
