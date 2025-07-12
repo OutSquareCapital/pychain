@@ -1,7 +1,6 @@
 import operator
 from collections.abc import Iterable
 from typing import Any
-
 import cytoolz as cz
 
 from .._protocols import ThreadFunc
@@ -24,6 +23,8 @@ def thread_last[T](val: T, fns: Iterable[ThreadFunc[T]]) -> T:
 def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
     return cz.dicttoolz.merge(on, *others)
 
+def dissoc[K, V](data: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
+    return cz.dicttoolz.dissoc(data, *keys)
 
 def flatten_recursive[V](
     d: dict[Any, Any], parent_key: str = "", sep: str = "."

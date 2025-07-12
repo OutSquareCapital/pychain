@@ -19,7 +19,7 @@ class Getter[V]:
         Return the first element of the iterable (see cytoolz.first).
 
         Example:
-            >>> BaseGetter([1, 2, 3]).first()
+            >>> Getter([1, 2, 3]).first()
             1
         """
         return self(f=cz.itertoolz.first)
@@ -29,7 +29,7 @@ class Getter[V]:
         Return the second element of the iterable (see cytoolz.second).
 
         Example:
-            >>> BaseGetter([1, 2, 3]).second()
+            >>> Getter([1, 2, 3]).second()
             2
         """
         return self(f=cz.itertoolz.second)
@@ -39,7 +39,7 @@ class Getter[V]:
         Return the last element of the iterable (see cytoolz.last).
 
         Example:
-            >>> BaseGetter([1, 2, 3]).last()
+            >>> Getter([1, 2, 3]).last()
             3
         """
         return self(f=cz.itertoolz.last)
@@ -49,7 +49,7 @@ class Getter[V]:
         Return the element at the given index (see cytoolz.nth).
 
         Example:
-            >>> BaseGetter([1, 2, 3]).at_index(1)
+            >>> Getter([1, 2, 3]).at_index(1)
             2
         """
         return self(f=ft.partial(cz.itertoolz.nth, index))
@@ -59,7 +59,7 @@ class Getter[V]:
         Return the length of the iterable (see cytoolz.count).
 
         Example:
-            >>> BaseGetter([1, 2, 3]).len()
+            >>> Getter([1, 2, 3]).len()
             3
         """
         return self(f=cz.itertoolz.count)

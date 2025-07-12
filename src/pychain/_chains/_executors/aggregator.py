@@ -17,7 +17,7 @@ class Aggregator[T]:
         Calculate the mean of the input data.
 
         Example:
-            >>> ChainableOp().mean()([1, 2, 3, 4, 5, 5])
+            >>> Aggregator([1, 2, 3, 4, 5, 5]).mean()
             3.3333333333333335
         """
         return self(stats.mean)
@@ -27,7 +27,7 @@ class Aggregator[T]:
         Calculate the median of the input data.
 
         Example:
-            >>> ChainableOp().median()([1, 2, 3, 4, 5, 5])
+            >>> Aggregator([1, 2, 3, 4, 5, 5]).median()
             3.5
         """
         return self(stats.median)
@@ -37,7 +37,7 @@ class Aggregator[T]:
         Calculate the mode of the input data.
 
         Example:
-            >>> ChainableOp().mode()([1, 2, 3, 4, 5, 5])
+            >>> Aggregator([1, 2, 3, 4, 5, 5]).mode()
             5
         """
         return self(stats.mode)
@@ -47,7 +47,7 @@ class Aggregator[T]:
         Calculate the sample standard deviation of the input data.
 
         Example:
-            >>> ChainableOp().stdev()([1, 2, 3, 4, 5])
+            >>> Aggregator([1, 2, 3, 4, 5]).stdev()
             1.5811388300841898
         """
         return self(stats.stdev)
@@ -57,7 +57,7 @@ class Aggregator[T]:
         Calculate the sample variance of the input data.
 
         Example:
-            >>> ChainableOp().variance()([1, 2, 3, 4, 5])
+            >>> Aggregator([1, 2, 3, 4, 5]).variance()
             2.5
         """
         return self(stats.variance)
@@ -67,7 +67,7 @@ class Aggregator[T]:
         Calculate the population variance of the input data.
 
         Example:
-            >>> ChainableOp().pvariance()([1, 2, 3, 4, 5, 5])
+            >>> Aggregator([1, 2, 3, 4, 5, 5]).pvariance()
             2.2222222222222223
         """
         return self(stats.pvariance)
@@ -79,10 +79,10 @@ class Aggregator[T]:
         Calculate quantiles of the input data.
 
         Example:
-            >>> ChainableOp().quantiles(4, "inclusive")([1, 2, 3, 4, 5])
+            >>> Aggregator([1, 2, 3, 4, 5]).quantiles(4, "inclusive")
             [2.0, 3.0, 4.0]
 
-            >>> ChainableOp().quantiles(4, "exclusive")([1, 2, 3, 4, 5])
+            >>> Aggregator([1, 2, 3, 4, 5]).quantiles(4, "exclusive")
             [1.5, 3.0, 4.5]
         """
         return self(partial(stats.quantiles, n=n, method=method))
@@ -92,7 +92,7 @@ class Aggregator[T]:
         Calculate the low median of the input data.
 
         Example:
-            >>> ChainableOp().median_low()([1, 2, 3, 4, 5, 5])
+            >>> Aggregator([1, 2, 3, 4, 5, 5]).median_low()
             3
         """
         return self(stats.median_low)
@@ -102,7 +102,7 @@ class Aggregator[T]:
         Calculate the high median of the input data.
 
         Example:
-            >>> ChainableOp().median_high()([1, 2, 3, 4, 5, 5])
+            >>> Aggregator([1, 2, 3, 4, 5, 5]).median_high()
             4
         """
         return self(stats.median_high)
@@ -112,7 +112,7 @@ class Aggregator[T]:
         Calculate the median of grouped data.
 
         Example:
-            >>> ChainableOp().median_grouped()([1, 2, 3, 4, 5, 5])
+            >>> Aggregator([1, 2, 3, 4, 5, 5]).median_grouped()
             3.5
         """
         return self(stats.median_grouped)
@@ -122,7 +122,7 @@ class Aggregator[T]:
         Calculate the sum of the input data.
 
         Example:
-            >>> ChainableOp().sum()([1, 2, 3, 4, 5])
+            >>> Aggregator([1, 2, 3, 4, 5]).sum()
             15
         """
         return self(sum)
@@ -132,7 +132,7 @@ class Aggregator[T]:
         Find the minimum value in the input data.
 
         Example:
-            >>> ChainableOp().min()([1, 2, 3, 4, 5])
+            >>> Aggregator([1, 2, 3, 4, 5]).min()
             1
         """
         return self(min)
@@ -142,7 +142,7 @@ class Aggregator[T]:
         Find the maximum value in the input data.
 
         Example:
-            >>> ChainableOp().max()([1, 2, 3, 4, 5])
+            >>> Aggregator([1, 2, 3, 4, 5]).max()
             5
         """
         return self(max)

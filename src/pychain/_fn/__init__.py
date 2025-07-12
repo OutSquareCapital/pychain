@@ -28,6 +28,9 @@ from ._iterations import (
     zip_with,
 )
 from ._objects import (
+    call,
+    compose,
+    dissoc,
     attr,
     item,
     merge,
@@ -101,4 +104,12 @@ __all__ = [
     "is_iterable",
     "flatten_recursive",
     "quantiles",
+    "dissoc",
+    "call",
+    "compose",
+    "merge",
+    "attr",
+    "item",
+    "method",
+    "dissoc",
 ]
