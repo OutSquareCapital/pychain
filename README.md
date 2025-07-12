@@ -12,12 +12,19 @@
     .cumsum()  # [16, 52, 116, 216]
     .enumerate()  # [(0, 16), (1, 52), (2, 116), (3, 216)]
     .flatten()  # [0, 16, 1, 52, 2, 116, 3, 216]
-    .rolling(2)  # [(0, 16), (16, 1), (1, 52), (52, 2), (2, 116), (116, 3), (3, 216)]
+    .rolling(3)  # [(0, 16, 1), (16, 1, 52), (1, 52, 2), (52, 2, 116), (2, 116, 3), (116, 3, 216)]
     .map(
         lambda x: f"index: {x[0]}, value: {x[1]}"
-    )  # ['index: 0, value: 16', 'index: 1, value: 52', 'index: 2, value: 116', 'index: 3, value: 216']
+    )
     .convert_to.list()  # Computation only happens here! Otherwise it's simply a list of functions, a range, and pychain objects (py classes with slots, or cython class)
 )
+
+['index: 0, value: 16',
+'index: 16, value: 1',
+'index: 1, value: 52',
+'index: 52, value: 2',
+'index: 2, value: 116',
+'index: 116, value: 3']
 ````
 
 ---

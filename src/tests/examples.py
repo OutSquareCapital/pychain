@@ -1,7 +1,6 @@
 import numpy as np
 import polars as pl
-from src.pychain import chain, op
-
+from pychain import chain, op
 
 def basic_example() -> None:
     result = (
