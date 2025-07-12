@@ -1,12 +1,13 @@
 import doctest
-import sys
 import importlib
-from types import ModuleType
 import pkgutil
+import sys
+from types import ModuleType
+
 from tqdm import tqdm
 
 
-def run_all_doctests(package: str) -> None:
+def _get_modules(package: str) -> list[ModuleType]:
     modules: list[ModuleType] = []
     pkg: ModuleType = importlib.import_module(package)
     for _, modname, ispkg in pkgutil.walk_packages(pkg.__path__, pkg.__name__ + "."):
@@ -15,6 +16,10 @@ def run_all_doctests(package: str) -> None:
                 modules.append(importlib.import_module(modname))
             except Exception:
                 pass
+    return modules
+
+
+def _test_modules(modules: list[ModuleType]) -> None:
     failures = 0
     with tqdm(total=len(modules), desc="Running doctests", unit="module") as pbar:
         for mod in modules:
@@ -26,6 +31,11 @@ def run_all_doctests(package: str) -> None:
                 pbar.close()
                 sys.exit(1)
             pbar.update(1)
+
+
+def run_all_doctests(package: str) -> None:
+    modules: list[ModuleType] = _get_modules(package)
+    _test_modules(modules)
     print("\nAll doctests passed! ✅")
 
 

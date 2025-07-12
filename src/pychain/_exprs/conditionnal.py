@@ -2,6 +2,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from .._protocols import CheckFunc
 
+
 @dataclass(slots=True)
 class When[T, R]:
     _predicate: CheckFunc[T]
@@ -27,9 +28,7 @@ class BaseThen[T, R]:
     def when(self, predicate: CheckFunc[T]) -> "ChainedWhen[T, R]":
         return ChainedWhen[T, R](self._conditions, predicate)
 
-    def otherwise(
-        self, default_result: Callable[[T], R] | R
-    ):
+    def otherwise(self, default_result: Callable[[T], R] | R):
         def conditional_logic(x: T):
             for predicate, result_spec in self._conditions:
                 if predicate(x):
