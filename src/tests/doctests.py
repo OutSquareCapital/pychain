@@ -3,6 +3,7 @@ import sys
 import importlib
 from types import ModuleType
 import pkgutil
+from tqdm import tqdm
 
 def run_all_doctests(package: str) -> None:
     modules: list[ModuleType] = []
@@ -14,13 +15,16 @@ def run_all_doctests(package: str) -> None:
             except Exception:
                 pass
     failures = 0
-    for mod in modules:
-        print(f"\nTesting doctests in {mod.__name__}...")
-        result = doctest.testmod(mod, verbose=False)
-        failures += result.failed
-        if failures > 0:
-            print(f"\nSome doctests failed. ❌ ({failures} failures)")
-            sys.exit(1)
+    with tqdm(total=len(modules), desc="Running doctests", unit="module") as pbar:
+        for mod in modules:
+            pbar.set_description(f"Running doctests in {mod.__name__}")
+            result = doctest.testmod(mod, verbose=False)
+            failures += result.failed
+            if failures > 0:
+                print(f"\nSome doctests failed. ❌ ({failures} failures)")
+                pbar.close()
+                sys.exit(1)
+            pbar.update(1)
     print("\nAll doctests passed! ✅")
 
 if __name__ == "__main__":
