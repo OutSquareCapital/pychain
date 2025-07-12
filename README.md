@@ -1,8 +1,12 @@
 # pychain
 
-**pychain** is a Python library for declarative, chainable, and composable data transformations, inspired by functional programming and powered by [cytoolz](https://github.com/pytoolz/cytoolz). It provides a unified, type-safe API for working with scalars, iterables, and dictionaries, making complex data manipulation pipelines concise, readable, and expressive.
-Designed to interoperate with pandas, polars, NumPy, and standard Python collections. It is NOT meant as an heavy computation dataframe/array library, but rather as a collections/iterable transformer,
-for easier intermediate steps between numpy/duckdb/polars computations.
+**pychain** is a Python library for declarative, chainable, and composable data transformations, inspired by functional programming and powered by [cytoolz](https://github.com/pytoolz/cytoolz).
+
+It provides a unified, type-safe API for working with scalars, iterables, and dictionaries, making complex data manipulation pipelines concise, readable, and expressive.
+
+Designed to interoperate with pandas, polars, NumPy, and standard Python collections.
+
+It is NOT meant as an heavy computation dataframe/array library, but rather as a collections/iterable transformer, for easier intermediate steps between numpy/duckdb/polars computations.
 
 ## Quickstart
 
