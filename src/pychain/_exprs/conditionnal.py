@@ -1,24 +1,21 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-
 from .._protocols import CheckFunc
-from ._core import ChainableOp
-
 
 @dataclass(slots=True)
 class When[T, R]:
     _predicate: CheckFunc[T]
 
-    def then(self, result: ChainableOp | Callable[[T], R] | R) -> "Then[T, R]":
+    def then(self, result: Callable[[T], R] | R) -> "Then[T, R]":
         return Then[T, R](_conditions=[(self._predicate, result)])
 
 
 @dataclass(slots=True)
 class ChainedWhen[T, R]:
     _conditions: list[tuple[CheckFunc[T], Callable[[T], R] | R]]
-    _predicate: ChainableOp | CheckFunc[T]
+    _predicate: CheckFunc[T]
 
-    def then(self, result: ChainableOp | Callable[[T], R] | R) -> "ChainedThen[T, R]":
+    def then(self, result: Callable[[T], R] | R) -> "ChainedThen[T, R]":
         new_conditions = self._conditions + [(self._predicate, result)]
         return ChainedThen[T, R](_conditions=new_conditions)
 
@@ -27,19 +24,19 @@ class ChainedWhen[T, R]:
 class BaseThen[T, R]:
     _conditions: list[tuple[CheckFunc[T], Callable[[T], R] | R]]
 
-    def when(self, predicate: ChainableOp | CheckFunc[T]) -> "ChainedWhen[T, R]":
+    def when(self, predicate: CheckFunc[T]) -> "ChainedWhen[T, R]":
         return ChainedWhen[T, R](self._conditions, predicate)
 
     def otherwise(
-        self, default_result: ChainableOp | Callable[[T], R] | R
-    ) -> ChainableOp:
+        self, default_result: Callable[[T], R] | R
+    ):
         def conditional_logic(x: T):
             for predicate, result_spec in self._conditions:
                 if predicate(x):
                     return result_spec(x) if callable(result_spec) else result_spec
             return default_result(x) if callable(default_result) else default_result
 
-        return ChainableOp(pipeline=conditional_logic)
+        return conditional_logic
 
 
 @dataclass(slots=True)
