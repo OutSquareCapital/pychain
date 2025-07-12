@@ -6,8 +6,8 @@ from pychain import chain, op
 def basic_example() -> None:
     result = (
         chain.from_range(1, 6)  # [1, 2, 3, 4, 5]
-        .map(op().mul(2))  # [2, 4, 6, 8, 10]
-        .filter(op().gt(5))  # [6, 8, 10]
+        .map(op.mul(2))  # [2, 4, 6, 8, 10]
+        .filter(op.gt(5))  # [6, 8, 10]
         .cumsum()  # [6, 14, 24]
         .convert_to.list()  # [6, 14, 24]
     )
@@ -49,7 +49,7 @@ def grouping_and_reducing() -> None:
 
     result = (
         chain(words)
-        .into_groups(on=op().item(0))  # group by first letter
+        .into_groups(on=op.item(0))  # group by first letter
         .map_values(lambda chain: chain.get.len())
         .unwrap()
     )

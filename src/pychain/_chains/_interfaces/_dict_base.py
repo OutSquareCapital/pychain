@@ -134,6 +134,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
     def filter_on_key(self, key: K, predicate: CheckFunc[V]) -> Self:
         """
         Filter items where predicate is True for the given key.
+
         Example:
             >>> chain = BaseDictChain({"a": 1, "b": 2, "c": 3})
             >>> chain.filter_on_key("b", lambda v: v > 1).unwrap()
