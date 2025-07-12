@@ -107,3 +107,4 @@ if __name__ == "__main__":
     grouping_and_reducing()
     nested_chaining_with_dictchain()
     get_polars_frame()
+    print("All examples executed successfully.")

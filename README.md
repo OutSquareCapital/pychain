@@ -234,7 +234,8 @@ def truediv_r[T](value: T) -> Callable[[T], T]:
 From the root:
 
 ```bash
-python doctests.py
+python src\tests\doctests.py
+python src\tests\examples.py
 ```
 
 ---
