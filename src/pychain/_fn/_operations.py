@@ -2,6 +2,8 @@ import operator
 from collections.abc import Callable
 from functools import partial
 
+neg = operator.neg
+
 
 def add[T](value: T) -> Callable[[T], T]:
     return partial(operator.add, value)

@@ -1,7 +1,7 @@
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-import functools as ft
-import cytoolz as cz
+
+from ..._fn import agg
 
 
 @dataclass(slots=True, frozen=True)
@@ -22,7 +22,7 @@ class Getter[V]:
             >>> Getter([1, 2, 3]).first()
             1
         """
-        return self(f=cz.itertoolz.first)
+        return self(f=agg.first)
 
     def second(self) -> V:
         """
@@ -32,7 +32,7 @@ class Getter[V]:
             >>> Getter([1, 2, 3]).second()
             2
         """
-        return self(f=cz.itertoolz.second)
+        return self(f=agg.second)
 
     def last(self) -> V:
         """
@@ -42,7 +42,7 @@ class Getter[V]:
             >>> Getter([1, 2, 3]).last()
             3
         """
-        return self(f=cz.itertoolz.last)
+        return self(f=agg.last)
 
     def at_index(self, index: int) -> V:
         """
@@ -52,7 +52,7 @@ class Getter[V]:
             >>> Getter([1, 2, 3]).at_index(1)
             2
         """
-        return self(f=ft.partial(cz.itertoolz.nth, index))
+        return self(f=agg.at_index(index=index))
 
     def len(self) -> int:
         """
@@ -62,4 +62,4 @@ class Getter[V]:
             >>> Getter([1, 2, 3]).len()
             3
         """
-        return self(f=cz.itertoolz.count)
+        return self(f=agg.length)

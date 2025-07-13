@@ -94,7 +94,6 @@ def drop_first(n: int):
 def every(index: int):
     return partial(itz.take_nth, index)
 
-
 def repeat(n: int):
     return partial(_repeat, n=n)
 

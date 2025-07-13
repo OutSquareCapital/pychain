@@ -207,7 +207,14 @@ def flip[T](func: Callable[..., T], a: Any, b: Any) -> T:
     """
     ...
 
-def identity[T](x: T) -> T: ...
+def identity[T](x: T) -> T:
+    """
+    Identity function. Return x
+
+    >>> identity(3)
+    3
+    """
+    ...
 
 class juxt:
     """Creates a function that calls several functions with the same arguments

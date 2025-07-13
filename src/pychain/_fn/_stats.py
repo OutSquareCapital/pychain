@@ -1,17 +1,8 @@
 import statistics as stats
 from functools import partial
-from typing import Literal
+from collections.abc import Iterable
+from typing import Literal, Any
 
 
-def quantiles(n: int, method: Literal["inclusive", "exclusive"]):
-    """
-    Calculate quantiles of the input data.
-
-    Example:
-        >>> quantiles(4, "inclusive")([1, 2, 3, 4, 5])
-        [2.0, 3.0, 4.0]
-
-        >>> quantiles(4, "exclusive")([1, 2, 3, 4, 5])
-        [1.5, 3.0, 4.5]
-    """
+def quantiles(n: int, method: Literal["inclusive", "exclusive"] = "exclusive")  -> partial[Iterable[Any]]:
     return partial(stats.quantiles, n=n, method=method)
