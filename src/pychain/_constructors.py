@@ -24,66 +24,6 @@ class ChainConstructor:
         """
         return IterChain(value)
 
-    def read_parquet(self, file_path: str) -> DictChain[str, list[Any]]:
-        """
-        Read a Parquet file into a DictChain (columnar format).
-
-        Example:
-            >>> chain = ChainConstructor()
-            >>> chain.read_parquet(
-            ...     "data.parquet"
-            ... ).convert_keys_to.list()  # doctest: +SKIP
-            ['col1', 'col2', ...]
-        """
-        return self.from_pl(pl.read_parquet(file_path))
-
-    def read_csv(self, file_path: str) -> DictChain[str, list[Any]]:
-        """
-        Read a CSV file into a DictChain (columnar format).
-
-        Example:
-            >>> chain = ChainConstructor()
-            >>> chain.read_csv("data.csv").convert_keys_to.list()  # doctest: +SKIP
-            ['col1', 'col2', ...]
-        """
-        return self.from_pl(pl.read_csv(file_path))
-
-    def read_json(self, file_path: str) -> DictChain[str, list[Any]]:
-        """
-        Read a JSON file into a DictChain (columnar format).
-
-        Example:
-            >>> chain = ChainConstructor()
-            >>> chain.read_json("data.json").convert_keys_to.list()  # doctest: +SKIP
-            ['col1', 'col2', ...]
-        """
-        return self.from_pl(pl.read_json(file_path))
-
-    def read_ndjson(self, file_path: str) -> DictChain[str, list[Any]]:
-        """
-        Read a newline-delimited JSON file into a DictChain (columnar format).
-
-        Example:
-            >>> chain = ChainConstructor()
-            >>> chain.read_ndjson(
-            ...     "data.ndjson"
-            ... ).convert_keys_to.list()  # doctest: +SKIP
-            ['col1', 'col2', ...]
-        """
-        return self.from_pl(pl.read_ndjson(file_path))
-
-    def from_pl(self, df: pl.DataFrame) -> DictChain[str, list[Any]]:
-        """
-        Convert a Polars DataFrame to a DictChain (columnar format).
-        """
-        return DictChain(df.to_dict(as_series=False))
-
-    def from_pd(self, df: pd.DataFrame) -> DictChain[Hashable, list[Any]]:
-        """
-        Convert a pandas DataFrame to a DictChain (columnar format).
-        """
-        return DictChain(df.to_dict(orient="list"))  # type: ignore
-
     def from_np[T: NDArray[Any]](self, arr: T) -> IterChain[T]:
         """
         Convert a NumPy array to an IterChain.
@@ -112,7 +52,9 @@ class ChainConstructor:
         """
         return IterChain(range(start, stop, step))
 
-    def from_dict[K: Hashable, V](
+@dataclass(slots=True)
+class DictConstructor:
+    def __call__[K: Hashable, V](
         self,
         data: dict[K, V],
     ) -> DictChain[K, V]:
@@ -120,11 +62,71 @@ class ChainConstructor:
         Convert a dict to a DictChain.
 
         Example:
-            >>> chain = ChainConstructor()
-            >>> chain.from_dict({"a": 1}).unwrap()["a"]
+            >>> chain = DictConstructor()
+            >>> chain({"a": 1}).unwrap()["a"]
             1
         """
         return DictChain(_value=data)
+
+    def read_parquet(self, file_path: str) -> DictChain[str, list[Any]]:
+        """
+        Read a Parquet file into a DictChain (columnar format).
+
+        Example:
+            >>> chain = DictConstructor()
+            >>> chain.read_parquet(
+            ...     "data.parquet"
+            ... ).convert_keys_to.list()  # doctest: +SKIP
+            ['col1', 'col2', ...]
+        """
+        return self.from_pl(pl.read_parquet(file_path))
+
+    def read_csv(self, file_path: str) -> DictChain[str, list[Any]]:
+        """
+        Read a CSV file into a DictChain (columnar format).
+
+        Example:
+            >>> chain = DictConstructor()
+            >>> chain.read_csv("data.csv").convert_keys_to.list()  # doctest: +SKIP
+            ['col1', 'col2', ...]
+        """
+        return self.from_pl(pl.read_csv(file_path))
+
+    def read_json(self, file_path: str) -> DictChain[str, list[Any]]:
+        """
+        Read a JSON file into a DictChain (columnar format).
+
+        Example:
+            >>> chain = DictConstructor()
+            >>> chain.read_json("data.json").convert_keys_to.list()  # doctest: +SKIP
+            ['col1', 'col2', ...]
+        """
+        return self.from_pl(pl.read_json(file_path))
+
+    def read_ndjson(self, file_path: str) -> DictChain[str, list[Any]]:
+        """
+        Read a newline-delimited JSON file into a DictChain (columnar format).
+
+        Example:
+            >>> chain = DictConstructor()
+            >>> chain.read_ndjson(
+            ...     "data.ndjson"
+            ... ).convert_keys_to.list()  # doctest: +SKIP
+            ['col1', 'col2', ...]
+        """
+        return self.from_pl(pl.read_ndjson(file_path))
+
+    def from_pl(self, df: pl.DataFrame) -> DictChain[str, list[Any]]:
+        """
+        Convert a Polars DataFrame to a DictChain (columnar format).
+        """
+        return DictChain(df.to_dict(as_series=False))
+
+    def from_pd(self, df: pd.DataFrame) -> DictChain[Hashable, list[Any]]:
+        """
+        Convert a pandas DataFrame to a DictChain (columnar format).
+        """
+        return DictChain(df.to_dict(orient="list"))  # type: ignore
 
     def from_dict_of_iterables[K, V](
         self,
@@ -134,7 +136,7 @@ class ChainConstructor:
         Convert a dict of iterables to a DictChain of IterChains.
 
         Example:
-            >>> chain = ChainConstructor()
+            >>> chain = DictConstructor()
             >>> chain.from_dict_of_iterables({"a": [1, 2]}).unwrap()[
             ...     "a"
             ... ].convert_to.list()
@@ -142,10 +144,10 @@ class ChainConstructor:
         """
         return DictChain(_value={k: IterChain(_value=v) for k, v in data.items()})
 
-
 def when[T, R](predicate: ChainableOp | Callable[[T], bool]) -> When[T, Any]:
     return When[T, R](predicate)
 
 
 op = OpConstructor()
 chain = ChainConstructor()
+lazydict = DictConstructor()

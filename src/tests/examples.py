@@ -1,6 +1,6 @@
 import numpy as np
 import polars as pl
-from pychain import chain, op
+from pychain import chain, op, lazydict
 
 
 def basic_example() -> None:
@@ -63,7 +63,7 @@ def nested_chaining_with_dictchain() -> None:
     }
 
     result: dict[str, list[int]] = (
-        chain.from_dict(data)
+        lazydict(data)
         .map_values(lambda v: chain(v).cumsum().convert_to.list())
         .unwrap()
     )
@@ -77,7 +77,7 @@ def get_polars_frame() -> None:
     }
 
     df = pl.DataFrame(
-        data=chain.from_dict(results)
+        data=lazydict(results)
         .unpivot(
             key_name="Library",
             index_name="Index",

@@ -53,7 +53,7 @@ uv add git+https://github.com/OutSquareCapital/pychain.git
 
 ### Overview
 
-pychain provides "chain" and "op" as entry point
+pychain provides "chain", "lazydict" and "op" as entry points
 
 #### Chaining and Conversion
 
@@ -92,13 +92,13 @@ the `__call__` dunder method is the idiomatic way to start a chain for iterables
 #### Instanciation
 
 - Iterable: `chain(iterable)` wraps any iterable and return an Iterchain object.
-- Dict: `chain.from_dict(dict_obj)` wraps a dict and return a DictChain object.
-- DataFrame: `chain.from_pd(df)`, `chain.from_pl(df)` for pandas/polars.
+- Dict: `lazydict(dict_obj)` wraps a dict and return a DictChain object.
+- DataFrame: `lazydict.from_pd(df)`, `lazydict.from_pl(df)` for pandas/polars.
 - NumPy: `chain.from_np(array)` wraps a NumPy array.
-- File IO: `chain.read_csv(path)`, `chain.read_parquet(path)`, etc.
+- File IO: `lazydict.read_csv(path)`, `lazydict.read_parquet(path)`, etc.
 - Infinite: `chain.from_func(seed, func)` for infinite iterators.
 - Range: `chain.from_range(start, stop, step)` for integer ranges.
-- Dict of iterables: `chain.from_dict_of_iterables(d)` will return a DictChain where the iterables are wrapped inside iterchain objects.
+- Dict of iterables: `lazydict.from_dict_of_iterables(d)` will return a DictChain where the iterables are wrapped inside iterchain objects.
 
 ### op
 
