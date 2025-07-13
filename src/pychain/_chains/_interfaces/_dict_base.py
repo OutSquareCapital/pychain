@@ -2,24 +2,24 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Self
 
-from ..._fn import fn, dc
+import polars as pl
+
+from ..._fn import dc, fn
 from ..._protocols import CheckFunc, ProcessFunc, TransformFunc
 from ._core import AbstractChain
 
 if TYPE_CHECKING:
-    from .._main import DictChain
-
+    from .._main import Struct
 
 @dataclass(slots=True, frozen=True, repr=False)
-class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
-    def into[K1, V1](
-        self, f: TransformFunc[dict[K, V], dict[K1, V1]]
-    ) -> "DictChain[K1, V1]":
+class BaseStruct[K, V](AbstractChain[dict[K, V]]):
+
+    def into[K1, V1](self, f: TransformFunc[dict[K, V], dict[K1, V1]]) -> "Struct[K1, V1]":
         """
         Transforms the dictionary using the provided function, returning a new chain.
 
         Example:
-            >>> chain = BaseDictChain({"a": 1, "b": 2})
+            >>> chain = BaseStruct({"a": 1, "b": 2})
             >>> chain.into(lambda d: {k: v + 1 for k, v in d.items()}).unwrap()
             {'a': 2, 'b': 3}
         """
@@ -31,34 +31,34 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
     def map_items[K1, V1](
         self,
         f: TransformFunc[tuple[K, V], tuple[K1, V1]],
-    ) -> "DictChain[K1, V1]":
+    ) -> "Struct[K1, V1]":
         """
-        Maps a function over (key, value) pairs (see cytoolz.itemmap).
+        map a function over (key, value) pairs (see cytoolz.itemmap).
 
         Example:
-            >>> chain = BaseDictChain({"a": 1})
+            >>> chain = BaseStruct({"a": 1})
             >>> chain.map_items(lambda kv: (kv[0].upper(), kv[1] * 2)).unwrap()
             {'A': 2}
         """
         return self.into(f=dc.map_items(f=f))
 
-    def map_keys[K1](self, f: TransformFunc[K, K1]) -> "DictChain[K1, V]":
+    def map_keys[K1](self, f: TransformFunc[K, K1]) -> "Struct[K1, V]":
         """
-        Maps a function over keys (see cytoolz.keymap).
+        map a function over keys (see cytoolz.keymap).
 
         Example:
-            >>> chain = BaseDictChain({"a": 1})
+            >>> chain = BaseStruct({"a": 1})
             >>> chain.map_keys(str.upper).unwrap()
             {'A': 1}
         """
         return self.into(f=dc.map_keys(f))
 
-    def map_values[V1](self, f: TransformFunc[V, V1]) -> "DictChain[K, V1]":
+    def map_values[V1](self, f: TransformFunc[V, V1]) -> "Struct[K, V1]":
         """
-        Maps a function over values (see cytoolz.valmap).
+        map a function over values (see cytoolz.valmap).
 
         Example:
-            >>> chain = BaseDictChain({"a": 1})
+            >>> chain = BaseStruct({"a": 1})
             >>> chain.map_values(lambda v: v + 10).unwrap()
             {'a': 11}
         """
@@ -69,7 +69,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Filters (key, value) pairs by predicate (see cytoolz.itemfilter).
 
         Example:
-            >>> chain = BaseDictChain({"a": 1, "b": 2})
+            >>> chain = BaseStruct({"a": 1, "b": 2})
             >>> chain.filter_items(lambda kv: kv[1] > 1).unwrap()
             {'b': 2}
         """
@@ -80,7 +80,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Select keys by predicate (see cytoolz.keyfilter).
 
         Example:
-            >>> chain = BaseDictChain({"a": 1, "b": 2})
+            >>> chain = BaseStruct({"a": 1, "b": 2})
             >>> chain.select(lambda k: k == "a").unwrap()
             {'a': 1}
         """
@@ -91,7 +91,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Filters values by predicate (see cytoolz.valfilter).
 
         Example:
-            >>> BaseDictChain({"a": 1, "b": 2}).filter(lambda v: v > 1).unwrap()
+            >>> BaseStruct({"a": 1, "b": 2}).filter(lambda v: v > 1).unwrap()
             {'b': 2}
         """
         return self.do(f=dc.filter_values(predicate=predicate))
@@ -101,7 +101,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Filter items where predicate is True for the given key.
 
         Example:
-            >>> chain = BaseDictChain({"a": 1, "b": 2, "c": 3})
+            >>> chain = BaseStruct({"a": 1, "b": 2, "c": 3})
             >>> chain.filter_on_key("b", lambda v: v > 1).unwrap()
             {'b': 2}
         """
@@ -112,7 +112,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Returns a new dict with the given key set to value (see cytoolz.assoc).
 
         Example:
-            >>> chain = BaseDictChain({"a": 1})
+            >>> chain = BaseStruct({"a": 1})
             >>> chain.with_key("b", 2).unwrap()
             {'a': 1, 'b': 2}
         """
@@ -123,7 +123,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Returns a new dict with a nested key set to value (see cytoolz.assoc_in).
 
         Example:
-            >>> chain = BaseDictChain({"a": {"b": 1}})
+            >>> chain = BaseStruct({"a": {"b": 1}})
             >>> chain.with_nested_key(["a", "c"], 2).unwrap()
             {'a': {'b': 1, 'c': 2}}
         """
@@ -134,7 +134,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Updates a value at a nested path using a function (see cytoolz.update_in).
 
         Example:
-            >>> chain = BaseDictChain({"a": {"b": 1}})
+            >>> chain = BaseStruct({"a": {"b": 1}})
             >>> chain.update_in("a", "b", f=lambda v: v + 10).unwrap()
             {'a': {'b': 11}}
         """
@@ -145,7 +145,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Merges with other dicts (see cytoolz.merge).
 
         Example:
-            >>> BaseDictChain({"a": 1}).merge({"b": 2}).unwrap()
+            >>> BaseStruct({"a": 1}).merge({"b": 2}).unwrap()
             {'a': 1, 'b': 2}
         """
         return self.do(f=dc.merge(others=others))
@@ -155,7 +155,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Merges with other dicts, combining values with a function (see cytoolz.merge_with).
 
         Example:
-            >>> BaseDictChain({"first": 1, "second": 2}).merge_with(
+            >>> BaseStruct({"first": 1, "second": 2}).merge_with(
             ...     sum,
             ...     {"first": 1, "second": 2},
             ...     {"first": 1, "second": 2, "third": 3},
@@ -169,11 +169,17 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         Removes keys from the dictionary (see cytoolz.dissoc).
 
         Example:
-            >>> chain = BaseDictChain({"a": 1, "b": 2})
+            >>> chain = BaseStruct({"a": 1, "b": 2})
             >>> chain.drop("a").unwrap()
             {'b': 2}
         """
         return self.do(f=dc.drop(keys=keys))
 
-    def flatten_keys(self) -> "DictChain[str, V]":
+    def flatten_keys(self) -> "Struct[str, V]":
         return self.into(f=dc.flatten_keys())
+
+    def to_obj[T](self, obj: Callable[[dict[K, V]], T]) -> T:
+        return obj(self.unwrap())
+
+    def to_frame(self) -> pl.DataFrame:
+        return pl.DataFrame(self.unwrap())

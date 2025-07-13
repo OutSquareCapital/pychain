@@ -1,15 +1,16 @@
 import numpy as np
 import polars as pl
-from pychain import chain, op, lazydict
+
+import pychain as pc
 
 
 def basic_example() -> None:
     result = (
-        chain.from_range(1, 6)  # [1, 2, 3, 4, 5]
-        .map(op.mul(2))  # [2, 4, 6, 8, 10]
-        .filter(op.gt(5))  # [6, 8, 10]
+        pc.from_range(1, 6)  # [1, 2, 3, 4, 5]
+        .map(pc.op.mul(2))  # [2, 4, 6, 8, 10]
+        .filter(pc.op.gt(5))  # [6, 8, 10]
         .cumsum()  # [6, 14, 24]
-        .convert_to.list()  # [6, 14, 24]
+        .to_list()  # [6, 14, 24]
     )
     assert result == [6, 14, 24]
 
@@ -36,9 +37,9 @@ def data_agg_and_transform() -> None:
     py_result: dict[str, int] = {k: sum(v) for k, v in grouped.items()}
 
     chain_result: dict[str, int] = (
-        chain(data)
-        .into_groups(lambda d: d.category)
-        .map_values(lambda v: v.map(lambda x: x.value).agg(sum))
+        pc.Iter(data)
+        .group_by(lambda d: d.category)
+        .map_values(lambda v: pc.Iter(v).map(lambda x: x.value).agg(sum))
         .unwrap()
     )
     assert py_result == chain_result == {"A": 40, "B": 60}
@@ -47,12 +48,7 @@ def data_agg_and_transform() -> None:
 def grouping_and_reducing() -> None:
     words: list[str] = ["apple", "banana", "apricot", "blueberry", "avocado"]
 
-    result = (
-        chain(words)
-        .into_groups(on=op.item(0))  # group by first letter
-        .map_values(lambda chain: chain.get.len())
-        .unwrap()
-    )
+    result = pc.Iter(words).group_by(on=pc.op.item(0)).map_values(len).unwrap()
     assert result == {"a": 3, "b": 2}
 
 
@@ -63,9 +59,7 @@ def nested_chaining_with_dictchain() -> None:
     }
 
     result: dict[str, list[int]] = (
-        lazydict(data)
-        .map_values(lambda v: chain(v).cumsum().convert_to.list())
-        .unwrap()
+        pc.Struct(data).map_values(lambda v: pc.Iter(v).cumsum().to_list()).unwrap()
     )
     assert result == {"a": [1, 3, 6], "b": [4, 9, 15]}
 
@@ -77,14 +71,14 @@ def get_polars_frame() -> None:
     }
 
     df = pl.DataFrame(
-        data=lazydict(results)
+        data=pc.Struct(results)
         .unpivot(
             key_name="Library",
             index_name="Index",
             value_name="Values",
             value_extractor=lambda arr: arr[:, 0],
         )
-        .convert_to.dataframe()
+        .unwrap()
     )
 
     df2 = pl.DataFrame(

@@ -6,6 +6,7 @@ from . import _operations as op
 from . import _stats as st
 from . import _aggregations as agg
 from . import _conversions as cnv
+from . import _groupings as gp
 
 __all__ = [
     "bo",
@@ -18,4 +19,5 @@ __all__ = [
     "fn",
     "agg",
     "cnv",
+    "gp",
 ]

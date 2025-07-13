@@ -1,9 +1,9 @@
 from ._core import AbstractChain
-from ._dict_base import BaseDictChain
-from ._iter_base import BaseIterChain
+from ._dict_base import BaseStruct
+from ._iter_base import BaseIter
 
 __all__ = [
     "AbstractChain",
-    "BaseDictChain",
-    "BaseIterChain",
+    "BaseStruct",
+    "BaseIter",
 ]

@@ -9,7 +9,7 @@ recipes
 from typing import Any
 from collections.abc import Callable, Iterable, Iterator
 
-def countby[T, KT](key: Callable[[T], KT], seq: Iterable[T]) -> dict[KT, int]:
+def countby[T, K](key: Callable[[T], K], seq: Iterable[T]) -> dict[K, int]:
     """Count elements of a collection by a key function
 
     >>> countby(len, ["cat", "mouse", "dog"])

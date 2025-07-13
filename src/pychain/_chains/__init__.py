@@ -1,9 +1,9 @@
 from ._main import (
-    DictChain,
-    IterChain,
+    Struct,
+    Iter,
 )
 
 __all__ = [
-    "DictChain",
-    "IterChain",
+    "Struct",
+    "Iter",
 ]

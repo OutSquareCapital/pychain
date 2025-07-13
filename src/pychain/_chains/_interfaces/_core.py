@@ -1,7 +1,6 @@
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from typing import Any, Self
-
+from dataclasses import dataclass, field
 from ..._fn import fn
 from ..._protocols import ProcessFunc, ThreadFunc
 

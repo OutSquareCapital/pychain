@@ -4,7 +4,6 @@ from collections.abc import Callable, Generator, Iterable, Iterator
 from functools import partial
 from random import Random
 from typing import Any
-from ._functions import partial_map
 import cytoolz.itertoolz as itz
 
 from .._protocols import CheckFunc, ProcessFunc, TransformFunc
@@ -129,14 +128,6 @@ def cross_join[V](other: Iterable[V]) -> partial[Iterator[tuple[V, Any]]]:
     return partial(it.product, other)
 
 
-def transpose[V]() -> Callable[[Iterable[Iterable[V]]], Iterator[tuple[V, ...]]]:
-    return _transpose
-
-
-def to_records(keys: list[str]):
-    return partial_map(lambda row: dict(zip(keys, row)))  # type: ignore
-
-
 def _peek[T](seq: Iterable[T], note: str | None = None) -> Iterator[T]:
     value, sequence = itz.peek(seq)
     if note:
@@ -190,10 +181,6 @@ def _merge_sorted[V](
     sort_on: Callable[[V], Any] | None = None,
 ) -> Iterator[V]:
     return itz.merge_sorted(on, *others, key=sort_on)
-
-
-def _transpose[V](iterable: Iterable[Iterable[V]]) -> Iterator[tuple[V, ...]]:
-    return zip(*iterable)
 
 
 def _repeat[V](value: Iterable[V], n: int) -> Iterator[V]:

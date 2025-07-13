@@ -11,12 +11,12 @@ It is NOT meant as an heavy computation dataframe/array library, but rather as a
 ## Quickstart
 
 ````python
-from pychain import chain, op
+import pychain as pc
 
 (
-    chain.from_range(1, 6)  # range from 1 to 5
-    .map(op().mul(2).pow(2))  # [4, 16, 36, 64, 100]
-    .filter(op().gt(5))  # [16, 36, 64, 100]
+    pc.from_range(1, 6)  # range from 1 to 5
+    .map(pc.op().mul(2).pow(2))  # [4, 16, 36, 64, 100]
+    .filter(pc.op().gt(5))  # [16, 36, 64, 100]
     .cumsum()  # [16, 52, 116, 216]
     .enumerate()  # [(0, 16), (1, 52), (2, 116), (3, 216)]
     .flatten()  # [0, 16, 1, 52, 2, 116, 3, 216]
@@ -24,7 +24,7 @@ from pychain import chain, op
     .map(
         lambda x: f"index: {x[0]}, value: {x[1]}"
     )
-    .convert_to.list()  # Computation only happens here! Otherwise it's simply a list of functions, a range, and pychain objects (py classes with slots, or cython class)
+    .to_list()  # Computation only happens here! Otherwise it's simply a list of functions, a range, and pychain objects (py classes with slots, or cython class)
 )
 
 ['index: 0, value: 16',
@@ -53,52 +53,24 @@ uv add git+https://github.com/OutSquareCapital/pychain.git
 
 ### Overview
 
-pychain provides "chain", "lazydict" and "op" as entry points
+pychain provides Iter, Struct, and constructors functions as entry points
 
 #### Chaining and Conversion
 
 - All chain objects support method chaining for transformations, filtering, mapping, reducing, etc.
-- Use `.convert_to` and `.convert_keys_to` for conversion to standard Python types.
 - Use `.unwrap()` to extract the underlying data.
 - All chains are immutable and side-effect free.
 
 #### Usage Patterns
 
-- Use "from pychain import ..." rather than "import pychain as ...".
+- Use "import pychain as pc".
 - Use op expressions rather than lambda whenever possible, unless the performance is critical.
-- Use `chain` to wrap any data structure and immediately access chain methods.
+- Use `pc.Iter` to wrap any data structure and immediately access chain methods.
 - All transformations are lazy where possible, supporting method chaining.
-- Data can be unwrapped at any time using `.unwrap()` or converted to standard types with `.convert_to` or `.convert_keys_to`.
+- Data can be unwrapped at any time using `.unwrap()` or converted to standard types with `.to`.
 - Prefer method chaining over intermediate variables.
-- Use `.unwrap()` or `.convert_to` only at the end of a pipeline.
 - For debugging, tap, peek or peekn are the ways to go.
 - Using list comprehensions, for loops and generators inside pychain methods is considered an anti-pattern.
-
-### chain
-
-Central factory for all chain-based data structures and conversions in pychain.
-
-The `chain` singleton is the main entry point for all user operations in pychain. It provides a unified, discoverable, and consistent API for constructing, converting, and manipulating data in a functional, chainable style.
-the `__call__` dunder method is the idiomatic way to start a chain for iterables.
-
-`chain` exposes methods to:
-
-- Wrap scalars, iterables, dicts, DataFrames, arrays, etc. into chainable objects.
-- Read data from files (CSV, Parquet, JSON, NDJSON) into chainable forms.
-- Convert between data representations (iterable, dict, DataFrame, etc.).
-- Generate infinite or finite sequences (from_func, from_range).
-- Compose and chain operations fluently, with a focus on readability and composability.
-
-#### Instanciation
-
-- Iterable: `chain(iterable)` wraps any iterable and return an Iterchain object.
-- Dict: `lazydict(dict_obj)` wraps a dict and return a DictChain object.
-- DataFrame: `lazydict.from_pd(df)`, `lazydict.from_pl(df)` for pandas/polars.
-- NumPy: `chain.from_np(array)` wraps a NumPy array.
-- File IO: `lazydict.read_csv(path)`, `lazydict.read_parquet(path)`, etc.
-- Infinite: `chain.from_func(seed, func)` for infinite iterators.
-- Range: `chain.from_range(start, stop, step)` for integer ranges.
-- Dict of iterables: `lazydict.from_dict_of_iterables(d)` will return a DictChain where the iterables are wrapped inside iterchain objects.
 
 ### op
 
@@ -110,7 +82,7 @@ Each method call will generate a function, just like a lambda.
 #### Examples
 
 ````python
-from pychain import chain, op
+import pychain as pc
 
 def pure_python() -> list[str]:
     return [
@@ -122,24 +94,21 @@ def pure_python() -> list[str]:
 
 def pychain_lambdas() -> list[str]:
     return (
-        chain.from_range(start=1, stop=10)
+        pc.from_range(start=1, stop=10)
         .filter(f=lambda x: x > 5)
         .compose(lambda x: 10 * (2 / (x + 5)), lambda x: round(number=x, ndigits=3))
         .map(f=lambda x: f"result is: {x}")
-        .convert_to.list()
+        .to_list()
     )
 
 
 def pychain_op() -> list[str]:
     return (
-        chain.from_range(start=1, stop=10)
-        .filter(f=op.gt(value=5))
-        .compose(
-            op.add(value=5).truediv_r(value=2).mul(value=10),
-            lambda x: round(number=x, ndigits=3),
-        )
+        pc.from_range(start=1, stop=10)
+        .filter(f=pc.op.gt(value=5))
+        .map(pc.op.add(value=5).truediv_r(value=2).mul(value=10).round_to(3))
         .map(f=lambda x: f"result is: {x}")
-        .convert_to.list()
+        .to_list()
     )
 
 
@@ -168,27 +137,27 @@ class Point(NamedTuple):
     chain.from_range(1, 10)
     .map(lambda p: Point(p, p * 2))
     .map(lambda x: x.x * 2)
-    .convert_to.list()
+    .to_list()
 )
 
 (
     chain.from_range(1, 10)
     .map(lambda p: Point(p, p * 2))
     .map(op("x").mul(2))
-    .convert_to.list()
+    .to_list()
 )
 
 # This will warn you that x is an unknow type
 (
     chain.from_range(1, 10)
     .compose(lambda p: Point(p, p * 2), lambda x: x.x * 2)
-    .convert_to.list()
+    .to_list()
 )
 
 (
     chain.from_range(1, 10)
     .compose(lambda p: Point(p, p * 2), op("x").mul(2))
-    .convert_to.list()
+    .to_list()
 )
 
 [2, 4, 6, 8, 10, 12, 14, 16, 18]
