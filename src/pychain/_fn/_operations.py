@@ -5,6 +5,10 @@ from functools import partial
 neg = operator.neg
 
 
+def round_to(ndigits: int) -> partial[float | int]:
+    return partial(round, ndigits=ndigits)
+
+
 def add[T](value: T) -> Callable[[T], T]:
     return partial(operator.add, value)
 
