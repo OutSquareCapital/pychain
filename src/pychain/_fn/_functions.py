@@ -15,6 +15,7 @@ compose = ftz.compose_left
 pipe = ftz.pipe
 identity = ftz.identity
 
+
 def partial_map[V, V1](f: TransformFunc[V, V1]) -> partial[Iterator[V1]]:
     return partial(map, f)
 

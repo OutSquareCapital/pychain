@@ -52,6 +52,7 @@ class ChainConstructor:
         """
         return IterChain(range(start, stop, step))
 
+
 @dataclass(slots=True)
 class DictConstructor:
     def __call__[K: Hashable, V](
@@ -143,6 +144,7 @@ class DictConstructor:
             [1, 2]
         """
         return DictChain(_value={k: IterChain(_value=v) for k, v in data.items()})
+
 
 def when[T, R](predicate: ChainableOp | Callable[[T], bool]) -> When[T, Any]:
     return When[T, R](predicate)

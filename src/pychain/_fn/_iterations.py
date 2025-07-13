@@ -32,6 +32,7 @@ def diff[V](
 ) -> partial[Iterable[tuple[V, ...]]]:
     return partial(_diff, others=others, default=default, key=key)
 
+
 def peek(note: str | None = None):
     return partial(_peek, note=note)
 
@@ -42,6 +43,7 @@ def peekn(n: int, note: str | None = None):
 
 def starmap[V, V1](f: TransformFunc[V, V1]) -> partial[Iterator[V1]]:
     return partial(it.starmap, f)
+
 
 def take_while[V](predicate: CheckFunc[V]):
     return partial(it.takewhile, predicate)
@@ -94,6 +96,7 @@ def drop_first(n: int):
 def every(index: int):
     return partial(itz.take_nth, index)
 
+
 def repeat(n: int):
     return partial(_repeat, n=n)
 
@@ -131,7 +134,7 @@ def transpose[V]() -> Callable[[Iterable[Iterable[V]]], Iterator[tuple[V, ...]]]
 
 
 def to_records(keys: list[str]):
-    return partial_map(lambda row: dict(zip(keys, row))) # type: ignore
+    return partial_map(lambda row: dict(zip(keys, row)))  # type: ignore
 
 
 def _peek[T](seq: Iterable[T], note: str | None = None) -> Iterator[T]:
@@ -166,6 +169,7 @@ def _diff[T, V](
 ) -> Iterable[tuple[T, ...]]:
     return itz.diff(*(value, *others), default=default, key=key)
 
+
 def _zip_with[T, V](
     value: Iterable[T], others: Iterable[Iterable[V]], strict: bool
 ) -> Iterable[tuple[T, V]]:
@@ -190,6 +194,7 @@ def _merge_sorted[V](
 
 def _transpose[V](iterable: Iterable[Iterable[V]]) -> Iterator[tuple[V, ...]]:
     return zip(*iterable)
+
 
 def _repeat[V](value: Iterable[V], n: int) -> Iterator[V]:
     return itz.concat(seqs=map(lambda x: [x] * n, value))

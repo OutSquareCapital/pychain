@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True, repr=False)
 class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
-
     def into[K1, V1](
         self, f: TransformFunc[dict[K, V], dict[K1, V1]]
     ) -> "DictChain[K1, V1]":

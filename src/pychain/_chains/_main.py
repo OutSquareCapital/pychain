@@ -122,6 +122,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
     """
     Chain, transform, and aggregate dictionaries.
     """
+
     def keys(self) -> "IterChain[K]":
         """
         Convert the dictionary's keys into an IterChain.
@@ -167,9 +168,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
             ... ).convert_to.list()
             [('A', 1), ('A', 2), ('B', 3)]
         """
-        return self.items().flat_map(
-            lambda pair: row_factory(pair[0], pair[1])
-        )
+        return self.items().flat_map(lambda pair: row_factory(pair[0], pair[1]))
 
     def unpivot[T](
         self,
