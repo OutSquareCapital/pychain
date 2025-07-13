@@ -2,11 +2,13 @@
 
 from collections.abc import Callable, Container
 import statistics as stats
-from typing import Any
-from .. import _fn
-
-cdef identity(x: Any):
-    return x
+from typing import Any, Literal
+from .._fn import (
+    bo,
+    op,
+    fn,
+    st,
+)
 
 cdef class ChainableOp:
     _pipeline: Callable[[Any], Any]
@@ -23,91 +25,91 @@ cdef class ChainableOp:
         return self.__class__(pipeline=composed)
 
     def attr(self, name: str):
-        return self._chain(_fn.attr(name))
+        return self._chain(fn.attr(name))
 
     def item(self, key: Any):
-        return self._chain(_fn.item(key))
+        return self._chain(fn.item(key))
 
     def method(self, name: str, *args: Any, **kwargs: Any):
-        return self._chain(_fn.method(name, *args, **kwargs))
+        return self._chain(fn.method(name, *args, **kwargs))
 
     def add(self, value: Any):
-        return self._chain(_fn.add(value))
+        return self._chain(op.add(value))
 
     def sub(self, value: Any):
-        return self._chain(_fn.sub(value))
+        return self._chain(op.sub(value))
 
     def mul(self, value: Any):
-        return self._chain(_fn.mul(value))
+        return self._chain(op.mul(value))
 
     def truediv(self, value: Any):
-        return self._chain(_fn.truediv(value))
+        return self._chain(op.truediv(value))
 
     def floordiv(self, value: Any):
-        return self._chain(_fn.floordiv(value))
+        return self._chain(op.floordiv(value))
 
     def sub_r(self, value: Any):
-        return self._chain(_fn.sub_r(value))
+        return self._chain(op.sub_r(value))
 
     def truediv_r(self, value: Any):
-        return self._chain(_fn.truediv_r(value))
+        return self._chain(op.truediv_r(value))
 
     def floordiv_r(self, value: Any):
-        return self._chain(_fn.floordiv_r(value))
+        return self._chain(op.floordiv_r(value))
 
     def mod(self, value: Any):
-        return self._chain(_fn.mod(value))
+        return self._chain(op.mod(value))
 
     def pow(self, value: Any):
-        return self._chain(_fn.pow(value))
+        return self._chain(op.pow(value))
 
     def neg(self):
-        return self._chain(_fn.neg)
+        return self._chain(op.neg)
 
     def is_true(self):
-        return self._chain(_fn.is_true)
+        return self._chain(bo.is_true)
 
     def is_none(self):
-        return self._chain(_fn.is_none())
+        return self._chain(bo.is_none())
 
     def is_not_none(self):
-        return self._chain(_fn.is_not_none())
+        return self._chain(bo.is_not_none())
 
     def is_in(self, values: Container[Any]):
-        return self._chain(_fn.is_in(values))
+        return self._chain(bo.is_in(values))
 
     def is_not_in(self, values: Container[Any]):
-        return self._chain(_fn.is_not_in(values))
+        return self._chain(bo.is_not_in(values))
 
     def is_distinct(self):
-        return self._chain(_fn.is_distinct)
+        return self._chain(bo.is_distinct)
 
     def is_iterable(self):
-        return self._chain(_fn.is_iterable)
+        return self._chain(bo.is_iterable)
 
     def is_all(self):
-        return self._chain(_fn.is_all)
+        return self._chain(bo.is_all)
 
     def is_any(self):
-        return self._chain(_fn.is_any)
+        return self._chain(bo.is_any)
 
     def eq(self, value: Any):
-        return self._chain(_fn.eq(value))
+        return self._chain(bo.eq(value))
 
     def ne(self, value: Any):
-        return self._chain(_fn.ne(value))
+        return self._chain(bo.ne(value))
 
     def gt(self, value: Any):
-        return self._chain(_fn.gt(value))
+        return self._chain(bo.gt(value))
 
     def ge(self, value: Any):
-        return self._chain(_fn.ge(value))
+        return self._chain(bo.ge(value))
 
     def lt(self, value: Any):
-        return self._chain(_fn.lt(value))
+        return self._chain(bo.lt(value))
 
     def le(self, value: Any):
-        return self._chain(_fn.le(value))
+        return self._chain(bo.le(value))
 
     def mean(self):
         return self._chain(stats.mean)
@@ -136,8 +138,8 @@ cdef class ChainableOp:
     def median_grouped(self):
         return self._chain(stats.median_grouped)
 
-    def quantiles(self, *args: Any):
-        return self._chain(_fn.quantiles(*args))
+    def quantiles(self, n: int, method: Literal["inclusive", "exclusive"] = "exclusive"):
+        return self._chain(st.quantiles(n, method=method))
 
     def min(self):
         return self._chain(min)
@@ -151,91 +153,92 @@ cdef class ChainableOp:
 
 cdef class OpConstructor:
     def __call__(self, name: str) -> ChainableOp:
-        return ChainableOp(_fn.attr(name))
+        return ChainableOp(fn.attr(name))
 
     def item(self, key: Any):
-        return ChainableOp(_fn.item(key))
+        return ChainableOp(fn.item(key))
 
     def method(self, name: str, *args: Any, **kwargs: Any):
-        return ChainableOp(_fn.method(name, *args, **kwargs))
+        return ChainableOp(fn.method(name, *args, **kwargs))
 
     def add(self, value: Any):
-        return ChainableOp(_fn.add(value))
+        return ChainableOp(op.add(value))
 
     def sub(self, value: Any):
-        return ChainableOp(_fn.sub(value))
+        return ChainableOp(op.sub(value))
 
     def mul(self, value: Any):
-        return ChainableOp(_fn.mul(value))
+        return ChainableOp(op.mul(value))
 
     def truediv(self, value: Any):
-        return ChainableOp(_fn.truediv(value))
+        return ChainableOp(op.truediv(value))
 
     def floordiv(self, value: Any):
-        return ChainableOp(_fn.floordiv(value))
+        return ChainableOp(op.floordiv(value))
 
     def sub_r(self, value: Any):
-        return ChainableOp(_fn.sub_r(value))
+        return ChainableOp(op.sub_r(value))
 
     def truediv_r(self, value: Any):
-        return ChainableOp(_fn.truediv_r(value))
+        return ChainableOp(op.truediv_r(value))
 
     def floordiv_r(self, value: Any):
-        return ChainableOp(_fn.floordiv_r(value))
+        return ChainableOp(op.floordiv_r(value))
 
     def mod(self, value: Any):
-        return ChainableOp(_fn.mod(value))
+        return ChainableOp(op.mod(value))
 
     def pow(self, value: Any):
-        return ChainableOp(_fn.pow(value))
+        return ChainableOp(op.pow(value))
 
     def neg(self):
-        return ChainableOp(_fn.neg)
+        return ChainableOp(op.neg)
 
     def is_true(self):
-        return ChainableOp(_fn.is_true)
+        return ChainableOp(bo.is_true)
 
     def is_none(self):
-        return ChainableOp(_fn.is_none())
+        return ChainableOp(bo.is_none())
 
     def is_not_none(self):
-        return ChainableOp(_fn.is_not_none())
+        return ChainableOp(bo.is_not_none())
 
     def is_in(self, values: Container[Any]):
-        return ChainableOp(_fn.is_in(values))
+        return ChainableOp(bo.is_in(values))
 
     def is_not_in(self, values: Container[Any]):
-        return ChainableOp(_fn.is_not_in(values))
+        return ChainableOp(bo.is_not_in(values))
 
     def is_distinct(self):
-        return ChainableOp(_fn.is_distinct)
+        return ChainableOp(bo.is_distinct)
 
     def is_iterable(self):
-        return ChainableOp(_fn.is_iterable)
+        return ChainableOp(bo.is_iterable)
 
     def is_all(self):
-        return ChainableOp(_fn.is_all)
+        return ChainableOp(bo.is_all)
 
     def is_any(self):
-        return ChainableOp(_fn.is_any)
+        return ChainableOp(bo.is_any)
 
     def eq(self, value: Any):
-        return ChainableOp(_fn.eq(value))
+        return ChainableOp(bo.eq(value))
 
     def ne(self, value: Any):
-        return ChainableOp(_fn.ne(value))
+        return ChainableOp(bo.ne(value))
 
     def gt(self, value: Any):
-        return ChainableOp(_fn.gt(value))
+        return ChainableOp(bo.gt(value))
 
     def ge(self, value: Any):
-        return ChainableOp(_fn.ge(value))
+        return ChainableOp(bo.ge(value))
 
     def lt(self, value: Any):
-        return ChainableOp(_fn.lt(value))
+        return ChainableOp(bo.lt(value))
 
     def le(self, value: Any):
-        return ChainableOp(_fn.le(value))
+        return ChainableOp(bo.le(value))
+
     def mean(self):
         return ChainableOp(stats.mean)
 
@@ -263,8 +266,8 @@ cdef class OpConstructor:
     def median_grouped(self):
         return ChainableOp(stats.median_grouped)
 
-    def quantiles(self, *args: Any):
-        return ChainableOp(_fn.quantiles(*args))
+    def quantiles(self, n: int, method: Literal["inclusive", "exclusive"] = "exclusive"):
+        return ChainableOp(st.quantiles(n, method=method))
 
     def min(self):
         return ChainableOp(min)
