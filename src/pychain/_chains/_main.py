@@ -122,33 +122,32 @@ class DictChain[K, V](BaseDictChain[K, V]):
     """
     Chain, transform, and aggregate dictionaries.
     """
-
-    def into_iter_keys(self) -> "IterChain[K]":
+    def keys(self) -> "IterChain[K]":
         """
         Convert the dictionary's keys into an IterChain.
 
         Example:
-            >>> DictChain({"a": 1, "b": 2}).into_iter_keys().convert_to.list()
+            >>> DictChain({"a": 1, "b": 2}).keys().convert_to.list()
             ['a', 'b']
         """
         return IterChain(_value=self.unwrap().keys())
 
-    def into_iter_values(self) -> IterChain[V]:
+    def values(self) -> IterChain[V]:
         """
         Convert the dictionary's values into an IterChain.
 
         Example:
-            >>> DictChain({"a": 1, "b": 2}).into_iter_values().convert_to.list()
+            >>> DictChain({"a": 1, "b": 2}).values().convert_to.list()
             [1, 2]
         """
         return IterChain(_value=self.unwrap().values())
 
-    def into_iter_items(self) -> IterChain[tuple[K, V]]:
+    def items(self) -> IterChain[tuple[K, V]]:
         """
         Convert the dictionary's items into an IterChain.
 
         Example:
-            >>> DictChain({"a": 1, "b": 2}).into_iter_items().convert_to.list()
+            >>> DictChain({"a": 1, "b": 2}).items().convert_to.list()
             [('a', 1), ('b', 2)]
         """
         return IterChain(_value=self.unwrap().items())
@@ -168,7 +167,7 @@ class DictChain[K, V](BaseDictChain[K, V]):
             ... ).convert_to.list()
             [('A', 1), ('A', 2), ('B', 3)]
         """
-        return self.into_iter_items().flat_map(
+        return self.items().flat_map(
             lambda pair: row_factory(pair[0], pair[1])
         )
 

@@ -3,8 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Self
 
 from ..._fn import compose, dc
-from ..._protocols import AggFunc, CheckFunc, ProcessFunc, TransformFunc
-from .._executors import Converter, Getter
+from ..._protocols import CheckFunc, ProcessFunc, TransformFunc
 from ._core import AbstractChain
 
 if TYPE_CHECKING:
@@ -13,104 +12,6 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True, frozen=True, repr=False)
 class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
-    @property
-    def get_key(self) -> Getter[K]:
-        """
-        Return a Getter for the dictionary's keys.
-
-        Example:
-            >>> BaseDictChain({"a": 1}).get_key.first()
-            'a'
-        """
-        return Getter(_value=self.unwrap().keys())
-
-    @property
-    def get_value(self) -> Getter[V]:
-        """
-        Return a Getter for the dictionary's values.
-
-        Example:
-            >>> BaseDictChain({"a": 1}).get_value.first()
-            1
-        """
-        return Getter(_value=self.unwrap().values())
-
-    @property
-    def get_item(self) -> Getter[tuple[K, V]]:
-        """
-        Return a Getter for the dictionary's items.
-
-        Example:
-            >>> BaseDictChain({"a": 1}).get_item.first()
-            ('a', 1)
-        """
-        return Getter(_value=self.unwrap().items())
-
-    def agg_keys[K1](self, on: AggFunc[K, K1]) -> K1:
-        """
-        Aggregate the dictionary's keys with a function.
-
-        Example:
-            >>> BaseDictChain({"a": 1, "b": 2}).agg_keys(list)
-            ['a', 'b']
-        """
-        return on(self.unwrap().keys())
-
-    def agg_values[V1](self, on: AggFunc[V, V1]) -> V1:
-        """
-        Aggregate the dictionary's values with a function.
-
-        Example:
-            >>> BaseDictChain({"a": 1, "b": 2}).agg_values(sum)
-            3
-        """
-        return on(self.unwrap().values())
-
-    def agg_items[V1](self, on: AggFunc[tuple[K, V], V1]) -> V1:
-        """
-        Aggregate the dictionary's items with a function.
-
-        Example:
-            >>> BaseDictChain({"a": 1, "b": 2}).agg_items(len)
-            2
-        """
-        return on(self.unwrap().items())
-
-    @property
-    def convert_values_to(self) -> Converter[V]:
-        """
-        Returns a Converter for the dictionary's values.
-
-        Example:
-            >>> chain = BaseDictChain({"a": 1, "b": 2})
-            >>> chain.convert_values_to.list()
-            [1, 2]
-        """
-        return Converter(_value=self.unwrap().values())
-
-    @property
-    def convert_keys_to(self) -> Converter[K]:
-        """
-        Returns a Converter for the dictionary's keys.
-
-        Example:
-            >>> chain = BaseDictChain({"a": 1, "b": 2})
-            >>> chain.convert_keys_to.list()
-            ['a', 'b']
-        """
-        return Converter(_value=self.unwrap().keys())
-
-    @property
-    def convert_items_to(self) -> Converter[tuple[K, V]]:
-        """
-        Returns a Converter for the dictionary's items.
-
-        Example:
-            >>> chain = BaseDictChain({"a": 1, "b": 2})
-            >>> chain.convert_items_to.list()
-            [('a', 1), ('b', 2)]
-        """
-        return Converter(_value=self.unwrap().items())
 
     def into[K1, V1](
         self, f: TransformFunc[dict[K, V], dict[K1, V1]]
@@ -127,17 +28,6 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
             _value=self._value,
             _pipeline=[compose(*self._pipeline, f)],
         )  # type: ignore
-
-    def filter_on_key(self, key: K, predicate: CheckFunc[V]) -> Self:
-        """
-        Filter items where predicate is True for the given key.
-
-        Example:
-            >>> chain = BaseDictChain({"a": 1, "b": 2, "c": 3})
-            >>> chain.filter_on_key("b", lambda v: v > 1).unwrap()
-            {'b': 2}
-        """
-        return self.do(dc.filter_on_key(key=key, predicate=predicate))
 
     def map_items[K1, V1](
         self,
@@ -186,26 +76,37 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         """
         return self.do(f=dc.filter_items(predicate=predicate))
 
-    def filter_keys(self, predicate: CheckFunc[K]) -> Self:
+    def select(self, predicate: CheckFunc[K]) -> Self:
         """
-        Filters keys by predicate (see cytoolz.keyfilter).
+        Select keys by predicate (see cytoolz.keyfilter).
 
         Example:
             >>> chain = BaseDictChain({"a": 1, "b": 2})
-            >>> chain.filter_keys(lambda k: k == "a").unwrap()
+            >>> chain.select(lambda k: k == "a").unwrap()
             {'a': 1}
         """
         return self.do(f=dc.filter_keys(predicate=predicate))
 
-    def filter_values(self, predicate: CheckFunc[V]) -> Self:
+    def filter(self, predicate: CheckFunc[V]) -> Self:
         """
         Filters values by predicate (see cytoolz.valfilter).
 
         Example:
-            >>> BaseDictChain({"a": 1, "b": 2}).filter_values(lambda v: v > 1).unwrap()
+            >>> BaseDictChain({"a": 1, "b": 2}).filter(lambda v: v > 1).unwrap()
             {'b': 2}
         """
         return self.do(f=dc.filter_values(predicate=predicate))
+
+    def filter_on_key(self, key: K, predicate: CheckFunc[V]) -> Self:
+        """
+        Filter items where predicate is True for the given key.
+
+        Example:
+            >>> chain = BaseDictChain({"a": 1, "b": 2, "c": 3})
+            >>> chain.filter_on_key("b", lambda v: v > 1).unwrap()
+            {'b': 2}
+        """
+        return self.do(dc.filter_on_key(key=key, predicate=predicate))
 
     def with_key(self, key: K, value: V) -> Self:
         """
