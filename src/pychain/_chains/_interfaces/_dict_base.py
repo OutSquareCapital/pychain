@@ -2,7 +2,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Self
 
-from ..._fn import compose, dc
+from ..._fn import fn, dc
 from ..._protocols import CheckFunc, ProcessFunc, TransformFunc
 from ._core import AbstractChain
 
@@ -26,7 +26,7 @@ class BaseDictChain[K, V](AbstractChain[dict[K, V]]):
         """
         return self.__class__(
             _value=self._value,
-            _pipeline=[compose(*self._pipeline, f)],
+            _pipeline=[fn.compose(*self._pipeline, f)],
         )  # type: ignore
 
     def map_items[K1, V1](

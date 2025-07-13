@@ -1,91 +1,20 @@
 from operator import neg
 
-from ._booleans import (
-    eq,
-    ge,
-    gt,
-    is_all,
-    is_any,
-    is_distinct,
-    is_in,
-    is_iterable,
-    is_none,
-    is_not_in,
-    is_not_none,
-    is_true,
-    le,
-    lt,
-    ne,
-)
-from . import _iterations as it
+from . import _booleans as bo
 from . import _dicts as dc
-from ._objects import (
-    pipe,
-    attr,
-    call,
-    compose,
-    item,
-    method,
-    thread_first,
-    thread_last,
-    compose_on_iter
-)
-from ._operations import (
-    add,
-    floordiv,
-    floordiv_r,
-    mod,
-    mul,
-    pow,
-    sub,
-    sub_r,
-    truediv,
-    truediv_r,
-)
-from .stats import (
-    quantiles,
-)
+from . import _functions as fn
+from . import _iterations as it
+from . import _operations as op
+from . import _stats as st
 
 __all__ = [
-    "pipe",
-    "is_true",
-    "is_none",
-    "is_not_none",
-    "attr",
-    "item",
-    "method",
-    "thread_first",
-    "thread_last",
-    "add",
-    "sub",
-    "sub_r",
-    "mul",
-    "mod",
-    "truediv",
-    "truediv_r",
-    "floordiv",
-    "floordiv_r",
-    "pow",
+    "bo",
+    "it",
+    "fn",
+    "st",
+    "op",
     "neg",
-    "eq",
-    "ge",
-    "gt",
-    "is_in",
-    "is_not_in",
-    "le",
-    "lt",
-    "ne",
-    "is_all",
-    "is_any",
-    "is_distinct",
-    "is_iterable",
-    "quantiles",
-    "call",
-    "compose",
-    "attr",
-    "item",
-    "method",
-    "compose_on_iter",
     "it",
     "dc",
+    "fn",
 ]

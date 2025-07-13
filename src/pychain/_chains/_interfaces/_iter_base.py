@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from random import Random
 from typing import TYPE_CHECKING, Any, Self
 
-from ..._fn import it, compose_on_iter, compose
+from ..._fn import it, fn
 from ..._protocols import CheckFunc, ProcessFunc, TransformFunc
 from .._executors import Converter, Getter
 from ._core import AbstractChain
@@ -51,7 +51,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         """
         return self.__class__(
             _value=self._value,
-            _pipeline=[compose(*self._pipeline, f)],
+            _pipeline=[fn.compose(*self._pipeline, f)],
         )  # type: ignore
 
     def map[V1](self, f: TransformFunc[V, V1]) -> "IterChain[V1]":
@@ -72,7 +72,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2]).flat_map(lambda x: [x, x + 10]).convert_to.list()
             [1, 11, 2, 12]
         """
-        return self.into(f=it.flat_map(f))
+        return self.into(f=fn.flat_map(f))
 
     def starmap[V1](self, f: TransformFunc[V, V1]) -> "IterChain[V1]":
         """
@@ -89,7 +89,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
         return self.into(f=it.starmap(f))
 
     def compose[V1](self, *fns: TransformFunc[V, V1]) -> "IterChain[V1]":
-        return self.into(f=compose_on_iter(*fns))
+        return self.into(f=fn.compose_on_iter(*fns))
 
     def take_while(self, predicate: CheckFunc[V]) -> Self:
         """
@@ -177,7 +177,7 @@ class BaseIterChain[V](AbstractChain[Iterable[V]]):
             >>> BaseIterChain([1, 2, 3]).filter(lambda x: x > 1).convert_to.list()
             [2, 3]
         """
-        return self.do(f=it.partial_filter(f))
+        return self.do(f=fn.partial_filter(f))
 
     def accumulate(self, f: Callable[[V, V], V]) -> Self:
         """

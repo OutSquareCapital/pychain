@@ -4,7 +4,7 @@ from collections.abc import Callable, Generator, Iterable, Iterator
 from functools import partial
 from random import Random
 from typing import Any
-
+from ._functions import partial_map
 import cytoolz.itertoolz as itz
 
 from .._protocols import CheckFunc, ProcessFunc, TransformFunc
@@ -13,22 +13,10 @@ unique = itz.unique
 flatten = itz.concat
 
 
-def partial_map[V, V1](f: TransformFunc[V, V1]) -> partial[Iterator[V1]]:
-    return partial(map, f)
-
-
-def partial_filter[V](f: CheckFunc[V]):
-    return partial(filter, f)
-
-
 def zip_with[V](
     others: Iterable[Iterable[V]], strict: bool = False
 ) -> partial[Iterable[tuple[Any, Any]]]:
     return partial(_zip_with, others=others, strict=strict)
-
-
-def flat_map[V, V1](f: TransformFunc[V, Iterable[V1]]) -> partial[Iterator[V1]]:
-    return partial(_flat_map, func=f)
 
 
 def merge_sorted[V](
@@ -43,11 +31,6 @@ def diff[V](
     key: ProcessFunc[V] | None = None,
 ) -> partial[Iterable[tuple[V, ...]]]:
     return partial(_diff, others=others, default=default, key=key)
-
-
-def _repeat[V](value: Iterable[V], n: int) -> Iterator[V]:
-    return itz.concat(seqs=map(lambda x: [x] * n, value))
-
 
 def peek(note: str | None = None):
     return partial(_peek, note=note)
@@ -184,13 +167,6 @@ def _diff[T, V](
 ) -> Iterable[tuple[T, ...]]:
     return itz.diff(*(value, *others), default=default, key=key)
 
-
-def _flat_map[V, V1](
-    value: Iterable[V], func: TransformFunc[V, Iterable[V1]]
-) -> Iterator[V1]:
-    return itz.concat(map(func, value))
-
-
 def _zip_with[T, V](
     value: Iterable[T], others: Iterable[Iterable[V]], strict: bool
 ) -> Iterable[tuple[T, V]]:
@@ -215,3 +191,6 @@ def _merge_sorted[V](
 
 def _transpose[V](iterable: Iterable[Iterable[V]]) -> Iterator[tuple[V, ...]]:
     return zip(*iterable)
+
+def _repeat[V](value: Iterable[V], n: int) -> Iterator[V]:
+    return itz.concat(seqs=map(lambda x: [x] * n, value))
