@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Self
 
@@ -60,7 +59,7 @@ class AbstractChain[T]:
         """
         Return a deep copy of the chain and its pipeline.
         """
-        return self.__class__(deepcopy(self._value), deepcopy(self._pipeline))
+        return self.__class__(fn.clone(self._value), fn.clone(self._pipeline))
 
     def unwrap(self) -> T:
         """

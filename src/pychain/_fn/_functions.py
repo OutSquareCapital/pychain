@@ -4,7 +4,7 @@ from functools import partial
 
 import cytoolz.functoolz as ftz
 import cytoolz.itertoolz as itz
-
+from copy import deepcopy
 from .._protocols import CheckFunc, ThreadFunc, TransformFunc
 
 call = operator.call
@@ -14,6 +14,7 @@ method = operator.methodcaller
 compose = ftz.compose_left
 pipe = ftz.pipe
 identity = ftz.identity
+clone = deepcopy
 
 
 def partial_map[V, V1](f: TransformFunc[V, V1]) -> partial[Iterator[V1]]:
