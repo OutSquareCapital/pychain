@@ -33,7 +33,7 @@ cdef class ChainableOp:
     cpdef attr(self, name: str):
         return self._do(fn.attr(name))
 
-    cpdef item(self, key: str):
+    cpdef item(self, key: Any):
         return self._do(fn.item(key))
     
     cpdef hint(self, dtype: Any):

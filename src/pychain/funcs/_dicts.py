@@ -29,8 +29,22 @@ def _flatten_recursive[V](
     return items
 
 
-def filter_on_key[K, V](key: K, predicate: CheckFunc[V]) -> partial[dict[K, V]]:
-    return filter_items(lambda kv: kv[0] == key and predicate(kv[1]))  # type: ignore
+def filter_on_key[K, V](
+    key: K, predicate: CheckFunc[V]
+) -> Callable[[dict[K, V]], dict[K, V]]:
+    """
+    Crée une fonction qui applique un prédicat à la valeur d'une clé spécifique
+    dans un dictionnaire, en ne supprimant l'élément que si le prédicat est faux.
+    Les autres paires clé-valeur ne sont pas affectées.
+    """
+
+    def predicate_for_itemfilter(item: tuple[K, V]) -> bool:
+        current_key, current_value = item
+        if current_key != key:
+            return True
+        return predicate(current_value)
+
+    return filter_items(predicate_for_itemfilter)
 
 
 def map_items[K, V, K1, V1](

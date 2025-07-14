@@ -6,6 +6,35 @@ import polars as pl
 from .._protocols import CheckFunc, ProcessFunc, TransformFunc
 
 class Struct[K, V]:
+    """
+    Fournit une structure de données immuable, semblable à un dictionnaire, pour des transformations chaînables.
+
+    `Struct` est conçu pour des opérations sur des données structurées (clé-valeur),
+    en offrant une API déclarative et paresseuse. Les transformations sont
+    enchaînées et ne sont exécutées que lorsqu'une méthode terminale comme `.unwrap()`
+    est appelée.
+
+    Cela favorise un code plus lisible et prévisible en encourageant l'utilisation
+    d'expressions pures via `pc.op()` plutôt que des lambdas.
+
+    Attributes:
+        K: Le type des clés dans la structure.
+        V: Le type des valeurs dans la structure.
+
+    Examples:
+        Créer un `Struct` et enchaîner plusieurs opérations de transformation.
+        >>> import pychain as pc
+        >>> data = {"a": 1, "b": 2, "c": 3}
+        >>> result = (
+        ...     pc.Struct(data)
+        ...     .map_values(pc.op().add(10))  # {'a': 11, 'b': 12, 'c': 13}
+        ...     .select(pc.op().is_in(["a", "c"]))  # {'a': 11, 'c': 13}
+        ...     .unwrap()
+        ... )
+        >>> result
+        {'a': 11, 'c': 13}
+    """
+
     _value: dict[K, V]
     _pipeline: list[Callable[[dict[K, V]], dict[K, V]]]
 
@@ -14,132 +43,197 @@ class Struct[K, V]:
         _value: dict[K, V],
         _pipeline: list[Callable[[dict[K, V]], dict[K, V]]] | None = None,
     ) -> None: ...
-    def clone(self) -> Self: ...
-    def unwrap(self) -> dict[K, V]: ...
+    def clone(self) -> Self:
+        """
+        Crée une copie indépendante du `Struct` et de son pipeline.
+
+        Example:
+            >>> import pychain as pc
+            >>> a = pc.Struct({"x": 1})
+            >>> b = a.clone().with_key("y", 2)
+            >>> a.unwrap()
+            {'x': 1}
+            >>> b.unwrap()
+            {'x': 1, 'y': 2}
+        """
+        ...
+
+    def unwrap(self) -> dict[K, V]:
+        """
+        Exécute le pipeline de transformations et retourne le dictionnaire final.
+
+        Example:
+            >>> import pychain as pc
+            >>> pc.Struct({"a": 1}).map_values(pc.op().add(1)).unwrap()
+            {'a': 2}
+        """
+        ...
+
     def _into[K1, V1](
         self, f: Callable[[dict[K, V]], dict[K1, V1]]
     ) -> "Struct[K1, V1]": ...
     def map_keys[K1](self, f: TransformFunc[K, K1]) -> "Struct[K1, V]":
         """
-        map a function over keys (see cytoolz.keymap).
+        Applique une fonction sur les clés.
 
         Example:
-            >>> chain = BaseStruct({"a": 1})
-            >>> chain.map_keys(str.upper).unwrap()
+            >>> import pychain as pc
+            >>> pc.Struct({"a": 1}).map_keys(str.upper).unwrap()
             {'A': 1}
         """
         ...
 
     def map_values[V1](self, f: TransformFunc[V, V1]) -> "Struct[K, V1]":
         """
-        map a function over values (see cytoolz.valmap).
+        Applique une fonction sur les valeurs.
 
         Example:
-            >>> chain = BaseStruct({"a": 1})
-            >>> chain.map_values(lambda v: v + 10).unwrap()
+            >>> import pychain as pc
+            >>> pc.Struct({"a": 1}).map_values(pc.op().add(10)).unwrap()
             {'a': 11}
         """
         ...
+
     def select(self, predicate: CheckFunc[K]) -> Self:
         """
-        Select keys by predicate (see cytoolz.keyfilter).
+        Sélectionne les paires clé-valeur en fonction d'un prédicat sur les clés.
 
         Example:
-            >>> chain = BaseStruct({"a": 1, "b": 2})
-            >>> chain.select(lambda k: k == "a").unwrap()
+            >>> import pychain as pc
+            >>> pc.Struct({"a": 1, "b": 2}).select(pc.op().eq("a")).unwrap()
             {'a': 1}
         """
         ...
 
     def filter(self, predicate: CheckFunc[V]) -> Self:
         """
-        Filters values by predicate (see cytoolz.valfilter).
+        Filtre les paires clé-valeur en fonction d'un prédicat sur les valeurs.
 
         Example:
-            >>> BaseStruct({"a": 1, "b": 2}).filter(lambda v: v > 1).unwrap()
+            >>> import pychain as pc
+            >>> pc.Struct({"a": 1, "b": 2}).filter(pc.op().gt(1)).unwrap()
             {'b': 2}
         """
         ...
 
     def filter_on_key(self, key: K, predicate: CheckFunc[V]) -> Self:
         """
-        Filter items where predicate is True for the given key.
+        Applique un prédicat à la valeur de la clé spécifiée, en supprimant
+        l'élément si le prédicat est faux. Les autres éléments sont conservés.
 
         Example:
-            >>> chain = BaseStruct({"a": 1, "b": 2, "c": 3})
-            >>> chain.filter_on_key("b", lambda v: v > 1).unwrap()
-            {'b': 2}
+            >>> import pychain as pc
+            >>> data = {"a": [1, 2], "b": [3, 4], "c": [5, 6]}
+            >>> predicate = pc.op().item(0).ne(1)
+            >>> pc.Struct(data).filter_on_key("b", predicate).unwrap()
+            {'a': [1, 2], 'b': [3, 4], 'c': [5, 6]}
         """
         ...
 
     def with_key(self, key: K, value: V) -> Self:
         """
-        ...
+        Ajoute ou met à jour une paire clé-valeur.
 
         Example:
-            >>> chain = BaseStruct({"a": 1})
-            >>> chain.with_key("b", 2).unwrap()
+            >>> import pychain as pc
+            >>> pc.Struct({"a": 1}).with_key("b", 2).unwrap()
             {'a': 1, 'b': 2}
         """
         ...
 
     def with_nested_key(self, keys: Iterable[K] | K, value: V) -> Self:
         """
-        ...
+        Ajoute ou met à jour une valeur dans un chemin imbriqué.
 
         Example:
-            >>> chain = BaseStruct({"a": {"b": 1}})
-            >>> chain.with_nested_key(["a", "c"], 2).unwrap()
+            >>> import pychain as pc
+            >>> data = {"a": {"b": 1}}
+            >>> pc.Struct(data).with_nested_key(["a", "c"], 2).unwrap()
             {'a': {'b': 1, 'c': 2}}
         """
         ...
 
     def update_in(self, *keys: K, f: ProcessFunc[V]) -> Self:
         """
-        Updates a value at a nested path using a function (see cytoolz.update_in).
+        Met à jour une valeur dans un chemin imbriqué à l'aide d'une fonction.
 
         Example:
-            >>> chain = BaseStruct({"a": {"b": 1}})
-            >>> chain.update_in("a", "b", f=lambda v: v + 10).unwrap()
+            >>> import pychain as pc
+            >>> data = {"a": {"b": 1}}
+            >>> pc.Struct(data).update_in("a", "b", f=pc.op().add(10)).unwrap()
             {'a': {'b': 11}}
         """
         ...
 
     def merge(self, *others: dict[K, V]) -> Self:
         """
-        Merges with other dicts (see cytoolz.merge).
+        Fusionne avec d'autres dictionnaires.
 
         Example:
-            >>> BaseStruct({"a": 1}).merge({"b": 2}).unwrap()
-            {'a': 1, 'b': 2}
+            >>> import pychain as pc
+            >>> pc.Struct({"a": 1}).merge({"b": 2}, {"c": 3}).unwrap()
+            {'a': 1, 'b': 2, 'c': 3}
         """
         ...
 
-    def merge_with(self, f: Callable[..., V], *others: dict[K, V]) -> Self:
+    def merge_with(self, f: Callable[[Iterable[V]], V], *others: dict[K, V]) -> Self:
         """
-        Merges with other dicts, combining values with a function (see cytoolz.merge_with).
+        Fusionne avec d'autres dictionnaires, en combinant les valeurs avec une fonction.
 
         Example:
-            >>> BaseStruct({"first": 1, "second": 2}).merge_with(
-            ...     sum,
-            ...     {"first": 1, "second": 2},
-            ...     {"first": 1, "second": 2, "third": 3},
-            ... ).unwrap()
-            {'first': 3, 'second': 6, 'third': 3}
+            >>> import pychain as pc
+            >>> d1 = {"a": 1, "b": 2}
+            >>> d2 = {"a": 10, "c": 3}
+            >>> pc.Struct(d1).merge_with(sum, d2).unwrap()
+            {'a': 11, 'c': 3, 'b': 2}
         """
         ...
 
     def drop(self, *keys: K) -> Self:
         """
-        Removes keys from the dictionary (see cytoolz.dissoc).
+        Supprime des clés du dictionnaire.
 
         Example:
-            >>> chain = BaseStruct({"a": 1, "b": 2})
-            >>> chain.drop("a").unwrap()
+            >>> import pychain as pc
+            >>> pc.Struct({"a": 1, "b": 2, "c": 3}).drop("a", "c").unwrap()
             {'b': 2}
         """
         ...
 
-    def flatten_keys(self) -> "Struct[str, V]": ...
-    def to_obj[T](self, obj: Callable[[dict[K, V]], T]) -> T: ...
-    def to_frame(self) -> pl.DataFrame: ...
+    def flatten_keys(self) -> "Struct[str, V]":
+        """
+        Aplatit les clés imbriquées en une seule chaîne de caractères.
+
+        Example:
+            >>> import pychain as pc
+            >>> data = {"a": {"b": 1, "c": 2}}
+            >>> pc.Struct(data).flatten_keys().unwrap()
+            {'a.b': 1, 'a.c': 2}
+        """
+        ...
+
+    def to_obj[T](self, obj: Callable[[dict[K, V]], T]) -> T:
+        """
+        Convertit le `Struct` en un objet personnalisé via une fonction.
+
+        Example:
+            >>> import pychain as pc
+            >>> from collections import namedtuple
+            >>> Point = namedtuple("Point", ["x", "y"])
+            >>> pc.Struct({"x": 1, "y": 2}).to_obj(lambda d: Point(**d))
+            Point(x=1, y=2)
+        """
+        ...
+
+    def to_frame(self) -> pl.DataFrame:
+        """
+        Convertit le `Struct` en DataFrame Polars.
+
+        Example:
+            >>> import pychain as pc
+            >>> data = {"col1": [1, 2], "col2": [3, 4]}
+            >>> df = pc.Struct(data).to_frame()
+            >>> df.shape
+            (2, 2)
+        """
+        ...

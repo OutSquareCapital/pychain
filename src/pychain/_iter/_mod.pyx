@@ -177,9 +177,6 @@ cdef class Iter:
     cpdef to_series(self):
         return pl.Series(self.unwrap())
 
-    cpdef to_frame(self):
-        return pl.DataFrame(self.to_dict())
-
     def diff(
         self,
         *others: Iterable[Any],

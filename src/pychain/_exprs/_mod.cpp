@@ -4,7 +4,7 @@
 {
     "distutils": {
         "include_dirs": [
-            "C:\\Users\\tibo\\AppData\\Local\\uv\\cache\\builds-v0\\.tmp8fAOx8\\Lib\\site-packages\\numpy\\_core\\include"
+            "C:\\Users\\tibo\\AppData\\Local\\uv\\cache\\builds-v0\\.tmppCxnKL\\Lib\\site-packages\\numpy\\_core\\include"
         ],
         "language": "c++",
         "name": "pychain._exprs._mod",
@@ -3934,7 +3934,7 @@ static PyObject *__pyx_f_7pychain_6_exprs_4_mod_11ChainableOp_attr(struct __pyx_
  *     cpdef attr(self, name: str):
  *         return self._do(fn.attr(name))             # <<<<<<<<<<<<<<
  * 
- *     cpdef item(self, key: str):
+ *     cpdef item(self, key: Any):
 */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_2 = NULL;
@@ -4120,7 +4120,7 @@ static PyObject *__pyx_pf_7pychain_6_exprs_4_mod_11ChainableOp_6attr(struct __py
 /* "pychain/_exprs/_mod.pyx":36
  *         return self._do(fn.attr(name))
  * 
- *     cpdef item(self, key: str):             # <<<<<<<<<<<<<<
+ *     cpdef item(self, key: Any):             # <<<<<<<<<<<<<<
  *         return self._do(fn.item(key))
  * 
 */
@@ -4207,7 +4207,7 @@ static PyObject *__pyx_f_7pychain_6_exprs_4_mod_11ChainableOp_item(struct __pyx_
 
   /* "pychain/_exprs/_mod.pyx":37
  * 
- *     cpdef item(self, key: str):
+ *     cpdef item(self, key: Any):
  *         return self._do(fn.item(key))             # <<<<<<<<<<<<<<
  * 
  *     cpdef hint(self, dtype: Any):
@@ -4249,7 +4249,7 @@ static PyObject *__pyx_f_7pychain_6_exprs_4_mod_11ChainableOp_item(struct __pyx_
   /* "pychain/_exprs/_mod.pyx":36
  *         return self._do(fn.attr(name))
  * 
- *     cpdef item(self, key: str):             # <<<<<<<<<<<<<<
+ *     cpdef item(self, key: Any):             # <<<<<<<<<<<<<<
  *         return self._do(fn.item(key))
  * 
 */
@@ -4328,7 +4328,7 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
       if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 36, __pyx_L3_error)
     }
-    __pyx_v_key = ((PyObject*)values[0]);
+    __pyx_v_key = values[0];
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
@@ -4343,22 +4343,12 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_key), (&PyUnicode_Type), 0, "key", 2))) __PYX_ERR(0, 36, __pyx_L1_error)
   __pyx_r = __pyx_pf_7pychain_6_exprs_4_mod_11ChainableOp_8item(((struct __pyx_obj_7pychain_6_exprs_4_mod_ChainableOp *)__pyx_v_self), __pyx_v_key);
 
   /* function exit code */
-  goto __pyx_L0;
-  __pyx_L1_error:;
-  __pyx_r = NULL;
   for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
     Py_XDECREF(values[__pyx_temp]);
   }
-  goto __pyx_L7_cleaned_up;
-  __pyx_L0:;
-  for (Py_ssize_t __pyx_temp=0; __pyx_temp < (Py_ssize_t)(sizeof(values)/sizeof(values[0])); ++__pyx_temp) {
-    Py_XDECREF(values[__pyx_temp]);
-  }
-  __pyx_L7_cleaned_up:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
@@ -4372,10 +4362,6 @@ static PyObject *__pyx_pf_7pychain_6_exprs_4_mod_11ChainableOp_8item(struct __py
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("item", 0);
   __Pyx_XDECREF(__pyx_r);
-  if (unlikely(__pyx_v_key == Py_None)) {
-    PyErr_SetString(PyExc_TypeError, "cannot pass None into a C function argument that is declared 'not None'");
-    __PYX_ERR(0, 36, __pyx_L1_error)
-  }
   __pyx_t_1 = __pyx_f_7pychain_6_exprs_4_mod_11ChainableOp_item(__pyx_v_self, __pyx_v_key, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
@@ -16808,13 +16794,13 @@ __Pyx_RefNannySetupContext("PyInit__mod", 0);
   /* "pychain/_exprs/_mod.pyx":36
  *         return self._do(fn.attr(name))
  * 
- *     cpdef item(self, key: str):             # <<<<<<<<<<<<<<
+ *     cpdef item(self, key: Any):             # <<<<<<<<<<<<<<
  *         return self._do(fn.item(key))
  * 
 */
   __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_key, __pyx_mstate_global->__pyx_n_u_str) < 0) __PYX_ERR(0, 36, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_mstate_global->__pyx_n_u_key, __pyx_mstate_global->__pyx_n_u_Any) < 0) __PYX_ERR(0, 36, __pyx_L1_error)
   __pyx_t_3 = __Pyx_CyFunction_New(&__pyx_mdef_7pychain_6_exprs_4_mod_11ChainableOp_9item, __Pyx_CYFUNCTION_CCLASS, __pyx_mstate_global->__pyx_n_u_ChainableOp_item, NULL, __pyx_mstate_global->__pyx_n_u_pychain__exprs__mod, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[2])); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_CyFunction_SetAnnotationsDict(__pyx_t_3, __pyx_t_2);
