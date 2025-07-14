@@ -5,10 +5,10 @@ larger_than, smaller_than, and other comparison functions are using the reverse 
 
 import operator
 from collections.abc import Callable, Container
-from typing import Any
 from functools import partial
-import cytoolz as cz
+from typing import Any
 
+import cytoolz as cz
 
 is_true = operator.truth
 is_all = all
@@ -31,6 +31,18 @@ def is_in[T](value: Container[T]) -> Callable[[T], bool]:
 
 def is_not_in[T](value: Container[T]) -> Callable[[T], bool]:
     return lambda x: not operator.contains(value, x)
+
+
+def and_[T](value: T) -> Callable[[T], bool]:
+    return partial(operator.and_, value)
+
+
+def or_[T](value: T) -> Callable[[T], bool]:
+    return partial(operator.or_, value)
+
+
+def xor[T](value: T) -> Callable[[T], bool]:
+    return partial(operator.xor, value)
 
 
 def eq[T](value: T) -> Callable[[T], bool]:

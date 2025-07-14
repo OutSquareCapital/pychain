@@ -27,22 +27,25 @@ def _test_stub_files(package: str) -> None:
     for stub_file in stub_files:
         with open(stub_file, "r+", encoding="utf-8") as f:
             content = f.read()
-            new_content = content.replace('default[V]="foo"', 'default="foo"')
+            new_content: str = content.replace('default[V]="foo"', 'default="foo"')
             if content != new_content:
                 f.seek(0)
                 f.write(new_content)
                 f.truncate()
-                content = new_content
+                content: str = new_content
 
         try:
-            # Parse the .pyi file to extract docstrings
             tree = ast.parse(content)
             for node in ast.walk(tree):
                 if isinstance(node, (ast.FunctionDef, ast.ClassDef, ast.Module)):
                     if docstring := ast.get_docstring(node):
                         parser = doctest.DocTestParser()
                         test = parser.get_doctest(
-                            docstring, globs, node.name, str(stub_file), node.lineno
+                            string=docstring,
+                            globs=globs,
+                            name=node.name,  # type: ignore
+                            filename=str(object=stub_file),
+                            lineno=node.lineno,  # type: ignore
                         )
                         runner = doctest.DocTestRunner()
                         failures += runner.run(test).failed
