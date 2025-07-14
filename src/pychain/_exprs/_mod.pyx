@@ -11,23 +11,19 @@ from ..funcs import (
 )
 
 cdef class ChainableOp:
-    _pipeline: list[Callable[[Any], Any]]
+    _pipeline: Callable[[Any], Any]
 
     def __init__(self):
-        self._pipeline = []
+        self._pipeline = fn.identity
 
     def __call__(self, value: Any):
-        if not self._pipeline:
-            return value
-        return fn.pipe(value, *self._pipeline)
-
+        return self._pipeline(value)
 
     def __repr__(self):
-        pipeline_repr: str = ",\n".join(f"{str(f)}" for f in self._pipeline)
-        return f"class {self.__class__.__name__}(pipeline:[\n{pipeline_repr}\n])"
+        return f"class {self.__class__.__name__}(pipeline:[\n{self._pipeline}\n])"
 
     cdef _do(self, f: Callable[[Any], Any]):
-        self._pipeline.append(f)
+        self._pipeline = fn.compose(self._pipeline, f)
         return self
 
     cpdef attr(self, name: str):
@@ -36,7 +32,7 @@ cdef class ChainableOp:
     cpdef item(self, key: Any):
         return self._do(fn.item(key))
     
-    cpdef hint(self, dtype: Any):
+    cpdef hint(self, dtype: type):
         return self
 
     cpdef into(self, obj: Callable[[Any], Any]):
@@ -163,5 +159,5 @@ cdef class ChainableOp:
         return self._do(sum)
 
 cdef class OpConstructor:
-    def __call__(self):
+    def __call__(self, *dtype: type):
         return ChainableOp()
