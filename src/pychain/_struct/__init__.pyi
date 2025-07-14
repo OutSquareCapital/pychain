@@ -1,3 +1,3 @@
-from ._struct import Struct
+from ._mod import Struct
 
 __all__ = ["Struct"]

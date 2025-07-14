@@ -1,4 +1,4 @@
-from ._core import ChainableOp, OpConstructor
+from ._mod import ChainableOp, OpConstructor
 from .conditionnal import When
 
 __all__ = [

@@ -1,3 +1,3 @@
-from ._iter import Iter
+from ._mod import Iter
 
 __all__ = ["Iter"]
