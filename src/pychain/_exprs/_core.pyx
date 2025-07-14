@@ -3,7 +3,7 @@
 from collections.abc import Callable, Container
 import statistics as stats
 from typing import Any, Literal
-from .._fn import (
+from ..funcs import (
     bo,
     op,
     fn,
@@ -15,7 +15,7 @@ cdef class ChainableOp:
     def __init__(self, pipeline: Callable[[Any], Any]):
         self._pipeline = pipeline
 
-    def __call__(self, value: Any) -> Any:
+    def __call__(self, value: Any):
         return self._pipeline(value)
 
     def _chain(self, new_op: Callable[[Any], Any]):
@@ -27,11 +27,11 @@ cdef class ChainableOp:
     cpdef attr(self, name: str):
         return self._chain(fn.attr(name))
 
-    cpdef item(self, key: Any):
+    cpdef item(self, key: str):
         return self._chain(fn.item(key))
-
-    def method(self, name: str, *args: Any, **kwargs: Any):
-        return self._chain(fn.method(name, *args, **kwargs))
+    
+    cpdef hint(self, dtype: Any):
+        return self
 
     cpdef add(self, value: Any):
         return self._chain(op.add(value))
@@ -141,7 +141,7 @@ cdef class ChainableOp:
     cpdef median_grouped(self):
         return self._chain(stats.median_grouped)
 
-    def quantiles(self, n: int, method: Literal["inclusive", "exclusive"] = "exclusive"):
+    cpdef quantiles(self, n: int, method: Literal["inclusive", "exclusive"] = "exclusive"):
         return self._chain(st.quantiles(n, method=method))
 
     cpdef min(self):
@@ -153,133 +153,129 @@ cdef class ChainableOp:
     cpdef sum(self):
         return self._chain(sum)
 
-
 cdef class OpConstructor:
-    def __call__(self, name: str) -> ChainableOp:
+    def __call__(self, name: str):
         return ChainableOp(fn.attr(name))
 
-    def item(self, key: Any):
+    cpdef item(self, key: Any):
         return ChainableOp(fn.item(key))
 
-    def method(self, name: str, *args: Any, **kwargs: Any):
-        return ChainableOp(fn.method(name, *args, **kwargs))
-
-    def add(self, value: Any):
+    cpdef add(self, value: Any):
         return ChainableOp(op.add(value))
 
-    def sub(self, value: Any):
+    cpdef sub(self, value: Any):
         return ChainableOp(op.sub(value))
 
-    def mul(self, value: Any):
+    cpdef mul(self, value: Any):
         return ChainableOp(op.mul(value))
 
-    def truediv(self, value: Any):
+    cpdef truediv(self, value: Any):
         return ChainableOp(op.truediv(value))
 
-    def floordiv(self, value: Any):
+    cpdef floordiv(self, value: Any):
         return ChainableOp(op.floordiv(value))
 
-    def sub_r(self, value: Any):
+    cpdef sub_r(self, value: Any):
         return ChainableOp(op.sub_r(value))
 
-    def truediv_r(self, value: Any):
+    cpdef truediv_r(self, value: Any):
         return ChainableOp(op.truediv_r(value))
 
-    def floordiv_r(self, value: Any):
+    cpdef floordiv_r(self, value: Any):
         return ChainableOp(op.floordiv_r(value))
 
-    def mod(self, value: Any):
+    cpdef mod(self, value: Any):
         return ChainableOp(op.mod(value))
 
-    def pow(self, value: Any):
+    cpdef pow(self, value: Any):
         return ChainableOp(op.pow(value))
 
-    def neg(self):
+    cpdef neg(self):
         return ChainableOp(op.neg)
 
-    def round_to(self, ndigits: int):
+    cpdef round_to(self, ndigits: int):
         return ChainableOp(op.round_to(ndigits))
 
-    def is_true(self):
+    cpdef is_true(self):
         return ChainableOp(bo.is_true)
 
-    def is_none(self):
+    cpdef is_none(self):
         return ChainableOp(bo.is_none())
 
-    def is_not_none(self):
+    cpdef is_not_none(self):
         return ChainableOp(bo.is_not_none())
 
-    def is_in(self, values: Container[Any]):
+    cpdef is_in(self, values: Container[Any]):
         return ChainableOp(bo.is_in(values))
 
-    def is_not_in(self, values: Container[Any]):
+    cpdef is_not_in(self, values: Container[Any]):
         return ChainableOp(bo.is_not_in(values))
 
-    def is_distinct(self):
+    cpdef is_distinct(self):
         return ChainableOp(bo.is_distinct)
 
-    def is_iterable(self):
+    cpdef is_iterable(self):
         return ChainableOp(bo.is_iterable)
 
-    def is_all(self):
+    cpdef is_all(self):
         return ChainableOp(bo.is_all)
 
-    def is_any(self):
+    cpdef is_any(self):
         return ChainableOp(bo.is_any)
 
-    def eq(self, value: Any):
+    cpdef eq(self, value: Any):
         return ChainableOp(bo.eq(value))
 
-    def ne(self, value: Any):
+    cpdef ne(self, value: Any):
         return ChainableOp(bo.ne(value))
 
-    def gt(self, value: Any):
+    cpdef gt(self, value: Any):
         return ChainableOp(bo.gt(value))
 
-    def ge(self, value: Any):
+    cpdef ge(self, value: Any):
         return ChainableOp(bo.ge(value))
 
-    def lt(self, value: Any):
+    cpdef lt(self, value: Any):
         return ChainableOp(bo.lt(value))
 
-    def le(self, value: Any):
+    cpdef le(self, value: Any):
         return ChainableOp(bo.le(value))
 
-    def mean(self):
+    cpdef mean(self):
         return ChainableOp(stats.mean)
 
-    def median(self):
+    cpdef median(self):
         return ChainableOp(stats.median)
 
-    def mode(self):
+    cpdef mode(self):
         return ChainableOp(stats.mode)
 
-    def stdev(self):
+    cpdef stdev(self):
         return ChainableOp(stats.stdev)
 
-    def variance(self):
+    cpdef variance(self):
         return ChainableOp(stats.variance)
     
-    def pvariance(self):
+    cpdef pvariance(self):
         return ChainableOp(stats.pvariance)
 
-    def median_low(self):
+    cpdef median_low(self):
         return ChainableOp(stats.median_low)
 
-    def median_high(self):
+    cpdef median_high(self):
         return ChainableOp(stats.median_high)
 
-    def median_grouped(self):
+    cpdef median_grouped(self):
         return ChainableOp(stats.median_grouped)
 
-    def quantiles(self, n: int, method: Literal["inclusive", "exclusive"] = "exclusive"):
+    cpdef quantiles(self, n: int, method: Literal["inclusive", "exclusive"] = "exclusive"):
         return ChainableOp(st.quantiles(n, method=method))
 
-    def min(self):
+    cpdef min(self):
         return ChainableOp(min)
 
-    def max(self):
+    cpdef max(self):
         return ChainableOp(max)
 
-    def sum(self):
+    cpdef sum(self):
         return ChainableOp(sum)

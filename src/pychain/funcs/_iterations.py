@@ -44,11 +44,11 @@ def starmap[V, V1](f: TransformFunc[V, V1]) -> partial[Iterator[V1]]:
     return partial(it.starmap, f)
 
 
-def take_while[V](predicate: CheckFunc[V]):
+def take_while[V](predicate: CheckFunc[V]) -> partial[Iterator[V]]:
     return partial(it.takewhile, predicate)
 
 
-def drop_while[V](predicate: CheckFunc[V]):
+def drop_while[V](predicate: CheckFunc[V]) -> partial[Iterator[V]]:
     return partial(it.dropwhile, predicate)
 
 

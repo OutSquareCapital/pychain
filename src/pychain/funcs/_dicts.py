@@ -47,7 +47,9 @@ def map_values[V, V1](f: TransformFunc[V, V1]) -> partial[dict[Any, V1]]:
     return partial(dcz.valmap, f)
 
 
-def filter_items[K, V](predicate: CheckFunc[tuple[K, V]]) -> partial[dict[K, V]]:
+def filter_items[K, V](
+    predicate: CheckFunc[tuple[K, V]],
+) -> Callable[[dict[K, V]], dict[K, V]]:
     return partial(dcz.itemfilter, predicate)
 
 
@@ -75,7 +77,7 @@ def merge[K, V](others: Iterable[dict[K, V]]) -> partial[dict[K, V]]:
     return partial(_merge, others=others)
 
 
-def merge_with[K, V](f: Callable[..., V], *others: dict[K, V]):
+def merge_with[K, V](f: Callable[[Any], V], *others: dict[K, V]) -> partial[dict[K, V]]:
     return partial(dcz.merge_with, f, *others)
 
 
@@ -85,3 +87,25 @@ def drop[K](keys: Iterable[K]) -> partial[dict[K, Any]]:
 
 def flatten_keys():
     return partial(_flatten_recursive)
+
+
+def row_factory[V, T](
+    key_name: str,
+    index_name: str,
+    value_name: str,
+    value_extractor: Callable[[V], Iterable[T]],
+    key: Any,
+    container: V,
+) -> Iterable[dict[str, Any]]:
+    for i, value in enumerate(value_extractor(container)):
+        yield {key_name: key, index_name: i, value_name: value}
+
+
+def unpivot[V, T](
+    value_extractor: Callable[[V], Iterable[T]],
+    key_name: str = "key",
+    index_name: str = "index",
+    value_name: str = "value",
+) -> dict[str, T]:
+    #return self.iter_items().flat_map(lambda pair: row_factory(pair[0], pair[1]))
+    ...

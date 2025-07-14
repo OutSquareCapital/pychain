@@ -1,15 +1,15 @@
 from collections.abc import Callable
-from typing import Any, Hashable
-
+from typing import Any
 import cytoolz as cz
 import pandas as pd
 import polars as pl
 
-from ._chains import Iter, Struct
-from ._exprs import ChainableOp, OpConstructor, When
+from ._iter import Iter
+from ._struct import Struct
+from ._exprs import OpConstructor, When
 
 
-def from_func[T, T1](value: T, f: Callable[[T], T1]) -> Iter[T1]:
+def from_func[T, T1](value: T, f: Callable[[T], T1]):
     """
     Create an Iter by iteratively applying a function to a value (infinite iterator).
 
@@ -20,7 +20,7 @@ def from_func[T, T1](value: T, f: Callable[[T], T1]) -> Iter[T1]:
     return Iter(cz.itertoolz.iterate(func=f, x=value))
 
 
-def from_range(start: int, stop: int, step: int = 1) -> Iter[int]:
+def from_range(start: int, stop: int, step: int = 1):
     """
     Create an Iter from a range of integers.
 
@@ -31,7 +31,7 @@ def from_range(start: int, stop: int, step: int = 1) -> Iter[int]:
     return Iter(range(start, stop, step))
 
 
-def read_parquet(file_path: str) -> Struct[str, list[Any]]:
+def read_parquet(file_path: str):
     """
     Read a Parquet file into a Struct (columnar format).
 
@@ -42,7 +42,7 @@ def read_parquet(file_path: str) -> Struct[str, list[Any]]:
     return from_pl(pl.read_parquet(file_path))
 
 
-def read_csv(file_path: str) -> Struct[str, list[Any]]:
+def read_csv(file_path: str):
     """
     Read a CSV file into a Struct (columnar format).
 
@@ -53,7 +53,7 @@ def read_csv(file_path: str) -> Struct[str, list[Any]]:
     return from_pl(pl.read_csv(file_path))
 
 
-def read_json(file_path: str) -> Struct[str, list[Any]]:
+def read_json(file_path: str):
     """
     Read a JSON file into a Struct (columnar format).
 
@@ -64,7 +64,7 @@ def read_json(file_path: str) -> Struct[str, list[Any]]:
     return from_pl(pl.read_json(file_path))
 
 
-def read_ndjson(file_path: str) -> Struct[str, list[Any]]:
+def read_ndjson(file_path: str):
     """
     Read a newline-delimited JSON file into a Struct (columnar format).
 
@@ -75,20 +75,21 @@ def read_ndjson(file_path: str) -> Struct[str, list[Any]]:
     return from_pl(pl.read_ndjson(file_path))
 
 
-def from_pl(df: pl.DataFrame) -> Struct[str, list[Any]]:
+def from_pl(df: pl.DataFrame):
     """
     Convert a Polars DataFrame to a Struct (columnar format).
     """
     return Struct(df.to_dict(as_series=False))
 
 
-def from_pd(df: pd.DataFrame) -> Struct[Hashable, list[Any]]:
+def from_pd(df: pd.DataFrame):
     """
     Convert a pandas DataFrame to a Struct (columnar format).
     """
-    return Struct(df.to_dict(orient="list")) # type: ignore[return-value]
+    return Struct(df.to_dict(orient="list"))  # type: ignore[return-value]
 
-def when[T, R](predicate: ChainableOp | Callable[[T], bool]) -> When[T, Any]:
+
+def when[T, R](predicate:Callable[[T], bool]) -> When[T, Any]:
     return When[T, R](predicate)
 
 

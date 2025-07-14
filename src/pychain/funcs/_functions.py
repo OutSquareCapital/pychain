@@ -1,13 +1,12 @@
 import operator
-from collections.abc import Iterable, Iterator
+from collections.abc import Iterable, Iterator, Callable
 from functools import partial
-
+from typing import Any
 import cytoolz.functoolz as ftz
 import cytoolz.itertoolz as itz
 from copy import deepcopy
 from .._protocols import CheckFunc, ThreadFunc, TransformFunc
 
-call = operator.call
 attr = operator.attrgetter
 item = operator.itemgetter
 method = operator.methodcaller
@@ -16,6 +15,8 @@ pipe = ftz.pipe
 identity = ftz.identity
 clone = deepcopy
 
+def to_obj[T](obj: Callable[..., T], *args: Any, **kwargs: Any) -> partial[T]:
+    return partial(obj, *args, **kwargs)
 
 def partial_map[V, V1](f: TransformFunc[V, V1]) -> partial[Iterator[V1]]:
     return partial(map, f)

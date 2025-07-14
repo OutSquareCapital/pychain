@@ -1,47 +1,24 @@
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Self
+from typing import Self
 
 import polars as pl
 
-from ..._fn import dc, fn
-from ..._protocols import CheckFunc, ProcessFunc, TransformFunc
-from ._core import AbstractChain
+from .._protocols import CheckFunc, ProcessFunc, TransformFunc
 
-if TYPE_CHECKING:
-    from .._main import Struct
+class Struct[K, V]:
+    _value: dict[K, V]
+    _pipeline: list[Callable[[dict[K, V]], dict[K, V]]]
 
-@dataclass(slots=True, frozen=True, repr=False)
-class BaseStruct[K, V](AbstractChain[dict[K, V]]):
-
-    def into[K1, V1](self, f: TransformFunc[dict[K, V], dict[K1, V1]]) -> "Struct[K1, V1]":
-        """
-        Transforms the dictionary using the provided function, returning a new chain.
-
-        Example:
-            >>> chain = BaseStruct({"a": 1, "b": 2})
-            >>> chain.into(lambda d: {k: v + 1 for k, v in d.items()}).unwrap()
-            {'a': 2, 'b': 3}
-        """
-        return self.__class__(
-            _value=self._value,
-            _pipeline=[fn.compose(*self._pipeline, f)],
-        )  # type: ignore
-
-    def map_items[K1, V1](
+    def __init__(
         self,
-        f: TransformFunc[tuple[K, V], tuple[K1, V1]],
-    ) -> "Struct[K1, V1]":
-        """
-        map a function over (key, value) pairs (see cytoolz.itemmap).
-
-        Example:
-            >>> chain = BaseStruct({"a": 1})
-            >>> chain.map_items(lambda kv: (kv[0].upper(), kv[1] * 2)).unwrap()
-            {'A': 2}
-        """
-        return self.into(f=dc.map_items(f=f))
-
+        _value: dict[K, V],
+        _pipeline: list[Callable[[dict[K, V]], dict[K, V]]] | None = None,
+    ) -> None: ...
+    def clone(self) -> Self: ...
+    def unwrap(self) -> dict[K, V]: ...
+    def _into[K1, V1](
+        self, f: Callable[[dict[K, V]], dict[K1, V1]]
+    ) -> "Struct[K1, V1]": ...
     def map_keys[K1](self, f: TransformFunc[K, K1]) -> "Struct[K1, V]":
         """
         map a function over keys (see cytoolz.keymap).
@@ -51,7 +28,7 @@ class BaseStruct[K, V](AbstractChain[dict[K, V]]):
             >>> chain.map_keys(str.upper).unwrap()
             {'A': 1}
         """
-        return self.into(f=dc.map_keys(f))
+        ...
 
     def map_values[V1](self, f: TransformFunc[V, V1]) -> "Struct[K, V1]":
         """
@@ -62,19 +39,7 @@ class BaseStruct[K, V](AbstractChain[dict[K, V]]):
             >>> chain.map_values(lambda v: v + 10).unwrap()
             {'a': 11}
         """
-        return self.into(f=dc.map_values(f=f))
-
-    def filter_items(self, predicate: CheckFunc[tuple[K, V]]) -> Self:
-        """
-        Filters (key, value) pairs by predicate (see cytoolz.itemfilter).
-
-        Example:
-            >>> chain = BaseStruct({"a": 1, "b": 2})
-            >>> chain.filter_items(lambda kv: kv[1] > 1).unwrap()
-            {'b': 2}
-        """
-        return self.do(f=dc.filter_items(predicate=predicate))
-
+        ...
     def select(self, predicate: CheckFunc[K]) -> Self:
         """
         Select keys by predicate (see cytoolz.keyfilter).
@@ -84,7 +49,7 @@ class BaseStruct[K, V](AbstractChain[dict[K, V]]):
             >>> chain.select(lambda k: k == "a").unwrap()
             {'a': 1}
         """
-        return self.do(f=dc.filter_keys(predicate=predicate))
+        ...
 
     def filter(self, predicate: CheckFunc[V]) -> Self:
         """
@@ -94,7 +59,7 @@ class BaseStruct[K, V](AbstractChain[dict[K, V]]):
             >>> BaseStruct({"a": 1, "b": 2}).filter(lambda v: v > 1).unwrap()
             {'b': 2}
         """
-        return self.do(f=dc.filter_values(predicate=predicate))
+        ...
 
     def filter_on_key(self, key: K, predicate: CheckFunc[V]) -> Self:
         """
@@ -105,29 +70,29 @@ class BaseStruct[K, V](AbstractChain[dict[K, V]]):
             >>> chain.filter_on_key("b", lambda v: v > 1).unwrap()
             {'b': 2}
         """
-        return self.do(dc.filter_on_key(key=key, predicate=predicate))
+        ...
 
     def with_key(self, key: K, value: V) -> Self:
         """
-        Returns a new dict with the given key set to value (see cytoolz.assoc).
+        ...
 
         Example:
             >>> chain = BaseStruct({"a": 1})
             >>> chain.with_key("b", 2).unwrap()
             {'a': 1, 'b': 2}
         """
-        return self.do(f=dc.with_key(key=key, value=value))
+        ...
 
     def with_nested_key(self, keys: Iterable[K] | K, value: V) -> Self:
         """
-        Returns a new dict with a nested key set to value (see cytoolz.assoc_in).
+        ...
 
         Example:
             >>> chain = BaseStruct({"a": {"b": 1}})
             >>> chain.with_nested_key(["a", "c"], 2).unwrap()
             {'a': {'b': 1, 'c': 2}}
         """
-        return self.do(f=dc.with_nested_key(keys=keys, value=value))
+        ...
 
     def update_in(self, *keys: K, f: ProcessFunc[V]) -> Self:
         """
@@ -138,7 +103,7 @@ class BaseStruct[K, V](AbstractChain[dict[K, V]]):
             >>> chain.update_in("a", "b", f=lambda v: v + 10).unwrap()
             {'a': {'b': 11}}
         """
-        return self.do(f=dc.update_in(*keys, f=f))
+        ...
 
     def merge(self, *others: dict[K, V]) -> Self:
         """
@@ -148,7 +113,7 @@ class BaseStruct[K, V](AbstractChain[dict[K, V]]):
             >>> BaseStruct({"a": 1}).merge({"b": 2}).unwrap()
             {'a': 1, 'b': 2}
         """
-        return self.do(f=dc.merge(others=others))
+        ...
 
     def merge_with(self, f: Callable[..., V], *others: dict[K, V]) -> Self:
         """
@@ -162,7 +127,7 @@ class BaseStruct[K, V](AbstractChain[dict[K, V]]):
             ... ).unwrap()
             {'first': 3, 'second': 6, 'third': 3}
         """
-        return self.do(f=dc.merge_with(f, *others))
+        ...
 
     def drop(self, *keys: K) -> Self:
         """
@@ -173,13 +138,8 @@ class BaseStruct[K, V](AbstractChain[dict[K, V]]):
             >>> chain.drop("a").unwrap()
             {'b': 2}
         """
-        return self.do(f=dc.drop(keys=keys))
+        ...
 
-    def flatten_keys(self) -> "Struct[str, V]":
-        return self.into(f=dc.flatten_keys())
-
-    def to_obj[T](self, obj: Callable[[dict[K, V]], T]) -> T:
-        return obj(self.unwrap())
-
-    def to_frame(self) -> pl.DataFrame:
-        return pl.DataFrame(self.unwrap())
+    def flatten_keys(self) -> "Struct[str, V]": ...
+    def to_obj[T](self, obj: Callable[[dict[K, V]], T]) -> T: ...
+    def to_frame(self) -> pl.DataFrame: ...

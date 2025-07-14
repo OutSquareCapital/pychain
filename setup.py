@@ -7,8 +7,18 @@ extensions = [
     Extension(
         "pychain._exprs._core",
         ["src/pychain/_exprs/_core.pyx"],
-        include_dirs=[numpy.get_include()],  # Nécessaire pour les dépendances numpy
-    )
+        include_dirs=[numpy.get_include()],
+    ),
+    Extension(
+        "pychain._struct._struct",
+        ["src/pychain/_struct/_struct.pyx"],
+        include_dirs=[numpy.get_include()],
+    ),
+    Extension(
+        "pychain._iter._iter",
+        ["src/pychain/_iter/_iter.pyx"],
+        include_dirs=[numpy.get_include()],
+    ),
 ]
 
 setup(
