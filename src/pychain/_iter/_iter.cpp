@@ -4,7 +4,7 @@
 {
     "distutils": {
         "include_dirs": [
-            "C:\\Users\\tibo\\AppData\\Local\\uv\\cache\\builds-v0\\.tmpfosrAe\\Lib\\site-packages\\numpy\\_core\\include"
+            "C:\\Users\\tibo\\AppData\\Local\\uv\\cache\\builds-v0\\.tmpzoRKXv\\Lib\\site-packages\\numpy\\_core\\include"
         ],
         "language": "c++",
         "name": "pychain._iter._iter",

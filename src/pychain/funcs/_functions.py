@@ -15,8 +15,10 @@ pipe = ftz.pipe
 identity = ftz.identity
 clone = deepcopy
 
+
 def to_obj[T](obj: Callable[..., T], *args: Any, **kwargs: Any) -> partial[T]:
     return partial(obj, *args, **kwargs)
+
 
 def partial_map[V, V1](f: TransformFunc[V, V1]) -> partial[Iterator[V1]]:
     return partial(map, f)

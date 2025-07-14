@@ -89,7 +89,7 @@ def from_pd(df: pd.DataFrame):
     return Struct(df.to_dict(orient="list"))  # type: ignore[return-value]
 
 
-def when[T, R](predicate:Callable[[T], bool]) -> When[T, Any]:
+def when[T, R](predicate: Callable[[T], bool]) -> When[T, Any]:
     return When[T, R](predicate)
 
 

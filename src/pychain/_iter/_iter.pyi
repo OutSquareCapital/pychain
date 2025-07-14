@@ -24,16 +24,14 @@ class Iter[V]:
         self, key: TransformFunc[V, K], binop: Callable[[V, V], V]
     ) -> "Iter[K]": ...
     def _do(self, f: ProcessFunc[Iterable[V]]) -> Self: ...
-    def _into[V1](
-        self, f: TransformFunc[Iterable[V], Iterable[V1]]
-    ) -> "Iter[V1]": ...
+    def _into[V1](self, f: TransformFunc[Iterable[V], Iterable[V1]]) -> "Iter[V1]": ...
     def agg[V1](self, on: Callable[[Iterable[V]], V1]) -> V1: ...
     def map[V1](self, f: TransformFunc[V, V1]) -> "Iter[V1]":
         """
         Structs a function over elements (like built-in map).
 
         Example:
-            >>> BaseIter([1, 2]).map(lambda x: x * 2).to_list()
+            >>> Iter([1, 2]).map(lambda x: x * 2).to_list()
             [2, 4]
         """
         ...
@@ -43,7 +41,7 @@ class Iter[V]:
         Structs a function and flattens the result (see cytoolz.concatmap).
 
         Example:
-            >>> BaseIter([1, 2]).flat_map(lambda x: [x, x + 10]).to_list()
+            >>> Iter([1, 2]).flat_map(lambda x: [x, x + 10]).to_list()
             [1, 11, 2, 12]
         """
         ...
@@ -56,7 +54,7 @@ class Iter[V]:
         Example:
             >>> data = [(1, 2), (3, 4)]
             >>> def add(x, y): ...
-            >>> BaseIter(data).starmap(add).to_list()
+            >>> Iter(data).starmap(add).to_list()
             [3, 7]
         """
         ...
@@ -67,7 +65,7 @@ class Iter[V]:
         Takes elements while predicate is true (like itertools.takewhile).
 
         Example:
-            >>> BaseIter([1, 2, 3, 2]).take_while(lambda x: x < 3).to_list()
+            >>> Iter([1, 2, 3, 2]).take_while(lambda x: x < 3).to_list()
             [1, 2]
         """
         ...
@@ -77,7 +75,7 @@ class Iter[V]:
         Drops elements while predicate is true (like itertools.dropwhile).
 
         Example:
-            >>> BaseIter([1, 2, 3, 2]).drop_while(lambda x: x < 3).to_list()
+            >>> Iter([1, 2, 3, 2]).drop_while(lambda x: x < 3).to_list()
             [3, 2]
         """
         ...
@@ -87,7 +85,7 @@ class Iter[V]:
         Interleaves the iterable with other iterables (see cytoolz.interleave).
 
         Example:
-            >>> BaseIter([1, 2]).interleave([10, 20]).to_list()
+            >>> Iter([1, 2]).interleave([10, 20]).to_list()
             [1, 10, 2, 20]
         """
         ...
@@ -97,7 +95,7 @@ class Iter[V]:
         Inserts the given element between each pair of elements (see cytoolz.interpose).
 
         Example:
-            >>> BaseIter([1, 2, 3]).interpose(0).to_list()
+            >>> Iter([1, 2, 3]).interpose(0).to_list()
             [1, 0, 2, 0, 3]
         """
         ...
@@ -107,7 +105,7 @@ class Iter[V]:
         ...
 
         Example:
-            >>> BaseIter([1, 5, 3, 2]).top_n(2).to_list()
+            >>> Iter([1, 5, 3, 2]).top_n(2).to_list()
             [5, 3]
         """
         ...
@@ -119,7 +117,7 @@ class Iter[V]:
         Randomly samples elements with given probability (see cytoolz.random_sample).
 
         Example:
-            >>> BaseIter(range(100)).random_sample(probability=0.01, state=1).to_list()
+            >>> Iter(range(100)).random_sample(probability=0.01, state=1).to_list()
             [13, 91]
         """
         ...
@@ -129,7 +127,7 @@ class Iter[V]:
         Concatenates the iterable with others (see cytoolz.concat).
 
         Example:
-            >>> BaseIter([1, 2]).concat([3, 4]).to_list()
+            >>> Iter([1, 2]).concat([3, 4]).to_list()
             [1, 2, 3, 4]
         """
         ...
@@ -139,7 +137,7 @@ class Iter[V]:
         Filters elements by predicate (like built-in filter).
 
         Example:
-            >>> BaseIter([1, 2, 3]).filter(lambda x: x > 1).to_list()
+            >>> Iter([1, 2, 3]).filter(lambda x: x > 1).to_list()
             [2, 3]
         """
         ...
@@ -149,7 +147,7 @@ class Iter[V]:
         Accumulates values using binary function (see cytoolz.accumulate).
 
         Example:
-            >>> BaseIter([1, 2, 3]).accumulate(lambda x, y: x + y).to_list()
+            >>> Iter([1, 2, 3]).accumulate(lambda x, y: x + y).to_list()
             [1, 3, 6]
         """
         ...
@@ -159,7 +157,7 @@ class Iter[V]:
         Prepends a value (see cytoolz.cons).
 
         Example:
-            >>> BaseIter([2, 3]).insert_left(1).to_list()
+            >>> Iter([2, 3]).insert_left(1).to_list()
             [1, 2, 3]
         """
         ...
@@ -169,7 +167,7 @@ class Iter[V]:
         Peeks at elements, printing them optionally with a note.
 
         Example:
-            >>> BaseIter([1, 2, 3]).peek("step 1").to_list()
+            >>> Iter([1, 2, 3]).peek("step 1").to_list()
             Peeked value (step 1): 1
             [1, 2, 3]
         """
@@ -180,7 +178,7 @@ class Iter[V]:
         Peeks at first n elements, printing them optionally with a note.
 
         Example:
-            >>> BaseIter([1, 2, 3, 4, 5, 6]).peekn(3, "step 1").to_list()
+            >>> Iter([1, 2, 3, 4, 5, 6]).peekn(3, "step 1").to_list()
             Peeked 3 values (step 1): [1, 2, 3]
             [1, 2, 3, 4, 5, 6]
         """
@@ -191,7 +189,7 @@ class Iter[V]:
         Takes first n elements (see cytoolz.take).
 
         Example:
-            >>> BaseIter([1, 2, 3, 4]).head(2).to_list()
+            >>> Iter([1, 2, 3, 4]).head(2).to_list()
             [1, 2]
         """
         ...
@@ -201,7 +199,7 @@ class Iter[V]:
         Takes last n elements (see cytoolz.tail).
 
         Example:
-            >>> BaseIter([1, 2, 3, 4]).tail(2).to_list()
+            >>> Iter([1, 2, 3, 4]).tail(2).to_list()
             [3, 4]
         """
         ...
@@ -211,7 +209,7 @@ class Iter[V]:
         Drops first n elements (see cytoolz.drop).
 
         Example:
-            >>> BaseIter([1, 2, 3, 4]).drop_first(2).to_list()
+            >>> Iter([1, 2, 3, 4]).drop_first(2).to_list()
             [3, 4]
         """
         ...
@@ -221,7 +219,7 @@ class Iter[V]:
         Takes every index-th element (see cytoolz.take_nth).
 
         Example:
-            >>> BaseIter([0, 1, 2, 3, 4]).every(2).to_list()
+            >>> Iter([0, 1, 2, 3, 4]).every(2).to_list()
             [0, 2, 4]
         """
         ...
@@ -231,7 +229,7 @@ class Iter[V]:
         Repeats the iterable n times (see cytoolz.repeat).
 
         Example:
-            >>> BaseIter([1, 2]).repeat(2).to_list()
+            >>> Iter([1, 2]).repeat(2).to_list()
             [1, 1, 2, 2]
         """
         ...
@@ -241,7 +239,7 @@ class Iter[V]:
         ...
 
         Example:
-            >>> BaseIter([1, 2, 2, 3]).unique().to_list()
+            >>> Iter([1, 2, 2, 3]).unique().to_list()
             [1, 2, 3]
         """
         ...
@@ -251,7 +249,7 @@ class Iter[V]:
         Computes cumulative sum (see cytoolz.accumulate with operator.add).
 
         Example:
-            >>> BaseIter([1, 2, 3]).cumsum().to_list()
+            >>> Iter([1, 2, 3]).cumsum().to_list()
             [1, 3, 6]
         """
         ...
@@ -261,7 +259,7 @@ class Iter[V]:
         Computes cumulative product (see cytoolz.accumulate with operator.mul).
 
         Example:
-            >>> BaseIter([1, 2, 3]).cumprod().to_list()
+            >>> Iter([1, 2, 3]).cumprod().to_list()
             [1, 2, 6]
         """
         ...
@@ -273,7 +271,7 @@ class Iter[V]:
         Merges and sorts with other iterables (see cytoolz.merge_sorted).
 
         Example:
-            >>> BaseIter([1, 3]).merge_sorted([2, 4]).to_list()
+            >>> Iter([1, 3]).merge_sorted([2, 4]).to_list()
             [1, 2, 3, 4]
         """
         ...
@@ -283,7 +281,7 @@ class Iter[V]:
         Applies a side-effect function to each element (see cytoolz.do/tap).
 
         Example:
-            >>> BaseIter([1, 2]).tap(print).to_list()
+            >>> Iter([1, 2]).tap(print).to_list()
             1
             2
             [1, 2]
@@ -297,7 +295,7 @@ class Iter[V]:
         Zips with other iterables (like built-in zip).
 
         Example:
-            >>> BaseIter([1, 2]).zip_with([10, 20]).to_list()
+            >>> Iter([1, 2]).zip_with([10, 20]).to_list()
             [(1, 10), (2, 20)]
         """
         ...
@@ -307,7 +305,7 @@ class Iter[V]:
         Enumerates the iterable (like built-in enumerate).
 
         Example:
-            >>> BaseIter(["a", "b"]).enumerate().to_list()
+            >>> Iter(["a", "b"]).enumerate().to_list()
             [(0, 'a'), (1, 'b')]
         """
         ...
@@ -317,7 +315,7 @@ class Iter[V]:
         Flattens nested iterables (see cytoolz.concat).
 
         Example:
-            >>> BaseIter([[1, 2], [3, 4]]).flatten().to_list()
+            >>> Iter([[1, 2], [3, 4]]).flatten().to_list()
             [1, 2, 3, 4]
         """
         ...
@@ -334,17 +332,17 @@ class Iter[V]:
         ...
 
         Example:
-            >>> BaseIter([1, 2, 3]).diff([1, 2, 10, 100]).to_list()
+            >>> Iter([1, 2, 3]).diff([1, 2, 10, 100]).to_list()
             [(3, 10), (None, 100)]
 
             You can replace `None` with a custom default[V] value:
 
-            >>> BaseIter([1, 2, 3]).diff([1, 2, 10, 100], default[V]="foo").to_list()
+            >>> Iter([1, 2, 3]).diff([1, 2, 10, 100], default[V]="foo").to_list()
             [(3, 10), ('foo', 100)]
 
             A key function may also be applied to each item to use during comparisons:
 
-            >>> BaseIter(["apples", "bananas"]).diff(
+            >>> Iter(["apples", "bananas"]).diff(
             ...     ["Apples", "Oranges"], key=str.lower
             ... ).to_list()
             [('bananas', 'Oranges')]
@@ -356,7 +354,7 @@ class Iter[V]:
         Partitions into chunks of size n, padding last if needed (see cytoolz.partition).
 
         Example:
-            >>> BaseIter([1, 2, 3, 4, 5]).partition(2, pad=0).to_list()
+            >>> Iter([1, 2, 3, 4, 5]).partition(2, pad=0).to_list()
             [(1, 2), (3, 4), (5, 0)]
         """
         ...
@@ -366,7 +364,7 @@ class Iter[V]:
         Partitions into chunks of size n, last chunk may be smaller (see cytoolz.partition_all).
 
         Example:
-            >>> BaseIter([1, 2, 3, 4, 5]).partition_all(2).to_list()
+            >>> Iter([1, 2, 3, 4, 5]).partition_all(2).to_list()
             [(1, 2), (3, 4), (5,)]
         """
         ...
@@ -376,7 +374,7 @@ class Iter[V]:
         Creates a sliding window of given length (see cytoolz.sliding_window).
 
         Example:
-            >>> BaseIter([1, 2, 3, 4]).rolling(3).to_list()
+            >>> Iter([1, 2, 3, 4]).rolling(3).to_list()
             [(1, 2, 3), (2, 3, 4)]
         """
         ...
@@ -386,7 +384,7 @@ class Iter[V]:
         Creates an Iter from the Cartesian product of input iterables.
 
         Example:
-            >>> BaseIter(range(0, 2)).cross_join(["a", "b"]).to_list()
+            >>> Iter(range(0, 2)).cross_join(["a", "b"]).to_list()
             [('a', 0), ('a', 1), ('b', 0), ('b', 1)]
         """
         ...

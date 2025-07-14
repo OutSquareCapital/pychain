@@ -107,5 +107,5 @@ def unpivot[V, T](
     index_name: str = "index",
     value_name: str = "value",
 ) -> dict[str, T]:
-    #return self.iter_items().flat_map(lambda pair: row_factory(pair[0], pair[1]))
+    # return self.iter_items().flat_map(lambda pair: row_factory(pair[0], pair[1]))
     ...
