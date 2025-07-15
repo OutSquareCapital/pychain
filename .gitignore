@@ -6,6 +6,9 @@ build/
 dist/
 wheels/
 *.egg-info
+# ignore cython compiled files
+*.so
+*.pyd
 
 # Virtual environments
 .venv
