@@ -124,8 +124,7 @@ class Struct[K, V]:
         Example:
             >>> import pychain as pc
             >>> data = {"a": [1, 2], "b": [3, 4], "c": [5, 6]}
-            >>> predicate = pc.op().item(0).ne(1)
-            >>> pc.Struct(data).filter_on_key("b", predicate).unwrap()
+            >>> pc.Struct(data).filter_on_key("b", pc.op.item(0, int).ne(1)).unwrap()
             {'a': [1, 2], 'b': [3, 4], 'c': [5, 6]}
         """
         ...

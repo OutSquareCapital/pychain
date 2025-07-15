@@ -13,25 +13,26 @@ from ..funcs import (
 cdef class ChainableOp:
     _pipeline: Callable[[Any], Any]
 
-    def __init__(self):
-        self._pipeline = fn.identity
+    def __init__(self, pipeline: Callable[[Any], Any]):
+        self._pipeline = pipeline
 
     def __call__(self, value: Any):
         return self._pipeline(value)
 
     def __repr__(self):
-        return f"class {self.__class__.__name__}(pipeline:[\n{self._pipeline}\n])"
+        return f"class {self.__class__.__name__}(pipeline:\n{self._pipeline.__repr__()})\n)"
 
-    cdef _do(self, f: Callable[[Any], Any]):
-        self._pipeline = fn.compose(self._pipeline, f)
-        return self
+    def _do(self, f: Callable[[Any], Any]):
+        def _new_pipeline(value: Any):
+            return f(self._pipeline(value))
+        return self.__class__(pipeline=_new_pipeline)
 
-    cpdef attr(self, name: str):
-        return self._do(fn.attr(name))
+    def and_(self, *others: Callable[[Any], bool]):
+        def _new_pipeline(value: Any) -> bool:
+            all_checks = (self,) + others
+            return all(check(value) for check in all_checks)
+        return self.__class__(pipeline=_new_pipeline)
 
-    cpdef item(self, key: Any):
-        return self._do(fn.item(key))
-    
     cpdef hint(self, dtype: type):
         return self
 
@@ -160,4 +161,10 @@ cdef class ChainableOp:
 
 cdef class OpConstructor:
     def __call__(self, *dtype: type):
-        return ChainableOp()
+        return ChainableOp(fn.identity)
+
+    cpdef attr(self, name: str, dtype: type):
+        return ChainableOp(fn.attr(name))
+
+    cpdef item(self, key: Any, dtype: type):
+        return ChainableOp(fn.item(key))

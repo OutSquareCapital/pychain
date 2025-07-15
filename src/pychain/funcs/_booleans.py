@@ -33,8 +33,20 @@ def is_not_in[T](value: Container[T]) -> Callable[[T], bool]:
     return lambda x: not operator.contains(value, x)
 
 
-def and_[T](value: T) -> Callable[[T], bool]:
-    return partial(operator.and_, value)
+def _runner[**P](
+    p1: Callable[P, bool], p2: Callable[P, bool], *args: P.args, **kwargs: P.kwargs
+) -> bool:
+    return operator.and_(p1(*args, **kwargs), p2(*args, **kwargs))
+
+
+def _binder[**P](p1: Callable[P, bool], p2: Callable[P, bool]) -> Callable[P, bool]:
+    return partial(_runner, p1, p2)
+
+
+def and_[**P](
+    p1: Callable[P, bool],
+) -> Callable[[Callable[P, bool]], Callable[P, bool]]:
+    return partial(_binder, p1)
 
 
 def or_[T](value: T) -> Callable[[T], bool]:

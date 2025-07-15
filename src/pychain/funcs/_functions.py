@@ -7,6 +7,7 @@ import cytoolz.itertoolz as itz
 from copy import deepcopy
 from .._protocols import CheckFunc, ThreadFunc, TransformFunc
 
+call = operator.call
 attr = operator.attrgetter
 item = operator.itemgetter
 method = operator.methodcaller
@@ -15,24 +16,29 @@ pipe = ftz.pipe
 identity = ftz.identity
 clone = deepcopy
 
-
-def partial_call[R, **P](obj: Callable[P, R]) -> Callable[P, R]:
+class Sign[R, *Ts, **P]:
     """
-    Creates a partial function that calls the given object.
+    Un composeur de fonctions simple et robuste.
 
-    This is useful for creating a callable that can be used in expressions
-    without needing to instantiate the object first.
+    Prend une fonction maîtresse et une série de fonctions internes. Lorsqu'il
+    est appelé, il exécute chaque fonction interne avec les arguments fournis,
+    puis passe les résultats collectés à la fonction maîtresse.
 
-    Example:
-        >>> class Human:
-        ...     def __init__(self, name: str, age: int):
-        ...     self.name = name
-        ...     self.age = age
-        >>> a = partial_call(Human)
-        >>> a("alice", 30).age
-        30
+    Exemple : Sign(f, g, h)(x) devient f(g(x), h(x))
     """
-    return partial(operator.call, obj)
+
+    __slots__ = ("_master_func", "_internal_funcs")
+
+    def __init__(
+        self, master_func: Callable[[*Ts], R], *internal_funcs: Callable[P, Any]
+    ) -> None:
+        self._master_func: Callable[[*Ts], R] = master_func
+        self._internal_funcs: tuple[Callable[P, Any], ...] = internal_funcs
+
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+        results: list[Any] = [f(*args, **kwargs) for f in self._internal_funcs]
+
+        return self._master_func(*results)  # type: ignore[return-value]
 
 
 def to_obj[T](obj: Callable[..., T], *args: Any, **kwargs: Any) -> partial[T]:

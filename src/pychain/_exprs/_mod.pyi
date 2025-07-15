@@ -54,33 +54,6 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def attr(self, name: str) -> "ChainableOp[P, Any]":
-        """
-        Accède à un attribut de la sortie du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> class MyObject:
-            ...     def __init__(self, value):
-            ...         self.value = value
-            >>> get_value = pc.op().attr("value")
-            >>> get_value(MyObject(42))
-            42
-        """
-        ...
-
-    def item(self, key: Any) -> "ChainableOp[P, Any]":
-        """
-        Accède à un élément de la sortie du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> get_key = pc.op().item("key")
-            >>> get_key({"key": "value"})
-            'value'
-        """
-        ...
-
     def hint[T](self, dtype: type[T]) -> "ChainableOp[P, T]":
         """
         Fournit une indication de type pour la sortie de l'opération (n'affecte pas l'exécution).
@@ -225,6 +198,23 @@ class ChainableOp[P, R]:
         """
         ...
 
+    def and_(self, *others: Callable[[P], bool]) -> "ChainableOp[P, bool]":
+        """
+        Chains multiple boolean operations using a logical AND.
+
+        This method takes one or more other callable operations and returns a new
+        ChainableOp. 
+        
+        When this new operation is called with a value, it will
+        return True only if the original operation and all the other
+        operations return True.
+
+        Example:
+            >>> import pychain as pc
+            >>> pc.op(int).gt(5).and_(pc.op().lt(10), pc.op().gt(2))(7)
+            True
+        """
+        ...
     def is_true(self) -> "ChainableOp[P, bool]":
         """
         Vérifie si la sortie du pipeline est "truthy".
@@ -547,22 +537,52 @@ class OpConstructor:
     def __call__(self) -> ChainableOp[Any, Any]:
         """
         Create a new chainable operation without any initial type hint.
-        
+
         """
         ...
     @overload
     def __call__[T](self, *dtype: type[T]) -> ChainableOp[T, Any]:
         """
-        Infer the type of the operation based on the provided type hint. 
-        
+        Infer the type of the operation based on the provided type hint.
+
         This is the recommended way to use the constructor, as this allows you to truly define the chain as if you were typing a function signature.
-        
+
         This does not change the runtime behavior, but provides type hints, so you know which type go in -> go out.
         You can pass any type: a polars Series, an int, a str, etc.
 
         Example:
             >>> import pychain as pc
-            >>> pc.op(pc.Int).add(5).into(str)(10)
+            >>> pc.op(int).add(5).into(str)(10)
             '15'
+        """
+        ...
+
+    def attr[T](self, name: str, dtype: type[T]) -> "ChainableOp[T, Any]":
+        """
+        Accède à un attribut de la sortie du pipeline.
+
+        Must specifiy type hints to ensure type safety.
+
+        Example:
+            >>> import pychain as pc
+            >>> class MyObject:
+            ...     def __init__(self, value):
+            ...         self.value = value
+            >>> pc.op.attr("value", int)(MyObject(42))
+            42
+        """
+        ...
+
+    def item[T](self, key: Any, dtype: type[T]) -> "ChainableOp[T, Any]":
+        """
+        Accède à un élément de la sortie du pipeline.
+
+        Must specify type hints to ensure type safety.
+
+        Example:
+            >>> import pychain as pc
+            >>> get_key = pc.op.item("key", str)
+            >>> get_key({"key": "value"})
+            'value'
         """
         ...
