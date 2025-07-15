@@ -1,5 +1,67 @@
 from collections.abc import Callable, Container
-from typing import Any, Literal, overload
+from typing import Any, overload
+
+class OpConstructor:
+    """
+    Constructs chainable operations for functional-style data processing.
+
+    Main entry point for creating operations in pychain.
+
+    This class is not meant to be instantiated directly, but rather through the `pc.op()` constructor.
+    """
+    @overload
+    def __call__(self) -> ChainableOp[Any, Any]:
+        """
+        Create a new chainable operation without any initial type hint.
+
+        """
+        ...
+    @overload
+    def __call__[T](self, *dtype: type[T]) -> ChainableOp[T, Any]:
+        """
+        Infer the type of the operation based on the provided type hint.
+
+        This is the recommended way to use the constructor, as this allows you to truly define the chain as if you were typing a function signature.
+
+        This does not change the runtime behavior, but provides type hints, so you know which type go in -> go out.
+        You can pass any type: a polars Series, an int, a str, etc.
+
+        Example:
+            >>> import pychain as pc
+            >>> pc.op(int).add(5).into(str)(10)
+            '15'
+        """
+        ...
+
+    def attr[T](self, name: str, dtype: type[T]) -> "ChainableOp[T, Any]":
+        """
+        Accède à un attribut de la sortie du pipeline.
+
+        Must specifiy type hints to ensure type safety.
+
+        Example:
+            >>> import pychain as pc
+            >>> class MyObject:
+            ...     def __init__(self, value):
+            ...         self.value = value
+            >>> pc.op.attr("value", int)(MyObject(42))
+            42
+        """
+        ...
+
+    def item[T](self, key: Any, dtype: type[T]) -> "ChainableOp[T, Any]":
+        """
+        Accède à un élément de la sortie du pipeline.
+
+        Must specify type hints to ensure type safety.
+
+        Example:
+            >>> import pychain as pc
+            >>> get_key = pc.op.item("key", str)
+            >>> get_key({"key": "value"})
+            'value'
+        """
+        ...
 
 class ChainableOp[P, R]:
     """
@@ -203,8 +265,8 @@ class ChainableOp[P, R]:
         Chains multiple boolean operations using a logical AND.
 
         This method takes one or more other callable operations and returns a new
-        ChainableOp. 
-        
+        ChainableOp.
+
         When this new operation is called with a value, it will
         return True only if the original operation and all the other
         operations return True.
@@ -270,17 +332,6 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def is_distinct(self) -> "ChainableOp[P, bool]":
-        """
-        Vérifie si les éléments dans la sortie (itérable) sont tous distincts.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().is_distinct()([1, 2, 3])
-            True
-        """
-        ...
-
     def is_iterable(self) -> "ChainableOp[P, bool]":
         """
         Vérifie si la sortie du pipeline est un itérable.
@@ -288,28 +339,6 @@ class ChainableOp[P, R]:
         Example:
             >>> import pychain as pc
             >>> pc.op().is_iterable()([1, 2, 3])
-            True
-        """
-        ...
-
-    def is_all(self) -> "ChainableOp[P, bool]":
-        """
-        Vérifie si tous les éléments de la sortie (itérable) sont "truthy".
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().is_all()([True, True, True])
-            True
-        """
-        ...
-
-    def is_any(self) -> "ChainableOp[P, bool]":
-        """
-        Vérifie si au moins un élément de la sortie (itérable) est "truthy".
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().is_any()([False, True, False])
             True
         """
         ...
@@ -377,212 +406,5 @@ class ChainableOp[P, R]:
             >>> import pychain as pc
             >>> pc.op().le(5)(5)
             True
-        """
-        ...
-
-    def mean(self) -> "ChainableOp[P, float]":
-        """
-        Calcule la moyenne de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().mean()([1, 2, 3, 4])
-            2.5
-        """
-        ...
-
-    def median(self) -> "ChainableOp[P, float]":
-        """
-        Calcule la médiane de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().median()([1, 2, 3, 4])
-            2.5
-        """
-        ...
-
-    def mode(self) -> "ChainableOp[P, R]":
-        """
-        Calcule le mode de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().mode()([1, 2, 2, 3])
-            2
-        """
-        ...
-
-    def stdev(self) -> "ChainableOp[P, float]":
-        """
-        Calcule l'écart-type de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().stdev()([1, 2, 3, 4])
-            1.2909944487358056
-        """
-        ...
-
-    def variance(self) -> "ChainableOp[P, float]":
-        """
-        Calcule la variance de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().variance()([1, 2, 3, 4])
-            1.6666666666666667
-        """
-        ...
-
-    def pvariance(self) -> "ChainableOp[P, float]":
-        """
-        Calcule la variance de population de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().pvariance()([1, 2, 3, 4])
-            1.25
-        """
-        ...
-
-    def median_low(self) -> "ChainableOp[P, float]":
-        """
-        Calcule la médiane basse de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().median_low()([1, 2, 3, 4])
-            2
-        """
-        ...
-
-    def median_high(self) -> "ChainableOp[P, float]":
-        """
-        Calcule la médiane haute de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().median_high()([1, 2, 3, 4])
-            3
-        """
-        ...
-
-    def median_grouped(self) -> "ChainableOp[P, float]":
-        """
-        Calcule la médiane groupée de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().median_grouped()([1, 2, 2, 3])
-            2.0
-        """
-        ...
-
-    def quantiles(
-        self, n: int, method: Literal["inclusive", "exclusive"]
-    ) -> "ChainableOp[P, float]":
-        """
-        Calcule les quantiles de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().quantiles(4, method="exclusive")([1, 2, 3, 4])
-            [1.25, 2.5, 3.75]
-        """
-        ...
-
-    def min(self) -> "ChainableOp[P, R]":
-        """
-        Calcule la valeur minimale de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().min()([1, 2, 3, 4])
-            1
-        """
-        ...
-
-    def max(self) -> "ChainableOp[P, R]":
-        """
-        Calcule la valeur maximale de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().max()([1, 2, 3, 4])
-            4
-        """
-        ...
-
-    def sum(self) -> "ChainableOp[P, R]":
-        """
-        Calcule la somme de la sortie (itérable) du pipeline.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op().sum()([1, 2, 3, 4])
-            10
-        """
-        ...
-
-class OpConstructor:
-    """
-    Constructs chainable operations for functional-style data processing.
-
-    Main entry point for creating operations in pychain.
-
-    This class is not meant to be instantiated directly, but rather through the `pc.op()` constructor.
-    """
-    @overload
-    def __call__(self) -> ChainableOp[Any, Any]:
-        """
-        Create a new chainable operation without any initial type hint.
-
-        """
-        ...
-    @overload
-    def __call__[T](self, *dtype: type[T]) -> ChainableOp[T, Any]:
-        """
-        Infer the type of the operation based on the provided type hint.
-
-        This is the recommended way to use the constructor, as this allows you to truly define the chain as if you were typing a function signature.
-
-        This does not change the runtime behavior, but provides type hints, so you know which type go in -> go out.
-        You can pass any type: a polars Series, an int, a str, etc.
-
-        Example:
-            >>> import pychain as pc
-            >>> pc.op(int).add(5).into(str)(10)
-            '15'
-        """
-        ...
-
-    def attr[T](self, name: str, dtype: type[T]) -> "ChainableOp[T, Any]":
-        """
-        Accède à un attribut de la sortie du pipeline.
-
-        Must specifiy type hints to ensure type safety.
-
-        Example:
-            >>> import pychain as pc
-            >>> class MyObject:
-            ...     def __init__(self, value):
-            ...         self.value = value
-            >>> pc.op.attr("value", int)(MyObject(42))
-            42
-        """
-        ...
-
-    def item[T](self, key: Any, dtype: type[T]) -> "ChainableOp[T, Any]":
-        """
-        Accède à un élément de la sortie du pipeline.
-
-        Must specify type hints to ensure type safety.
-
-        Example:
-            >>> import pychain as pc
-            >>> get_key = pc.op.item("key", str)
-            >>> get_key({"key": "value"})
-            'value'
         """
         ...

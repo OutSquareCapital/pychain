@@ -3,8 +3,6 @@
 from collections.abc import Callable, Iterable
 from typing import TypeVar, Any
 
-import polars as pl
-
 from ..funcs import dc, fn
 from .._protocols import CheckFunc, ProcessFunc, TransformFunc
 K = TypeVar("K")
@@ -12,41 +10,38 @@ K1 = TypeVar("K1")
 V = TypeVar("V")
 V1 = TypeVar("V1")
 
-cdef class Struct:
-    _value: dict[Any, Any]
-    _pipeline: list[Callable[[dict[Any, Any]], Any]]
+cdef class StructConstructor:
+    def __call__(self, *ktype: type, vtype: type):
+        return Struct(fn.identity)
 
-    def __init__(self, _value: dict[Any, Any], _pipeline: list[Callable[[dict[Any, Any]], Any]] | None = None):
-        self._value = _value
-        self._pipeline = _pipeline if _pipeline is not None else []
+cdef class Struct:
+    _pipeline: Callable[[Iterable[Any]], Any]
+
+    def __init__(self, pipeline: Callable[[Iterable[Any]], Any]):
+        self._pipeline = pipeline
 
     def __repr__(self):
-        pipeline_repr: str = ",\n".join(f"{str(f)}" for f in self._pipeline)
-        return f"class {self.__class__.__name__}(value={self._value},pipeline:[\n{pipeline_repr}\n])"
+        return f"class {self.__class__.__name__}(pipeline:[\n{str(self._pipeline)}\n])"
 
-    cdef _do(self, f: ProcessFunc[dict[Any, Any]]):
-        self._pipeline.append(f)
-        return self
+    def __call__(self, value: Any):
+        return self._pipeline(value)
 
-    cdef _into(self, f: TransformFunc[dict[Any, Any], dict[Any, Any]]):
-        return self.__class__(
-            _value=self._value,
-            _pipeline=[fn.compose(*self._pipeline, f)],
-        )
+    def _do(self, f: Callable[[Any], Any]):
+        def _new_pipeline(value: Any):
+            return f(self._pipeline(value))
+        return self.__class__(pipeline=_new_pipeline)
 
     cpdef clone(self):
-        return self.__class__(fn.clone(self._value), fn.clone(self._pipeline))
+        return self._do(fn.clone)
 
-    cpdef unwrap(self):
-        if not self._pipeline:
-            return self._value
-        return fn.pipe(self._value, *self._pipeline)
+    cpdef to_obj(self, obj: Callable[[dict[Any, Any]], Any]):
+        return self._do(obj)
 
     cpdef map_keys(self, f: TransformFunc[K, K1]):
-        return self._into(f=dc.map_keys(f))
+        return self._do(f=dc.map_keys(f))
 
     cpdef map_values(self, f: TransformFunc[V, V1]):
-        return self._into(f=dc.map_values(f=f))
+        return self._do(f=dc.map_values(f=f))
 
     cpdef select(self, predicate: CheckFunc[K]):
         return self._do(f=dc.filter_keys(predicate=predicate))
@@ -64,13 +59,7 @@ cdef class Struct:
         return self._do(f=dc.with_nested_key(keys=keys, value=value))
 
     cpdef flatten_keys(self):
-        return self._into(f=dc.flatten_keys())
-
-    cpdef to_obj(self, obj: Callable[[dict[Any, Any]], Any]):
-        return obj(self.unwrap())
-
-    cpdef to_frame(self):
-        return pl.DataFrame(self.unwrap())
+        return self._do(f=dc.flatten_keys())
 
     def update_in(self, *keys: Any, f: ProcessFunc[V]):
         return self._do(f=dc.update_in(*keys, f=f))

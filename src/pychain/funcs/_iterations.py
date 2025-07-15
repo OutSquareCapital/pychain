@@ -11,6 +11,15 @@ from .._protocols import CheckFunc, ProcessFunc, TransformFunc
 unique = itz.unique
 flatten = itz.concat
 
+def from_func[T, T1](value: T, f: Callable[[T], T1]):
+    return itz.iterate(f, value)
+
+
+def from_range(start: int, stop: int, step: int = 1):
+    return range(start, stop, step)
+
+def iter_to_dict[V](value: Iterable[V]) -> dict[int, V]:
+    return dict(enumerate(value))
 
 def zip_with[V](
     others: Iterable[Iterable[V]], strict: bool = False

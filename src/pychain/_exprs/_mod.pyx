@@ -1,14 +1,23 @@
 # distutils: language=c++
 
 from collections.abc import Callable, Container
-import statistics as stats
-from typing import Any, Literal
+from typing import Any, TypeVar
 from ..funcs import (
     bo,
     op,
-    fn,
-    st,
+    fn
 )
+T = TypeVar("T")
+
+cdef class OpConstructor:
+    def __call__(self, *dtype: type):
+        return ChainableOp(fn.identity)
+
+    cpdef attr(self, name: str, dtype: type):
+        return ChainableOp(fn.attr(name))
+
+    cpdef item(self, key: Any, dtype: type):
+        return ChainableOp(fn.item(key))
 
 cdef class ChainableOp:
     _pipeline: Callable[[Any], Any]
@@ -90,17 +99,8 @@ cdef class ChainableOp:
     cpdef is_not_in(self, values: Container[Any]):
         return self._do(bo.is_not_in(values))
 
-    cpdef is_distinct(self):
-        return self._do(bo.is_distinct)
-
     cpdef is_iterable(self):
         return self._do(bo.is_iterable)
-
-    cpdef is_all(self):
-        return self._do(bo.is_all)
-
-    cpdef is_any(self):
-        return self._do(bo.is_any)
 
     cpdef eq(self, value: Any):
         return self._do(bo.eq(value))
@@ -119,52 +119,3 @@ cdef class ChainableOp:
 
     cpdef le(self, value: Any):
         return self._do(bo.le(value))
-
-    cpdef mean(self):
-        return self._do(stats.mean)
-
-    cpdef median(self):
-        return self._do(stats.median)
-
-    cpdef mode(self):
-        return self._do(stats.mode)
-
-    cpdef stdev(self):
-        return self._do(stats.stdev)
-
-    cpdef variance(self):
-        return self._do(stats.variance)
-
-    cpdef pvariance(self):
-        return self._do(stats.pvariance)
-
-    cpdef median_low(self):
-        return self._do(stats.median_low)
-
-    cpdef median_high(self):
-        return self._do(stats.median_high)
-
-    cpdef median_grouped(self):
-        return self._do(stats.median_grouped)
-
-    cpdef quantiles(self, n: int, method: Literal["inclusive", "exclusive"] = "exclusive"):
-        return self._do(st.quantiles(n, method=method))
-
-    cpdef min(self):
-        return self._do(min)
-
-    cpdef max(self):
-        return self._do(max)
-
-    cpdef sum(self):
-        return self._do(sum)
-
-cdef class OpConstructor:
-    def __call__(self, *dtype: type):
-        return ChainableOp(fn.identity)
-
-    cpdef attr(self, name: str, dtype: type):
-        return ChainableOp(fn.attr(name))
-
-    cpdef item(self, key: Any, dtype: type):
-        return ChainableOp(fn.item(key))
