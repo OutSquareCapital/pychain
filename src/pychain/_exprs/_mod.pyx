@@ -2,22 +2,16 @@
 
 from collections.abc import Callable, Container
 from typing import Any, TypeVar
+from ..funcs._functions import identity
 from ..funcs import (
     bo,
-    op,
-    fn
+    op
 )
 T = TypeVar("T")
 
 cdef class OpConstructor:
     def __call__(self, *dtype: type):
-        return Op(fn.identity)
-
-    cpdef attr(self, name: str, dtype: type):
-        return Op(fn.attr(name))
-
-    cpdef item(self, key: Any, dtype: type):
-        return Op(fn.item(key))
+        return Op(identity)
 
 cdef class Op:
     _pipeline: Callable[[Any], Any]
@@ -33,6 +27,7 @@ cdef class Op:
 
     def __class_getitem__(cls, key: tuple[type, ...]) -> type:
         return cls
+
     def _do(self, f: Callable[[Any], Any]):
         def _new_pipeline(value: Any):
             return f(self._pipeline(value))

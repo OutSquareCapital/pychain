@@ -3,7 +3,8 @@
 from collections.abc import Callable, Iterable
 from typing import TypeVar, Any
 
-from ..funcs import dc, fn
+from ..funcs import dc
+from ..funcs._functions import identity
 from .._protocols import CheckFunc, ProcessFunc, TransformFunc
 K = TypeVar("K")
 K1 = TypeVar("K1")
@@ -11,8 +12,8 @@ V = TypeVar("V")
 V1 = TypeVar("V1")
 
 cdef class StructConstructor:
-    def __call__(self, *ktype: type, vtype: type):
-        return Struct(fn.identity)
+    def __call__(self, ktype: type, vtype: type):
+        return Struct(identity)
 
 cdef class Struct:
     _pipeline: Callable[[Iterable[Any]], Any]
@@ -26,13 +27,13 @@ cdef class Struct:
     def __call__(self, value: Any):
         return self._pipeline(value)
 
+    def __class_getitem__(cls, key: tuple[type, ...]) -> type:
+        return cls
+
     def _do(self, f: Callable[[Any], Any]):
         def _new_pipeline(value: Any):
             return f(self._pipeline(value))
         return self.__class__(pipeline=_new_pipeline)
-
-    cpdef clone(self):
-        return self._do(fn.clone)
 
     cpdef to_obj(self, obj: Callable[[dict[Any, Any]], Any]):
         return self._do(obj)
@@ -61,14 +62,14 @@ cdef class Struct:
     cpdef flatten_keys(self):
         return self._do(f=dc.flatten_keys())
 
-    def update_in(self, *keys: Any, f: ProcessFunc[V]):
-        return self._do(f=dc.update_in(*keys, f=f))
+    cpdef update_in(self, keys: Iterable[Any], f: ProcessFunc[V]):
+        return self._do(f=dc.update_in(keys=keys, f=f))
 
-    def merge(self, *others: dict[Any, Any]):
+    cpdef merge(self, others: Iterable[dict[Any, Any]]):
         return self._do(f=dc.merge(others=others))
 
-    def merge_with(self, f: Callable[[Any], Any], *others: dict[Any, Any]):
+    cpdef merge_with(self, f: Callable[[Any], Any], others: Iterable[dict[Any, Any]]):
         return self._do(f=dc.merge_with(f, *others))
 
-    def drop(self, *keys: Any):
+    cpdef drop(self, keys: Iterable[Any]):
         return self._do(f=dc.drop(keys=keys))

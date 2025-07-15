@@ -1,5 +1,5 @@
 from collections.abc import Callable, Container
-from typing import Any, overload
+from typing import Self
 
 class OpConstructor:
     """
@@ -9,57 +9,26 @@ class OpConstructor:
 
     This class is not meant to be instantiated directly, but rather through the `pc.op()` constructor.
     """
-    @overload
-    def __call__(self) -> Op[Any, Any]:
-        """
-        Create a new chainable operation without any initial type hint.
-
-        """
-        ...
-    @overload
     def __call__[T](self, *dtype: type[T]) -> Op[T, T]:
         """
-        Infer the type of the operation based on the provided type hint.
+        Create a chainable operation.
 
-        This is the recommended way to use the constructor, as this allows you to truly define the chain as if you were typing a function signature.
+        The `dtype` argument is used to specify the type of the input of the operation.
 
-        This does not change the runtime behavior, but provides type hints, so you know which type go in -> go out.
-        You can pass any type: a polars Series, an int, a str, etc.
+        The output will be refined at each step of the chain.
+
+        This allows you to build a pipeline, and get back an Op that is inferred, just like a function.
+
+        The type in itself is ignored at runtime.
+
+        You can pass any type: an `int`, a `str`, etc.
+
+        If the type is Iterable (a polars `Series`, a list, a tuple, etc.), you probably want to use the `iter` constructor instead.
 
         Example:
             >>> import pychain as pc
             >>> pc.op(int).add(5).into(str)(10)
             '15'
-        """
-        ...
-
-    def attr[T](self, name: str, dtype: type[T]) -> "Op[T, T]":
-        """
-        Accède à un attribut de la sortie du pipeline.
-
-        Must specifiy type hints to ensure type safety.
-
-        Example:
-            >>> import pychain as pc
-            >>> class MyObject:
-            ...     def __init__(self, value):
-            ...         self.value = value
-            >>> pc.op.attr("value", int)(MyObject(42))
-            42
-        """
-        ...
-
-    def item[T](self, key: Any, dtype: type[T]) -> "Op[T, T]":
-        """
-        Accède à un élément de la sortie du pipeline.
-
-        Must specify type hints to ensure type safety.
-
-        Example:
-            >>> import pychain as pc
-            >>> get_key = pc.op.item("key", str)
-            >>> get_key({"key": "value"})
-            'value'
         """
         ...
 
@@ -119,7 +88,7 @@ class Op[P, R]:
             '42'
         """
         ...
-    def add(self, value: R) -> "Op[P, R]":
+    def add(self, value: R) -> Self:
         """
         Ajoute une valeur à la sortie du pipeline.
 
@@ -130,7 +99,7 @@ class Op[P, R]:
         """
         ...
 
-    def sub(self, value: R) -> "Op[P, R]":
+    def sub(self, value: R) -> Self:
         """
         Soustrait une valeur de la sortie du pipeline.
 
@@ -141,7 +110,7 @@ class Op[P, R]:
         """
         ...
 
-    def mul(self, value: R) -> "Op[P, R]":
+    def mul(self, value: R) -> Self:
         """
         Multiplie la sortie du pipeline par une valeur.
 
@@ -174,7 +143,7 @@ class Op[P, R]:
         """
         ...
 
-    def sub_r(self, value: R) -> "Op[P, R]":
+    def sub_r(self, value: R) -> Self:
         """
         Soustrait la sortie du pipeline d'une valeur (soustraction inversée).
 
@@ -185,7 +154,7 @@ class Op[P, R]:
         """
         ...
 
-    def truediv_r(self, value: R) -> "Op[P, R]":
+    def truediv_r(self, value: R) -> Self:
         """
         Divise une valeur par la sortie du pipeline (division réelle inversée).
 
@@ -196,7 +165,7 @@ class Op[P, R]:
         """
         ...
 
-    def floordiv_r(self, value: R) -> "Op[P, R]":
+    def floordiv_r(self, value: R) -> Self:
         """
         Divise une valeur par la sortie du pipeline (division entière inversée).
 
@@ -207,7 +176,7 @@ class Op[P, R]:
         """
         ...
 
-    def mod(self, value: R) -> "Op[P, R]":
+    def mod(self, value: R) -> Self:
         """
         Calcule le modulo de la sortie du pipeline par une valeur.
 
@@ -218,7 +187,7 @@ class Op[P, R]:
         """
         ...
 
-    def pow(self, value: R) -> "Op[P, R]":
+    def pow(self, value: R) -> Self:
         """
         Élève la sortie du pipeline à la puissance d'une valeur.
 
@@ -229,7 +198,7 @@ class Op[P, R]:
         """
         ...
 
-    def neg(self) -> "Op[P, R]":
+    def neg(self) -> Self:
         """
         Applique la négation à la sortie du pipeline.
 

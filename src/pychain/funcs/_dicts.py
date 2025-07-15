@@ -83,7 +83,7 @@ def with_nested_key[K, V](keys: Iterable[K] | K, value: V) -> partial[dict[K, V]
     return partial(dcz.assoc_in, keys=keys, value=value)
 
 
-def update_in[K, V](*keys: K, f: ProcessFunc[V]) -> partial[dict[K, V]]:
+def update_in[K, V](keys: Iterable[K], f: ProcessFunc[V]) -> partial[dict[K, V]]:
     return partial(dcz.update_in, keys=keys, func=f)
 
 
@@ -101,25 +101,3 @@ def drop[K](keys: Iterable[K]) -> partial[dict[K, Any]]:
 
 def flatten_keys():
     return partial(_flatten_recursive)
-
-
-def row_factory[V, T](
-    key_name: str,
-    index_name: str,
-    value_name: str,
-    value_extractor: Callable[[V], Iterable[T]],
-    key: Any,
-    container: V,
-) -> Iterable[dict[str, Any]]:
-    for i, value in enumerate(value_extractor(container)):
-        yield {key_name: key, index_name: i, value_name: value}
-
-
-def unpivot[V, T](
-    value_extractor: Callable[[V], Iterable[T]],
-    key_name: str = "key",
-    index_name: str = "index",
-    value_name: str = "value",
-) -> dict[str, T]:
-    # return self.iter_items().flat_map(lambda pair: row_factory(pair[0], pair[1]))
-    ...

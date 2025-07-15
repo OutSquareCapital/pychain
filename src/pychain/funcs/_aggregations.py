@@ -8,7 +8,6 @@ import numpy as np
 import polars as pl
 
 from .._protocols import TransformFunc
-from ._functions import partial_map
 
 first = itz.first
 second = itz.second
@@ -35,11 +34,6 @@ def reduce_by[K, V](
     key: TransformFunc[V, K], binop: Callable[[V, V], V]
 ) -> partial[dict[K, V]]:
     return partial(itz.reduceby, key=key, binop=binop)
-
-
-def to_records(keys: list[str]):
-    return partial_map(lambda row: dict(zip(keys, row)))  # type: ignore
-
 
 def at_index(index: int) -> partial[Any]:
     return partial(itz.nth, index)

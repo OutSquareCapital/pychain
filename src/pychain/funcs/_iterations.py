@@ -11,8 +11,25 @@ from .._protocols import CheckFunc, ProcessFunc, TransformFunc
 unique = itz.unique
 flatten = itz.concat
 
+
+def _flat_map[V, V1](
+    value: Iterable[V], func: TransformFunc[V, Iterable[V1]]
+) -> Iterator[V1]:
+    return itz.concat(map(func, value))
+
 def from_func[T, T1](value: T, f: Callable[[T], T1]):
     return itz.iterate(f, value)
+
+def partial_map[V, V1](f: TransformFunc[V, V1]) -> partial[Iterator[V1]]:
+    return partial(map, f)
+
+
+def flat_map[V, V1](f: TransformFunc[V, Iterable[V1]]) -> partial[Iterator[V1]]:
+    return partial(_flat_map, func=f)
+
+
+def partial_filter[V](f: CheckFunc[V]) -> partial[Iterator[V]]:
+    return partial(filter, f)
 
 
 def from_range(start: int, stop: int, step: int = 1):

@@ -4,7 +4,8 @@ from collections.abc import Callable, Iterable
 from random import Random
 from typing import Any, TypeVar
 
-from ..funcs import fn, it, agg
+from ..funcs import it, agg
+from ..funcs._functions import attr, item, identity
 from .._protocols import CheckFunc, ProcessFunc, TransformFunc
 
 V = TypeVar("V")
@@ -12,13 +13,13 @@ K = TypeVar("K")
 
 cdef class IterConstructor:
     def __call__(self, *dtype: type):
-        return Iter(fn.identity)
+        return Iter(identity)
 
     cpdef attr(self, name: str, dtype: type):
-        return Iter(fn.attr(name))
+        return Iter(attr(name))
 
     cpdef item(self, key: Any, dtype: type):
-        return Iter(fn.item(key))
+        return Iter(item(key))
 
 cdef class Iter:
     _pipeline: Callable[[Iterable[Any]], Any]
@@ -51,14 +52,11 @@ cdef class Iter:
     ):
         return self._do(agg.reduce_by(key=key, binop=binop))
 
-    cpdef clone(self):
-        return self._do(fn.clone)
-
     cpdef map(self, f: TransformFunc[V, Any]):
-        return self._do(f=fn.partial_map(f))
+        return self._do(f=it.partial_map(f))
 
     cpdef flat_map(self, f: TransformFunc[V, Iterable[Any]]):
-        return self._do(f=fn.flat_map(f))
+        return self._do(f=it.flat_map(f))
 
     cpdef starmap(self, f: TransformFunc[V, Any]):
         return self._do(f=it.starmap(f))
@@ -81,7 +79,7 @@ cdef class Iter:
         return self._do(f=it.random_sample(probability=probability, state=state))
 
     cpdef filter(self, f: CheckFunc[V]):
-        return self._do(f=fn.partial_filter(f))
+        return self._do(f=it.partial_filter(f))
 
     cpdef accumulate(self, f: Callable[[V, V], V]):
         return self._do(f=it.accumulate(f=f))
@@ -141,31 +139,28 @@ cdef class Iter:
         return self._do(it.cross_join(other=other))
 
 
-    def diff(
+    cpdef diff(
         self,
-        *others: Iterable[Any],
+        others: Iterable[Iterable[Any]],
         default: Any | None = None,
         key: ProcessFunc[V] | None = None,
     ):
         return self._do(f=it.diff(others=others, default=default, key=key))
 
-    def compose(self, *fns: TransformFunc[V, Any]):
-        return self._do(f=fn.compose_on_iter(*fns))
-
-    def zip_with(
-        self, *others: Iterable[Any], strict: bool = False
+    cpdef zip_with(
+        self, others: Iterable[Iterable[Any]], strict: bool = False
     ):
         return self._do(f=it.zip_with(others=others, strict=strict))
 
-    def merge_sorted(
-        self, *others: Iterable[Any], sort_on: Callable[[Any], Any] | None = None
+    cpdef merge_sorted(
+        self, others: Iterable[Iterable[Any]], sort_on: Callable[[Any], Any] | None = None
     ):
         return self._do(f=it.merge_sorted(others=others, sort_on=sort_on))
 
 
-    def interleave(self, *others: Iterable[Any]):
+    cpdef interleave(self, others: Iterable[Iterable[Any]]):
         return self._do(f=it.interleave(others))
 
 
-    def concat(self, *others: Iterable[Any]):
+    cpdef concat(self, others: Iterable[Iterable[Any]]):
         return self._do(f=it.concat(others))
