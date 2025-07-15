@@ -11,15 +11,15 @@ T = TypeVar("T")
 
 cdef class OpConstructor:
     def __call__(self, *dtype: type):
-        return ChainableOp(fn.identity)
+        return Op(fn.identity)
 
     cpdef attr(self, name: str, dtype: type):
-        return ChainableOp(fn.attr(name))
+        return Op(fn.attr(name))
 
     cpdef item(self, key: Any, dtype: type):
-        return ChainableOp(fn.item(key))
+        return Op(fn.item(key))
 
-cdef class ChainableOp:
+cdef class Op:
     _pipeline: Callable[[Any], Any]
 
     def __init__(self, pipeline: Callable[[Any], Any]):
@@ -31,6 +31,8 @@ cdef class ChainableOp:
     def __repr__(self):
         return f"class {self.__class__.__name__}(pipeline:\n{self._pipeline.__repr__()})\n)"
 
+    def __class_getitem__(cls, key: tuple[type, ...]) -> type:
+        return cls
     def _do(self, f: Callable[[Any], Any]):
         def _new_pipeline(value: Any):
             return f(self._pipeline(value))

@@ -10,14 +10,14 @@ class OpConstructor:
     This class is not meant to be instantiated directly, but rather through the `pc.op()` constructor.
     """
     @overload
-    def __call__(self) -> ChainableOp[Any, Any]:
+    def __call__(self) -> Op[Any, Any]:
         """
         Create a new chainable operation without any initial type hint.
 
         """
         ...
     @overload
-    def __call__[T](self, *dtype: type[T]) -> ChainableOp[T, Any]:
+    def __call__[T](self, *dtype: type[T]) -> Op[T, T]:
         """
         Infer the type of the operation based on the provided type hint.
 
@@ -33,7 +33,7 @@ class OpConstructor:
         """
         ...
 
-    def attr[T](self, name: str, dtype: type[T]) -> "ChainableOp[T, Any]":
+    def attr[T](self, name: str, dtype: type[T]) -> "Op[T, T]":
         """
         Accède à un attribut de la sortie du pipeline.
 
@@ -49,7 +49,7 @@ class OpConstructor:
         """
         ...
 
-    def item[T](self, key: Any, dtype: type[T]) -> "ChainableOp[T, Any]":
+    def item[T](self, key: Any, dtype: type[T]) -> "Op[T, T]":
         """
         Accède à un élément de la sortie du pipeline.
 
@@ -63,12 +63,15 @@ class OpConstructor:
         """
         ...
 
-class ChainableOp[P, R]:
+class Op[P, R]:
     """
+    Read like `Callable[[P], R]`, or `def foo(p: P) -> R`.
+
     Crée une opération chainable pour des transformations de données de style fonctionnel.
 
-    `ChainableOp` est le cœur du constructeur d'expressions de pychain. Il est conçu
-    pour ne pas être instancié directement, mais via le constructeur `pc.op()`.
+    `Op` est le cœur du constructeur d'expressions de pychain. 
+    
+    Il est conçu pour ne pas être instancié directement, mais via le constructeur `pc.op()`.
 
     Il permet de construire des pipelines de transformations complexes qui sont
     évaluées de manière paresseuse.
@@ -76,22 +79,11 @@ class ChainableOp[P, R]:
     Chaque méthode appelée sur une instance de `pc.op()` compose la nouvelle fonction avec l'ancienne.
     L'opération finale est un callable qui peut être exécuté en lui passant une valeur.
 
-    Attributes:
-        P: Le type du paramètre d'entrée de l'opération.
-        R: Le type du résultat de l'opération.
-
-    Examples:
-        Créer et utiliser une opération simple.
+    Example:
         >>> import pychain as pc
         >>> add_5_and_double = pc.op().add(5).mul(2)
         >>> add_5_and_double(10)
         30
-
-        Utiliser une opération dans une chaîne `Iter`.
-        >>> data = pc.Iter(range(5))
-        >>> expr = pc.op().pow(2)
-        >>> data.map(expr).to_list()
-        [0, 1, 4, 9, 16]
     """
 
     def __call__(self, value: P) -> R:
@@ -105,7 +97,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def into[T](self, obj: Callable[[R], T]) -> "ChainableOp[P, T]":
+    def into[T](self, obj: Callable[[R], T]) -> "Op[P, T]":
         """
         Transforme la sortie du pipeline à l'aide du callable fourni.
 
@@ -116,7 +108,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def hint[T](self, dtype: type[T]) -> "ChainableOp[P, T]":
+    def hint[T](self, dtype: type[T]) -> "Op[P, T]":
         """
         Fournit une indication de type pour la sortie de l'opération (n'affecte pas l'exécution).
 
@@ -127,8 +119,7 @@ class ChainableOp[P, R]:
             '42'
         """
         ...
-
-    def add(self, value: R) -> "ChainableOp[P, R]":
+    def add(self, value: R) -> "Op[P, R]":
         """
         Ajoute une valeur à la sortie du pipeline.
 
@@ -139,7 +130,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def sub(self, value: R) -> "ChainableOp[P, R]":
+    def sub(self, value: R) -> "Op[P, R]":
         """
         Soustrait une valeur de la sortie du pipeline.
 
@@ -150,7 +141,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def mul(self, value: R) -> "ChainableOp[P, R]":
+    def mul(self, value: R) -> "Op[P, R]":
         """
         Multiplie la sortie du pipeline par une valeur.
 
@@ -161,7 +152,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def truediv(self, value: R) -> "ChainableOp[P, float]":
+    def truediv(self, value: R) -> "Op[P, float]":
         """
         Divise la sortie du pipeline par une valeur (division réelle).
 
@@ -172,7 +163,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def floordiv(self, value: R) -> "ChainableOp[P, float]":
+    def floordiv(self, value: R) -> "Op[P, float]":
         """
         Divise la sortie du pipeline par une valeur (division entière).
 
@@ -183,7 +174,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def sub_r(self, value: R) -> "ChainableOp[P, R]":
+    def sub_r(self, value: R) -> "Op[P, R]":
         """
         Soustrait la sortie du pipeline d'une valeur (soustraction inversée).
 
@@ -194,7 +185,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def truediv_r(self, value: R) -> "ChainableOp[P, R]":
+    def truediv_r(self, value: R) -> "Op[P, R]":
         """
         Divise une valeur par la sortie du pipeline (division réelle inversée).
 
@@ -205,7 +196,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def floordiv_r(self, value: R) -> "ChainableOp[P, R]":
+    def floordiv_r(self, value: R) -> "Op[P, R]":
         """
         Divise une valeur par la sortie du pipeline (division entière inversée).
 
@@ -216,7 +207,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def mod(self, value: R) -> "ChainableOp[P, R]":
+    def mod(self, value: R) -> "Op[P, R]":
         """
         Calcule le modulo de la sortie du pipeline par une valeur.
 
@@ -227,7 +218,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def pow(self, value: R) -> "ChainableOp[P, R]":
+    def pow(self, value: R) -> "Op[P, R]":
         """
         Élève la sortie du pipeline à la puissance d'une valeur.
 
@@ -238,7 +229,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def neg(self) -> "ChainableOp[P, R]":
+    def neg(self) -> "Op[P, R]":
         """
         Applique la négation à la sortie du pipeline.
 
@@ -249,7 +240,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def round_to(self, ndigits: int) -> "ChainableOp[P, float]":
+    def round_to(self, ndigits: int) -> "Op[P, float]":
         """
         Arrondit la sortie du pipeline au nombre de décimales spécifié.
 
@@ -260,12 +251,12 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def and_(self, *others: Callable[[P], bool]) -> "ChainableOp[P, bool]":
+    def and_(self, *others: Callable[[P], bool]) -> "Op[P, bool]":
         """
         Chains multiple boolean operations using a logical AND.
 
         This method takes one or more other callable operations and returns a new
-        ChainableOp.
+        Op.
 
         When this new operation is called with a value, it will
         return True only if the original operation and all the other
@@ -277,7 +268,7 @@ class ChainableOp[P, R]:
             True
         """
         ...
-    def is_true(self) -> "ChainableOp[P, bool]":
+    def is_true(self) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline est "truthy".
 
@@ -288,7 +279,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def is_none(self) -> "ChainableOp[P, bool]":
+    def is_none(self) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline est None.
 
@@ -299,7 +290,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def is_not_none(self) -> "ChainableOp[P, bool]":
+    def is_not_none(self) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline n'est pas None.
 
@@ -310,7 +301,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def is_in(self, values: Container[R]) -> "ChainableOp[P, bool]":
+    def is_in(self, values: Container[R]) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline est dans le conteneur fourni.
 
@@ -321,7 +312,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def is_not_in(self, values: Container[R]) -> "ChainableOp[P, bool]":
+    def is_not_in(self, values: Container[R]) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline n'est pas dans le conteneur fourni.
 
@@ -332,7 +323,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def is_iterable(self) -> "ChainableOp[P, bool]":
+    def is_iterable(self) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline est un itérable.
 
@@ -343,7 +334,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def eq(self, value: R) -> "ChainableOp[P, bool]":
+    def eq(self, value: R) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline est égale à la valeur fournie.
 
@@ -354,7 +345,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def ne(self, value: R) -> "ChainableOp[P, bool]":
+    def ne(self, value: R) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline est différente de la valeur fournie.
 
@@ -365,7 +356,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def gt(self, value: R) -> "ChainableOp[P, bool]":
+    def gt(self, value: R) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline est strictement supérieure à la valeur fournie.
 
@@ -376,7 +367,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def ge(self, value: R) -> "ChainableOp[P, bool]":
+    def ge(self, value: R) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline est supérieure ou égale à la valeur fournie.
 
@@ -387,7 +378,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def lt(self, value: R) -> "ChainableOp[P, bool]":
+    def lt(self, value: R) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline est strictement inférieure à la valeur fournie.
 
@@ -398,7 +389,7 @@ class ChainableOp[P, R]:
         """
         ...
 
-    def le(self, value: R) -> "ChainableOp[P, bool]":
+    def le(self, value: R) -> "Op[P, bool]":
         """
         Vérifie si la sortie du pipeline est inférieure ou égale à la valeur fournie.
 

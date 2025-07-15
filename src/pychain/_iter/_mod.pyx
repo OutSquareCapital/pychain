@@ -32,6 +32,9 @@ cdef class Iter:
     def __call__(self, value: Any):
         return self._pipeline(value)
 
+    def __class_getitem__(cls, key: tuple[type, ...]) -> type:
+        return cls
+
     def _do(self, f: Callable[[Any], Any]):
         def _new_pipeline(value: Any):
             return f(self._pipeline(value))
