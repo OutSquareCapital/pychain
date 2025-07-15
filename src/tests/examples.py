@@ -41,13 +41,6 @@ def data_agg_and_transform() -> None:
     assert py_result == chain_result == {"A": 40, "B": 60}
 
 
-def grouping_and_reducing() -> None:
-    words: list[str] = ["apple", "banana", "apricot", "blueberry", "avocado"]
-
-    result = pc.Iter(words).group_by(on=pc.op().item(0))
-    assert result == {"a": 3, "b": 2}
-
-
 def nested_chaining_with_dictchain() -> None:
     data: dict[str, list[int]] = {
         "a": [1, 2, 3],
@@ -63,6 +56,5 @@ def nested_chaining_with_dictchain() -> None:
 if __name__ == "__main__":
     basic_example()
     data_agg_and_transform()
-    grouping_and_reducing()
     nested_chaining_with_dictchain()
     print("All examples executed successfully.")

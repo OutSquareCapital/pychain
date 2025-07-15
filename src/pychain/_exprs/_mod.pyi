@@ -535,13 +535,34 @@ class ChainableOp[P, R]:
         """
         ...
 
-
 class OpConstructor:
     """
     Constructs chainable operations for functional-style data processing.
+
+    Main entry point for creating operations in pychain.
+
+    This class is not meant to be instantiated directly, but rather through the `pc.op()` constructor.
     """
     @overload
-    def __call__(self) -> ChainableOp[Any, Any]: ...
+    def __call__(self) -> ChainableOp[Any, Any]:
+        """
+        Create a new chainable operation without any initial type hint.
+        
+        """
+        ...
     @overload
-    def __call__[T](self, *dtype: type[T]) -> ChainableOp[T, Any]: ...
+    def __call__[T](self, *dtype: type[T]) -> ChainableOp[T, Any]:
+        """
+        Infer the type of the operation based on the provided type hint. 
+        
+        This is the recommended way to use the constructor, as this allows you to truly define the chain as if you were typing a function signature.
+        
+        This does not change the runtime behavior, but provides type hints, so you know which type go in -> go out.
+        You can pass any type: a polars Series, an int, a str, etc.
 
+        Example:
+            >>> import pychain as pc
+            >>> pc.op(pc.Int).add(5).into(str)(10)
+            '15'
+        """
+        ...

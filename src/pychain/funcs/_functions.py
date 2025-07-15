@@ -16,6 +16,25 @@ identity = ftz.identity
 clone = deepcopy
 
 
+def partial_call[R, **P](obj: Callable[P, R]) -> Callable[P, R]:
+    """
+    Creates a partial function that calls the given object.
+
+    This is useful for creating a callable that can be used in expressions
+    without needing to instantiate the object first.
+
+    Example:
+        >>> class Human:
+        ...     def __init__(self, name: str, age: int):
+        ...     self.name = name
+        ...     self.age = age
+        >>> a = partial_call(Human)
+        >>> a("alice", 30).age
+        30
+    """
+    return partial(operator.call, obj)
+
+
 def to_obj[T](obj: Callable[..., T], *args: Any, **kwargs: Any) -> partial[T]:
     return partial(obj, *args, **kwargs)
 
