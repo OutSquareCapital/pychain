@@ -1,6 +1,6 @@
 # distutils: language=c++
 
-import itertools as it
+from itertools import product, starmap, takewhile, dropwhile
 import operator as opr
 from collections.abc import Callable, Container, Iterable
 from functools import partial
@@ -50,17 +50,20 @@ cdef class IterConstructor:
 
 
 op = OpConstructor()
-iter = IterConstructor()
+it = IterConstructor()
 struct = StructConstructor()
 
-cdef class Op:
+cdef class BaseExpr:
     _pipeline: Callable[[Any], Any]
 
     def __init__(self, pipeline: Callable[[Any], Any]):
         self._pipeline = pipeline
 
-    def __call__(self, value: Any):
-        return self._pipeline(value)
+    def _do(self, f: Callable[[Any], Any]):
+        def _new_pipeline(value: Any):
+            return f(self._pipeline(value))
+
+        return self.__class__(pipeline=_new_pipeline)
 
     def __repr__(self):
         return f"class {self.__class__.__name__}(pipeline:\n{self._pipeline.__repr__()})\n)"
@@ -68,11 +71,11 @@ cdef class Op:
     def __class_getitem__(cls, key: tuple[type, ...]) -> type:
         return cls
 
-    def _do(self, f: Callable[[Any], Any]):
-        def _new_pipeline(value: Any):
-            return f(self._pipeline(value))
+cdef class Op(BaseExpr):
+    _pipeline: Callable[[Any], Any]
 
-        return self.__class__(pipeline=_new_pipeline)
+    def __call__(self, value: Any):
+        return self._pipeline(value)
 
     cpdef into(self, obj: Callable[[Any], Any]):
         return self._do(obj)
@@ -173,29 +176,14 @@ cdef class Op:
         return self._do(partial(opr.ge, value))
 
 
-cdef class Iter:
+
+cdef class Iter(BaseExpr):
     _pipeline: Callable[[Iterable[Any]], Any]
 
-    def __init__(self, pipeline: Callable[[Iterable[Any]], Any]):
-        self._pipeline = pipeline
-
-    def __repr__(self):
-        return f"class {self.__class__.__name__}(pipeline:[\n{str(self._pipeline)}\n])"
-
-    def __call__(self, value: Any):
-        return self._pipeline(value)
-
-    def __class_getitem__(cls, key: tuple[type, ...]) -> type:
-        return cls
-
-    def _do(self, f: Callable[[Any], Any]):
+    def into(self, obj: Callable[[Iterable[Any]], Any]):
         def _new_pipeline(value: Any):
-            return f(self._pipeline(value))
-
-        return self.__class__(pipeline=_new_pipeline)
-
-    cpdef into(self, obj: Callable[[Iterable[Any]], Any]):
-        return self._do(obj)
+            return obj(self._pipeline(value))
+        return Contain(_new_pipeline)
 
     cpdef group_by(self, on: TransformFunc[V, Any]):
         return self._do(partial(itz.groupby, on))
@@ -213,13 +201,13 @@ cdef class Iter:
         return self._do(f=partial(_flat_map, func=f))
 
     cpdef starmap(self, f: TransformFunc[V, Any]):
-        return self._do(f=partial(it.starmap, f))  # type: ignore
+        return self._do(f=partial(starmap, f))  # type: ignore
 
     cpdef take_while(self, predicate: CheckFunc[V]):
-        return self._do(f=partial(it.takewhile, predicate))  # type: ignore
+        return self._do(f=partial(takewhile, predicate))  # type: ignore
 
     cpdef drop_while(self, predicate: CheckFunc[V]):
-        return self._do(f=partial(it.dropwhile, predicate))  # type: ignore
+        return self._do(f=partial(dropwhile, predicate))  # type: ignore
 
     cpdef interpose(self, element: Any):
         return self._do(f=partial(itz.interpose, element))
@@ -288,7 +276,7 @@ cdef class Iter:
         return self._do(f=partial(itz.sliding_window, length))
 
     cpdef cross_join(self, other: Iterable[Any]):
-        return self._do(partial(it.product, other))
+        return self._do(partial(product, other))
 
     cpdef diff(
         self,
@@ -315,26 +303,11 @@ cdef class Iter:
     cpdef concat(self, others: Iterable[Iterable[Any]]):
         return self._do(f=partial(_concat, others=others))
 
-cdef class Struct:
-    _pipeline: Callable[[Iterable[Any]], Any]
-
-    def __init__(self, pipeline: Callable[[Iterable[Any]], Any]):
-        self._pipeline = pipeline
-
-    def __repr__(self):
-        return f"class {self.__class__.__name__}(pipeline:[\n{str(self._pipeline)}\n])"
+cdef class Struct(BaseExpr):
+    _pipeline: Callable[[dict[Any, Any]], Any]
 
     def __call__(self, value: Any):
         return self._pipeline(value)
-
-    def __class_getitem__(cls, key: tuple[type, ...]) -> type:
-        return cls
-
-    def _do(self, f: Callable[[Any], Any]):
-        def _new_pipeline(value: Any):
-            return f(self._pipeline(value))
-
-        return self.__class__(pipeline=_new_pipeline)
 
     cpdef into(self, obj: Callable[[dict[Any, Any]], Any]):
         return self._do(obj)
@@ -396,6 +369,15 @@ cdef class Struct:
         return self._do(f=partial(_drop, keys=keys))
 
 
+
+cdef class Contain(BaseExpr):
+    _pipeline: Callable[[Iterable[Any]], Any]
+
+    def __call__(self, value: Any):
+        return self._pipeline(value)
+
+    cpdef into_iter(self):
+        return Iter(self)
 
 
 #--------------- funcs ----------------

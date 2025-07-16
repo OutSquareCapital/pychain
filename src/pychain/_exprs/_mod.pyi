@@ -1,6 +1,6 @@
 from collections.abc import Callable, Container, Iterable
 from random import Random
-from typing import Any, Self, overload
+from typing import Any, Self
 
 from .._protocols import CheckFunc, ProcessFunc, TransformFunc
 
@@ -8,22 +8,16 @@ op: OpConstructor
 """
 Constructs chainable operations for functional-style data processing.
 """
-iter: IterConstructor
+it: IterConstructor
 """Constructs chainable iterators-focused functions for functional-style data processing.
 """
 struct: StructConstructor
 """Constructs chainable dict-focused functions for functional-style data processing."""
 
 class StructConstructor:
-    @overload
-    def __call__(self) -> Struct[Any, Any, Any, Any]: ...
-    @overload
     def __call__[K, V](self, ktype: type[K], vtype: type[V]) -> Struct[K, V, K, V]: ...
 
 class IterConstructor:
-    @overload
-    def __call__(self) -> Iter[Any, Any]: ...
-    @overload
     def __call__[T](self, *dtype: type[Iterable[T] | T]) -> Iter[T, T]: ...
     def attr[T](self, name: str, dtype: type[Iterable[T] | T]) -> "Iter[T, T]": ...
     def item[T](self, key: Any, dtype: type[Iterable[T] | T]) -> "Iter[T, T]": ...
@@ -397,9 +391,11 @@ class Op[P, R]:
         ...
 
 class Iter[V, V1]:
-    def __call__(self, value: Iterable[V]) -> Iterable[V1]: ...
-
-    def into[T](self, obj: Callable[[Iterable[V]], T]) -> "Iter[V, T]":
+    """Iter[V, V1] is a chainable iterator that allows functional-style data processing.
+    Unlike `Op`, the chain itself is not callable. You have to call the `iter` method to instanciate a Contain[V, V1] object.
+    This design choice ensure that you materialize the iterator in something concrete, because here the lazy is layered: the methods themselves, and the underlying object!.
+    """
+    def into[T](self, obj: Callable[[Iterable[V]], T]) -> Contain[V, T]:
         ...
     def group_by[K](self, on: TransformFunc[V, K]) -> dict[K, list[V]]: ...
     def into_frequencies(self) -> dict[V, int]: ...
@@ -451,6 +447,16 @@ class Iter[V, V1]:
     def partition_all(self, n: int) -> "Iter[V, tuple[V, ...]]": ...
     def rolling(self, length: int) -> "Iter[V, tuple[V, ...]]": ...
     def cross_join(self, other: Iterable[V1]) -> "Iter[V, tuple[V1, V]]": ...
+
+
+class Contain[V, V1]:
+    """This is the executor for the Iter chain.
+    The method "into_iter" allows you to go back in an iter Chain.
+    """
+    def __call__(self, value: Iterable[V]) -> V1: ...
+
+    def into_iter(self) -> Iter[V, V1]:
+        ...
 
 class Struct[K, V, K1, V1]:
     def __call__(self, value: dict[K, V]) -> dict[K1, V1]: ...
