@@ -1,8 +1,62 @@
 # pychain
 
-**pychain** is a Python library for declarative, chainable, and composable data transformations. It provides a unified, type-safe API for working with scalars, iterables, and dictionaries, making complex data manipulation pipelines concise and expressive.
+**pychain** is a Python library for declarative, chainable, and composable data transformations.
+
+It provides a unified, type-safe API for working with scalars, iterables, and dictionaries, making complex data manipulation pipelines concise and expressive.
+
+## Current basic example (WIP so it changes often)
+
+````python
+import src.pychain as pc
+from collections.abc import Iterable
+STOP = 11
+
+def pure_python(data: Iterable[int]) -> list[str]:
+    results: list[str] = []
+    for x in data:
+        if x > 5 and x % 2 != 0 and x + 5 != 0:
+            results.append(
+                f"result is: {round(float(f'v:{10 * (2 / (x + 5)) * 3}'.split(':')[1]), 3)}"
+            )
+    return results
+
+#---------------------
+def _filter_func(x: int) -> bool:
+    return x > 5 and x % 2 != 0 and x + 5 != 0
+
+
+def _map_func(x: int) -> str:
+    return f"result is: {round(float(f'v:{10 * (2 / (x + 5)) * 3}'.split(':')[1]), 3)}"
+
+
+pychain_lamb = pc.iter(list[int]).filter(_filter_func).map(_map_func).into(list)
+
+#-------------------------
+greater_than_5: pc.Op[int, bool] = pc.op(int).gt(value=5)
+modulo_flter: pc.Op[int, bool] = pc.op(int).mod(value=2).ne(value=0)
+add_filter: pc.Op[int, bool] = pc.op(int).add(value=5).ne(value=0)
+cond_seq: pc.Op[int, bool] = greater_than_5.and_(modulo_flter, add_filter)
+expr: pc.Op[int, str] = (
+    pc.op(int)
+    .add(value=5)
+    .truediv_r(value=2)
+    .mul(value=10)
+    .mul(value=3)
+    .into(lambda x: f"v:{x}".split(":")[1])
+    .into(float)
+    .round_to(3)
+    .into(lambda x: f"result is: {x}")
+)
+
+pychain_exprs: pc.Iter[int, list[int]] = pc.iter().filter(f=cond_seq).map(expr).into(list)
+
+data = range(1, STOP)
+assert pychain_lamb(data) == pure_python(data) == pychain_exprs(data)
+````
 
 ---
+
+## OUTDATED DOC
 
 ## API Overview
 
