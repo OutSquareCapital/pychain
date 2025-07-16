@@ -9,7 +9,9 @@ It provides a unified, type-safe API for working with scalars, iterables, and di
 ````python
 import src.pychain as pc
 from collections.abc import Iterable
-STOP = 11
+
+STOP = 110_000
+
 
 def pure_python(data: Iterable[int]) -> list[str]:
     results: list[str] = []
@@ -20,7 +22,8 @@ def pure_python(data: Iterable[int]) -> list[str]:
             )
     return results
 
-#---------------------
+
+# ---------------------
 def _filter_func(x: int) -> bool:
     return x > 5 and x % 2 != 0 and x + 5 != 0
 
@@ -31,12 +34,14 @@ def _map_func(x: int) -> str:
 
 pychain_lamb = pc.iter(list[int]).filter(_filter_func).map(_map_func).into(list)
 
-#-------------------------
-greater_than_5: pc.Op[int, bool] = pc.op(int).gt(value=5)
-modulo_flter: pc.Op[int, bool] = pc.op(int).mod(value=2).ne(value=0)
-add_filter: pc.Op[int, bool] = pc.op(int).add(value=5).ne(value=0)
-cond_seq: pc.Op[int, bool] = greater_than_5.and_(modulo_flter, add_filter)
-expr: pc.Op[int, str] = (
+# -------------------------
+
+_filter_expr: pc.Op[int, bool] = (
+    pc.op(int)
+    .gt(value=5)
+    .and_(pc.op(int).mod(value=2).ne(value=0), pc.op(int).add(value=5).ne(value=0))
+)
+_map_expr: pc.Op[int, str] = (
     pc.op(int)
     .add(value=5)
     .truediv_r(value=2)
@@ -48,10 +53,30 @@ expr: pc.Op[int, str] = (
     .into(lambda x: f"result is: {x}")
 )
 
-pychain_exprs: pc.Iter[int, list[int]] = pc.iter().filter(f=cond_seq).map(expr).into(list)
+pychain_exprs: pc.Iter[int, list[int]] = (
+    pc.iter().filter(f=_filter_expr).map(_map_expr).into(list)
+)
 
 data = range(1, STOP)
 assert pychain_lamb(data) == pure_python(data) == pychain_exprs(data)
+````
+
+## Performance
+
+````bash
+%timeit pure_python(data)
+%timeit pychain_lamb(data)
+%timeit pychain_exprs(data)
+
+# with STOP = 11
+4.53 μs ± 59.6 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
+5.8 μs ± 87.5 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
+11.3 μs ± 77.2 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
+
+# with STOP = 110_000
+155 ms ± 799 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+140 ms ± 683 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+258 ms ± 6.54 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ````
 
 ---
