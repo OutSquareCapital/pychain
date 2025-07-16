@@ -1,8 +1,6 @@
 from . import funcs
-from ._constructors import iter, op, struct, when
-from ._exprs import Op
-from ._iter import Iter
-from ._struct import Struct
+from ._constructors import when
+from ._exprs import Op, Iter, Struct, iter, op, struct
 
 __all__ = [
     "Op",
