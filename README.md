@@ -32,14 +32,22 @@ def _map_func(x: int) -> str:
     return f"result is: {round(float(f'v:{10 * (2 / (x + 5)) * 3}'.split(':')[1]), 3)}"
 
 
-pychain_lamb = pc.iter(list[int]).filter(_filter_func).map(_map_func).into(list)
+pychain_lamb: pc.Iter[int, list[int]] = (
+    pc.iter(list[int])
+    .filter(f=_filter_func)
+    .map(f=_map_func)
+    .into(obj=list)
+)
 
 # -------------------------
 
 _filter_expr: pc.Op[int, bool] = (
     pc.op(int)
     .gt(value=5)
-    .and_(pc.op(int).mod(value=2).ne(value=0), pc.op(int).add(value=5).ne(value=0))
+    .and_(
+      pc.op(int).mod(value=2).ne(value=0), 
+      pc.op(int).add(value=5).ne(value=0)
+    )
 )
 _map_expr: pc.Op[int, str] = (
     pc.op(int)
@@ -47,14 +55,17 @@ _map_expr: pc.Op[int, str] = (
     .truediv_r(value=2)
     .mul(value=10)
     .mul(value=3)
-    .into(lambda x: f"v:{x}".split(":")[1])
-    .into(float)
-    .round_to(3)
-    .into(lambda x: f"result is: {x}")
+    .into(obj=lambda x: f"v:{x}".split(":")[1])
+    .into(obj=float)
+    .round_to(ndigits=3)
+    .into(obj=lambda x: f"result is: {x}")
 )
 
 pychain_exprs: pc.Iter[int, list[int]] = (
-    pc.iter().filter(f=_filter_expr).map(_map_expr).into(list)
+    pc.iter()
+    .filter(f=_filter_expr)
+    .map(_map_expr)
+    .into(list)
 )
 
 data = range(1, STOP)
