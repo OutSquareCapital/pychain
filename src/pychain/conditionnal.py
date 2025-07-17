@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from .._protocols import CheckFunc
-
+from ._protocols import CheckFunc
+from typing import Any
 
 @dataclass(slots=True)
 class When[T, R]:
@@ -44,3 +44,7 @@ class Then[T, R](BaseThen[T, R]): ...
 
 @dataclass(slots=True)
 class ChainedThen[T, R](BaseThen[T, R]): ...
+
+def when[T, R](predicate: Callable[[T], bool]) -> When[T, Any]:
+    return When[T, R](predicate)
+

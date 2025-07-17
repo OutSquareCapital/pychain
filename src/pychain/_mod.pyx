@@ -6,12 +6,12 @@ from collections.abc import Callable, Container, Iterable
 from functools import partial
 from random import Random
 from typing import Any, TypeVar
-
+import statistics as stats
 import cytoolz.dicttoolz as dcz
 import cytoolz.functoolz as ftz
 import cytoolz.itertoolz as itz
 
-from .._protocols import CheckFunc, ProcessFunc, TransformFunc
+from ._protocols import CheckFunc, ProcessFunc, TransformFunc
 
 K = TypeVar("K")
 K1 = TypeVar("K1")
@@ -42,13 +42,6 @@ cdef class IterConstructor:
     def __call__(self, *dtype: type):
         return Iter(ftz.identity)
 
-    cpdef attr(self, name: str, dtype: type):
-        return Iter(opr.attrgetter(name))
-
-    cpdef item(self, key: Any, dtype: type):
-        return Iter(opr.itemgetter(key))
-
-
 op = OpConstructor()
 it = IterConstructor()
 struct = StructConstructor()
@@ -59,11 +52,8 @@ cdef class BaseExpr:
     def __init__(self, pipeline: Callable[[Any], Any]):
         self._pipeline = pipeline
 
-    def _do(self, f: Callable[[Any], Any]):
-        def _new_pipeline(value: Any):
-            return f(self._pipeline(value))
-
-        return self.__class__(pipeline=_new_pipeline)
+    def __call__(self, value: Any):
+        return self._pipeline(value)
 
     def __repr__(self):
         return f"class {self.__class__.__name__}(pipeline:\n{self._pipeline.__repr__()})\n)"
@@ -71,11 +61,14 @@ cdef class BaseExpr:
     def __class_getitem__(cls, key: tuple[type, ...]) -> type:
         return cls
 
+    def _do(self, f: Callable[[Any], Any]):
+        def _new_pipeline(value: Any):
+            return f(self._pipeline(value))
+
+        return self.__class__(pipeline=_new_pipeline)
+
 cdef class Op(BaseExpr):
     _pipeline: Callable[[Any], Any]
-
-    def __call__(self, value: Any):
-        return self._pipeline(value)
 
     cpdef into(self, obj: Callable[[Any], Any]):
         return self._do(obj)
@@ -131,7 +124,6 @@ cdef class Op(BaseExpr):
 
     cpdef mod_r(self, value: Any):
         return self._do(partial(opr.mod, value))
-
 
     cpdef pow_r(self, value: Any):
         return self._do(partial(opr.pow, value))
@@ -303,11 +295,56 @@ cdef class Iter(BaseExpr):
     cpdef concat(self, others: Iterable[Iterable[Any]]):
         return self._do(f=partial(_concat, others=others))
 
+    cpdef first(self):
+        return Op(self._do(itz.first))
+
+    cpdef second(self):
+        return Op(self._do(itz.second))
+
+    cpdef last(self):
+        return Op(self._do(itz.last))
+
+    cpdef length(self):
+        return Op(self._do(itz.count))
+
+    cpdef mean(self):
+        return Op(self._do(stats.mean))
+
+    cpdef median(self):
+        return Op(self._do(stats.median))
+
+    cpdef mode(self):
+        return Op(self._do(stats.mode))
+
+    cpdef stdev(self):
+        return Op(self._do(stats.stdev))
+
+    cpdef variance(self):
+        return Op(self._do(stats.variance))
+
+    cpdef pvariance(self):
+        return Op(self._do(stats.pvariance))
+
+    cpdef median_low(self):
+        return Op(self._do(stats.median_low))
+
+    cpdef median_high(self):
+        return Op(self._do(stats.median_high))
+
+    cpdef median_grouped(self):
+        return Op(self._do(stats.median_grouped))
+
+    cpdef sum(self):
+        return Op(self._do(sum))
+
+    cpdef min(self):
+        return Op(self._do(min))
+
+    cpdef max(self):
+        return Op(self._do(max))
+
 cdef class Struct(BaseExpr):
     _pipeline: Callable[[dict[Any, Any]], Any]
-
-    def __call__(self, value: Any):
-        return self._pipeline(value)
 
     cpdef into(self, obj: Callable[[dict[Any, Any]], Any]):
         return self._do(obj)
@@ -372,9 +409,6 @@ cdef class Struct(BaseExpr):
 
 cdef class Contain(BaseExpr):
     _pipeline: Callable[[Iterable[Any]], Any]
-
-    def __call__(self, value: Any):
-        return self._pipeline(value)
 
     cpdef into_iter(self):
         return Iter(self)
