@@ -8,5 +8,5 @@ __all__ = [
     "op",
     "when",
     "Struct",
-    "Iter",
+    "Iter"
 ]

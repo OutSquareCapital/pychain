@@ -18,6 +18,8 @@ K1 = TypeVar("K1")
 V = TypeVar("V")
 V1 = TypeVar("V1")
 T = TypeVar("T")
+R = TypeVar("R")
+P = TypeVar("P")
 """
 Implement callable boolean functions using operator module and cytoolz.
 larger_than, smaller_than, and other comparison functions are using the reverse operation inside the function, 
@@ -27,33 +29,29 @@ So for some functions, we need to reverse the order of the arguments.
 greater_than, smaller_than, are good examples of this.
 """
 
-
 cdef class StructConstructor:
     def __call__(self, ktype: type, vtype: type):
-        return Struct(ftz.identity)
+        return Struct([])
 
 
 cdef class OpConstructor:
-    def __call__(self, *dtype: type):
-        return Op(ftz.identity)
+    def __call__(self, dtype: type):
+        return Op([])
 
 
 cdef class IterConstructor:
-    def __call__(self, *dtype: type):
-        return Iter(ftz.identity)
+    def __call__(self, dtype: type):
+        return Iter([])
 
 op = OpConstructor()
 it = IterConstructor()
 struct = StructConstructor()
 
 cdef class BaseExpr:
-    _pipeline: Callable[[Any], Any]
+    _pipeline: list[Callable[[Any], Any]]
 
-    def __init__(self, pipeline: Callable[[Any], Any]):
+    def __init__(self, pipeline: list[Callable[[Any], Any]]):
         self._pipeline = pipeline
-
-    def __call__(self, value: Any):
-        return self._pipeline(value)
 
     def __repr__(self):
         return f"class {self.__class__.__name__}(pipeline:\n{self._pipeline.__repr__()})\n)"
@@ -62,31 +60,22 @@ cdef class BaseExpr:
         return cls
 
     def _do(self, f: Callable[[Any], Any]):
-        def _new_pipeline(value: Any):
-            return f(self._pipeline(value))
+        self._pipeline.append(f)
+        return self
 
-        return self.__class__(pipeline=_new_pipeline)
+    cpdef returns(self):
+        return ftz.compose_left(*self._pipeline)
 
 cdef class Op(BaseExpr):
-    _pipeline: Callable[[Any], Any]
+    _pipeline: list[Callable[[Any], Any]]
 
     cpdef into(self, obj: Callable[[Any], Any]):
         return self._do(obj)
 
-    def and_(self, *others: Callable[[Any], bool]):
-        def _new_pipeline(value: Any) -> bool:
-            all_checks = (self,) + others
-            return all(check(value) for check in all_checks)
-
-        return self.__class__(pipeline=_new_pipeline)
-
-    cpdef hint(self, dtype: type):
-        return self
-
-    cpdef or_(self, value: Any):
+    cpdef or_(self, value: T):
         return self._do(partial(opr.or_, value))
 
-    cpdef xor(self, value: Any):
+    cpdef xor(self, value: T):
         return self._do(partial(opr.xor, value))
 
     cpdef add(self, value: Any):
@@ -109,23 +98,30 @@ cdef class Op(BaseExpr):
 
     def is_not_in(self, values: Container[Any]):
         return self._do(lambda x: not opr.contains(values, x))
+    cpdef abs(self):
+        return self._do(opr.abs)
 
-    cpdef mul(self, value: Any):
+    cpdef not_(self):
+        return self._do(opr.not_)
+
+    cpdef and_(self, value: Callable[[Any], bool]):
+        return self._do(partial(opr.and_, value))
+    cpdef mul(self, value: T):
         return self._do(partial(opr.mul, value))
 
-    cpdef sub_r(self, value: Any):
+    cpdef sub_r(self, value: T):
         return self._do(partial(opr.sub, value))
 
-    cpdef truediv_r(self, value: Any):
+    cpdef truediv_r(self, value: T):
         return self._do(partial(opr.truediv, value))
 
-    cpdef floordiv_r(self, value: Any):
+    cpdef floordiv_r(self, value: T):
         return self._do(partial(opr.floordiv, value))
 
-    cpdef mod_r(self, value: Any):
+    cpdef mod_r(self, value: T):
         return self._do(partial(opr.mod, value))
 
-    cpdef pow_r(self, value: Any):
+    cpdef pow_r(self, value: T):
         return self._do(partial(opr.pow, value))
 
     cpdef neg(self):
@@ -143,16 +139,16 @@ cdef class Op(BaseExpr):
     cpdef is_not_none(self):
         return self._do(partial(opr.is_not, None))
 
-    cpdef is_in(self, values: Container[Any]):
+    cpdef is_in(self, values: Container[T]):
         return self._do(partial(opr.contains, values))
 
     cpdef is_iterable(self):
         return self._do(itz.isiterable)
 
-    cpdef eq(self, value: Any):
+    cpdef eq(self, value: T):
         return self._do(partial(opr.eq, value))
 
-    cpdef ne(self, value: Any):
+    cpdef ne(self, value: T):
         return self._do(partial(opr.ne, value))
 
     cpdef gt(self, value: Any):
@@ -170,12 +166,13 @@ cdef class Op(BaseExpr):
 
 
 cdef class Iter(BaseExpr):
-    _pipeline: Callable[[Iterable[Any]], Any]
+    _pipeline: list[Callable[[Iterable[Any]], Any]]
 
-    def into(self, obj: Callable[[Iterable[Any]], Any]):
-        def _new_pipeline(value: Any):
-            return obj(self._pipeline(value))
-        return Contain(_new_pipeline)
+    cpdef into(self, obj: Callable[[Iterable[Any]], Any]):
+        return self._do(obj)
+
+    cdef agg(self, f: Callable[[Iterable[V]], Any]):
+        return Op([self._do(f).returns()])
 
     cpdef group_by(self, on: TransformFunc[V, Any]):
         return self._do(partial(itz.groupby, on))
@@ -201,7 +198,7 @@ cdef class Iter(BaseExpr):
     cpdef drop_while(self, predicate: CheckFunc[V]):
         return self._do(f=partial(dropwhile, predicate))  # type: ignore
 
-    cpdef interpose(self, element: Any):
+    cpdef interpose(self, element: T):
         return self._do(f=partial(itz.interpose, element))
 
     cpdef top_n(self, n: int, key: Callable[[Any], Any] | None = None):
@@ -216,7 +213,7 @@ cdef class Iter(BaseExpr):
     cpdef accumulate(self, f: Callable[[V, V], V]):
         return self._do(f=partial(itz.accumulate, f))
 
-    cpdef insert_left(self, value: Any):
+    cpdef insert_left(self, value: T):
         return self._do(f=partial(itz.cons, value))
 
     cpdef peekn(self, n: int, note: str | None = None):
@@ -273,7 +270,7 @@ cdef class Iter(BaseExpr):
     cpdef diff(
         self,
         others: Iterable[Iterable[Any]],
-        cpdefault: Any | None = None,
+        cpdefault: T | None = None,
         key: ProcessFunc[V] | None = None,
     ):
 
@@ -284,67 +281,67 @@ cdef class Iter(BaseExpr):
 
     cpdef merge_sorted(
         self,
-        others: Iterable[Iterable[Any]],
+        others: Iterable[Iterable[T]],
         sort_on: Callable[[Any], Any] | None = None,
     ):
         return self._do(f=partial(_merge_sorted, others=others, sort_on=sort_on))
 
-    cpdef interleave(self, others: Iterable[Iterable[Any]]):
+    cpdef interleave(self, others: Iterable[Iterable[V]]):
         return self._do(f=partial(_interleave, others=others))
 
-    cpdef concat(self, others: Iterable[Iterable[Any]]):
+    cpdef concat(self, others: Iterable[Iterable[V]]):
         return self._do(f=partial(_concat, others=others))
 
     cpdef first(self):
-        return Op(self._do(itz.first))
+        return self.agg(itz.first)
 
     cpdef second(self):
-        return Op(self._do(itz.second))
+        return self.agg(itz.second)
 
     cpdef last(self):
-        return Op(self._do(itz.last))
+        return self.agg(itz.last)
 
     cpdef length(self):
-        return Op(self._do(itz.count))
+        return self.agg(itz.count)
 
     cpdef mean(self):
-        return Op(self._do(stats.mean))
+        return self.agg(stats.mean)
 
     cpdef median(self):
-        return Op(self._do(stats.median))
+        return self.agg(stats.median)
 
     cpdef mode(self):
-        return Op(self._do(stats.mode))
+        return self.agg(stats.mode)
 
     cpdef stdev(self):
-        return Op(self._do(stats.stdev))
+        return self.agg(stats.stdev)
 
     cpdef variance(self):
-        return Op(self._do(stats.variance))
+        return self.agg(stats.variance)
 
     cpdef pvariance(self):
-        return Op(self._do(stats.pvariance))
+        return self.agg(stats.pvariance)
 
     cpdef median_low(self):
-        return Op(self._do(stats.median_low))
+        return self.agg(stats.median_low)
 
     cpdef median_high(self):
-        return Op(self._do(stats.median_high))
+        return self.agg(stats.median_high)
 
     cpdef median_grouped(self):
-        return Op(self._do(stats.median_grouped))
+        return self.agg(stats.median_grouped)
 
     cpdef sum(self):
-        return Op(self._do(sum))
+        return self.agg(sum)
 
     cpdef min(self):
-        return Op(self._do(min))
+        return self.agg(min)
 
     cpdef max(self):
-        return Op(self._do(max))
+        return self.agg(max)
 
 cdef class Struct(BaseExpr):
-    _pipeline: Callable[[dict[Any, Any]], Any]
+    _pipeline: list[Callable[[dict[Any, Any]], Any]]
 
     cpdef into(self, obj: Callable[[dict[Any, Any]], Any]):
         return self._do(obj)
@@ -404,15 +401,6 @@ cdef class Struct(BaseExpr):
 
     cpdef drop(self, keys: Iterable[Any]):
         return self._do(f=partial(_drop, keys=keys))
-
-
-
-cdef class Contain(BaseExpr):
-    _pipeline: Callable[[Iterable[Any]], Any]
-
-    cpdef into_iter(self):
-        return Iter(self)
-
 
 #--------------- funcs ----------------
 
