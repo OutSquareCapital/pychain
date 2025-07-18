@@ -13,15 +13,12 @@ def _test_stub_files(package: str) -> None:
     package_path = Path(importlib.import_module(package).__path__[0])
     stub_files = package_path.rglob("*.pyi")
     failures = 0
-    from operator import add
-
-    from pychain import Iter, Struct, op
+    from pychain import Iter, Struct, expr
 
     globs = {
-        "ChainableOp": op,
+        "Expr": expr,
         "Iter": Iter,
-        "Struct": Struct,
-        "add": add,
+        "Struct": Struct
     }
 
     for stub_file in stub_files:

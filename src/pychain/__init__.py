@@ -1,11 +1,11 @@
-from ._mod import Op, Iter, Struct, it, op, struct
+from ._mod import Expr, Iter, Struct, iter, expr, struct
 from .conditionnal import when
 
 __all__ = [
-    "Op",
+    "Expr",
     "struct",
-    "it",
-    "op",
+    "iter",
+    "expr",
     "when",
     "Struct",
     "Iter"
