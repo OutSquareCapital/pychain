@@ -1,7 +1,9 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from ._protocols import CheckFunc
+from .._protocols import CheckFunc
 from typing import Any
+from functools import partial
+import operator as op
 
 @dataclass(slots=True)
 class When[T, R]:
@@ -48,3 +50,19 @@ class ChainedThen[T, R](BaseThen[T, R]): ...
 def when[T, R](predicate: Callable[[T], bool]) -> When[T, Any]:
     return When[T, R](predicate)
 
+
+
+def _runner[**P](
+    p1: Callable[P, bool], p2: Callable[P, bool], *args: P.args, **kwargs: P.kwargs
+):
+    return op.and_(p1(*args, **kwargs), p2(*args, **kwargs))
+
+
+def _binder[**P](p1: Callable[P, bool], p2: Callable[P, bool]):
+    return partial(_runner, p1, p2)
+
+
+def and_[**P](
+    p1: Callable[P, bool],
+):
+    return partial(_binder, p1)

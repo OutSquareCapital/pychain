@@ -4,6 +4,7 @@ from enum import IntEnum, auto
 from typing import Any, NamedTuple
 import operator as opr
 from cytoolz.functoolz import compose_left
+
 class OpType(IntEnum):
     ATTR = auto()
     CALL = auto()
