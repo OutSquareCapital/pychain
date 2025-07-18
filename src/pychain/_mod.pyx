@@ -7,6 +7,7 @@ import cytoolz.functoolz as ftz
 import cytoolz.itertoolz as itz
 import functools as ft
 from ._protocols import CheckFunc, ProcessFunc, TransformFunc
+from copy import deepcopy
 
 K = TypeVar("K")
 K1 = TypeVar("K1")
@@ -50,6 +51,9 @@ cdef class BaseExpr:
         self._pipeline.append(f)
         return self
 
+    cpdef _convert(self):
+        return self._pipeline
+
     def into_partial(self, f: Callable[[Any], Any], *args: Any, **kwargs: Any):
         return self._do(ft.partial(f, *args, **kwargs))
 
@@ -61,20 +65,50 @@ cdef class BaseExpr:
     cpdef collect(self):
         return ftz.compose_left(*self._pipeline)
 
+    cpdef clone(self):
+        return self._do(deepcopy)
+
 cdef class Expr(BaseExpr):
     _pipeline: list[Callable[[Any], Any]]
 
     cpdef into(self, obj: Callable[[Any], Any]):
         return self._do(obj)
 
+    def into_iter(self, f: Callable[[Any], Iterable[Any]]):
+        self._do(f)
+        return Iter([self.collect()])
+
+    def into_iter_func(self, f: Callable[[Any], Any]):
+        self._do(ft.partial(itz.iterate, f))
+        return Iter([self.collect()])
+
+    def into_iter_range(self, start: int, stop: int, step: int = 1):
+        self._do(ft.partial(range, start, stop, step))
+        return Iter([self.collect()])
+
 cdef class Iter(BaseExpr):
     _pipeline: list[Callable[[Iterable[Any]], Any]]
 
-    cpdef into(self, obj: Callable[[Iterable[Any]], Any]):
+    def map_compose(self, fns: Iterable[ProcessFunc[V]]):
+        return self._do(ft.partial(map, ftz.compose_left(*fns))) # type: ignore
+
+    cpdef into(self, obj: Callable[[Iterable[Any]], Iterable[Any]]):
         return self._do(obj)
 
-    cdef agg(self, f: Callable[[Iterable[V]], Any]):
+    cpdef agg(self, f: Callable[[Iterable[V]], Any]):
         return Expr([self._do(f).collect()])
+
+    cpdef is_distinct(self):
+        return self._do(itz.isdistinct)
+    
+    cpdef is_all(self):
+        return self._do(all)
+
+    cpdef is_any(self):
+        return self._do(any)
+
+    cpdef to_dict(self):
+        return self._do(iter_to_dict)
 
     cpdef group_by(self, on: TransformFunc[V, Any]):
         return self._do(ft.partial(itz.groupby, on))
@@ -87,6 +121,9 @@ cdef class Iter(BaseExpr):
 
     cpdef map(self, f: TransformFunc[V, Any]):
         return self._do(f=ft.partial(map, f))  # type: ignore
+
+    cpdef filter(self, f: CheckFunc[V]):
+        return self._do(f=ft.partial(filter, f))  # type: ignore
 
     cpdef flat_map(self, f: TransformFunc[V, Iterable[Any]]):
         return self._do(f=ft.partial(_flat_map, func=f))
@@ -108,9 +145,6 @@ cdef class Iter(BaseExpr):
 
     cpdef random_sample(self, probability: float, state: Random | int | None = None):
         return self._do(f=ft.partial(itz.random_sample, probability, random_state=state))
-
-    cpdef filter(self, f: CheckFunc[V]):
-        return self._do(f=ft.partial(filter, f))  # type: ignore
 
     cpdef accumulate(self, f: Callable[[V, V], V]):
         return self._do(f=ft.partial(itz.accumulate, f))
@@ -202,6 +236,10 @@ cdef class Iter(BaseExpr):
 
     cpdef length(self):
         return self.agg(itz.count)
+
+    cpdef at_index(self, index: int) :
+        return self.agg(ft.partial(itz.nth, index))
+
 
 cdef class Struct(BaseExpr):
     _pipeline: list[Callable[[dict[Any, Any]], Any]]
@@ -311,10 +349,14 @@ cpdef _interleave(on: Iterable[V], others: Iterable[Iterable[V]]):
 cpdef _merge(on: dict[K, V], others: Iterable[dict[K, V]]):
     return dcz.merge(on, *others)
 
+cpdef iter_to_dict(value: Iterable[V]):
+    return dict(enumerate(value))
+
 def _tap(value: Iterable[V], func: Callable[[V], None]):
     for item in value:
         func(item)
         yield item
+
 def _flatten_recursive(d: dict[Any, Any], parent_key: str = "", sep: str = "."):
     items: dict[str, Any] = {}
     for k, v in d.items():
