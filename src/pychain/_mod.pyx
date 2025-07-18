@@ -3,11 +3,11 @@ from collections.abc import Callable, Iterable
 from random import Random
 from typing import Any, TypeVar
 import cytoolz.dicttoolz as dcz
-import cytoolz.functoolz as ftz
 import cytoolz.itertoolz as itz
 import functools as ft
 from ._protocols import CheckFunc, ProcessFunc, TransformFunc
 from copy import deepcopy
+from ._compilers import collect_pipeline
 
 K = TypeVar("K")
 K1 = TypeVar("K1")
@@ -63,7 +63,7 @@ cdef class BaseExpr:
         return self
 
     cpdef collect(self):
-        return ftz.compose_left(*self._pipeline)
+        return collect_pipeline(self._pipeline)
 
     cpdef clone(self):
         return self._do(deepcopy)
@@ -88,9 +88,9 @@ cdef class Expr(BaseExpr):
 
 cdef class Iter(BaseExpr):
     _pipeline: list[Callable[[Iterable[Any]], Any]]
-
     def map_compose(self, fns: Iterable[ProcessFunc[V]]):
-        return self._do(ft.partial(map, ftz.compose_left(*fns))) # type: ignore
+        mapping_func = collect_pipeline(list(fns))
+        return self._do(ft.partial(map, mapping_func)) # type: ignore
 
     cpdef into(self, obj: Callable[[Iterable[Any]], Iterable[Any]]):
         return self._do(obj)

@@ -7,87 +7,88 @@ It provides a unified, type-safe API for working with scalars, iterables, and di
 ## Current basic example (WIP so it changes often)
 
 ````python
-import src.pychain as pc
 from collections.abc import Iterable
+import src.pychain as pc
 
-STOP = 110_000
-
-
-def pure_python(data: Iterable[int]) -> list[str]:
-    results: list[str] = []
-    for x in data:
-        if x > 5 and x % 2 != 0 and x + 5 != 0:
-            results.append(
-                f"result is: {round(float(f'v:{10 * (2 / (x + 5)) * 3}'.split(':')[1]), 3)}"
-            )
-    return results
+STOP = 100_000
 
 
 # ---------------------
+def _calculate_value(x: int) -> float:
+    return 10 * (2 / (x + 5)) * 3
+
+
+def _format_value(x: float) -> str:
+    return f"v:{x}".split(":")[1]
+
+
+def _format_result(x: float) -> str:
+    return f"result is: {x}"
+
+
+def _round_value(x: float) -> float:
+    return round(x, 3)
+
 def _filter_func(x: int) -> bool:
     return x > 5 and x % 2 != 0 and x + 5 != 0
 
-
 def _map_func(x: int) -> str:
-    return f"result is: {round(float(f'v:{10 * (2 / (x + 5)) * 3}'.split(':')[1]), 3)}"
+    val = 10 * (2 / (x + 5)) * 3
+    val = f"v:{val}".split(":")[1]
+    val = float(val)
+    val = round(val, 3)
+    return f"result is: {val}"
+
+composed_func = (
+    pc.expr(int)
+    .into(_calculate_value)
+    .into(_format_value)
+    .into(float)
+    .into(_round_value)
+    .into(_format_result)
+    .collect()
+)
+
+def pyfunc(data: Iterable[int]) -> list[str]:
+    results: list[str]  = []
+    for x in data:
+        if _filter_func(x):
+            results.append(_map_func(x))
+    return results
+
+def pyfunc_opti(data: Iterable[int]) -> list[str]:
+    return [
+        f"result is: {round(number=float(f'v:{10 * (2 / (x + 5)) * 3}'.split(':')[1]), ndigits=3)}"
+        for x in data
+        if x > 5 and x % 2 != 0 and x + 5 != 0
+    ]
 
 
-pychain_lamb: pc.Iter[int, list[int]] = (
-    pc.iter(list[int])
-    .filter(f=_filter_func)
-    .map(f=_map_func)
-    .into(obj=list)
+pychain = (
+    pc.iter(int).filter(f=_filter_func).map(f=composed_func).into(obj=list).collect()
 )
 
 # -------------------------
 
-_filter_expr: pc.Op[int, bool] = (
-    pc.op(int)
-    .gt(value=5)
-    .and_(
-      pc.op(int).mod(value=2).ne(value=0), 
-      pc.op(int).add(value=5).ne(value=0)
-    )
-)
-_map_expr: pc.Op[int, str] = (
-    pc.op(int)
-    .add(value=5)
-    .truediv_r(value=2)
-    .mul(value=10)
-    .mul(value=3)
-    .into(obj=lambda x: f"v:{x}".split(":")[1])
-    .into(obj=float)
-    .round_to(ndigits=3)
-    .into(obj=lambda x: f"result is: {x}")
-)
-
-pychain_exprs: pc.Iter[int, list[int]] = (
-    pc.iter()
-    .filter(f=_filter_expr)
-    .map(_map_expr)
-    .into(list)
-)
-
 data = range(1, STOP)
-assert pychain_lamb(data) == pure_python(data) == pychain_exprs(data)
+assert (
+    pyfunc(data)
+    == pyfunc_opti(data)
+    == pychain(data)
+)
 ````
 
 ## Performance
 
 ````bash
-%timeit pure_python(data)
-%timeit pychain_lamb(data)
-%timeit pychain_exprs(data)
+# with STOP = 100_000
+%timeit pychain(data)
+%timeit pyfunc(data)
+%timeit pyfunc_opti(data)
 
-# with STOP = 11
-4.53 μs ± 59.6 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
-5.8 μs ± 87.5 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
-11.3 μs ± 77.2 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
-
-# with STOP = 110_000
-155 ms ± 799 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
-140 ms ± 683 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
-258 ms ± 6.54 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
+139 ms ± 825 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+145 ms ± 1.1 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
+128 ms ± 1.4 ms per loop (mean ± std. dev. of 7 runs, 10 loops each)
 ````
 
 ---
