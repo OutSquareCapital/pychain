@@ -1,8 +1,6 @@
 import textwrap
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
-
 
 @dataclass(slots=True, frozen=True, repr=False)
 class Func[P, R]:
@@ -21,7 +19,7 @@ class Func[P, R]:
     _compiled_func: Callable[[P], R]
     _source_code: str
 
-    def __call__(self, arg: Any) -> Any:
+    def __call__(self, arg: P) -> R:
         return self._compiled_func(arg)
 
     def __repr__(self) -> str:

@@ -1,6 +1,7 @@
 from collections.abc import Callable, Iterable
 from typing import Any
 
+type Scope = dict[str, Any]
 type CheckFunc[T] = Callable[[T], bool]
 type ProcessFunc[T] = Callable[[T], T]
 type TransformFunc[T, T1] = Callable[[T], T1]

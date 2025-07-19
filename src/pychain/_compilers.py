@@ -5,11 +5,11 @@ from collections.abc import Callable
 from typing import Any
 
 from ._obj_exprs import is_obj_expr
-from ._protocols import INLINEABLE_BUILTINS, CompileResult
+from ._protocols import INLINEABLE_BUILTINS, CompileResult, Scope
 
 
 def collect_scope[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
-    func_scope: dict[str, Any] = {}
+    func_scope: Scope = {}
     func_name: str = _get_fn_name()
     nested_expr = "arg"
     for i, func in enumerate(_pipeline):
@@ -26,11 +26,11 @@ def collect_scope[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
 
 def collect_ast[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
     final_expr_ast = ast.Name(id="arg", ctx=ast.Load())
-    func_scope: dict[str, Any] = {}
+    func_scope: Scope = {}
 
     for i, func in enumerate(_pipeline):
         if is_obj_expr(func):
-            final_expr_ast: ast.expr = func.to_ast(final_expr_ast, func_scope)
+            final_expr_ast: ast.expr = func.to_ast(func_scope)
             continue
         if func in INLINEABLE_BUILTINS:
             final_expr_ast = _from_builtin(func, final_expr_ast)
