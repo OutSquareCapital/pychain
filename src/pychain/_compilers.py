@@ -10,7 +10,7 @@ from ._protocols import INLINEABLE_BUILTINS, CompileResult
 
 def collect_scope[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
     func_scope: dict[str, Any] = {}
-    func_name: str = f"generated_func_{str(uuid.uuid4()).replace('-', '')}"
+    func_name: str = _get_fn_name()
     nested_expr = "arg"
     for i, func in enumerate(_pipeline):
         scope_func_name: str = f"__func_{i}"
@@ -131,10 +131,13 @@ def _fallback(
 def _finalize(
     final_expr_ast: ast.expr, func_scope: dict[str, Any]
 ) -> tuple[Callable[..., Any], str]:
-    func_name: str = f"generated_func_{str(uuid.uuid4()).replace('-', '')}"
+    func_name: str = _get_fn_name()
     final_func_ast: ast.Module = _create_func_ast(final_expr_ast, func_name)
     source_code: str = ast.unparse(final_func_ast)
     code_obj = compile(final_func_ast, filename="<ast>", mode="exec")
 
     exec(code_obj, func_scope)
     return func_scope[func_name], source_code
+
+def _get_fn_name() -> str:
+    return f"generated_func_{str(uuid.uuid4()).replace('-', '')}"
