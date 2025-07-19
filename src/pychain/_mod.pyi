@@ -6,16 +6,6 @@ from typing import Any, Self
 from ._protocols import CheckFunc, ProcessFunc, TransformFunc
 from ._func import Func
 
-expr: ExprConstructor
-"""
-Constructs chainable expressions for functional-style data processing.
-"""
-iter: IterConstructor
-"""Constructs chainable iterators-focused functions for functional-style data processing.
-"""
-struct: StructConstructor
-"""Constructs chainable dict-focused functions for functional-style data processing."""
-
 class StructConstructor:
     def __call__[K, V](self, ktype: type[K], vtype: type[V]) -> Struct[K, V, K, V]: ...
 
@@ -33,12 +23,13 @@ class BaseExpr[P, R]:
     def clone(self) -> Self: ...
 
 class Expr[P, R](BaseExpr[P, R]):
-    def into[T](self, obj: Callable[[R], T]) -> "Expr[P, T]": ...
-    def into_expr(self, obj: R) -> "Expr[P, R]":
+    def do(self, f: ProcessFunc[R]) -> "Expr[P, R]": ...
+    def as_expr(self, obj: R) -> "Expr[P, R]":
         """
         Only use this method with an ObjExpr instance.
         """
         ...
+    def into[T](self, obj: Callable[[R], T]) -> "Expr[P, T]": ...
     def into_iter[T](self, f: Callable[[R], Iterable[T]]) -> Iter[P, T]: ...
     def into_iter_func[T](self, f: Callable[[R], T]) -> Iter[P, T]: ...
     def into_iter_range(self, start: int, stop: int, step: int = 1) -> Iter[P, int]: ...
