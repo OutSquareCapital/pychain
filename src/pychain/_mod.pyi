@@ -34,7 +34,7 @@ class BaseExpr[P, R]:
 
 class Expr[P, R](BaseExpr[P, R]):
     def into[T](self, obj: Callable[[R], T]) -> "Expr[P, T]": ...
-    def into_expr[T](self, obj: T) -> "Expr[P, T]":
+    def into_expr(self, obj: R) -> "Expr[P, R]":
         """
         Only use this method with an ObjExpr instance.
         """
