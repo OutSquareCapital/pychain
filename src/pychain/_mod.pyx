@@ -7,7 +7,8 @@ import cytoolz.itertoolz as itz
 import functools as ft
 from ._protocols import CheckFunc, ProcessFunc, TransformFunc
 from copy import deepcopy
-from ._compilers import collect_pipeline
+from ._compilers import collect_ast, collect_scope
+from ._func import Func
 
 K = TypeVar("K")
 K1 = TypeVar("K1")
@@ -16,6 +17,14 @@ V1 = TypeVar("V1")
 T = TypeVar("T")
 R = TypeVar("R")
 P = TypeVar("P")
+
+def collect_pipeline(pipeline: list[Callable[[P], Any]]) -> Callable[[P], Any]:
+        try:
+            compiled_func, source_code = collect_ast(pipeline)
+        except Exception as e:
+            print(f"Error collecting AST: {e}")
+            compiled_func, source_code = collect_scope(pipeline)
+        return Func(compiled_func, source_code)
 
 cdef class StructConstructor:
     def __call__(self, ktype: type, vtype: type):
