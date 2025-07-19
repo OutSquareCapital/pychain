@@ -6,6 +6,7 @@ from types import ModuleType
 
 from tqdm import tqdm
 
+
 def _get_modules(package: str) -> list[ModuleType]:
     modules: list[ModuleType] = []
     pkg: ModuleType = importlib.import_module(package)

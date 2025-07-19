@@ -5,10 +5,15 @@ from ._protocols import CheckFunc, ProcessFunc, TransformFunc
 from ._core import BaseExpr
 from typing import Any
 
+
 class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
     __slots__ = "_pipeline"
-    def _do[KT, VT](self, f: Callable[[dict[KR, VR]], dict[KT, VT]]) -> "Struct[KP, VP, KR, VT]":
+
+    def _do[KT, VT](
+        self, f: Callable[[dict[KR, VR]], dict[KT, VT]]
+    ) -> "Struct[KP, VP, KR, VT]":
         return Struct(self._pipeline + [f])
+
     def map_keys[T](self, f: TransformFunc[KR, T]) -> "Struct[KP, VP, T, VR]":
         return self._do(f=ft.partial(dcz.keymap, f))  # type: ignore
 
@@ -48,9 +53,7 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
     def merge(self, *others: dict[KR, VR]):
         return self._do(f=ft.partial(_merge, others=others))
 
-    def merge_with(
-        self, f: Callable[[Iterable[VR]], VR], *others: dict[KR, VR]
-    ):
+    def merge_with(self, f: Callable[[Iterable[VR]], VR], *others: dict[KR, VR]):
         return self._do(f=ft.partial(dcz.merge_with, f, *others))
 
     def drop(self, *keys: KR):

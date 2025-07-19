@@ -2,6 +2,7 @@ import textwrap
 from collections.abc import Callable
 from dataclasses import dataclass
 
+
 @dataclass(slots=True, frozen=True, repr=False)
 class Func[P, R]:
     """
@@ -29,6 +30,7 @@ class Func[P, R]:
 
     def numbify(self) -> "Func[P, R]":
         from numba import jit
+
         try:
             compiled_func: Callable[[P], R] = jit(self._compiled_func)
         except Exception as e:

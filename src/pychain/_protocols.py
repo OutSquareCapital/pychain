@@ -33,4 +33,3 @@ INLINEABLE_BUILTINS: set[type | Callable[..., Any]] = {
     enumerate,
     range,
 }
-

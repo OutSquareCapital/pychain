@@ -4,29 +4,51 @@ from random import Random
 from typing import Any, TYPE_CHECKING
 
 import cytoolz.itertoolz as itz
-import functools as ft
+from functools import partial, reduce
 from ._protocols import CheckFunc, ProcessFunc, TransformFunc
 from ._core import BaseExpr, collect_pipeline
 
 if TYPE_CHECKING:
-    from ._exprs import Expr
     from ._structs import Struct
+
+
+class Expr[P, R](BaseExpr[P, R]):
+    __slots__ = "_pipeline"
+
+    def _do[T](self, f: Callable[[R], T]) -> "Expr[P, T]":
+        return Expr(self._pipeline + [f])
+
+    def do(self, f: ProcessFunc[R]) -> "Expr[P, R]":
+        return self._do(f)
+
+    def into[T](self, obj: Callable[[R], T]) -> "Expr[P, T]":
+        return self._do(obj)
+
+    def into_expr[T](self, obj: T) -> "Expr[P, T]":
+        return self._do(obj)  # type: ignore
+
+    def into_iter[T](self, f: Callable[[R], Iterable[T]]) -> "Iter[P, T]":
+        return Iter(self._pipeline + [f])
+
+    def into_iter_func[T](self, f: Callable[[R], T]) -> "Iter[P, T]":
+        return Iter(self._do(partial(itz.iterate, f))._pipeline)
 
 
 class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     __slots__ = "_pipeline"
+
     def _do[T](self, f: Callable[[Iterable[VR]], T]) -> "Iter[VP, T]":
         return Iter(self._pipeline + [f])
 
     def map_compose(self, fns: Iterable[ProcessFunc[VR]]) -> "Iter[VP, VR]":
         mapping_func = collect_pipeline(list(fns))
-        return self._do(ft.partial(map, mapping_func))  # type: ignore
+        return self._do(partial(map, mapping_func))  # type: ignore
 
     def into[T](self, obj: Callable[[Iterable[VR]], T]) -> "Iter[VP, T]":
         return self._do(obj)
 
     def agg[T](self, f: Callable[[Iterable[VR]], T]) -> "Expr[Iterable[VP], T]":
-        return Expr([self._do(f).collect()])
+        return Expr(self._pipeline + [f])
 
     def is_distinct(self):
         return self._do(itz.isdistinct)
@@ -43,7 +65,7 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def group_by[K](
         self, on: TransformFunc[VR, K]
     ) -> "Struct[VP, K, VR, Iterable[VR]]":
-        return Struct([self._do(ft.partial(itz.groupby, on)).collect().extract()])
+        return Struct([self._do(partial(itz.groupby, on)).collect().extract()])
 
     def into_frequencies(self) -> "Struct[VP, int, VR, int]":
         return Struct([self._do(itz.frequencies).collect().extract()])
@@ -51,72 +73,70 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def reduce_by[K](
         self, key: TransformFunc[VR, K], binop: Callable[[VR, VR], VR]
     ) -> "Iter[VP, dict[K, VR]]":
-        return self._do(ft.partial(itz.reduceby, key=key, binop=binop))
+        return self._do(partial(itz.reduceby, key=key, binop=binop))
 
     def map[T](self, f: TransformFunc[VR, T]) -> "Iter[VP, T]":
-        return self._do(f=ft.partial(map, f))  # type: ignore
+        return self._do(f=partial(map, f))  # type: ignore
 
     def filter(self, f: CheckFunc[VR]) -> "Iter[VP, VR]":
-        return self._do(f=ft.partial(filter, f))  # type: ignore
+        return self._do(f=partial(filter, f))  # type: ignore
 
     def flat_map(self, f: TransformFunc[VR, Iterable[VR]]):
-        return self._do(f=ft.partial(_flat_map, func=f))
+        return self._do(f=partial(_flat_map, func=f))
 
     def starmap(self, f: TransformFunc[VR, VR]):
-        return self._do(f=ft.partial(starmap, f))  # type: ignore
+        return self._do(f=partial(starmap, f))  # type: ignore
 
     def take_while(self, predicate: CheckFunc[VR]) -> "Iter[VP, VR]":
-        return self._do(f=ft.partial(takewhile, predicate))  # type: ignore
+        return self._do(f=partial(takewhile, predicate))  # type: ignore
 
     def drop_while(self, predicate: CheckFunc[VR]) -> "Iter[VP, VR]":
-        return self._do(f=ft.partial(dropwhile, predicate))  # type: ignore
+        return self._do(f=partial(dropwhile, predicate))  # type: ignore
 
     def interpose(self, element: VR):
-        return self._do(f=ft.partial(itz.interpose, element))
+        return self._do(f=partial(itz.interpose, element))
 
     def top_n(self, n: int, key: Callable[[VR], Any] | None = None):
-        return self._do(f=ft.partial(itz.topk, n, key=key))
+        return self._do(f=partial(itz.topk, n, key=key))
 
     def random_sample(self, probability: float, state: Random | int | None = None):
-        return self._do(
-            f=ft.partial(itz.random_sample, probability, random_state=state)
-        )
+        return self._do(f=partial(itz.random_sample, probability, random_state=state))
 
     def accumulate(self, f: Callable[[VR, VR], VR]):
-        return self._do(f=ft.partial(itz.accumulate, f))
+        return self._do(f=partial(itz.accumulate, f))
 
     def reduce[V](self, f: Callable[[VR, VR], VR]):
-        return self._do(f=ft.partial(ft.reduce, f))
+        return self._do(f=partial(reduce, f))
 
     def insert_left(self, value: VR):
-        return self._do(f=ft.partial(itz.cons, value))
+        return self._do(f=partial(itz.cons, value))
 
     def peekn(self, n: int, note: str | None = None):
-        return self._do(f=ft.partial(_peekn, n=n, note=note))
+        return self._do(f=partial(_peekn, n=n, note=note))
 
     def peek(self, note: str | None = None):
-        return self._do(f=ft.partial(_peek, note=note))
+        return self._do(f=partial(_peek, note=note))
 
     def head(self, n: int):
-        return self._do(f=ft.partial(itz.take, n))
+        return self._do(f=partial(itz.take, n))
 
     def tail(self, n: int):
-        return self._do(f=ft.partial(itz.tail, n))
+        return self._do(f=partial(itz.tail, n))
 
     def drop_first(self, n: int):
-        return self._do(f=ft.partial(itz.drop, n))
+        return self._do(f=partial(itz.drop, n))
 
     def every(self, index: int):
-        return self._do(f=ft.partial(itz.take_nth, index))
+        return self._do(f=partial(itz.take_nth, index))
 
     def repeat(self, n: int):
-        return self._do(f=ft.partial(_repeat, n=n))
+        return self._do(f=partial(_repeat, n=n))
 
     def unique(self):
         return self._do(f=itz.unique)
 
     def tap(self, func: Callable[[VR], None]):
-        return self._do(f=ft.partial(_tap, func=func))
+        return self._do(f=partial(_tap, func=func))
 
     def enumerate(self) -> "Iter[VP, enumerate[VR]]":
         return self._do(f=enumerate)
@@ -127,16 +147,16 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def partition(
         self, n: int, pad: VR | None = None
     ) -> "Iter[VP, Iterator[tuple[VR, ...]]]":
-        return self._do(f=ft.partial(itz.partition, n, pad=pad))
+        return self._do(f=partial(itz.partition, n, pad=pad))
 
     def partition_all(self, n: int) -> "Iter[VP, Iterator[tuple[VR, ...]]]":
-        return self._do(f=ft.partial(itz.partition_all, n))
+        return self._do(f=partial(itz.partition_all, n))
 
     def rolling(self, length: int):
-        return self._do(f=ft.partial(itz.sliding_window, length))
+        return self._do(f=partial(itz.sliding_window, length))
 
     def cross_join(self, other: Iterable[Any]):
-        return self._do(ft.partial(product, other))
+        return self._do(partial(product, other))
 
     def diff(
         self,
@@ -144,23 +164,23 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         default: Any | None = None,
         key: ProcessFunc[VR] | None = None,
     ):
-        return self._do(f=ft.partial(_diff, others=others, key=key))
+        return self._do(f=partial(_diff, others=others, key=key))
 
     def zip_with(
         self, others: Iterable[Iterable[VR]], strict: bool = False
     ) -> "Iter[VP, zip[tuple[Any, ...]]]":
-        return self._do(f=ft.partial(_zip_with, others=others, strict=strict))
+        return self._do(f=partial(_zip_with, others=others, strict=strict))
 
     def merge_sorted(
         self, others: Iterable[Iterable[VR]], sort_on: Callable[[VR], Any] | None = None
     ):
-        return self._do(f=ft.partial(_merge_sorted, others=others, sort_on=sort_on))
+        return self._do(f=partial(_merge_sorted, others=others, sort_on=sort_on))
 
     def interleave(self, *others: Iterable[VR]):
-        return self._do(f=ft.partial(_interleave, others=others))
+        return self._do(f=partial(_interleave, others=others))
 
     def concat(self, *others: Iterable[VR]):
-        return self._do(f=ft.partial(_concat, others=others))
+        return self._do(f=partial(_concat, others=others))
 
     def first(self) -> "Expr[Iterable[VP], VR]":
         return self.agg(itz.first)
@@ -175,7 +195,7 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         return self.agg(itz.count)
 
     def at_index(self, index: int):
-        return self.agg(ft.partial(itz.nth, index))
+        return self.agg(partial(itz.nth, index))
 
 
 def _merge_sorted[V](

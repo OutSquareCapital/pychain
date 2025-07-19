@@ -5,6 +5,7 @@ from typing import Any
 from functools import partial
 import operator as op
 
+
 @dataclass(slots=True)
 class When[T, R]:
     _predicate: CheckFunc[T]
@@ -47,9 +48,9 @@ class Then[T, R](BaseThen[T, R]): ...
 @dataclass(slots=True)
 class ChainedThen[T, R](BaseThen[T, R]): ...
 
+
 def when[T, R](predicate: Callable[[T], bool]) -> When[T, Any]:
     return When[T, R](predicate)
-
 
 
 def _runner[**P](
