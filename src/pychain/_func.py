@@ -1,7 +1,12 @@
 import textwrap
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-
+from ._protocols import ProcessFunc, TransformFunc
+import cytoolz.itertoolz as itz
+import cytoolz.dicttoolz as dcz
+from typing import Any
+from functools import partial
+import operator as op
 
 @dataclass(slots=True, frozen=True, repr=False)
 class Func[P, R]:
@@ -43,3 +48,107 @@ class Func[P, R]:
         Returns the wrapped function.
         """
         return self._compiled_func
+
+
+def merge_sorted[V](
+    on: Iterable[V],
+    others: Iterable[Iterable[V]],
+    sort_on: Callable[[V], Any] | None = None,
+):
+    return itz.merge_sorted(on, *others, key=sort_on)
+
+
+def concat[V](on: Iterable[V], others: Iterable[Iterable[V]]):
+    return itz.concat([on, *others])
+
+
+def flat_map[V, V1](value: Iterable[V], func: TransformFunc[V, Iterable[V1]]):
+    return itz.concat(map(func, value))
+
+
+def peekn(seq: Iterable[Any], n: int, note: str | None = None):
+    values, sequence = itz.peekn(n, seq)
+    if note:
+        print(f"Peeked {n} values ({note}): {list(values)}")
+    else:
+        print(f"Peeked {n} values: {list(values)}")
+    return sequence
+
+
+def peek[T](seq: Iterable[T], note: str | None = None):
+    value, sequence = itz.peek(seq)
+    if note:
+        print(f"Peeked value ({note}): {value}")
+    else:
+        print(f"Peeked value: {value}")
+    return sequence
+
+
+def repeat[V](value: Iterable[V], n: int) -> Iterable[V]:
+    def fn(value: V) -> Iterable[V]:
+        return [value] * n
+
+    return itz.concat(seqs=map(fn, value))
+
+
+def diff[T, V](
+    value: Iterable[T],
+    others: Iterable[Iterable[T]],
+    ccpdefault: Any | None = None,
+    key: ProcessFunc[V] | None = None,
+):
+    return itz.diff(*(value, *others), ccpdefault=ccpdefault, key=key)
+
+
+def zip_with[T](value: Iterable[T], others: Iterable[Iterable[Any]], strict: bool):
+    return zip(value, *others, strict=strict)
+
+
+def interleave[V](on: Iterable[V], others: Iterable[Iterable[V]]):
+    return itz.interleave(seqs=[on, *others])
+
+
+def iter_to_dict[V](value: Iterable[V]):
+    return dict(enumerate(value))
+
+
+def tap[V](value: Iterable[V], func: Callable[[V], None]):
+    for item in value:
+        func(item)
+        yield item
+
+def _runner[**P](
+    p1: Callable[P, bool], p2: Callable[P, bool], *args: P.args, **kwargs: P.kwargs
+):
+    return op.and_(p1(*args, **kwargs), p2(*args, **kwargs))
+
+
+def _binder[**P](p1: Callable[P, bool], p2: Callable[P, bool]):
+    return partial(_runner, p1, p2)
+
+
+def and_[**P](
+    p1: Callable[P, bool],
+):
+    return partial(_binder, p1)
+
+def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
+    return dcz.merge(on, *others)
+
+
+def drop[K, V](data: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
+    return dcz.dissoc(data, *keys)
+
+
+def flatten_recursive[T](
+    d: dict[Any, T], parent_key: str = "", sep: str = "."
+) -> dict[str, T]:
+    items: dict[str, T] = {}
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if hasattr(v, "items"):
+            items.update(flatten_recursive(v, new_key, sep))
+        else:
+            v: Any
+            items[new_key] = v
+    return items
