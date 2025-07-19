@@ -1,7 +1,7 @@
 import ast
 import uuid
 from enum import IntEnum, auto
-from typing import Any, NamedTuple, Self
+from typing import Any, NamedTuple, Self, TypeGuard
 
 
 class OpType(IntEnum):
@@ -26,10 +26,11 @@ def _arg_to_ast(arg: Any, scope: dict[str, Any]) -> ast.expr:
 
 
 class ObjExpr:
-    __slots__ = ("_operations",)
+    __slots__ = ("_operations", "__pychain_expr__")
 
     def __init__(self) -> None:
         self._operations: list[OpInfo] = []
+        self.__pychain_expr__ = True
 
     def __getattr__(self, name: str) -> Self:
         self._operations.append(OpInfo(OpType.ATTR, name))
@@ -65,3 +66,7 @@ def as_expr[T](target_type: type[T]) -> T:
     You can wrap any class with this function, but it's only useful for classes that have methods or attributes you want to chain.
     """
     return ObjExpr()  # type: ignore
+
+
+def is_obj_expr(val: Any) -> TypeGuard[ObjExpr]:
+    return getattr(val, "__pychain_expr__", False)

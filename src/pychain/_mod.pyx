@@ -9,6 +9,7 @@ from ._protocols import CheckFunc, ProcessFunc, TransformFunc
 from copy import deepcopy
 from ._compilers import collect_ast, collect_scope
 from ._func import Func
+from ._obj_exprs import ObjExpr
 
 K = TypeVar("K")
 K1 = TypeVar("K1")
@@ -81,6 +82,9 @@ cdef class Expr(BaseExpr):
     _pipeline: list[Callable[[Any], Any]]
 
     cpdef into(self, obj: Callable[[Any], Any]):
+        return self._do(obj)
+
+    cpdef into_expr(self, obj: ObjExpr):
         return self._do(obj)
 
     def into_iter(self, f: Callable[[Any], Iterable[Any]]):

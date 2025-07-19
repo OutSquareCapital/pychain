@@ -4,7 +4,7 @@ import uuid
 from collections.abc import Callable
 from typing import Any
 
-from ._obj_exprs import ObjExpr
+from ._obj_exprs import is_obj_expr
 from ._protocols import INLINEABLE_BUILTINS, CompileResult
 
 
@@ -29,14 +29,12 @@ def collect_ast[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
     func_scope: dict[str, Any] = {}
 
     for i, func in enumerate(_pipeline):
+        if is_obj_expr(func):
+            final_expr_ast: ast.expr = func.to_ast(final_expr_ast, func_scope)
+            continue
         if func in INLINEABLE_BUILTINS:
             final_expr_ast = _from_builtin(func, final_expr_ast)
             continue
-
-        if isinstance(func, ObjExpr):
-            final_expr_ast: ast.expr = func.to_ast(final_expr_ast, func_scope)
-            continue
-
         try:
             final_expr_ast = _get_final_ast(func, final_expr_ast)
 
@@ -138,6 +136,7 @@ def _finalize(
 
     exec(code_obj, func_scope)
     return func_scope[func_name], source_code
+
 
 def _get_fn_name() -> str:
     return f"generated_func_{str(uuid.uuid4()).replace('-', '')}"
