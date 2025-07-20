@@ -1,6 +1,4 @@
-from ._structs import Struct
-from ._iter import Iter, Expr
-from ._obj_exprs import as_expr
+from ._exprs import Expr, Iter, Struct
 
 
 class StructConstructor:
@@ -16,6 +14,15 @@ class ExprConstructor:
 class IterConstructor:
     def __call__[T](self, dtype: type[T]) -> Iter[T, T]:
         return Iter([])
+
+
+def as_expr[T](obj: type[T]) -> T:
+    """
+    Create an instance of ObjExpr that can be used to build expressions.
+
+    You can wrap any class with this function, and it will act as if it was an instance of this type.
+    """
+    return Expr()  # type: ignore
 
 
 expr = ExprConstructor()

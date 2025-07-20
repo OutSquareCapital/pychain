@@ -1,12 +1,18 @@
+import operator as op
 import textwrap
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from ._protocols import ProcessFunc, TransformFunc
-import cytoolz.itertoolz as itz
-import cytoolz.dicttoolz as dcz
-from typing import Any
 from functools import partial
-import operator as op
+from typing import Any
+
+import cytoolz.dicttoolz as dcz
+import cytoolz.itertoolz as itz
+
+from ._protocols import (
+    ProcessFunc,
+    TransformFunc,
+)
+
 
 @dataclass(slots=True, frozen=True, repr=False)
 class Func[P, R]:
@@ -48,14 +54,6 @@ class Func[P, R]:
         Returns the wrapped function.
         """
         return self._compiled_func
-
-
-def merge_sorted[V](
-    on: Iterable[V],
-    others: Iterable[Iterable[V]],
-    sort_on: Callable[[V], Any] | None = None,
-):
-    return itz.merge_sorted(on, *others, key=sort_on)
 
 
 def concat[V](on: Iterable[V], others: Iterable[Iterable[V]]):
@@ -117,6 +115,7 @@ def tap[V](value: Iterable[V], func: Callable[[V], None]):
         func(item)
         yield item
 
+
 def _runner[**P](
     p1: Callable[P, bool], p2: Callable[P, bool], *args: P.args, **kwargs: P.kwargs
 ):
@@ -131,6 +130,7 @@ def and_[**P](
     p1: Callable[P, bool],
 ):
     return partial(_binder, p1)
+
 
 def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
     return dcz.merge(on, *others)
@@ -152,3 +152,11 @@ def flatten_recursive[T](
             v: Any
             items[new_key] = v
     return items
+
+
+def merge_sorted[V](
+    on: Iterable[V],
+    others: Iterable[Iterable[V]],
+    sort_on: Callable[[V], Any] | None = None,
+):
+    return itz.merge_sorted(on, *others, key=sort_on)

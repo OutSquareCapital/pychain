@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from .._protocols import CheckFunc
+from ._protocols import CheckFunc
 from typing import Any
 
 @dataclass(slots=True)
