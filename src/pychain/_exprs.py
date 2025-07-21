@@ -197,12 +197,10 @@ class BaseExpr[P, R]:
     def __ne__(self, other: Any) -> Self:  # type: ignore[override]
         return self._compare_op(other, ast.NotEq())
 
+
 class Expr[P, R](BaseExpr[P, R]):
     def _do[T](self, f: Callable[[R], T]) -> "Expr[P, T]":
         return Expr(pipeline=self._pipeline + [f])
-
-    def into_partial[T](self, f: Callable[[P], T], *args: Any, **kwargs: Any):
-        return self._do(partial(f, *args, **kwargs))
 
     def do(self, f: ProcessFunc[R]) -> "Expr[P, R]":
         return self._do(f)
@@ -210,11 +208,15 @@ class Expr[P, R](BaseExpr[P, R]):
     def into[T](self, obj: Callable[[R], T]) -> "Expr[P, T]":
         return self._do(obj)
 
+    def into_partial[T](self, f: Callable[[P], T], *args: Any, **kwargs: Any):
+        return self._do(partial(f, *args, **kwargs))
+
     def into_str(self, txt: str) -> "Expr[P, str]":
         return self._do(partial(str.format, txt))
 
     def into_expr[T](self, obj: T) -> "Expr[P, T]":
         return self._do(obj)  # type: ignore
+
 
 class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def _do[T](self, f: Callable[[Iterable[VR]], T]) -> "Iter[VP, T]":
@@ -240,7 +242,10 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         return self._do(any)
 
     def to_dict(self):
-        return self._do(fn.iter_to_dict)
+        def iter_to_dict[V](value: Iterable[V]):
+            return dict(enumerate(value))
+
+        return self._do(iter_to_dict)
 
     def group_by[K](
         self, on: TransformFunc[VR, K]
@@ -262,7 +267,10 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         return self._do(f=partial(filter, f))  # type: ignore
 
     def flat_map(self, f: TransformFunc[VR, Iterable[VR]]):
-        return self._do(f=partial(fn.flat_map, func=f))
+        def _flat_map[V, V1](value: Iterable[V], func: TransformFunc[V, Iterable[V1]]):
+            return itz.concat(map(func, value))
+
+        return self._do(f=partial(_flat_map, func=f))
 
     def starmap(self, f: TransformFunc[VR, VR]):
         return self._do(f=partial(starmap, f))  # type: ignore
@@ -344,23 +352,49 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         default: Any | None = None,
         key: ProcessFunc[VR] | None = None,
     ):
-        return self._do(f=partial(fn.diff, others=others, key=key))
+        def _diff[T, V](
+            value: Iterable[T],
+            others: Iterable[Iterable[T]],
+            ccpdefault: Any | None = None,
+            key: ProcessFunc[V] | None = None,
+        ):
+            return itz.diff(*(value, *others), ccpdefault=ccpdefault, key=key)
+
+        return self._do(f=partial(_diff, others=others, key=key))
 
     def zip_with(
         self, others: Iterable[Iterable[VR]], strict: bool = False
     ) -> "Iter[VP, zip[tuple[Any, ...]]]":
-        return self._do(f=partial(fn.zip_with, others=others, strict=strict))
+        def _zip_with[T](
+            value: Iterable[T], others: Iterable[Iterable[Any]], strict: bool
+        ):
+            return zip(value, *others, strict=strict)
+
+        return self._do(f=partial(_zip_with, others=others, strict=strict))
 
     def merge_sorted(
         self, others: Iterable[Iterable[VR]], sort_on: Callable[[VR], Any] | None = None
     ):
-        return self._do(f=partial(fn.merge_sorted, others=others, sort_on=sort_on))
+        def _merge_sorted[V](
+            on: Iterable[V],
+            others: Iterable[Iterable[V]],
+            sort_on: Callable[[V], Any] | None = None,
+        ):
+            return itz.merge_sorted(on, *others, key=sort_on)
+
+        return self._do(f=partial(_merge_sorted, others=others, sort_on=sort_on))
 
     def interleave(self, *others: Iterable[VR]):
-        return self._do(f=partial(fn.interleave, others=others))
+        def _interleave[V](on: Iterable[V], others: Iterable[Iterable[V]]):
+            return itz.interleave(seqs=[on, *others])
+
+        return self._do(f=partial(_interleave, others=others))
 
     def concat(self, *others: Iterable[VR]):
-        return self._do(f=partial(fn.concat, others=others))
+        def _concat[V](on: Iterable[V], others: Iterable[Iterable[V]]):
+            return itz.concat([on, *others])
+
+        return self._do(f=partial(_concat, others=others))
 
     def first(self) -> "Expr[Iterable[VP], VR]":
         return self.agg(itz.first)
@@ -421,13 +455,19 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
         return self._do(f=partial(dcz.update_in, keys=keys, func=f))
 
     def merge(self, *others: dict[KR, VR]):
-        return self._do(f=partial(fn.merge, others=others))
+        def _merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
+            return dcz.merge(on, *others)
+
+        return self._do(f=partial(_merge, others=others))
 
     def merge_with(self, f: Callable[[Iterable[VR]], VR], *others: dict[KR, VR]):
         return self._do(f=partial(dcz.merge_with, f, *others))
 
     def drop(self, *keys: KR):
-        return self._do(f=partial(fn.drop, keys=keys))
+        def _drop[K, V](data: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
+            return dcz.dissoc(data, *keys)
+
+        return self._do(f=partial(_drop, keys=keys))
 
 
 # ----------- compile functions -----------

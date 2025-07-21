@@ -3,13 +3,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from typing import Any
 
-import cytoolz.dicttoolz as dcz
 import cytoolz.itertoolz as itz
-
-from ._protocols import (
-    ProcessFunc,
-    TransformFunc,
-)
 
 
 @dataclass(slots=True, frozen=True, repr=False)
@@ -54,14 +48,6 @@ class Func[P, R]:
         return self._compiled_func
 
 
-def concat[V](on: Iterable[V], others: Iterable[Iterable[V]]):
-    return itz.concat([on, *others])
-
-
-def flat_map[V, V1](value: Iterable[V], func: TransformFunc[V, Iterable[V1]]):
-    return itz.concat(map(func, value))
-
-
 def peekn(seq: Iterable[Any], n: int, note: str | None = None):
     values, sequence = itz.peekn(n, seq)
     if note:
@@ -87,38 +73,10 @@ def repeat[V](value: Iterable[V], n: int) -> Iterable[V]:
     return itz.concat(seqs=map(fn, value))
 
 
-def diff[T, V](
-    value: Iterable[T],
-    others: Iterable[Iterable[T]],
-    ccpdefault: Any | None = None,
-    key: ProcessFunc[V] | None = None,
-):
-    return itz.diff(*(value, *others), ccpdefault=ccpdefault, key=key)
-
-
-def zip_with[T](value: Iterable[T], others: Iterable[Iterable[Any]], strict: bool):
-    return zip(value, *others, strict=strict)
-
-
-def interleave[V](on: Iterable[V], others: Iterable[Iterable[V]]):
-    return itz.interleave(seqs=[on, *others])
-
-
-def iter_to_dict[V](value: Iterable[V]):
-    return dict(enumerate(value))
-
-
 def tap[V](value: Iterable[V], func: Callable[[V], None]):
     for item in value:
         func(item)
         yield item
-
-def merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
-    return dcz.merge(on, *others)
-
-
-def drop[K, V](data: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
-    return dcz.dissoc(data, *keys)
 
 
 def flatten_recursive[T](
@@ -133,11 +91,3 @@ def flatten_recursive[T](
             v: Any
             items[new_key] = v
     return items
-
-
-def merge_sorted[V](
-    on: Iterable[V],
-    others: Iterable[Iterable[V]],
-    sort_on: Callable[[V], Any] | None = None,
-):
-    return itz.merge_sorted(on, *others, key=sort_on)
