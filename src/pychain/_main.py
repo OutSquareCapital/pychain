@@ -1,4 +1,6 @@
-from ._exprs import Expr, Iter, Struct
+from ._exprs import Expr
+from ._iter import Iter
+from ._struct import Struct
 
 
 class StructConstructor:
@@ -22,7 +24,7 @@ def as_expr[T](obj: type[T]) -> T:
 
     You can wrap any class with this function, and it will act as if it was an instance of this type.
     """
-    return Expr()  # type: ignore
+    return Expr([])  # type: ignore
 
 
 expr = ExprConstructor()
