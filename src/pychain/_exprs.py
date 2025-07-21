@@ -199,17 +199,12 @@ class BaseExpr[P, R]:
 
 
 class Expr[P, R](BaseExpr[P, R]):
-    def _do[T](self, f: Callable[[R], T]) -> "Expr[P, T]":
+    def _do[T](self, f: TransformFunc[R, T]) -> "Expr[P, T]":
         return Expr(pipeline=self._pipeline + [f])
 
-    def do(self, f: ProcessFunc[R]) -> "Expr[P, R]":
-        return self._do(f)
-
-    def into[T](self, obj: Callable[[R], T]) -> "Expr[P, T]":
+    def into[T](self, obj: TransformFunc[R, T]) -> "Expr[P, T]":
         return self._do(obj)
 
-    def into_partial[T](self, f: Callable[[P], T], *args: Any, **kwargs: Any):
-        return self._do(partial(f, *args, **kwargs))
 
     def into_str(self, txt: str) -> "Expr[P, str]":
         return self._do(partial(str.format, txt))
@@ -230,7 +225,7 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         return self._do(partial(map, mapping_func))  # type: ignore
 
     def agg[T](self, f: Callable[[Iterable[VR]], T]) -> "Expr[Iterable[VP], T]":
-        return Expr(self._pipeline + [f])
+        return Expr(self._do(f)._pipeline)
 
     def is_distinct(self):
         return self._do(itz.isdistinct)
@@ -250,10 +245,10 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def group_by[K](
         self, on: TransformFunc[VR, K]
     ) -> "Struct[VP, K, VR, Iterable[VR]]":
-        return Struct([self._do(partial(itz.groupby, on)).collect().extract()])
+        return Struct(self._do(partial(itz.groupby, on))._pipeline)
 
     def into_frequencies(self) -> "Struct[VP, int, VR, int]":
-        return Struct([self._do(itz.frequencies).collect().extract()])
+        return Struct(self._do(itz.frequencies)._pipeline)
 
     def reduce_by[K](
         self, key: TransformFunc[VR, K], binop: Callable[[VR, VR], VR]
@@ -473,7 +468,27 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
 # ----------- compile functions -----------
 
 
-def is_obj_expr(val: Any) -> TypeGuard[BaseExpr[Any, Any]]:
+class InlineTransformer(ast.NodeTransformer):
+    def __init__(self, arg_name: str, replacement_node: ast.AST) -> None:
+        self.arg_name: str = arg_name
+        self.replacement_node: ast.AST = replacement_node
+
+    def visit_Name(self, node: ast.Name) -> Any:
+        if node.id == self.arg_name:
+            return self.replacement_node
+        return node
+
+
+def collect_pipeline[P](pipeline: list[Callable[[P], Any]]) -> fn.Func[P, Any]:
+    try:
+        compiled_func, source_code = _collect_ast(pipeline)
+    except Exception as e:
+        print(f"Error collecting AST: {e}")
+        compiled_func, source_code = _collect_scope(pipeline)
+    return fn.Func(compiled_func, source_code)
+
+
+def _is_obj_expr(val: Any) -> TypeGuard[BaseExpr[Any, Any]]:
     return getattr(val, "__pychain_expr__", False)
 
 
@@ -489,16 +504,7 @@ def _value_to_ast(value: Any, scope: Scope) -> ast.expr:
             return ast.Name(id=var_name, ctx=ast.Load())
 
 
-def collect_pipeline[P](pipeline: list[Callable[[P], Any]]) -> fn.Func[P, Any]:
-    try:
-        compiled_func, source_code = collect_ast(pipeline)
-    except Exception as e:
-        print(f"Error collecting AST: {e}")
-        compiled_func, source_code = collect_scope(pipeline)
-    return fn.Func(compiled_func, source_code)
-
-
-def collect_scope[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
+def _collect_scope[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
     func_scope: Scope = {}
     func_name: str = _get_fn_name()
     nested_expr = "arg"
@@ -514,23 +520,28 @@ def collect_scope[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
     return func_scope[func_name], function_code
 
 
-def collect_ast[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
+def _collect_ast[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
     final_expr_ast = ast.Name(id="arg", ctx=ast.Load())
     func_scope: Scope = {}
 
     for i, func in enumerate(_pipeline):
-        if is_obj_expr(func):
-            final_expr_ast: ast.expr = func.to_ast(func_scope)
-            continue
-        if func in INLINEABLE_BUILTINS:
-            final_expr_ast = _from_builtin(func, final_expr_ast)
-            continue
-        try:
-            final_expr_ast = _get_final_ast(func, final_expr_ast)
-
-        except (TypeError, OSError):
-            final_expr_ast = _fallback(func_scope, func, i, final_expr_ast)
+        final_expr_ast = _get_ast(i, func, func_scope, final_expr_ast)
     return _finalize(final_expr_ast, func_scope)
+
+
+def _get_ast[P](
+    i: int, func: Callable[[P], Any], func_scope: Scope, final_expr_ast: ast.expr
+) -> ast.expr:
+    if _is_obj_expr(func):
+        return func.to_ast(func_scope)
+    if func in INLINEABLE_BUILTINS:
+        return _from_builtin(func, final_expr_ast)
+    try:
+        final_expr_ast = _get_final_ast(func, final_expr_ast)
+
+    except (TypeError, OSError):
+        final_expr_ast = _fallback(func_scope, func, i, final_expr_ast)
+    return final_expr_ast
 
 
 def _extract_return_expression(func_source: str) -> ast.expr | None:
@@ -555,17 +566,6 @@ def _from_builtin(func: Callable[..., Any], final_expr_ast: ast.expr) -> ast.Cal
         args=[final_expr_ast],
         keywords=[],
     )
-
-
-class InlineTransformer(ast.NodeTransformer):
-    def __init__(self, arg_name: str, replacement_node: ast.AST) -> None:
-        self.arg_name: str = arg_name
-        self.replacement_node: ast.AST = replacement_node
-
-    def visit_Name(self, node: ast.Name) -> Any:
-        if node.id == self.arg_name:
-            return self.replacement_node
-        return node
 
 
 def _create_func_ast(final_expr_ast: ast.expr, func_name: str) -> ast.Module:
