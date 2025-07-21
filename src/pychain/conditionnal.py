@@ -1,6 +1,5 @@
 from collections.abc import Callable
 from dataclasses import dataclass
-from ._protocols import CheckFunc
 from typing import Any
 from functools import partial
 import operator as op
@@ -8,7 +7,7 @@ import operator as op
 
 @dataclass(slots=True)
 class When[T, R]:
-    _predicate: CheckFunc[T]
+    _predicate: Callable[[T], bool]
 
     def then(self, result: Callable[[T], R] | R) -> "Then[T, R]":
         return Then[T, R](_conditions=[(self._predicate, result)])
@@ -16,8 +15,8 @@ class When[T, R]:
 
 @dataclass(slots=True)
 class ChainedWhen[T, R]:
-    _conditions: list[tuple[CheckFunc[T], Callable[[T], R] | R]]
-    _predicate: CheckFunc[T]
+    _conditions: list[tuple[Callable[[T], bool], Callable[[T], R] | R]]
+    _predicate: Callable[[T], bool]
 
     def then(self, result: Callable[[T], R] | R) -> "ChainedThen[T, R]":
         new_conditions = self._conditions + [(self._predicate, result)]
@@ -26,9 +25,9 @@ class ChainedWhen[T, R]:
 
 @dataclass(slots=True)
 class BaseThen[T, R]:
-    _conditions: list[tuple[CheckFunc[T], Callable[[T], R] | R]]
+    _conditions: list[tuple[Callable[[T], bool], Callable[[T], R] | R]]
 
-    def when(self, predicate: CheckFunc[T]) -> "ChainedWhen[T, R]":
+    def when(self, predicate: Callable[[T], bool]) -> "ChainedWhen[T, R]":
         return ChainedWhen[T, R](self._conditions, predicate)
 
     def otherwise(self, default_result: Callable[[T], R] | R):
