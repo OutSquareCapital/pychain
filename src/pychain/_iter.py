@@ -1,4 +1,4 @@
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable
 from functools import partial, reduce
 from itertools import dropwhile, product, starmap, takewhile
 from random import Random
@@ -19,25 +19,38 @@ if TYPE_CHECKING:
     from ._struct import Struct
 
 
-class Iter[VP, VR](BaseExpr[Iterable[VP], Iterable[VR]]):
+class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def _do[T](self, f: Callable[[Iterable[VR]], T]) -> "Iter[VP, T]":
-        return Iter(pipeline=self._pipeline + [f])
+        return Iter(self._pipeline + [f])
 
-    def into[T](self, obj: Callable[[Iterable[VR]], T]) -> "Iter[VP, T]":
+    def into[T](self, obj: Callable[[Iterable[VR]], T]):
         return self._do(obj)
 
-    def map_compose(self, fns: Iterable[ProcessFunc[VR]]) -> "Iter[VP, VR]":
+    def map_compose(self, *fns: ProcessFunc[VR]) -> "Iter[VP, VR]":
         mapping_func = collect_pipeline(list(fns))
         return self._do(partial(map, mapping_func))  # type: ignore
+
+    def map[T](self, f: TransformFunc[VR, T]) -> "Iter[VP, T]":
+        return self._do(f=partial(map, f))  # type: ignore
+
+    def filter(self, f: CheckFunc[VR]) -> "Iter[VP, VR]":
+        return self._do(f=partial(filter, f))  # type: ignore
+
+    def take_while(self, predicate: CheckFunc[VR]) -> "Iter[VP, VR]":
+        return self._do(f=partial(takewhile, predicate))  # type: ignore
+
+    def drop_while(self, predicate: CheckFunc[VR]) -> "Iter[VP, VR]":
+        return self._do(f=partial(dropwhile, predicate))  # type: ignore
+
+    def starmap(self, f: TransformFunc[VR, VR]):
+        return self._do(f=partial(starmap, f))  # type: ignore
 
     def agg[T](self, f: Callable[[Iterable[VR]], T]) -> "Expr[Iterable[VP], T]":
         from ._exprs import Expr
 
         return Expr(self._do(f)._pipeline)
 
-    def group_by[K](
-        self, on: TransformFunc[VR, K]
-    ) -> "Struct[VP, K, VR, Iterable[VR]]":
+    def group_by[K](self, on: TransformFunc[VR, K]) -> "Struct[VP, K, VR, list[VR]]":
         from ._struct import Struct
 
         return Struct(self._do(partial(itz.groupby, on))._pipeline)
@@ -47,31 +60,14 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], Iterable[VR]]):
 
         return Struct(self._do(itz.frequencies)._pipeline)
 
-    def reduce_by[K](
-        self, key: TransformFunc[VR, K], binop: Callable[[VR, VR], VR]
-    ) -> "Iter[VP, dict[K, VR]]":
+    def reduce_by[K](self, key: TransformFunc[VR, K], binop: Callable[[VR, VR], VR]):
         return self._do(partial(itz.reduceby, key=key, binop=binop))
-
-    def map[T](self, f: TransformFunc[VR, T] | T) -> "Iter[VP, T]":
-        return self._do(f=partial(map, f))  # type: ignore
-
-    def filter(self, f: CheckFunc[VR] | bool) -> "Iter[VP, VR]":
-        return self._do(f=partial(filter, f))  # type: ignore
 
     def flat_map[V1](self, f: TransformFunc[VR, Iterable[V1]]):
         def _flat_map(value: Iterable[VR]):
             return itz.concat(map(f, value))
 
         return self._do(f=partial(_flat_map))
-
-    def starmap(self, f: TransformFunc[VR, VR]):
-        return self._do(f=partial(starmap, f))  # type: ignore
-
-    def take_while(self, predicate: CheckFunc[VR]) -> "Iter[VP, VR]":
-        return self._do(f=partial(takewhile, predicate))  # type: ignore
-
-    def drop_while(self, predicate: CheckFunc[VR]) -> "Iter[VP, VR]":
-        return self._do(f=partial(dropwhile, predicate))  # type: ignore
 
     def interpose(self, element: VR):
         return self._do(f=partial(itz.interpose, element))
@@ -118,18 +114,16 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], Iterable[VR]]):
     def tap(self, func: Callable[[VR], None]):
         return self._do(f=partial(fn.tap, func=func))
 
-    def enumerate(self) -> "Iter[VP, enumerate[VR]]":
+    def enumerate(self):
         return self._do(f=enumerate)
 
-    def flatten(self) -> "Iter[VP, Any]":
+    def flatten(self):
         return self._do(f=itz.concat)
 
-    def partition(
-        self, n: int, pad: VR | None = None
-    ) -> "Iter[VP, Iterator[tuple[VR, ...]]]":
+    def partition(self, n: int, pad: VR | None = None):
         return self._do(f=partial(itz.partition, n, pad=pad))
 
-    def partition_all(self, n: int) -> "Iter[VP, Iterator[tuple[VR, ...]]]":
+    def partition_all(self, n: int):
         return self._do(f=partial(itz.partition_all, n))
 
     def rolling(self, length: int):

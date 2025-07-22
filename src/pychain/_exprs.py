@@ -3,7 +3,7 @@ import inspect
 import uuid
 from collections.abc import Callable
 from functools import partial
-from typing import Any, Self, TypeGuard, overload, override
+from typing import Any, TypeGuard
 
 from . import funcs as fn
 from ._protocols import (
@@ -16,20 +16,17 @@ from ._protocols import (
 
 
 class BaseExpr[P, R]:
-    def __init__(
-        self,
-        pipeline: list[Callable[..., Any]],
-        node: ast.expr | None = None,
-    ) -> None:
-        self._node: ast.expr = (
-            node if node is not None else ast.Name(id="arg", ctx=ast.Load())
-        )
-        self._scope: dict[str, Any] = {}
-        self.__pychain_expr__ = True
+    def __init__(self, pipeline: list[Callable[..., Any]]) -> None:
         self._pipeline = pipeline
 
     def __repr__(self):
         return f"class {self.__class__.__name__}(pipeline:\n{self._pipeline.__repr__()})\n)"
+
+    def _do(self, f: Any) -> Any:
+        raise NotImplementedError
+
+    def into(self, obj: Any) -> Any:
+        raise NotImplementedError
 
     def compose(self, *fns: ProcessFunc[R]):
         for op in fns:
@@ -39,179 +36,15 @@ class BaseExpr[P, R]:
     def collect(self) -> fn.Func[P, R]:
         return collect_pipeline(self._pipeline)
 
-    def to_ast(self, func_scope: Scope) -> ast.expr:
-        func_scope.update(self._scope)
-        return self._node
-
-    def _new_node(self, node: ast.expr, scope: Scope) -> Self:
-        new_instance = self.__class__(node=node, pipeline=self._pipeline)
-        new_instance._scope = scope
-        return new_instance
-
-    def _new_scope(self) -> Scope:
-        return self._scope.copy()
-
-    def _binary_op(self, other: Any, op: ast.operator) -> Self:
-        new_scope: Scope = self._new_scope()
-        right_node = _value_to_ast(other, new_scope)
-        new_node = ast.BinOp(left=self._node, op=op, right=right_node)
-        return self._new_node(new_node, new_scope)
-
-    def _reflected_binary_op(self, other: Any, op: ast.operator) -> Self:
-        new_scope: Scope = self._new_scope()
-        left_node = _value_to_ast(other, new_scope)
-        new_node = ast.BinOp(left=left_node, op=op, right=self._node)
-        return self._new_node(new_node, new_scope)
-
-    def _compare_op(self, other: Any, op: ast.cmpop) -> Self:
-        new_scope = self._new_scope()
-        right_node = _value_to_ast(other, new_scope)
-        new_node = ast.Compare(left=self._node, ops=[op], comparators=[right_node])
-        return self._new_node(new_node, new_scope)
-
-    def _logical_op(self, other: Any, op: ast.boolop) -> Self:
-        new_scope = self._new_scope()
-        right_node = _value_to_ast(other, new_scope)
-        if isinstance(self._node, ast.BoolOp) and isinstance(self._node.op, type(op)):
-            new_node = ast.BoolOp(op=op, values=[*self._node.values, right_node])
-        else:
-            new_node = ast.BoolOp(op=op, values=[self._node, right_node])
-        return self._new_node(new_node, new_scope)
-
-    def __getattr__(self, name: str) -> Self:
-        new_node = ast.Attribute(value=self._node, attr=name, ctx=ast.Load())
-        return self.__class__(node=new_node, pipeline=self._pipeline)
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Self:
-        new_scope: Scope = self._new_scope()
-        ast_args = [_value_to_ast(arg, new_scope) for arg in args]
-        ast_kwargs = [
-            ast.keyword(arg=k, value=_value_to_ast(v, new_scope))
-            for k, v in kwargs.items()
-        ]
-
-        new_node = ast.Call(func=self._node, args=ast_args, keywords=ast_kwargs)
-        return self._new_node(new_node, new_scope)
-
-    def __getitem__(self, key: Any) -> Self:
-        new_scope = self._new_scope()
-        slice_node = _value_to_ast(key, new_scope)
-        new_node = ast.Subscript(value=self._node, slice=slice_node, ctx=ast.Load())
-        return self._new_node(new_node, new_scope)
-
-    def __add__(self, other: Any) -> Self:
-        return self._binary_op(other, ast.Add())
-
-    def __sub__(self, other: Any) -> Self:
-        return self._binary_op(other, ast.Sub())
-
-    def __mul__(self, other: Any) -> Self:
-        return self._binary_op(other, ast.Mult())
-
-    def __truediv__(self, other: Any) -> Self:
-        return self._binary_op(other, ast.Div())
-
-    def __radd__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.Add())
-
-    def __rsub__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.Sub())
-
-    def __rmul__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.Mult())
-
-    def __rtruediv__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.Div())
-
-    def __mod__(self, other: Any) -> Self:
-        return self._binary_op(other, ast.Mod())
-
-    def __pow__(self, other: Any) -> Self:
-        return self._binary_op(other, ast.Pow())
-
-    def __matmul__(self, other: Any) -> Self:
-        return self._binary_op(other, ast.MatMult())
-
-    def __rmod__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.Mod())
-
-    def __rpow__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.Pow())
-
-    def __rmatmul__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.MatMult())
-
-    def __and__(self, other: Any) -> Self:
-        return self._logical_op(other, ast.And())
-
-    def __or__(self, other: Any) -> Self:
-        return self._logical_op(other, ast.Or())
-
-    def __xor__(self, other: Any) -> Self:
-        return self._binary_op(other, ast.BitXor())
-
-    def __lshift__(self, other: Any) -> Self:
-        return self._binary_op(other, ast.LShift())
-
-    def __rshift__(self, other: Any) -> Self:
-        return self._binary_op(other, ast.RShift())
-
-    def __rand__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.BitAnd())
-
-    def __ror__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.BitOr())
-
-    def __rxor__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.BitXor())
-
-    def __rlshift__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.LShift())
-
-    def __rrshift__(self, other: Any) -> Self:
-        return self._reflected_binary_op(other, ast.RShift())
-
-    def __lt__(self, other: Any) -> Self:  # <
-        return self._compare_op(other, ast.Lt())
-
-    def __le__(self, other: Any) -> Self:
-        return self._compare_op(other, ast.LtE())
-
-    def __gt__(self, other: Any) -> Self:
-        return self._compare_op(other, ast.Gt())
-
-    def __ge__(self, other: Any) -> Self:
-        return self._compare_op(other, ast.GtE())
-
-    @override
-    def __eq__(self, other: Any) -> Self:  # type: ignore[override]
-        return self._compare_op(other, ast.Eq())
-
-    @override
-    def __ne__(self, other: Any) -> Self:  # type: ignore[override]
-        return self._compare_op(other, ast.NotEq())
-
 
 class Expr[P, R](BaseExpr[P, R]):
-    def _do[T](self, f: T) -> "Expr[P, T]":
-        match f:
-            case str():
-                self._pipeline.append(partial(str.format, f))
-            case _ if callable(f) or is_obj_expr(f):
-                self._pipeline.append(f)
-            case _:
-                raise TypeError(
-                    f"Expected a callable, an Pychain Expression,  or a string, got {type(f)}"
-                )
-        return self  # type: ignore
+    def _do[T](self, f: Callable[[R], T]) -> "Expr[P, T]":
+        return Expr(self._pipeline + [f])
 
-    @overload
-    def into(self, obj: str) -> "Expr[P, str]": ...
-    @overload
-    def into[T](self, obj: TransformFunc[R, T]) -> "Expr[P, T]": ...
-    @overload
-    def into[T](self, obj: T) -> "Expr[P, T]": ...
-    def into[T](self, obj: TransformFunc[R, T] | str | T) -> "Expr[P, Any]":
+    def into_str(self, obj: str) -> "Expr[P, str]":
+        return self._do(partial(str.format, obj))
+
+    def into[T](self, obj: TransformFunc[R, T]) -> "Expr[P, T]":
         return self._do(obj)
 
 
@@ -229,7 +62,7 @@ class InlineTransformer(ast.NodeTransformer):
         return node
 
 
-def collect_pipeline[P](pipeline: list[Callable[[P], Any]]) -> fn.Func[P, Any]:
+def collect_pipeline[P, R](pipeline: list[Callable[[P], R]]) -> fn.Func[P, R]:
     try:
         compiled_func, source_code = _collect_ast(pipeline)
     except Exception as e:
@@ -240,18 +73,6 @@ def collect_pipeline[P](pipeline: list[Callable[[P], Any]]) -> fn.Func[P, Any]:
 
 def is_obj_expr(val: Any) -> TypeGuard[BaseExpr[Any, Any]]:
     return getattr(val, "__pychain_expr__", False)
-
-
-def _value_to_ast(value: Any, scope: Scope) -> ast.expr:
-    match value:
-        case str() | int() | float() | bool() | None:
-            return ast.Constant(value=value)
-        case BaseExpr():
-            return value.to_ast(scope)
-        case _:
-            var_name = f"__arg_{str(uuid.uuid4()).replace('-', '')[:8]}"
-            scope[var_name] = value
-            return ast.Name(id=var_name, ctx=ast.Load())
 
 
 def _collect_scope[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
@@ -282,8 +103,6 @@ def _collect_ast[P](_pipeline: list[Callable[[P], Any]]) -> CompileResult[P]:
 def _get_ast[P](
     i: int, func: Callable[[P], Any], func_scope: Scope, final_expr_ast: ast.expr
 ) -> ast.expr:
-    if is_obj_expr(func):
-        return func.to_ast(func_scope)
     if func in INLINEABLE_BUILTINS:
         return _from_builtin(func, final_expr_ast)
     try:
