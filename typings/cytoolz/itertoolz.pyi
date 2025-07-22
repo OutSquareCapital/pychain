@@ -199,7 +199,7 @@ def interleave[T](seqs: Iterable[Iterable[T]]) -> Iterator[T]:
     """
     ...
 
-def interpose[T](el: Any, seq: Iterable[T]) -> Iterator[T | Any]:
+def interpose[T, E](el: E, seq: Iterable[T]) -> Iterator[T | E]:
     """
     Introduce element between each pair of elements in seq
 

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from ._struct import Struct
 
 
-class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
+class Iter[VP, VR](BaseExpr[Iterable[VP], Iterable[VR]]):
     def _do[T](self, f: Callable[[Iterable[VR]], T]) -> "Iter[VP, T]":
         return Iter(pipeline=self._pipeline + [f])
 
@@ -58,11 +58,11 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def filter(self, f: CheckFunc[VR] | bool) -> "Iter[VP, VR]":
         return self._do(f=partial(filter, f))  # type: ignore
 
-    def flat_map(self, f: TransformFunc[VR, Iterable[VR]]):
-        def _flat_map[V, V1](value: Iterable[V], func: TransformFunc[V, Iterable[V1]]):
-            return itz.concat(map(func, value))
+    def flat_map[V1](self, f: TransformFunc[VR, Iterable[V1]]):
+        def _flat_map(value: Iterable[VR]):
+            return itz.concat(map(f, value))
 
-        return self._do(f=partial(_flat_map, func=f))
+        return self._do(f=partial(_flat_map))
 
     def starmap(self, f: TransformFunc[VR, VR]):
         return self._do(f=partial(starmap, f))  # type: ignore
@@ -85,7 +85,7 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def accumulate(self, f: Callable[[VR, VR], VR]):
         return self._do(f=partial(itz.accumulate, f))
 
-    def reduce[V](self, f: Callable[[VR, VR], VR]):
+    def reduce(self, f: Callable[[VR, VR], VR]):
         return self._do(f=partial(reduce, f))
 
     def insert_left(self, value: VR):
@@ -140,53 +140,41 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
 
     def diff(
         self,
-        others: Iterable[Iterable[VR]],
-        default: Any | None = None,
+        *others: Iterable[VR],
         key: ProcessFunc[VR] | None = None,
     ):
-        def _diff[T, V](
-            value: Iterable[T],
-            others: Iterable[Iterable[T]],
-            ccpdefault: Any | None = None,
-            key: ProcessFunc[V] | None = None,
-        ):
-            return itz.diff(*(value, *others), ccpdefault=ccpdefault, key=key)
+        def _diff[T, V](value: Iterable[T]):
+            return itz.diff(*(value, *others), ccpdefault=None, key=key)
 
-        return self._do(f=partial(_diff, others=others, key=key))
+        return self._do(f=partial(_diff))
 
     def zip_with(
-        self, others: Iterable[Iterable[VR]], strict: bool = False
+        self, *others: Iterable[VR], strict: bool = False
     ) -> "Iter[VP, zip[tuple[Any, ...]]]":
-        def _zip_with[T](
-            value: Iterable[T], others: Iterable[Iterable[Any]], strict: bool
-        ):
+        def _zip_with[T](value: Iterable[T]):
             return zip(value, *others, strict=strict)
 
-        return self._do(f=partial(_zip_with, others=others, strict=strict))
+        return self._do(f=partial(_zip_with))
 
     def merge_sorted(
-        self, others: Iterable[Iterable[VR]], sort_on: Callable[[VR], Any] | None = None
+        self, *others: Iterable[VR], sort_on: Callable[[VR], Any] | None = None
     ):
-        def _merge_sorted[V](
-            on: Iterable[V],
-            others: Iterable[Iterable[V]],
-            sort_on: Callable[[V], Any] | None = None,
-        ):
+        def _merge_sorted[V](on: Iterable[V]):
             return itz.merge_sorted(on, *others, key=sort_on)
 
-        return self._do(f=partial(_merge_sorted, others=others, sort_on=sort_on))
+        return self._do(f=partial(_merge_sorted))
 
     def interleave(self, *others: Iterable[VR]):
-        def _interleave[V](on: Iterable[V], others: Iterable[Iterable[V]]):
+        def _interleave(on: Iterable[VR]):
             return itz.interleave(seqs=[on, *others])
 
-        return self._do(f=partial(_interleave, others=others))
+        return self._do(f=partial(_interleave))
 
     def concat(self, *others: Iterable[VR]):
-        def _concat[V](on: Iterable[V], others: Iterable[Iterable[V]]):
+        def _concat[V](on: Iterable[V]):
             return itz.concat([on, *others])
 
-        return self._do(f=partial(_concat, others=others))
+        return self._do(f=partial(_concat))
 
     def is_distinct(self):
         return self._do(itz.isdistinct)
@@ -198,10 +186,10 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         return self._do(any)
 
     def to_dict(self):
-        def iter_to_dict[V](value: Iterable[V]):
+        def _to_dict[V](value: Iterable[V]):
             return dict(enumerate(value))
 
-        return self._do(iter_to_dict)
+        return self._do(_to_dict)
 
     def first(self) -> "Expr[Iterable[VP], VR]":
         return self.agg(itz.first)
