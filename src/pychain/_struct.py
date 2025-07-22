@@ -1,70 +1,73 @@
 from collections.abc import Callable, Iterable
-from functools import partial
-
 import cytoolz.dicttoolz as dcz
 
 from . import funcs as fn
 from ._exprs import BaseExpr
 from ._protocols import (
+    pipe_arg,
     CheckFunc,
+    Operation,
     ProcessFunc,
     TransformFunc,
 )
 
 
 class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
-    def _do[KT, VT](
-        self, f: Callable[[dict[KR, VR]], dict[KT, VT]]
+    __slots__ = ("_pipeline",)
+    @property
+    def _arg(self) -> dict[KR, VR]:
+        return pipe_arg(dict[KR, VR])
+
+    def _do[KT, VT, **P](
+        self, f: Callable[P, dict[KT, VT]], *args: P.args, **kwargs: P.kwargs
     ) -> "Struct[KP, VP, KT, VT]":
-        return Struct(self._pipeline + [f])
+        op = Operation(func=f, args=args, kwargs=kwargs)  # type: ignore
+        return Struct(self._pipeline + [op])
+    
+    def into[KT, VT](self, obj: Callable[[dict[KR, VR]], dict[KT, VT]]):
+        return self._do(obj, self._arg)
 
     def map_keys[T](self, f: TransformFunc[KR, T]):
-        return self._do(f=partial(dcz.keymap, f))
+        return self._do(dcz.keymap, f, self._arg)
 
-    def map_values[T](self, f: TransformFunc[VR, T]) -> "Struct[KP, VP, KR, T]":
-        return self._do(f=partial(dcz.valmap, f))
+    def map_values[T](self, f: TransformFunc[VR, T]):
+        return self._do(dcz.valmap, f, self._arg)
 
     def flatten_keys(self) -> "Struct[KP, VP, str, VR]":
-        return self._do(f=fn.flatten_recursive)  # type: ignore
+        return self._do(fn.flatten_recursive, self._arg)
 
     def select(self, predicate: CheckFunc[KR]):
-        return self._do(f=partial(dcz.keyfilter, predicate))
+        return self._do(dcz.keyfilter, predicate, self._arg)
 
     def filter(self, predicate: CheckFunc[VR]):
-        return self._do(f=partial(dcz.valfilter, predicate))
+        return self._do(dcz.valfilter, predicate, self._arg)
 
     def filter_items(
         self,
         predicate: CheckFunc[tuple[KR, VR]],
     ):
-        return self._do(partial(dcz.itemfilter, predicate))
+        return self._do(dcz.itemfilter, predicate, self._arg)
 
     def map_items[KT, VT](
         self,
         f: TransformFunc[tuple[KR, VR], tuple[KT, VT]],
     ):
-        return self._do(partial(dcz.itemmap, f))
+        return self._do(dcz.itemmap, f, self._arg)
 
     def with_key(self, key: KR, value: VR):
-        return self._do(f=partial(dcz.assoc, key=key, value=value))
+        return self._do(dcz.assoc, self._arg, key=key, value=value)
 
     def with_nested_key(self, keys: Iterable[KR] | KR, value: VR):
-        return self._do(f=partial(dcz.assoc_in, keys=keys, value=value))
+        return self._do(dcz.assoc_in, self._arg, keys=keys, value=value)
 
     def update_in(self, *keys: KR, f: ProcessFunc[VR]):
-        return self._do(f=partial(dcz.update_in, keys=keys, func=f))
+        return self._do(dcz.update_in, self._arg, keys=keys, func=f)
 
     def merge(self, *others: dict[KR, VR]):
-        def _merge[K, V](on: dict[K, V], others: Iterable[dict[K, V]]) -> dict[K, V]:
-            return dcz.merge(on, *others)
-
-        return self._do(f=partial(_merge, others=others))
+        return self._do(dcz.merge, self._arg, *others)
 
     def merge_with(self, f: Callable[[Iterable[VR]], VR], *others: dict[KR, VR]):
-        return self._do(f=partial(dcz.merge_with, f, *others))
+        return self._do(dcz.merge_with, f, self._arg, *others)
 
     def drop(self, *keys: KR):
-        def _drop[K, V](data: dict[K, V], keys: Iterable[K]) -> dict[K, V]:
-            return dcz.dissoc(data, *keys)
-
-        return self._do(f=partial(_drop, keys=keys))
+        return self._do(dcz.dissoc, self._arg, *keys)
