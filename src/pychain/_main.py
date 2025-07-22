@@ -17,19 +17,10 @@ class IterConstructor:
     def __call__[T](self, dtype: type[T]) -> Iter[T, T]:
         return Iter([])
 
-
-def as_expr[T](obj: type[T]) -> T:
-    """
-    Create an instance of ObjExpr that can be used to build expressions.
-
-    You can wrap any class with this function, and it will act as if it was an instance of this type.
-    """
-    return Expr([])  # type: ignore
-
-
 expr = ExprConstructor()
 iter = IterConstructor()
 struct = StructConstructor()
-Int: int = as_expr(int)
-Float: float = as_expr(float)
-String: str = as_expr(str)
+
+Int = expr(int)
+Float = expr(float)
+String = expr(str)
