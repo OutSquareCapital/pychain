@@ -20,7 +20,3 @@ class IterConstructor:
 expr = ExprConstructor()
 iter = IterConstructor()
 struct = StructConstructor()
-
-Int = expr(int)
-Float = expr(float)
-String = expr(str)
