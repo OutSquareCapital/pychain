@@ -48,7 +48,7 @@ class Func[P, R]:
         return self._compiled_func
 
 
-def peekn(seq: Iterable[Any], n: int, note: str | None = None):
+def peekn[T](seq: Iterable[T], n: int, note: str | None = None):
     values, sequence = itz.peekn(n, seq)
     if note:
         print(f"Peeked {n} values ({note}): {list(values)}")
