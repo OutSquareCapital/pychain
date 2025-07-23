@@ -5,8 +5,8 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
-
-from ._protocols import Func, Operation, is_placeholder
+from ._cythonifier import Func
+from ._protocols import Operation, is_placeholder
 from .funcs import INLINEABLE_BUILTINS, BUILTIN_NAMES
 
 type CompileResult[T] = tuple[Callable[[T], Any], str]

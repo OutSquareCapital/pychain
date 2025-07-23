@@ -35,6 +35,17 @@ INLINEABLE_BUILTINS: set[type | Callable[..., Any]] = {
     next,
 }
 
+CYTHON_TYPES = {
+    int: "int",
+    float: "double",
+    str: "str",
+    bool: "bint",
+    list: "list",
+    dict: "dict",
+    tuple: "tuple",
+    set: "set",
+}
+
 
 def flatten_recursive[T](
     d: dict[Any, T], parent_key: str = "", sep: str = "."

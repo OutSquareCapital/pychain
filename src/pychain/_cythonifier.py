@@ -1,0 +1,199 @@
+import ast
+import hashlib
+import importlib.util
+import inspect
+import subprocess
+import sys
+import textwrap
+import time
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
+
+import appdirs  # type: ignore
+
+from .funcs import CYTHON_TYPES
+
+CACHE_DIR = Path(appdirs.user_cache_dir("pychain", "pychain_dev"))  # type: ignore
+IN_MEMORY_CACHE: dict[str, Callable[..., Any]] = {}
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+class Func[P, R]:
+    def __init__(self, compiled_func: Callable[[P], R], source_code: str):
+        self.compiled_func = compiled_func
+        self.source_code = source_code
+
+    def __call__(self, arg: P) -> R:
+        return self.compiled_func(arg)
+
+    def __repr__(self) -> str:
+        indented_code: str = textwrap.indent(self.source_code, "    ")
+        return f"pychain.Func\n-- Source --\n{indented_code}"
+
+    def numbify(self) -> "Func[P, R]":
+        from numba import jit
+
+        try:
+            compiled_func: Callable[[P], R] = jit(self.compiled_func)
+        except Exception as e:
+            print(f"Failed to compile function: {e}")
+            return self
+        return Func(compiled_func, self.source_code)
+
+    def cythonify(self, p_type: type | None = None, r_type: type | None = None):
+        return Cythonifier(self).run(p_type, r_type)
+
+    def extract(self) -> Callable[[P], R]:
+        return self.compiled_func
+
+
+class Cythonifier[P, R]:
+    def __init__(self, func: Func[P, R]):
+        self.func = func
+
+    def run(self, p_type: type | None = None, r_type: type | None = None) -> Func[P, R]:
+        param_type = p_type or self._infer_type("P")
+        return_type = r_type or self._infer_type("R")
+
+        try:
+            compiled_callable = self._get_or_compile(
+                self.func.source_code, param_type, return_type
+            )
+            return Func(compiled_callable, self.func.source_code)
+        except Exception as e:
+            print(f"Cython compilation failed: {e}\nFalling back to original function.")
+            return self.func
+
+    def _get_or_compile(
+        self, source_code: str, p_type: type, r_type: type
+    ) -> Callable[[P], R]:
+        source_key = f"{source_code}|{p_type.__name__}|{r_type.__name__}"
+        source_hash = hashlib.sha256(source_key.encode()).hexdigest()[:16]
+
+        if cached_func := IN_MEMORY_CACHE.get(source_hash):
+            return cached_func
+
+        module_name = f"pc_{source_hash}"
+        build_dir = CACHE_DIR / module_name
+
+        try:
+            compiled_func = self._load_module_from_dir(build_dir, module_name)
+        except ModuleNotFoundError:
+            build_dir.mkdir(exist_ok=True)
+            pyx_code = _generate_pyx_code(source_code, p_type, r_type, module_name)
+            (build_dir / f"{module_name}.pyx").write_text(pyx_code, encoding="utf-8")
+
+            setup_code = _generate_setup_code(module_name)
+            _compile_extension(build_dir, setup_code)
+            compiled_func = self._load_module_from_dir(build_dir, module_name)
+
+        IN_MEMORY_CACHE[source_hash] = compiled_func
+        return compiled_func
+
+    def _load_module_from_dir(
+        self, build_dir: Path, module_name: str
+    ) -> Callable[[P], R]:
+        if not build_dir.is_dir():
+            raise ModuleNotFoundError(f"Build directory does not exist: {build_dir}")
+
+        compiled_files = list(build_dir.rglob(f"{module_name}*.pyd")) + list(
+            build_dir.rglob(f"{module_name}*.so")
+        )
+        if not compiled_files:
+            raise ModuleNotFoundError(f"Could not find compiled module in {build_dir}")
+
+        spec = importlib.util.spec_from_file_location(module_name, compiled_files[0])
+        if not (spec and spec.loader):
+            raise ModuleNotFoundError(
+                f"Could not create module spec for '{compiled_files[0]}'."
+            )
+
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return getattr(module, "cython_func")
+
+    def _infer_type(self, type_var_name: str) -> type:
+        try:
+            sig = inspect.signature(self.func.compiled_func)
+            match type_var_name:
+                case "P" if sig.parameters:
+                    param = next(iter(sig.parameters.values()))
+                    if param.annotation is not inspect.Parameter.empty:
+                        return param.annotation
+                case "R" if sig.return_annotation is not inspect.Signature.empty:
+                    return sig.return_annotation
+                case _:
+                    raise ValueError(f"Unknown type variable: {type_var_name}")
+        except (ValueError, TypeError):
+            pass
+        return object
+
+
+def _generate_pyx_code(
+    source_code: str, p_type: type, r_type: type, module_name: str
+) -> str:
+    param_cython_type = CYTHON_TYPES.get(p_type, "object")
+    return_cython_type = CYTHON_TYPES.get(r_type, "object")
+    source_ast = ast.parse(source_code)
+    func_def = source_ast.body[0]
+    if not (
+        isinstance(func_def, ast.FunctionDef)
+        and len(func_def.body) == 1
+        and isinstance(return_stmt := func_def.body[0], ast.Return)
+        and return_stmt.value is not None
+    ):
+        raise ValueError(
+            "Source code must be a simple function with one return statement."
+        )
+    return_expr_str = ast.unparse(return_stmt.value)
+    return textwrap.dedent(f"""
+        # cython: language_level=3
+        cpdef {return_cython_type} cython_func({param_cython_type} arg):
+            return {return_expr_str}
+    """)
+
+
+def _generate_setup_code(module_name: str) -> str:
+    if sys.platform == "win32":
+        compile_args = ["/O2"]
+    else:
+        compile_args = ["-O3"]
+
+    return textwrap.dedent(f"""
+        from setuptools import Extension, setup
+        from Cython.Build import cythonize
+
+        setup(
+            ext_modules=cythonize([
+                Extension(
+                    name="{module_name}",
+                    sources=["{module_name}.pyx"],
+                    extra_compile_args={compile_args!r},
+                )
+            ])
+        )
+    """)
+
+
+def _compile_extension(build_dir: Path, setup_code: str) -> None:
+    (build_dir / "setup.py").write_text(setup_code, encoding="utf-8")
+    last_error = None
+    for attempt in range(3):
+        result = subprocess.run(
+            [sys.executable, "setup.py", "build_ext"],
+            cwd=build_dir,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            return
+
+        last_error = f"--- STDOUT ---\n{result.stdout}\n--- STDERR ---\n{result.stderr}"
+        if "LNK1104" in result.stdout:
+            print(f"Linker error (LNK1104). Retrying... (Attempt {attempt + 1}/3)")
+            time.sleep(0.5)
+        else:
+            break
+
+    raise RuntimeError(f"Build process failed.\n{last_error}")

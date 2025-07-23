@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any
-
 from ._compilers import Compiler
-from ._protocols import Func, Operation, pipe_arg
+from ._protocols import Operation, pipe_arg
+from ._cythonifier import Func
 from .funcs import Process, Transform
 from dataclasses import dataclass, field
 
