@@ -16,8 +16,6 @@ if TYPE_CHECKING:
 
 
 class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
-    __slots__ = ("_pipeline",)
-
     @property
     def _arg(self) -> Iterable[VR]:
         return pipe_arg(Iterable[VR])
@@ -26,7 +24,7 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         self, func: Callable[P, T], *args: P.args, **kwargs: P.kwargs
     ) -> "Iter[VP, T]":
         op = Operation(func=func, args=args, kwargs=kwargs)
-        return Iter(self._pipeline + [op])
+        return self._new(op)
 
     def into[T](self, obj: Callable[[Iterable[VR]], T]):
         return self._do(obj, self._arg)
@@ -86,10 +84,10 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         return self._do(itz.cons, value, self._arg)
 
     def peekn(self, n: int, note: str | None = None):
-        return self._do(fn.peekn, self._arg, n, note)
+        return self._do(peekn, self._arg, n, note)
 
     def peek(self, note: str | None = None):
-        return self._do(fn.peek, self._arg, note)
+        return self._do(peek, self._arg, note)
 
     def head(self, n: int):
         return self._do(itz.take, n, self._arg)
@@ -104,13 +102,13 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         return self._do(itz.take_nth, index, self._arg)
 
     def repeat(self, n: int):
-        return self._do(fn.repeat, self._arg, n)
+        return self._do(repeat, self._arg, n)
 
     def unique(self):
         return self._do(itz.unique, self._arg)
 
     def tap(self, func: Callable[[VR], None]):
-        return self._do(fn.tap, self._arg, func)
+        return self._do(tap, self._arg, func)
 
     def enumerate(self):
         return self._do(enumerate, self._arg)
@@ -183,3 +181,34 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
             return itz.nth(index, value)
 
         return self.agg(_at_index)
+
+
+def peekn[T](seq: Iterable[T], n: int, note: str | None = None):
+    values, sequence = itz.peekn(n, seq)
+    if note:
+        print(f"Peeked {n} values ({note}): {list(values)}")
+    else:
+        print(f"Peeked {n} values: {list(values)}")
+    return sequence
+
+
+def peek[T](seq: Iterable[T], note: str | None = None):
+    value, sequence = itz.peek(seq)
+    if note:
+        print(f"Peeked value ({note}): {value}")
+    else:
+        print(f"Peeked value: {value}")
+    return sequence
+
+
+def repeat[V](value: Iterable[V], n: int) -> Iterable[V]:
+    def fn(value: V) -> Iterable[V]:
+        return [value] * n
+
+    return itz.concat(seqs=map(fn, value))
+
+
+def tap[V](value: Iterable[V], func: Callable[[V], None]):
+    for item in value:
+        func(item)
+        yield item
