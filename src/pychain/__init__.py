@@ -1,5 +1,6 @@
-from ._main import expr, iter, struct, Iter, Expr, Struct
-from .funcs import Func
+from ._main import Expr, Iter, Struct, expr, iter, struct
+from ._protocols import Func
+from ._exprs import BaseExpr
 
 __all__ = [
     "Func",
@@ -9,4 +10,5 @@ __all__ = [
     "expr",
     "Struct",
     "Iter",
+    "BaseExpr",
 ]
