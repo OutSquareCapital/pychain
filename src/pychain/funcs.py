@@ -1,43 +1,39 @@
+import builtins
 from collections.abc import Callable, Iterable
 from typing import Any
-
-import cytoolz.itertoolz as itz
 
 type Check[T] = Callable[[T], bool]
 type Process[T] = Callable[[T], T]
 type Transform[T, T1] = Callable[[T], T1]
 type Agg[V, V1] = Callable[[Iterable[V]], V1]
-
-
-def peekn[T](seq: Iterable[T], n: int, note: str | None = None):
-    values, sequence = itz.peekn(n, seq)
-    if note:
-        print(f"Peeked {n} values ({note}): {list(values)}")
-    else:
-        print(f"Peeked {n} values: {list(values)}")
-    return sequence
-
-
-def peek[T](seq: Iterable[T], note: str | None = None):
-    value, sequence = itz.peek(seq)
-    if note:
-        print(f"Peeked value ({note}): {value}")
-    else:
-        print(f"Peeked value: {value}")
-    return sequence
-
-
-def repeat[V](value: Iterable[V], n: int) -> Iterable[V]:
-    def fn(value: V) -> Iterable[V]:
-        return [value] * n
-
-    return itz.concat(seqs=map(fn, value))
-
-
-def tap[V](value: Iterable[V], func: Callable[[V], None]):
-    for item in value:
-        func(item)
-        yield item
+BUILTIN_NAMES = set(dir(builtins))
+INLINEABLE_BUILTINS: set[type | Callable[..., Any]] = {
+    int,
+    str,
+    float,
+    list,
+    dict,
+    tuple,
+    set,
+    zip,
+    enumerate,
+    range,
+    map,
+    filter,
+    reversed,
+    len,
+    round,
+    repr,
+    sum,
+    max,
+    min,
+    abs,
+    all,
+    any,
+    sorted,
+    iter,
+    next,
+}
 
 
 def flatten_recursive[T](

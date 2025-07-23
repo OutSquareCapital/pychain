@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any
 
-from ._compilers import collect_pipeline
+from ._compilers import Compiler
 from ._protocols import Func, Operation, pipe_arg
 from .funcs import Process, Transform
 
@@ -21,10 +21,16 @@ class BaseExpr[P, R](ABC):
 
     """
 
-    __slots__ = ("_pipeline",)
+    __slots__ = ("_pipeline", "_compiler")
 
-    def __init__(self, pipeline: list[Operation[Any, Any]]) -> None:
+    def __init__(
+        self, pipeline: list[Operation[Any, Any]], compiler: Compiler | None = None
+    ) -> None:
         self._pipeline = pipeline
+        self._compiler = compiler if compiler is not None else Compiler()
+
+    def _new(self, op: Operation[Any, Any]) -> Any:
+        return self.__class__(self._pipeline + [op], self._compiler)
 
     def __repr__(self):
         return f"class {self.__class__.__name__}(pipeline:\n{self._pipeline.__repr__()})\n)"
@@ -43,7 +49,7 @@ class BaseExpr[P, R](ABC):
         raise NotImplementedError
 
     def collect(self) -> Func[P, R]:
-        return collect_pipeline(self._pipeline)
+        return self._compiler.run(self._pipeline)
 
 
 class Expr[P, R](BaseExpr[P, R]):
@@ -53,7 +59,7 @@ class Expr[P, R](BaseExpr[P, R]):
 
     def _do[T](self, func: Callable[..., T], *args: Any, **kwargs: Any) -> "Expr[P, T]":
         op = Operation(func=func, args=args, kwargs=kwargs)
-        return Expr(self._pipeline + [op])
+        return self._new(op)
 
     def compose(self, *fns: Process[R]):
         expr = self
