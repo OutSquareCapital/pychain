@@ -5,8 +5,10 @@ from typing import Any
 from ._compilers import Compiler
 from ._protocols import Func, Operation, pipe_arg
 from .funcs import Process, Transform
+from dataclasses import dataclass, field
 
 
+@dataclass(slots=True, frozen=True)
 class BaseExpr[P, R](ABC):
     """
     Base class interface for creating business logic specific expressions.
@@ -21,13 +23,9 @@ class BaseExpr[P, R](ABC):
 
     """
 
-    __slots__ = ("_pipeline", "_compiler")
-
-    def __init__(
-        self, pipeline: list[Operation[Any, Any]], compiler: Compiler | None = None
-    ) -> None:
-        self._pipeline = pipeline
-        self._compiler = compiler if compiler is not None else Compiler()
+    _pipeline: list[Operation[Any, Any]]
+    _compiler: Compiler = field(default_factory=Compiler)
+    _is_pychain_expr: bool = True
 
     def _new(self, op: Operation[Any, Any]) -> Any:
         return self.__class__(self._pipeline + [op], self._compiler)

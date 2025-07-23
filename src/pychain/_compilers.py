@@ -107,6 +107,7 @@ class Compiler:
     scope: ScopeManager = field(default_factory=ScopeManager)
 
     def run[P](self, pipeline: list[Operation[P, Any]]) -> Func[P, Any]:
+        self.scope.clear()
         compiled_func, source_code = self._compile_logic(pipeline)
 
         return Func(compiled_func, source_code)
