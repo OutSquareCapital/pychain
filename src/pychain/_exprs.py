@@ -33,6 +33,7 @@ class BaseExpr[P, R](ABC):
     @abstractmethod
     def into(self, obj: Any) -> Any:
         raise NotImplementedError
+
     @property
     @abstractmethod
     def _arg(self) -> Any:
@@ -117,14 +118,17 @@ def _extract_return_expression(func_ast: ast.FunctionDef) -> ast.expr | None:
     return None
 
 
-def _value_to_ast(value: Any, scope: Scope, name_prefix: str) -> ast.expr:
+def _value_to_ast(value: Any, scope: Scope) -> ast.expr:
     match value:
         case bool() | int() | float() | str() | None:
             return ast.Constant(value)
         case _ if value in INLINEABLE_BUILTINS:
             return ast.Name(id=value.__name__, ctx=ast.Load())
         case _:
-            var_name = f"{name_prefix}_{id(value)}"
+            base_name = getattr(value, "__name__", "ref")
+            if not base_name.isidentifier():
+                base_name = "ref"
+            var_name = f"{base_name}_{id(value)}"
             scope[var_name] = value
             return ast.Name(id=var_name, ctx=ast.Load())
 
@@ -144,20 +148,15 @@ def _compile_operation_to_ast(
         except (TypeError, OSError, IndexError, ValueError):
             pass
 
-    # --- Fallback par référencement ---
-    func_node = _value_to_ast(op.func, scope, f"__op_{index}_func")
+    func_node = _value_to_ast(op.func, scope)
     args_nodes = [
-        prev_ast
-        if is_placeholder(arg)
-        else _value_to_ast(arg, scope, f"__op_{index}_arg")
+        prev_ast if is_placeholder(arg) else _value_to_ast(arg, scope)
         for arg in op.args
     ]
     kwargs_nodes = [
         ast.keyword(
             arg=k,
-            value=prev_ast
-            if is_placeholder(v)
-            else _value_to_ast(v, scope, f"__op_{index}_kwarg"),
+            value=prev_ast if is_placeholder(v) else _value_to_ast(v, scope),
         )
         for k, v in op.kwargs.items()
     ]

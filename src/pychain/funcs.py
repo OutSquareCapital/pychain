@@ -27,9 +27,8 @@ class Func[P, R]:
         return self._compiled_func(arg)
 
     def __repr__(self) -> str:
-        signature: str = self._source_code.splitlines()[0]
         indented_code: str = textwrap.indent(self._source_code, "    ")
-        return f"pychain.Func({signature})\n-- Source --\n{indented_code}"
+        return f"pychain.Func\n-- Source --\n{indented_code}"
 
     def numbify(self) -> "Func[P, R]":
         from numba import jit

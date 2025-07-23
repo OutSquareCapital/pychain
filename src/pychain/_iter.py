@@ -32,16 +32,16 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         return self._do(obj, self._arg)
 
     def map[T](self, f: TransformFunc[VR, T]) -> "Iter[VP, T]":
-        return self._do(map, f, self._arg) # type: ignore
+        return self._do(map, f, self._arg)  # type: ignore
 
     def filter(self, f: CheckFunc[VR]) -> "Iter[VP, VR]":
-        return self._do(filter, f, self._arg) # type: ignore
+        return self._do(filter, f, self._arg)  # type: ignore
 
     def take_while(self, predicate: CheckFunc[VR]) -> "Iter[VP, VR]":
-        return self._do(takewhile, predicate, self._arg) # type: ignore
+        return self._do(takewhile, predicate, self._arg)  # type: ignore
 
     def drop_while(self, predicate: CheckFunc[VR]) -> "Iter[VP, VR]":
-        return self._do(dropwhile, predicate, self._arg) # type: ignore
+        return self._do(dropwhile, predicate, self._arg)  # type: ignore
 
     def agg[T](self, f: Callable[[Iterable[VR]], T]) -> "Expr[Iterable[VP], T]":
         from ._exprs import Expr

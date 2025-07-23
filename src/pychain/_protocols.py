@@ -6,6 +6,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True, slots=True)
 class Placeholder[T]:
     _is_pychain_arg: bool = True
+
     def __repr__(self) -> str:
         return "PIPE_ARG"
 
@@ -15,8 +16,10 @@ class PlaceholderConstructor:
     def __call__[T](self, dtype: type[T] | T) -> T:
         return Placeholder()  # type: ignore
 
+
 def is_placeholder(obj: Any) -> bool:
     return getattr(obj, "_is_pychain_arg", False) is True
+
 
 pipe_arg = PlaceholderConstructor()
 
@@ -59,4 +62,6 @@ INLINEABLE_BUILTINS: set[type | Callable[..., Any]] = {
     zip,
     enumerate,
     range,
+    map,
+    filter,
 }

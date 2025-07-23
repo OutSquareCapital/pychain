@@ -14,6 +14,7 @@ from ._protocols import (
 
 class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
     __slots__ = ("_pipeline",)
+
     @property
     def _arg(self) -> dict[KR, VR]:
         return pipe_arg(dict[KR, VR])
@@ -23,7 +24,7 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
     ) -> "Struct[KP, VP, KT, VT]":
         op = Operation(func=f, args=args, kwargs=kwargs)  # type: ignore
         return Struct(self._pipeline + [op])
-    
+
     def into[KT, VT](self, obj: Callable[[dict[KR, VR]], dict[KT, VT]]):
         return self._do(obj, self._arg)
 

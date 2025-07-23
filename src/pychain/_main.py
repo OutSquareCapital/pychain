@@ -17,6 +17,7 @@ class IterConstructor:
     def __call__[T](self, dtype: type[T]) -> Iter[T, T]:
         return Iter([])
 
+
 expr = ExprConstructor()
 iter = IterConstructor()
 struct = StructConstructor()
