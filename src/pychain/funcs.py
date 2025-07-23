@@ -45,17 +45,3 @@ CYTHON_TYPES = {
     tuple: "tuple",
     set: "set",
 }
-
-
-def flatten_recursive[T](
-    d: dict[Any, T], parent_key: str = "", sep: str = "."
-) -> dict[str, T]:
-    items: dict[str, T] = {}
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if hasattr(v, "items"):
-            items.update(flatten_recursive(v, new_key, sep))
-        else:
-            v: Any
-            items[new_key] = v
-    return items

@@ -1,4 +1,5 @@
 from collections.abc import Callable, Iterable
+from typing import Any
 
 import cytoolz.dicttoolz as dcz
 
@@ -28,7 +29,7 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
         return self._do(dcz.valmap, f, self._arg)
 
     def flatten_keys(self) -> "Struct[KP, VP, str, VR]":
-        return self._do(fn.flatten_recursive, self._arg)
+        return self._do(flatten_recursive, self._arg)
 
     def select(self, predicate: fn.Check[KR]):
         return self._do(dcz.keyfilter, predicate, self._arg)
@@ -65,3 +66,17 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
 
     def drop(self, *keys: KR):
         return self._do(dcz.dissoc, self._arg, *keys)
+
+
+def flatten_recursive[T](
+    d: dict[Any, T], parent_key: str = "", sep: str = "."
+) -> dict[str, T]:
+    items: dict[str, T] = {}
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if hasattr(v, "items"):
+            items.update(flatten_recursive(v, new_key, sep))
+        else:
+            v: Any
+            items[new_key] = v
+    return items

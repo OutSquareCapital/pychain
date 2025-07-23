@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import Any
-from ._compilers import Compiler
-from ._protocols import Operation, pipe_arg
-from ._cythonifier import Func
-from .funcs import Process, Transform
 from dataclasses import dataclass, field
+from typing import Any
+
+from ._compilers import Compiler
+from ._cythonifier import Func
+from ._protocols import Operation, pipe_arg
+from .funcs import Process, Transform
 
 
 @dataclass(slots=True, frozen=True)
@@ -47,6 +48,9 @@ class BaseExpr[P, R](ABC):
 
     def collect(self) -> Func[P, R]:
         return self._compiler.run(self._pipeline)
+
+    def extract(self) -> Callable[[P], R]:
+        return self._compiler.run(self._pipeline).extract()
 
 
 class Expr[P, R](BaseExpr[P, R]):
