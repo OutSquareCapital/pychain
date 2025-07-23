@@ -25,7 +25,6 @@ class BaseExpr[P, R](ABC):
 
     _pipeline: list[Operation[Any, Any]]
     _compiler: Compiler = field(default_factory=Compiler)
-    _is_pychain_expr: bool = True
 
     def _new(self, op: Operation[Any, Any]) -> Any:
         return self.__class__(self._pipeline + [op], self._compiler)
@@ -64,9 +63,6 @@ class Expr[P, R](BaseExpr[P, R]):
         for f in fns:
             expr = expr._do(f, pipe_arg(R))
         return expr
-
-    def into_str(self, template: str):
-        return self._do(template.format, self._arg)
 
     def into[T](self, obj: Transform[R, T]):
         return self._do(obj, self._arg)
