@@ -8,7 +8,7 @@ import cytoolz.itertoolz as itz
 
 from . import funcs as fn
 from ._exprs import BaseExpr
-from ._protocols import CheckFunc, Operation, ProcessFunc, TransformFunc, pipe_arg
+from ._protocols import Operation, pipe_arg
 
 if TYPE_CHECKING:
     from ._exprs import Expr
@@ -31,16 +31,16 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def into[T](self, obj: Callable[[Iterable[VR]], T]):
         return self._do(obj, self._arg)
 
-    def map[T](self, f: TransformFunc[VR, T]) -> "Iter[VP, T]":
+    def map[T](self, f: fn.Transform[VR, T]) -> "Iter[VP, T]":
         return self._do(map, f, self._arg)  # type: ignore
 
-    def filter(self, f: CheckFunc[VR]) -> "Iter[VP, VR]":
+    def filter(self, f: fn.Check[VR]) -> "Iter[VP, VR]":
         return self._do(filter, f, self._arg)  # type: ignore
 
-    def take_while(self, predicate: CheckFunc[VR]) -> "Iter[VP, VR]":
+    def take_while(self, predicate: fn.Check[VR]) -> "Iter[VP, VR]":
         return self._do(takewhile, predicate, self._arg)  # type: ignore
 
-    def drop_while(self, predicate: CheckFunc[VR]) -> "Iter[VP, VR]":
+    def drop_while(self, predicate: fn.Check[VR]) -> "Iter[VP, VR]":
         return self._do(dropwhile, predicate, self._arg)  # type: ignore
 
     def agg[T](self, f: Callable[[Iterable[VR]], T]) -> "Expr[Iterable[VP], T]":
@@ -48,7 +48,7 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
 
         return Expr(self._do(f, self._arg)._pipeline)
 
-    def group_by[K](self, on: TransformFunc[VR, K]) -> "Struct[VP, K, VR, list[VR]]":
+    def group_by[K](self, on: fn.Transform[VR, K]) -> "Struct[VP, K, VR, list[VR]]":
         from ._struct import Struct
 
         return Struct(self._do(itz.groupby, on, self._arg)._pipeline)
@@ -58,10 +58,10 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
 
         return Struct(self._do(itz.frequencies, self._arg)._pipeline)
 
-    def reduce_by[K](self, key: TransformFunc[VR, K], binop: Callable[[VR, VR], VR]):
+    def reduce_by[K](self, key: fn.Transform[VR, K], binop: Callable[[VR, VR], VR]):
         return self._do(itz.reduceby, key, binop, self._arg)
 
-    def flat_map[V1](self, f: TransformFunc[VR, Iterable[V1]]):
+    def flat_map[V1](self, f: fn.Transform[VR, Iterable[V1]]):
         def _flat_map(value: Iterable[VR]):
             return itz.concat(map(f, value))
 
@@ -133,7 +133,7 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def diff(
         self,
         *others: Iterable[VR],
-        key: ProcessFunc[VR] | None = None,
+        key: fn.Process[VR] | None = None,
     ):
         return self._do(itz.diff, *(self._arg, *others), ccpdefault=None, key=key)
 

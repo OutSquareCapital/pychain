@@ -1,15 +1,10 @@
 from collections.abc import Callable, Iterable
+
 import cytoolz.dicttoolz as dcz
 
 from . import funcs as fn
 from ._exprs import BaseExpr
-from ._protocols import (
-    pipe_arg,
-    CheckFunc,
-    Operation,
-    ProcessFunc,
-    TransformFunc,
-)
+from ._protocols import Operation, pipe_arg
 
 
 class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
@@ -28,30 +23,30 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
     def into[KT, VT](self, obj: Callable[[dict[KR, VR]], dict[KT, VT]]):
         return self._do(obj, self._arg)
 
-    def map_keys[T](self, f: TransformFunc[KR, T]):
+    def map_keys[T](self, f: fn.Transform[KR, T]):
         return self._do(dcz.keymap, f, self._arg)
 
-    def map_values[T](self, f: TransformFunc[VR, T]):
+    def map_values[T](self, f: fn.Transform[VR, T]):
         return self._do(dcz.valmap, f, self._arg)
 
     def flatten_keys(self) -> "Struct[KP, VP, str, VR]":
         return self._do(fn.flatten_recursive, self._arg)
 
-    def select(self, predicate: CheckFunc[KR]):
+    def select(self, predicate: fn.Check[KR]):
         return self._do(dcz.keyfilter, predicate, self._arg)
 
-    def filter(self, predicate: CheckFunc[VR]):
+    def filter(self, predicate: fn.Check[VR]):
         return self._do(dcz.valfilter, predicate, self._arg)
 
     def filter_items(
         self,
-        predicate: CheckFunc[tuple[KR, VR]],
+        predicate: fn.Check[tuple[KR, VR]],
     ):
         return self._do(dcz.itemfilter, predicate, self._arg)
 
     def map_items[KT, VT](
         self,
-        f: TransformFunc[tuple[KR, VR], tuple[KT, VT]],
+        f: fn.Transform[tuple[KR, VR], tuple[KT, VT]],
     ):
         return self._do(dcz.itemmap, f, self._arg)
 
@@ -61,7 +56,7 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
     def with_nested_key(self, keys: Iterable[KR] | KR, value: VR):
         return self._do(dcz.assoc_in, self._arg, keys=keys, value=value)
 
-    def update_in(self, *keys: KR, f: ProcessFunc[VR]):
+    def update_in(self, *keys: KR, f: fn.Process[VR]):
         return self._do(dcz.update_in, self._arg, keys=keys, func=f)
 
     def merge(self, *others: dict[KR, VR]):
