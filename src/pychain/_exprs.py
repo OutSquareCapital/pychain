@@ -2,31 +2,18 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any
 
-from ._compilers import Compiler
+from ._compilers import run_compilation
 from ._cythonifier import Func
 from ._protocols import Operation, pipe_arg
 from .funcs import Process, Transform
 
-class BaseExpr[P, R](ABC):
-    """
-    Base class interface for creating business logic specific expressions.
-    The base method `_do` is used to apply operations to the expression pipeline.
-    The `collect` method compiles the pipeline into a `Func` object.
-    Into is used to convert the expression into a specific type.
-    _arg is for specifying the type of the argument of the destined Expression type.
-    For example, if you want to implement a chainable expression that takes a dictionary,
-    you can set `_arg` to `dict[KR, VR]` where `KR` is the key type and `VR` is the value type.
-    _do will return you a new instance where the type is dict[KT, VT] where `KT` is the key type and `VT` is the value type.
-    This allows you to chain operations on the expression, without losing argument, and return types.
 
-    """
-    def __init__(self, pipeline: list[Operation[Any, Any]], compiler: Compiler | None = None) -> None:
+class BaseExpr[P, R](ABC):
+    def __init__(self, pipeline: list[Operation[Any, Any]]) -> None:
         self._pipeline = pipeline
-        self._compiler = compiler or Compiler()
 
     def _new(self, op: Operation[Any, Any]) -> Any:
-        cls = type(self)
-        return cls(self._pipeline + [op], self._compiler)
+        return self.__class__(self._pipeline + [op])
 
     def __repr__(self):
         return f"class {self.__class__.__name__}(pipeline:\n{self._pipeline.__repr__()})\n)"
@@ -45,10 +32,10 @@ class BaseExpr[P, R](ABC):
         raise NotImplementedError
 
     def collect(self) -> Func[P, R]:
-        return self._compiler.run(self._pipeline)
+        return run_compilation(self._pipeline)
 
     def extract(self) -> Callable[[P], R]:
-        return self._compiler.run(self._pipeline).extract()
+        return run_compilation(self._pipeline).extract()
 
 
 class Expr[P, R](BaseExpr[P, R]):

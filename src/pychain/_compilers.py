@@ -79,52 +79,49 @@ class ScopeManager:
         return None
 
 
-@dataclass(slots=True, frozen=True)
-class Compiler:
-    scope: ScopeManager = field(default_factory=ScopeManager)
+def run_compilation[P](pipeline: list[Operation[P, Any]]) -> Func[P, Any]:
+    manager = ScopeManager()
+    compiled_func, source_code = _compile_logic(pipeline, manager)
 
-    def run[P](self, pipeline: list[Operation[P, Any]]) -> Func[P, Any]:
-        self.scope.clear()
-        compiled_func, source_code = self._compile_logic(pipeline)
+    return Func(compiled_func, source_code, manager.scope)
 
-        return Func(compiled_func, source_code, self.scope.scope)
 
-    def _compile_logic[P](self, pipeline: list[Operation[P, Any]]) -> CompileResult[P]:
-        final_expr_ast: ast.expr = ast.Name(id="arg", ctx=ast.Load())
+def _compile_logic[P](
+    pipeline: list[Operation[P, Any]], manager: ScopeManager
+) -> CompileResult[P]:
+    final_expr_ast: ast.expr = ast.Name(id="arg", ctx=ast.Load())
 
-        for op in pipeline:
-            final_expr_ast = self._build_operation_ast(op, final_expr_ast)
+    for op in pipeline:
+        final_expr_ast = _build_operation_ast(op, final_expr_ast, manager)
 
-        return self._finalize(final_expr_ast)
+    return _finalize(final_expr_ast, manager)
 
-    def _build_operation_ast(
-        self, op: Operation[Any, Any], prev_ast: ast.expr
-    ) -> ast.expr:
-        if inlined_ast := self.scope.try_inline_call(op, prev_ast):
-            return inlined_ast
-        func_node = self.scope.value_to_ast(op.func)
-        args_nodes = [
-            self.scope.resolve_placeholder_ast(arg, prev_ast) for arg in op.args
-        ]
-        kwargs_nodes = [
-            ast.keyword(arg=k, value=self.scope.resolve_placeholder_ast(v, prev_ast))
-            for k, v in op.kwargs.items()
-        ]
-        return ast.Call(func=func_node, args=args_nodes, keywords=kwargs_nodes)
 
-    def _finalize(self, final_expr_ast: ast.expr) -> CompileResult[Any]:
-        func_name = f"generated_func_{uuid.uuid4().hex}"
-        func_args = ast.arguments(args=[ast.arg(arg="arg")], defaults=[])
-        func_def = ast.FunctionDef(
-            name=func_name,
-            args=func_args,
-            body=[ast.Return(value=final_expr_ast)],
-            decorator_list=[],
-        )
-        module_ast = ast.fix_missing_locations(
-            ast.Module(body=[func_def], type_ignores=[])
-        )
-        source_code = ast.unparse(module_ast)
-        code_obj = compile(module_ast, filename="<pychain_ast>", mode="exec")
-        exec(code_obj, self.scope.scope)
-        return self.scope[func_name], source_code
+def _build_operation_ast(
+    op: Operation[Any, Any], prev_ast: ast.expr, manager: ScopeManager
+) -> ast.expr:
+    if inlined_ast := manager.try_inline_call(op, prev_ast):
+        return inlined_ast
+    func_node = manager.value_to_ast(op.func)
+    args_nodes = [manager.resolve_placeholder_ast(arg, prev_ast) for arg in op.args]
+    kwargs_nodes = [
+        ast.keyword(arg=k, value=manager.resolve_placeholder_ast(v, prev_ast))
+        for k, v in op.kwargs.items()
+    ]
+    return ast.Call(func=func_node, args=args_nodes, keywords=kwargs_nodes)
+
+
+def _finalize(final_expr_ast: ast.expr, manager: ScopeManager) -> CompileResult[Any]:
+    func_name = f"generated_func_{uuid.uuid4().hex}"
+    func_args = ast.arguments(args=[ast.arg(arg="arg")], defaults=[])
+    func_def = ast.FunctionDef(
+        name=func_name,
+        args=func_args,
+        body=[ast.Return(value=final_expr_ast)],
+        decorator_list=[],
+    )
+    module_ast = ast.fix_missing_locations(ast.Module(body=[func_def], type_ignores=[]))
+    source_code = ast.unparse(module_ast)
+    code_obj = compile(module_ast, filename="<pychain_ast>", mode="exec")
+    exec(code_obj, manager.scope)
+    return manager.scope[func_name], source_code

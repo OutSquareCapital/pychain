@@ -18,10 +18,11 @@ from .funcs import CYTHON_TYPES
 CACHE_DIR = Path(appdirs.user_cache_dir("pychain", "pychain_dev"))  # type: ignore
 IN_MEMORY_CACHE: dict[str, Callable[..., Any]] = {}
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
-#TODO: 
+# TODO:
 # - Check pk ca se recompile dans jupyter, ou en py file quand je relance
-# - Mieux separer code 
+# - Mieux separer code
 # - Improve type inference
+
 
 class Func[P, R]:
     def __init__(
@@ -159,6 +160,7 @@ class Cythonifier[P, R]:
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return getattr(module, "cython_func")
+
 
 def _infer_type(func: Callable[..., Any], type_var_name: str) -> type:
     try:
