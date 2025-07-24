@@ -52,6 +52,46 @@ class Func[P, R]:
         return self.compiled_func
 
 
+class FuncRepr:
+    def __init__(self):
+        self.arg_name = "arg"
+        self.body_expr = None
+
+    def lambda_handler(self, module_ast: ast.Module):
+        lambda_finder = LambdaFinder()
+        lambda_finder.visit(module_ast)
+        if lambda_node := lambda_finder.found_lambda:
+            if len(lambda_node.args.args) == 1:
+                self.arg_name = lambda_node.args.args[0].arg
+                self.body_expr = lambda_node.body
+
+    def function_def_handler(self, module_ast: ast.Module):
+        def_finder = FunctionDefFinder()
+        def_finder.visit(module_ast)
+        if func_def_node := def_finder.found_func:
+            if len(func_def_node.args.args) == 1 and isinstance(
+                func_def_node.body[0], ast.Return
+            ):
+                self.arg_name = func_def_node.args.args[0].arg
+                self.body_expr = func_def_node.body[0].value
+
+    def pychain_handler(self, obj: Func[Any, Any]):
+        func_ast = ast.parse(obj.source_code).body[0]
+        if isinstance(func_ast, ast.FunctionDef):
+            self.arg_name = func_ast.args.args[0].arg
+            if isinstance(func_ast.body[0], ast.Return):
+                self.body_expr = func_ast.body[0].value
+
+    def create_deps_code(self, name: str) -> str | None:
+        if self.body_expr:
+            dep_func_code = textwrap.dedent(f"""
+                    cdef object {name}(object {self.arg_name}):
+                        return {ast.unparse(self.body_expr)}
+                """)
+            return dep_func_code
+        return None
+
+
 class Cythonifier[P, R]:
     def __init__(self, func: Func[P, R]) -> None:
         self.func = func
@@ -117,7 +157,6 @@ class Cythonifier[P, R]:
         spec.loader.exec_module(module)
         return getattr(module, "cython_func")
 
-
 def _infer_type(func: Callable[..., Any], type_var_name: str) -> type:
     try:
         sig = inspect.signature(func)
@@ -146,16 +185,10 @@ def _generate_pyx_code(
             continue
 
         try:
-            arg_name = "arg"
-            body_expr: ast.expr | None = None
+            func_repr = FuncRepr()
 
             if isinstance(obj, Func):
-                func_ast = ast.parse(obj.source_code).body[0]
-                if isinstance(func_ast, ast.FunctionDef):
-                    arg_name = func_ast.args.args[0].arg
-                    if isinstance(func_ast.body[0], ast.Return):
-                        body_expr = func_ast.body[0].value
-
+                func_repr.pychain_handler(obj)  # type: ignore
             elif inspect.isfunction(obj):
                 try:
                     func_source = textwrap.dedent(inspect.getsource(obj)).strip()
@@ -173,27 +206,11 @@ def _generate_pyx_code(
                 is_lambda = obj.__name__ == "<lambda>"
 
                 if is_lambda:
-                    lambda_finder = LambdaFinder()
-                    lambda_finder.visit(module_ast)
-                    if lambda_node := lambda_finder.found_lambda:
-                        if len(lambda_node.args.args) == 1:
-                            arg_name = lambda_node.args.args[0].arg
-                            body_expr = lambda_node.body
+                    func_repr.lambda_handler(module_ast)
                 else:
-                    def_finder = FunctionDefFinder()
-                    def_finder.visit(module_ast)
-                    if func_def_node := def_finder.found_func:
-                        if len(func_def_node.args.args) == 1 and isinstance(
-                            func_def_node.body[0], ast.Return
-                        ):
-                            arg_name = func_def_node.args.args[0].arg
-                            body_expr = func_def_node.body[0].value
-
-            if body_expr:
-                dep_func_code = textwrap.dedent(f"""
-                    cdef object {name}(object {arg_name}):
-                        return {ast.unparse(body_expr)}
-                """)
+                    func_repr.function_def_handler(module_ast)
+            dep_func_code = func_repr.create_deps_code(name)
+            if dep_func_code:
                 deps_code_list.append(dep_func_code)
                 processed_deps.add(name)
 

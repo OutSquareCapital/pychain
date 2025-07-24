@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import ast
 from typing import Any
 
+
 @dataclass(slots=True, frozen=True)
 class NodeReplacer(ast.NodeTransformer):
     arg_name: str
@@ -19,6 +20,7 @@ class LambdaFinder(ast.NodeVisitor):
         if self.found_lambda is None:
             self.found_lambda = node
 
+
 @dataclass(slots=True)
 class FunctionDefFinder(ast.NodeVisitor):
     found_func: ast.FunctionDef | None = None
@@ -26,6 +28,7 @@ class FunctionDefFinder(ast.NodeVisitor):
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         if self.found_func is None:
             self.found_func = node
+
 
 def extract_return_expression(func_ast: ast.FunctionDef) -> ast.expr | None:
     if len(func_ast.body) == 1 and isinstance(stmt := func_ast.body[0], ast.Return):
