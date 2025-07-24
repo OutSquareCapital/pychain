@@ -18,7 +18,10 @@ from .funcs import CYTHON_TYPES
 CACHE_DIR = Path(appdirs.user_cache_dir("pychain", "pychain_dev"))  # type: ignore
 IN_MEMORY_CACHE: dict[str, Callable[..., Any]] = {}
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
-
+#TODO: 
+# - Check pk ca se recompile dans jupyter, ou en py file quand je relance
+# - Mieux separer code 
+# - Improve type inference
 
 class Func[P, R]:
     def __init__(

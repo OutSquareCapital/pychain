@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from typing import Any
 
 from ._compilers import Compiler
@@ -8,8 +7,6 @@ from ._cythonifier import Func
 from ._protocols import Operation, pipe_arg
 from .funcs import Process, Transform
 
-
-@dataclass(slots=True, frozen=True)
 class BaseExpr[P, R](ABC):
     """
     Base class interface for creating business logic specific expressions.
@@ -23,12 +20,13 @@ class BaseExpr[P, R](ABC):
     This allows you to chain operations on the expression, without losing argument, and return types.
 
     """
-
-    _pipeline: list[Operation[Any, Any]]
-    _compiler: Compiler = field(default_factory=Compiler)
+    def __init__(self, pipeline: list[Operation[Any, Any]], compiler: Compiler | None = None) -> None:
+        self._pipeline = pipeline
+        self._compiler = compiler or Compiler()
 
     def _new(self, op: Operation[Any, Any]) -> Any:
-        return self.__class__(self._pipeline + [op], self._compiler)
+        cls = type(self)
+        return cls(self._pipeline + [op], self._compiler)
 
     def __repr__(self):
         return f"class {self.__class__.__name__}(pipeline:\n{self._pipeline.__repr__()})\n)"
