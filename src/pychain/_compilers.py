@@ -8,32 +8,9 @@ from typing import Any
 from ._cythonifier import Func
 from ._protocols import Operation, is_placeholder
 from .funcs import INLINEABLE_BUILTINS, BUILTIN_NAMES
+from ._ast_parsers import LambdaFinder, NodeReplacer, extract_return_expression
 
 type CompileResult[T] = tuple[Callable[[T], Any], str]
-
-
-def _extract_return_expression(func_ast: ast.FunctionDef) -> ast.expr | None:
-    if len(func_ast.body) == 1 and isinstance(stmt := func_ast.body[0], ast.Return):
-        return stmt.value
-    return None
-
-
-@dataclass(slots=True, frozen=True)
-class _NodeReplacer(ast.NodeTransformer):
-    arg_name: str
-    replacement_node: ast.AST
-
-    def visit_Name(self, node: ast.Name) -> Any:
-        return self.replacement_node if node.id == self.arg_name else node
-
-
-@dataclass(slots=True)
-class _LambdaFinder(ast.NodeVisitor):
-    found_lambda: ast.Lambda | None = None
-
-    def visit_Lambda(self, node: ast.Lambda) -> None:
-        if self.found_lambda is None:
-            self.found_lambda = node
 
 
 @dataclass(slots=True, frozen=True)
@@ -61,10 +38,10 @@ class ScopeManager:
             case _ if value in INLINEABLE_BUILTINS:
                 return ast.Name(id=value.__name__, ctx=ast.Load())
             case _:
-                base_name = getattr(value, "__name__", "ref")
+                base_name = getattr(value, "__name__", "func")
                 if not base_name.isidentifier() or base_name == "<lambda>":
-                    base_name = "ref"
-                var_name = f"{base_name}_{id(value)}"
+                    base_name = "func"
+                var_name = f"ref_{base_name}_{id(value)}"
                 self.scope[var_name] = value
                 return ast.Name(id=var_name, ctx=ast.Load())
 
@@ -81,22 +58,22 @@ class ScopeManager:
             source = textwrap.dedent(inspect.getsource(op.func)).strip()
             parsable_source = f"dummy{source}" if source.startswith(".") else source
             module = ast.parse(parsable_source)
-            finder = _LambdaFinder()
+            finder = LambdaFinder()
             finder.visit(module)
 
             if lambda_node := finder.found_lambda:
                 if len(lambda_node.args.args) == 1:
                     self.populate_from_callable(op.func)
                     arg_name = lambda_node.args.args[0].arg
-                    return _NodeReplacer(arg_name, prev_ast).visit(lambda_node.body)
+                    return NodeReplacer(arg_name, prev_ast).visit(lambda_node.body)
 
             if len(module.body) == 1 and isinstance(
                 func_ast := module.body[0], ast.FunctionDef
             ):
                 self.populate_from_callable(op.func)
-                if return_expr := _extract_return_expression(func_ast):
+                if return_expr := extract_return_expression(func_ast):
                     arg_name = func_ast.args.args[0].arg
-                    return _NodeReplacer(arg_name, prev_ast).visit(return_expr)
+                    return NodeReplacer(arg_name, prev_ast).visit(return_expr)
         except (TypeError, OSError, IndexError, ValueError, SyntaxError):
             return None
         return None
@@ -110,7 +87,7 @@ class Compiler:
         self.scope.clear()
         compiled_func, source_code = self._compile_logic(pipeline)
 
-        return Func(compiled_func, source_code)
+        return Func(compiled_func, source_code, self.scope.scope)
 
     def _compile_logic[P](self, pipeline: list[Operation[P, Any]]) -> CompileResult[P]:
         final_expr_ast: ast.expr = ast.Name(id="arg", ctx=ast.Load())

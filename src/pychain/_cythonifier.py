@@ -12,6 +12,7 @@ from typing import Any
 
 import appdirs  # type: ignore
 
+from ._ast_parsers import FunctionDefFinder, LambdaFinder
 from .funcs import CYTHON_TYPES
 
 CACHE_DIR = Path(appdirs.user_cache_dir("pychain", "pychain_dev"))  # type: ignore
@@ -20,9 +21,12 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class Func[P, R]:
-    def __init__(self, compiled_func: Callable[[P], R], source_code: str):
+    def __init__(
+        self, compiled_func: Callable[[P], R], source_code: str, scope: dict[str, Any]
+    ):
         self.compiled_func = compiled_func
         self.source_code = source_code
+        self.scope = scope
 
     def __call__(self, arg: P) -> R:
         return self.compiled_func(arg)
@@ -39,7 +43,7 @@ class Func[P, R]:
         except Exception as e:
             print(f"Failed to compile function: {e}")
             return self
-        return Func(compiled_func, self.source_code)
+        return Func(compiled_func, self.source_code, self.scope)
 
     def cythonify(self, p_type: type | None = None, r_type: type | None = None):
         return Cythonifier(self).run(p_type, r_type)
@@ -49,18 +53,18 @@ class Func[P, R]:
 
 
 class Cythonifier[P, R]:
-    def __init__(self, func: Func[P, R]):
+    def __init__(self, func: Func[P, R]) -> None:
         self.func = func
 
     def run(self, p_type: type | None = None, r_type: type | None = None) -> Func[P, R]:
-        param_type = p_type or self._infer_type("P")
-        return_type = r_type or self._infer_type("R")
+        param_type = p_type or _infer_type(self.func.compiled_func, "P")
+        return_type = r_type or _infer_type(self.func.compiled_func, "R")
 
         try:
             compiled_callable = self._get_or_compile(
                 self.func.source_code, param_type, return_type
             )
-            return Func(compiled_callable, self.func.source_code)
+            return Func(compiled_callable, self.func.source_code, self.func.scope)
         except Exception as e:
             print(f"Cython compilation failed: {e}\nFalling back to original function.")
             return self.func
@@ -81,7 +85,7 @@ class Cythonifier[P, R]:
             compiled_func = self._load_module_from_dir(build_dir, module_name)
         except ModuleNotFoundError:
             build_dir.mkdir(exist_ok=True)
-            pyx_code = _generate_pyx_code(source_code, p_type, r_type, module_name)
+            pyx_code = _generate_pyx_code(source_code, p_type, r_type, self.func.scope)
             (build_dir / f"{module_name}.pyx").write_text(pyx_code, encoding="utf-8")
 
             setup_code = _generate_setup_code(module_name)
@@ -113,45 +117,110 @@ class Cythonifier[P, R]:
         spec.loader.exec_module(module)
         return getattr(module, "cython_func")
 
-    def _infer_type(self, type_var_name: str) -> type:
-        try:
-            sig = inspect.signature(self.func.compiled_func)
-            match type_var_name:
-                case "P" if sig.parameters:
-                    param = next(iter(sig.parameters.values()))
-                    if param.annotation is not inspect.Parameter.empty:
-                        return param.annotation
-                case "R" if sig.return_annotation is not inspect.Signature.empty:
-                    return sig.return_annotation
-                case _:
-                    raise ValueError(f"Unknown type variable: {type_var_name}")
-        except (ValueError, TypeError):
-            pass
-        return object
+
+def _infer_type(func: Callable[..., Any], type_var_name: str) -> type:
+    try:
+        sig = inspect.signature(func)
+        match type_var_name:
+            case "P" if sig.parameters:
+                param = next(iter(sig.parameters.values()))
+                if param.annotation is not inspect.Parameter.empty:
+                    return param.annotation
+            case "R" if sig.return_annotation is not inspect.Signature.empty:
+                return sig.return_annotation
+            case _:
+                raise ValueError(f"Unknown type variable: {type_var_name}")
+    except (ValueError, TypeError):
+        pass
+    return object
 
 
 def _generate_pyx_code(
-    source_code: str, p_type: type, r_type: type, module_name: str
+    source_code: str, p_type: type, r_type: type, scope: dict[str, Any]
 ) -> str:
-    param_cython_type = CYTHON_TYPES.get(p_type, "object")
-    return_cython_type = CYTHON_TYPES.get(r_type, "object")
-    source_ast = ast.parse(source_code)
-    func_def = source_ast.body[0]
+    deps_code_list: list[str] = []
+    processed_deps: set[str] = set()
+
+    for name, obj in scope.items():
+        if not name.startswith("ref_") or name in processed_deps:
+            continue
+
+        try:
+            arg_name = "arg"
+            body_expr: ast.expr | None = None
+
+            if isinstance(obj, Func):
+                func_ast = ast.parse(obj.source_code).body[0]
+                if isinstance(func_ast, ast.FunctionDef):
+                    arg_name = func_ast.args.args[0].arg
+                    if isinstance(func_ast.body[0], ast.Return):
+                        body_expr = func_ast.body[0].value
+
+            elif inspect.isfunction(obj):
+                try:
+                    func_source = textwrap.dedent(inspect.getsource(obj)).strip()
+                except (OSError, TypeError):
+                    continue
+                parsable_source = func_source
+                if parsable_source.startswith("."):
+                    parsable_source = f"dummy{parsable_source}"
+
+                try:
+                    module_ast = ast.parse(parsable_source)
+                except SyntaxError:
+                    module_ast = ast.parse(f"_dummy = {parsable_source}")
+
+                is_lambda = obj.__name__ == "<lambda>"
+
+                if is_lambda:
+                    lambda_finder = LambdaFinder()
+                    lambda_finder.visit(module_ast)
+                    if lambda_node := lambda_finder.found_lambda:
+                        if len(lambda_node.args.args) == 1:
+                            arg_name = lambda_node.args.args[0].arg
+                            body_expr = lambda_node.body
+                else:
+                    def_finder = FunctionDefFinder()
+                    def_finder.visit(module_ast)
+                    if func_def_node := def_finder.found_func:
+                        if len(func_def_node.args.args) == 1 and isinstance(
+                            func_def_node.body[0], ast.Return
+                        ):
+                            arg_name = func_def_node.args.args[0].arg
+                            body_expr = func_def_node.body[0].value
+
+            if body_expr:
+                dep_func_code = textwrap.dedent(f"""
+                    cdef object {name}(object {arg_name}):
+                        return {ast.unparse(body_expr)}
+                """)
+                deps_code_list.append(dep_func_code)
+                processed_deps.add(name)
+
+        except (TypeError, OSError, IndexError, SyntaxError):
+            continue
+
+    header = "# cython: language_level=3, cdivision=True"
+    deps_code = "\n\n".join(deps_code_list)
+    main_func_ast = ast.parse(source_code).body[0]
     if not (
-        isinstance(func_def, ast.FunctionDef)
-        and len(func_def.body) == 1
-        and isinstance(return_stmt := func_def.body[0], ast.Return)
-        and return_stmt.value is not None
+        isinstance(main_func_ast, ast.FunctionDef)
+        and isinstance(main_func_ast.body[0], ast.Return)
     ):
         raise ValueError(
-            "Source code must be a simple function with one return statement."
+            "Le code source principal doit être une fonction simple avec un seul return."
         )
-    return_expr_str = ast.unparse(return_stmt.value)
-    return textwrap.dedent(f"""
-        # cython: language_level=3
+    return_expr = main_func_ast.body[0].value
+    if return_expr is None:
+        raise ValueError("Le code source principal doit retourner une valeur.")
+    return_expr_str = ast.unparse(return_expr)
+    param_cython_type = CYTHON_TYPES.get(p_type, "object")
+    return_cython_type = CYTHON_TYPES.get(r_type, "object")
+    main_func_code = textwrap.dedent(f"""
         cpdef {return_cython_type} cython_func({param_cython_type} arg):
             return {return_expr_str}
     """)
+    return "\n\n".join(filter(None, [header, deps_code, main_func_code]))
 
 
 def _generate_setup_code(module_name: str) -> str:
