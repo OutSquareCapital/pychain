@@ -11,49 +11,13 @@ from pathlib import Path
 from typing import Any
 
 import appdirs  # type: ignore
-
+from ._protocols import Func
 from ._ast_parsers import FunctionDefFinder, LambdaFinder
 from .funcs import CYTHON_TYPES
 
 CACHE_DIR = Path(appdirs.user_cache_dir("pychain", "pychain_dev"))  # type: ignore
 IN_MEMORY_CACHE: dict[str, Callable[..., Any]] = {}
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
-# TODO:
-# - Check pk ca se recompile dans jupyter, ou en py file quand je relance
-# - Mieux separer code
-# - Improve type inference
-
-
-class Func[P, R]:
-    def __init__(
-        self, compiled_func: Callable[[P], R], source_code: str, scope: dict[str, Any]
-    ):
-        self.compiled_func = compiled_func
-        self.source_code = source_code
-        self.scope = scope
-
-    def __call__(self, arg: P) -> R:
-        return self.compiled_func(arg)
-
-    def __repr__(self) -> str:
-        indented_code: str = textwrap.indent(self.source_code, "    ")
-        return f"pychain.Func\n-- Source --\n{indented_code}"
-
-    def numbify(self) -> "Func[P, R]":
-        from numba import jit
-
-        try:
-            compiled_func: Callable[[P], R] = jit(self.compiled_func)
-        except Exception as e:
-            print(f"Failed to compile function: {e}")
-            return self
-        return Func(compiled_func, self.source_code, self.scope)
-
-    def cythonify(self, p_type: type | None = None, r_type: type | None = None):
-        return Cythonifier(self).run(p_type, r_type)
-
-    def extract(self) -> Callable[[P], R]:
-        return self.compiled_func
 
 
 class FuncRepr:
@@ -100,9 +64,9 @@ class Cythonifier[P, R]:
     def __init__(self, func: Func[P, R]) -> None:
         self.func = func
 
-    def run(self, p_type: type | None = None, r_type: type | None = None) -> Func[P, R]:
-        param_type = p_type or _infer_type(self.func.compiled_func, "P")
-        return_type = r_type or _infer_type(self.func.compiled_func, "R")
+    def run(self) -> Func[P, R]:
+        param_type = _infer_type(self.func.compiled_func, "P")
+        return_type = _infer_type(self.func.compiled_func, "R")
 
         try:
             compiled_callable = self._get_or_compile(

@@ -27,7 +27,6 @@ pychain = (
     .map(f=fn)
     .into(obj=list)
     .collect()
-    .cythonify()
 )
 
 print(fn)

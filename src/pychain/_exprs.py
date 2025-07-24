@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Literal
 
-from ._compilers import run_compilation
-from ._cythonifier import Func
-from ._protocols import Operation, pipe_arg
+from ._compilers import to_ast, to_cython, to_numba
+from ._protocols import Operation, pipe_arg, Func
 from .funcs import Process, Transform
 
 
@@ -31,11 +30,16 @@ class BaseExpr[P, R](ABC):
     def _arg(self) -> Any:
         raise NotImplementedError
 
-    def collect(self) -> Func[P, R]:
-        return run_compilation(self._pipeline)
-
-    def extract(self) -> Callable[[P], R]:
-        return run_compilation(self._pipeline).extract()
+    def collect(
+        self, backend: Literal["python", "cython", "numba"] = "python"
+    ) -> Func[P, R]:
+        match backend:
+            case "python":
+                return to_ast(self._pipeline)
+            case "cython":
+                return to_cython(self._pipeline)
+            case "numba":
+                return to_numba(self._pipeline)
 
 
 class Expr[P, R](BaseExpr[P, R]):
