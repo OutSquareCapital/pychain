@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import cytoolz.itertoolz as itz
 from ._exprs import BaseExpr
-from ._protocols import get_placeholder, Operation, Transform, Process, Check
+from .._protocols import get_placeholder, Operation, Transform, Process, Check
 
 if TYPE_CHECKING:
     from ._exprs import Expr
