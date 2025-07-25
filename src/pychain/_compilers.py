@@ -4,8 +4,7 @@ from collections.abc import Callable
 from typing import Any
 
 from ._ast_parsers import ScopeManager
-from ._protocols import Func, Operation
-from .consts import Names
+from ._protocols import Func, Operation, Names
 
 type CompileResult[T] = tuple[Callable[[T], Any], str]
 

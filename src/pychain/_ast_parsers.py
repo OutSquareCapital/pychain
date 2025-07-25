@@ -5,8 +5,14 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-from ._protocols import is_placeholder, Operation
-from .consts import BUILTIN_NAMES, INLINEABLE_BUILTINS, Names
+from ._protocols import (
+    is_placeholder,
+    Operation,
+    BUILTIN_NAMES,
+    INLINEABLE_BUILTINS,
+    Names,
+)
+
 
 @dataclass(slots=True, frozen=True)
 class NodeReplacer(ast.NodeTransformer):

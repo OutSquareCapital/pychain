@@ -3,9 +3,8 @@ from typing import Any
 
 import cytoolz.dicttoolz as dcz
 
-from . import consts as fn
 from ._exprs import BaseExpr
-from ._protocols import get_placeholder, Operation
+from ._protocols import get_placeholder, Operation, Transform, Check, Process
 
 
 class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
@@ -22,30 +21,30 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
     def into[KT, VT](self, obj: Callable[[dict[KR, VR]], dict[KT, VT]]):
         return self._do(obj, self._arg)
 
-    def map_keys[T](self, f: fn.Transform[KR, T]):
+    def map_keys[T](self, f: Transform[KR, T]):
         return self._do(dcz.keymap, f, self._arg)
 
-    def map_values[T](self, f: fn.Transform[VR, T]):
+    def map_values[T](self, f: Transform[VR, T]):
         return self._do(dcz.valmap, f, self._arg)
 
     def flatten_keys(self) -> "Struct[KP, VP, str, VR]":
         return self._do(flatten_recursive, self._arg)
 
-    def select(self, predicate: fn.Check[KR]):
+    def select(self, predicate: Check[KR]):
         return self._do(dcz.keyfilter, predicate, self._arg)
 
-    def filter(self, predicate: fn.Check[VR]):
+    def filter(self, predicate: Check[VR]):
         return self._do(dcz.valfilter, predicate, self._arg)
 
     def filter_items(
         self,
-        predicate: fn.Check[tuple[KR, VR]],
+        predicate: Check[tuple[KR, VR]],
     ):
         return self._do(dcz.itemfilter, predicate, self._arg)
 
     def map_items[KT, VT](
         self,
-        f: fn.Transform[tuple[KR, VR], tuple[KT, VT]],
+        f: Transform[tuple[KR, VR], tuple[KT, VT]],
     ):
         return self._do(dcz.itemmap, f, self._arg)
 
@@ -55,7 +54,7 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
     def with_nested_key(self, keys: Iterable[KR] | KR, value: VR):
         return self._do(dcz.assoc_in, self._arg, keys=keys, value=value)
 
-    def update_in(self, *keys: KR, f: fn.Process[VR]):
+    def update_in(self, *keys: KR, f: Process[VR]):
         return self._do(dcz.update_in, self._arg, keys=keys, func=f)
 
     def merge(self, *others: dict[KR, VR]):
