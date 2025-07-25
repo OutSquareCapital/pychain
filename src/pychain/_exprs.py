@@ -3,8 +3,9 @@ from collections.abc import Callable
 from typing import Any, Literal
 
 from ._compilers import to_ast, to_numba
-from ._protocols import Operation, pipe_arg, Func
+from ._protocols import get_placeholder, Func
 from .consts import Process, Transform
+from ._ast_parsers import Operation
 
 
 class BaseExpr[P, R](ABC):
@@ -30,9 +31,7 @@ class BaseExpr[P, R](ABC):
     def _arg(self) -> Any:
         raise NotImplementedError
 
-    def collect(
-        self, backend: Literal["python", "numba"] = "python"
-    ) -> Func[P, R]:
+    def collect(self, backend: Literal["python", "numba"] = "python") -> Func[P, R]:
         match backend:
             case "python":
                 return to_ast(self._pipeline)
@@ -43,7 +42,7 @@ class BaseExpr[P, R](ABC):
 class Expr[P, R](BaseExpr[P, R]):
     @property
     def _arg(self):
-        return pipe_arg(P)
+        return get_placeholder(P)
 
     def _do[T](self, func: Callable[..., T], *args: Any, **kwargs: Any) -> "Expr[P, T]":
         op = Operation(func=func, args=args, kwargs=kwargs)
@@ -52,7 +51,7 @@ class Expr[P, R](BaseExpr[P, R]):
     def compose(self, *fns: Process[R]):
         expr = self
         for f in fns:
-            expr = expr._do(f, pipe_arg(R))
+            expr = expr._do(f, get_placeholder(R))
         return expr
 
     def into[T](self, obj: Transform[R, T]):

@@ -8,7 +8,8 @@ import cytoolz.itertoolz as itz
 
 from . import consts as fn
 from ._exprs import BaseExpr
-from ._protocols import Operation, pipe_arg
+from ._ast_parsers import Operation
+from ._protocols import get_placeholder
 
 if TYPE_CHECKING:
     from ._exprs import Expr
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
 class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     @property
     def _arg(self) -> Iterable[VR]:
-        return pipe_arg(Iterable[VR])
+        return get_placeholder(Iterable[VR])
 
     def _do[T, **P](
         self, func: Callable[P, T], *args: P.args, **kwargs: P.kwargs

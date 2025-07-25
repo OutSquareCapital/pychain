@@ -3,6 +3,7 @@ from collections.abc import Callable, Iterable
 from typing import Any
 from enum import StrEnum, auto
 
+
 class Names(StrEnum):
     REF_ = auto()
     PC_FUNC_ = auto()
@@ -10,6 +11,7 @@ class Names(StrEnum):
     FUNC = auto()
     DUMMY = auto()
     PYCHAIN_AST = auto()
+
 
 type Check[T] = Callable[[T], bool]
 type Process[T] = Callable[[T], T]
