@@ -2,8 +2,8 @@ import ast
 import uuid
 from collections.abc import Callable
 from typing import Any
-
-from ._ast_parsers import ScopeManager
+from pathlib import Path
+from ._ast_parsers import ScopeManager, generate_py_file
 from ._protocols import Func, Operation, Names
 
 type CompileResult[T] = tuple[Callable[[T], Any], str]
@@ -26,6 +26,14 @@ def to_numba[P](pipeline: list[Operation[P, Any]]) -> Func[P, Any]:
     except Exception as e:
         print(f"Failed to compile function: {e}")
     return Func(compiled_func, source_code, manager.scope)
+
+
+def to_file[P](pipeline: list[Operation[P, Any]], path: Path) -> None:
+    manager = ScopeManager()
+    _, main_func_source = _compile_logic(pipeline, manager)
+    standalone_source = generate_py_file(main_func_source, manager.scope)
+    path.write_text(standalone_source, encoding="utf-8")
+    print(f"Pipeline saved to {path.absolute()}")
 
 
 def _compile_logic[P](

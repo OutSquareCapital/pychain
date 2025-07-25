@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any, Literal
 
-from ._compilers import to_ast, to_numba
+from ._compilers import to_ast, to_numba, to_file
 from ._protocols import get_placeholder, Func, Operation, Process, Transform
-
+from pathlib import Path
 
 class BaseExpr[P, R](ABC):
     def __init__(self, pipeline: list[Operation[Any, Any]]) -> None:
@@ -35,7 +35,10 @@ class BaseExpr[P, R](ABC):
                 return to_ast(self._pipeline)
             case "numba":
                 return to_numba(self._pipeline)
-
+    def save(self, path: str | Path) -> None:
+        file_path = Path(path)
+        to_file(self._pipeline, file_path)
+        print(f"Pipeline saved to {file_path.resolve()}")
 
 class Expr[P, R](BaseExpr[P, R]):
     @property
