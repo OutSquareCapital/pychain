@@ -5,9 +5,10 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
-from ._protocols import Operation, is_placeholder, Func
-from .consts import INLINEABLE_BUILTINS, BUILTIN_NAMES
+
 from ._ast_parsers import LambdaFinder, NodeReplacer, extract_return_expression
+from ._protocols import Func, Operation, is_placeholder
+from .consts import BUILTIN_NAMES, INLINEABLE_BUILTINS, Names
 
 type CompileResult[T] = tuple[Callable[[T], Any], str]
 
@@ -37,10 +38,10 @@ class ScopeManager:
             case _ if value in INLINEABLE_BUILTINS:
                 return ast.Name(id=value.__name__, ctx=ast.Load())
             case _:
-                base_name = getattr(value, "__name__", "func")
+                base_name = getattr(value, "__name__", Names.FUNC.value)
                 if not base_name.isidentifier() or base_name == "<lambda>":
-                    base_name = "func"
-                var_name = f"ref_{base_name}_{id(value)}"
+                    base_name = Names.FUNC.value
+                var_name = f"{Names.REF_.value}{base_name}_{id(value)}"
                 self.scope[var_name] = value
                 return ast.Name(id=var_name, ctx=ast.Load())
 
@@ -55,7 +56,9 @@ class ScopeManager:
             return None
         try:
             source = textwrap.dedent(inspect.getsource(op.func)).strip()
-            parsable_source = f"dummy{source}" if source.startswith(".") else source
+            parsable_source = (
+                f"{Names.DUMMY.value}{source}" if source.startswith(".") else source
+            )
             module = ast.parse(parsable_source)
             finder = LambdaFinder()
             finder.visit(module)
@@ -96,10 +99,11 @@ def to_numba[P](pipeline: list[Operation[P, Any]]) -> Func[P, Any]:
         print(f"Failed to compile function: {e}")
     return Func(compiled_func, source_code, manager.scope)
 
+
 def _compile_logic[P](
     pipeline: list[Operation[P, Any]], manager: ScopeManager
 ) -> CompileResult[P]:
-    final_expr_ast: ast.expr = ast.Name(id="arg", ctx=ast.Load())
+    final_expr_ast: ast.expr = ast.Name(id=Names.ARG.value, ctx=ast.Load())
 
     for op in pipeline:
         final_expr_ast = _build_operation_ast(op, final_expr_ast, manager)
@@ -122,8 +126,8 @@ def _build_operation_ast(
 
 
 def _finalize(final_expr_ast: ast.expr, manager: ScopeManager) -> CompileResult[Any]:
-    func_name = f"generated_func_{uuid.uuid4().hex}"
-    func_args = ast.arguments(args=[ast.arg(arg="arg")], defaults=[])
+    func_name = f"{Names.PC_FUNC_.value}{uuid.uuid4().hex}"
+    func_args = ast.arguments(args=[ast.arg(arg=Names.ARG.value)], defaults=[])
     func_def = ast.FunctionDef(
         name=func_name,
         args=func_args,
@@ -132,6 +136,6 @@ def _finalize(final_expr_ast: ast.expr, manager: ScopeManager) -> CompileResult[
     )
     module_ast = ast.fix_missing_locations(ast.Module(body=[func_def], type_ignores=[]))
     source_code = ast.unparse(module_ast)
-    code_obj = compile(module_ast, filename="<pychain_ast>", mode="exec")
+    code_obj = compile(module_ast, filename=Names.PYCHAIN_AST.value, mode="exec")
     exec(code_obj, manager.scope)
     return manager.scope[func_name], source_code
