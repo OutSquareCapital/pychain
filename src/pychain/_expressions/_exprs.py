@@ -4,7 +4,6 @@ from typing import Any, Literal
 
 from .._compilers import to_ast, to_numba, to_file
 from .._protocols import get_placeholder, Func, Operation, Process, Transform
-from pathlib import Path
 
 
 class BaseExpr[P, R](ABC):
@@ -30,17 +29,16 @@ class BaseExpr[P, R](ABC):
     def _arg(self) -> Any:
         raise NotImplementedError
 
-    def collect(self, backend: Literal["python", "numba"] = "python") -> Func[P, R]:
+    def collect(
+        self, backend: Literal["python", "numba", "cython"] = "python"
+    ) -> Func[P, R]:
         match backend:
             case "python":
                 return to_ast(self._pipeline)
             case "numba":
                 return to_numba(self._pipeline)
-
-    def save(self, path: str | Path) -> None:
-        file_path = Path(path)
-        to_file(self._pipeline, file_path)
-        print(f"Pipeline saved to {file_path.resolve()}")
+            case "cython":
+                return to_file(self._pipeline, "test.py")
 
 
 class Expr[P, R](BaseExpr[P, R]):

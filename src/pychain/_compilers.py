@@ -1,10 +1,12 @@
 import ast
-import uuid
+import hashlib
 from collections.abc import Callable
-from typing import Any
 from pathlib import Path
-from ._ast_parsers import ScopeManager, generate_py_file
-from ._protocols import Func, Operation, Names
+from typing import Any
+from ._module_builder import generate_py_file
+from ._ast_parsers import ScopeManager
+from ._files import create_setup_file, prepare_cache
+from ._protocols import Func, Names, Operation
 
 type CompileResult[T] = tuple[Callable[[T], Any], str]
 
@@ -28,12 +30,14 @@ def to_numba[P](pipeline: list[Operation[P, Any]]) -> Func[P, Any]:
     return Func(compiled_func, source_code, manager.scope)
 
 
-def to_file[P](pipeline: list[Operation[P, Any]], path: Path) -> None:
+def to_file[P](pipeline: list[Operation[P, Any]], file_name: str) -> Func[P, Any]:
+    path = Path(file_name)
     manager = ScopeManager()
-    _, main_func_source = _compile_logic(pipeline, manager)
-    standalone_source = generate_py_file(main_func_source, manager.scope)
-    path.write_text(standalone_source, encoding="utf-8")
-    print(f"Pipeline saved to {path.absolute()}")
+    compiled_func, source_code = _compile_logic(pipeline, manager)
+    standalone_source = generate_py_file(source_code, manager.scope)
+    prepare_cache(path, standalone_source)
+    create_setup_file(path)
+    return Func(compiled_func, source_code, manager.scope)
 
 
 def _compile_logic[P](
@@ -43,7 +47,10 @@ def _compile_logic[P](
 
     for op in pipeline:
         final_expr_ast = manager.build_operation_ast(op, final_expr_ast)
-    func_name = f"{Names.PC_FUNC_.value}{uuid.uuid4().hex}"
+    temp_body_source = ast.unparse(final_expr_ast)
+    source_hash = hashlib.sha256(temp_body_source.encode()).hexdigest()[:16]
+    func_name = f"{Names.PC_FUNC_.value}{source_hash}"
+
     func_args = ast.arguments(args=[ast.arg(arg=Names.ARG.value)], defaults=[])
     func_def = ast.FunctionDef(
         name=func_name,

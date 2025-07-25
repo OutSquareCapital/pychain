@@ -1,8 +1,16 @@
+import ast
 import builtins
 import textwrap
 from collections.abc import Callable, Iterable
 from enum import StrEnum, auto
 from typing import Any, NamedTuple
+
+type Scope = dict[str, Any]
+type CallableAst = ast.Lambda | ast.FunctionDef
+type Check[T] = Callable[[T], bool]
+type Process[T] = Callable[[T], T]
+type Transform[T, T1] = Callable[[T], T1]
+type Agg[V, V1] = Callable[[Iterable[V]], V1]
 
 
 class Placeholder[T](NamedTuple):
@@ -48,10 +56,6 @@ class Names(StrEnum):
     PYCHAIN_AST = auto()
 
 
-type Check[T] = Callable[[T], bool]
-type Process[T] = Callable[[T], T]
-type Transform[T, T1] = Callable[[T], T1]
-type Agg[V, V1] = Callable[[Iterable[V]], V1]
 BUILTIN_NAMES = set(dir(builtins))
 INLINEABLE_BUILTINS: set[type | Callable[..., Any]] = {
     int,
