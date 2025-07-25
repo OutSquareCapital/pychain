@@ -34,14 +34,3 @@ INLINEABLE_BUILTINS: set[type | Callable[..., Any]] = {
     iter,
     next,
 }
-
-CYTHON_TYPES = {
-    int: "int",
-    float: "double",
-    str: "str",
-    bool: "bint",
-    list: "list",
-    dict: "dict",
-    tuple: "tuple",
-    set: "set",
-}

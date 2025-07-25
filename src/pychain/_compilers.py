@@ -6,9 +6,8 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 from ._protocols import Operation, is_placeholder, Func
-from .funcs import INLINEABLE_BUILTINS, BUILTIN_NAMES
+from .consts import INLINEABLE_BUILTINS, BUILTIN_NAMES
 from ._ast_parsers import LambdaFinder, NodeReplacer, extract_return_expression
-from ._cythonifier import Cythonifier
 
 type CompileResult[T] = tuple[Callable[[T], Any], str]
 
@@ -96,14 +95,6 @@ def to_numba[P](pipeline: list[Operation[P, Any]]) -> Func[P, Any]:
     except Exception as e:
         print(f"Failed to compile function: {e}")
     return Func(compiled_func, source_code, manager.scope)
-
-
-def to_cython[P](pipeline: list[Operation[P, Any]]) -> Func[P, Any]:
-    manager = ScopeManager()
-    compiled_func, source_code = _compile_logic(pipeline, manager)
-    fn = Func(compiled_func, source_code, manager.scope)
-    return Cythonifier(fn).run()
-
 
 def _compile_logic[P](
     pipeline: list[Operation[P, Any]], manager: ScopeManager

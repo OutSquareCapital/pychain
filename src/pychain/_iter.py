@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import cytoolz.itertoolz as itz
 
-from . import funcs as fn
+from . import consts as fn
 from ._exprs import BaseExpr
 from ._protocols import Operation, pipe_arg
 

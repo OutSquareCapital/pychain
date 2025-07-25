@@ -3,7 +3,7 @@ from typing import Any
 
 import cytoolz.dicttoolz as dcz
 
-from . import funcs as fn
+from . import consts as fn
 from ._exprs import BaseExpr
 from ._protocols import Operation, pipe_arg
 

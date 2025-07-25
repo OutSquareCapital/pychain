@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any, Literal
 
-from ._compilers import to_ast, to_cython, to_numba
+from ._compilers import to_ast, to_numba
 from ._protocols import Operation, pipe_arg, Func
-from .funcs import Process, Transform
+from .consts import Process, Transform
 
 
 class BaseExpr[P, R](ABC):
@@ -31,13 +31,11 @@ class BaseExpr[P, R](ABC):
         raise NotImplementedError
 
     def collect(
-        self, backend: Literal["python", "cython", "numba"] = "python"
+        self, backend: Literal["python", "numba"] = "python"
     ) -> Func[P, R]:
         match backend:
             case "python":
                 return to_ast(self._pipeline)
-            case "cython":
-                return to_cython(self._pipeline)
             case "numba":
                 return to_numba(self._pipeline)
 
