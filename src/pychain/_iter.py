@@ -8,8 +8,7 @@ import cytoolz.itertoolz as itz
 
 from . import consts as fn
 from ._exprs import BaseExpr
-from ._ast_parsers import Operation
-from ._protocols import get_placeholder
+from ._protocols import get_placeholder, Operation
 
 if TYPE_CHECKING:
     from ._exprs import Expr

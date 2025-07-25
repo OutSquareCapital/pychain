@@ -7,6 +7,12 @@ class Placeholder[T](NamedTuple):
     is_pychain_arg: bool = True
 
 
+class Operation[R, **P](NamedTuple):
+    func: Callable[P, R]
+    args: tuple[Any, ...]
+    kwargs: dict[str, Any]
+
+
 def get_placeholder[T](dtype: type[T] | T) -> T:
     return Placeholder()  # type: ignore
 

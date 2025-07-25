@@ -4,9 +4,8 @@ from typing import Any
 import cytoolz.dicttoolz as dcz
 
 from . import consts as fn
-from ._ast_parsers import Operation
 from ._exprs import BaseExpr
-from ._protocols import get_placeholder
+from ._protocols import get_placeholder, Operation
 
 
 class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):

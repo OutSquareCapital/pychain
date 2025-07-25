@@ -3,10 +3,8 @@ from collections.abc import Callable
 from typing import Any, Literal
 
 from ._compilers import to_ast, to_numba
-from ._protocols import get_placeholder, Func
+from ._protocols import get_placeholder, Func, Operation
 from .consts import Process, Transform
-from ._ast_parsers import Operation
-
 
 class BaseExpr[P, R](ABC):
     def __init__(self, pipeline: list[Operation[Any, Any]]) -> None:
