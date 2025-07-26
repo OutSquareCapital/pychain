@@ -17,6 +17,47 @@ from ._protocols import (
     CallableAst,
 )
 
+def get_func_name(final_expr_ast: ast.expr):
+    temp_body_source = ast.unparse(final_expr_ast)
+    source_hash = hashlib.sha256(temp_body_source.encode()).hexdigest()[:16]
+    return f"{Names.PC_FUNC_.value}{source_hash}"
+
+def get_module_ast(func_name: str, final_expr_ast: ast.expr) -> ast.Module:
+    func_args = ast.arguments(args=[ast.arg(arg=Names.ARG.value)], defaults=[])
+    func_def = ast.FunctionDef(
+        name=func_name,
+        args=func_args,
+        body=[ast.Return(value=final_expr_ast)],
+        decorator_list=[],
+    )
+    return ast.fix_missing_locations(ast.Module(body=[func_def], type_ignores=[]))
+
+def add_cfunc(func_def: ast.FunctionDef) -> str:
+    decorator = ast.Name(id="cython.cfunc", ctx=ast.Load())
+    func_def.decorator_list.insert(0, decorator)
+    ast.fix_missing_locations(func_def)
+    return ast.unparse(func_def)
+
+
+def match_node(node: CallableAst, name: str) -> ast.FunctionDef | None:
+    func_def: ast.FunctionDef | None = None
+    match node:
+        case ast.Lambda() as lambda_node:
+            func_def = lambda_to_func(lambda_node, name)
+        case ast.FunctionDef() as func_def_node:
+            func_def_node.name = name
+            func_def = func_def_node
+    return func_def
+
+
+def lambda_to_func(lambda_node: ast.Lambda, name: str) -> ast.FunctionDef:
+    return ast.FunctionDef(
+        name=name,
+        args=lambda_node.args,
+        body=[ast.Return(value=lambda_node.body)],
+        decorator_list=[],
+    )
+
 
 @dataclass(slots=True, frozen=True)
 class NodeReplacer(ast.NodeTransformer):

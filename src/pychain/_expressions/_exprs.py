@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any, Literal
 
-from .._compilers import to_ast, to_numba, to_cython
+from .._compilers import Compiler
 from .._protocols import get_placeholder, Func, Operation, Process, Transform
 
 
@@ -32,13 +32,7 @@ class BaseExpr[P, R](ABC):
     def collect(
         self, backend: Literal["python", "numba", "cython"] = "python"
     ) -> Func[P, R]:
-        match backend:
-            case "python":
-                return to_ast(self._pipeline)
-            case "numba":
-                return to_numba(self._pipeline)
-            case "cython":
-                return to_cython(self._pipeline)
+        return Compiler(self._pipeline).run(backend=backend)
 
 
 class Expr[P, R](BaseExpr[P, R]):
