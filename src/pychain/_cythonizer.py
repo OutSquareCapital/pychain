@@ -16,7 +16,6 @@ def load_from_path(module_path: Path, func_name: str) -> Callable[..., Any]:
     spec = importlib.util.spec_from_file_location(module_name, module_path)
     if not spec or not spec.loader:
         raise ImportError(f"Could not create module spec for {module_path}")
-
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
@@ -68,10 +67,11 @@ def run_process(command: list[str], cwd: Path) -> None:
 
 
 class CythonCompiler:
-    def __init__(self, source: SourceCode):
+    def __init__(self, source: SourceCode, debug: bool = True):
         self.source = source
         self.paths = CachePaths(hash=source.get_hash())
         self.paths.base_dir.mkdir(exist_ok=True)
+        self.debug = debug
 
     def get_func(self) -> Callable[..., Any]:
         if binary_path := self.paths.find_binary():
@@ -90,11 +90,10 @@ class CythonCompiler:
 
         compiled_binary = self.paths.find_binary_in_build_dir()
         final_binary_path = self.paths.base_dir / compiled_binary.name
-
         shutil.move(src=compiled_binary, dst=final_binary_path)
-
-        print(f"INFO: Cleaning up build directory: {self.paths.build_dir}")
-        shutil.rmtree(self.paths.build_dir)
+        if not self.debug:
+            print(f"INFO: Cleaning up build directory: {self.paths.build_dir}")
+            shutil.rmtree(self.paths.build_dir)
 
         return final_binary_path
 
