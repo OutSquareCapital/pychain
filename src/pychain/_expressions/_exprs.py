@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any, Literal
 
-from .._compilers import to_ast, to_numba, to_file
+from .._compilers import to_ast, to_numba, to_cython
 from .._protocols import get_placeholder, Func, Operation, Process, Transform
 
 
@@ -38,23 +38,23 @@ class BaseExpr[P, R](ABC):
             case "numba":
                 return to_numba(self._pipeline)
             case "cython":
-                return to_file(self._pipeline, "test.py")
+                return to_cython(self._pipeline)
 
 
 class Expr[P, R](BaseExpr[P, R]):
     @property
     def _arg(self):
-        return get_placeholder(P)
+        return get_placeholder(R)
 
     def _do[T](self, func: Callable[..., T], *args: Any, **kwargs: Any) -> "Expr[P, T]":
         op = Operation(func=func, args=args, kwargs=kwargs)
         return self._new(op)
+
+    def into[T](self, obj: Transform[R, T]):
+        return self._do(obj, self._arg)
 
     def compose(self, *fns: Process[R]):
         expr = self
         for f in fns:
             expr = expr._do(f, get_placeholder(R))
         return expr
-
-    def into[T](self, obj: Transform[R, T]):
-        return self._do(obj, self._arg)

@@ -1,11 +1,10 @@
 import ast
 import hashlib
 from collections.abc import Callable
-from pathlib import Path
 from typing import Any
 from ._module_builder import generate_py_file
 from ._ast_parsers import ScopeManager
-from ._files import create_setup_file, prepare_cache
+from ._files import manage_build_files
 from ._protocols import Func, Names, Operation
 
 type CompileResult[T] = tuple[Callable[[T], Any], str]
@@ -29,14 +28,11 @@ def to_numba[P](pipeline: list[Operation[P, Any]]) -> Func[P, Any]:
         print(f"Failed to compile function: {e}")
     return Func(compiled_func, source_code, manager.scope)
 
-
-def to_file[P](pipeline: list[Operation[P, Any]], file_name: str) -> Func[P, Any]:
-    path = Path(file_name)
+def to_cython[P](pipeline: list[Operation[P, Any]]) -> Func[P, Any]:
     manager = ScopeManager()
     compiled_func, source_code = _compile_logic(pipeline, manager)
-    standalone_source = generate_py_file(source_code, manager.scope)
-    prepare_cache(path, standalone_source)
-    create_setup_file(path)
+    cython_source = generate_py_file(source_code, manager.scope)
+    _ = manage_build_files(cython_source)
     return Func(compiled_func, source_code, manager.scope)
 
 
