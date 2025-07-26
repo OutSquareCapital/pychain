@@ -17,10 +17,12 @@ from ._protocols import (
     CallableAst,
 )
 
+
 def get_func_name(final_expr_ast: ast.expr):
     temp_body_source = ast.unparse(final_expr_ast)
     source_hash = hashlib.sha256(temp_body_source.encode()).hexdigest()[:16]
     return f"{Names.PC_FUNC_.value}{source_hash}"
+
 
 def get_module_ast(func_name: str, final_expr_ast: ast.expr) -> ast.Module:
     func_args = ast.arguments(args=[ast.arg(arg=Names.ARG.value)], defaults=[])
@@ -31,6 +33,7 @@ def get_module_ast(func_name: str, final_expr_ast: ast.expr) -> ast.Module:
         decorator_list=[],
     )
     return ast.fix_missing_locations(ast.Module(body=[func_def], type_ignores=[]))
+
 
 def add_cfunc(func_def: ast.FunctionDef) -> str:
     decorator = ast.Name(id="cython.cfunc", ctx=ast.Load())

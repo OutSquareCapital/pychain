@@ -23,7 +23,7 @@ class SourceCode:
     def __repr__(self) -> str:
         indented_code: str = textwrap.indent(self.code, "    ")
         return f"pychain\n-- Source --\n{indented_code}"
-    
+
     def as_tree(self) -> ast.Module:
         return ast.parse(self.code)
 
