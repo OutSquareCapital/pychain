@@ -152,7 +152,7 @@ class ScopeManager:
                 return ast.Name(id=value.__name__, ctx=ast.Load())
             case _:
                 base_name = getattr(value, "__name__", Names.FUNC.value)
-                if not base_name.isidentifier() or base_name == "<lambda>":
+                if not base_name.isidentifier() or base_name == Names.LAMBDA.value:
                     base_name = Names.FUNC.value
                 try:
                     source = inspect.getsource(value)

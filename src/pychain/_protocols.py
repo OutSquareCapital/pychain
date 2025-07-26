@@ -52,6 +52,7 @@ class Names(StrEnum):
     PC_FUNC_ = auto()
     ARG = auto()
     FUNC = auto()
+    LAMBDA = "<lambda>"
     DUMMY = auto()
     PYCHAIN_AST = auto()
 
