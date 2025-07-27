@@ -15,13 +15,13 @@ def pyfunc_opti(data: Iterable[int]) -> list[str]:
 
 fn = (
     pc.iter(int)
-    .filter(lambda x: x > 5 and x % 2 != 0 and x + 5 != 0)
+    .filter(pc.fn(int, bool, lambda x: x > 5 and x % 2 != 0 and x + 5 != 0))
     .map(
         f=(
             pc.expr(int)
-            .into(lambda x: 30 * (2 / (x + 5)))
-            .into(lambda x: round(x, 3))
-            .into(lambda x: f"result is: {x}")
+            .into(pc.fn(int, float, lambda x: 30 * (2 / (x + 5))))
+            .into(pc.fn(float, float, lambda x: round(x, 3)))
+            .into(pc.fn(float, str, lambda x: f"result is: {x}"))
             .collect()
         )
     )
