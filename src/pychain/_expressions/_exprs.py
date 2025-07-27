@@ -3,7 +3,8 @@ from collections.abc import Callable
 from typing import Any, Literal
 from .._compilers import Compiler
 from .._protocols import get_placeholder, Func, Operation, Process, Transform
-from .._tracker import TypeTracker
+from .._ast_parsers import TypeTracker
+
 
 class BaseExpr[P, R](ABC):
     def __init__(
@@ -13,7 +14,7 @@ class BaseExpr[P, R](ABC):
         self._tracker = tracker
 
     def _new(self, op: Operation[Any, Any]) -> Any:
-        self._tracker.update(op.func)
+        self._tracker.update(op)
         return self.__class__(self._pipeline + [op], self._tracker)
 
     def __repr__(self):
@@ -35,7 +36,7 @@ class BaseExpr[P, R](ABC):
     def collect(
         self, backend: Literal["python", "numba", "cython"] = "python"
     ) -> Func[P, R]:
-        return Compiler(self._pipeline).run(backend=backend)
+        return Compiler(self._pipeline, self._tracker).run(backend=backend)
 
 
 class Expr[P, R](BaseExpr[P, R]):

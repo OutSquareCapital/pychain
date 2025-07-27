@@ -7,12 +7,14 @@ from pathlib import Path
 from typing import Any
 
 from ._ast_parsers import (
-    FunctionDefFinder,
     add_cfunc,
     get_callable_ast,
     match_node,
+    FunctionDefFinder,
+    is_typed_lambda,
+    create_type_node,
 )
-from ._protocols import CallableAst, Func, Names, Scope
+from ._protocols import Func, Names, Scope, SignaturesRegistery
 
 
 @dataclass(slots=True)
@@ -41,7 +43,7 @@ class SourceCode:
     def add_cython_decorators(self):
         tree = self.as_tree()
         if isinstance(tree.body[0], ast.FunctionDef):
-            decorator = ast.Name(id="cython.ccall", ctx=ast.Load())
+            decorator = ast.Name(id=Names.CCALL.value, ctx=ast.Load())
             tree.body[0].decorator_list.insert(0, decorator)
             self.code = ast.unparse(tree)
         return self
@@ -54,6 +56,7 @@ class SourceCode:
 
 @dataclass(slots=True)
 class ModuleBuilder:
+    signatures: SignaturesRegistery
     imports: set[str] = field(default_factory=set[str])
     definitions: dict[int, str] = field(default_factory=dict[int, str])
     processed_ids: set[int] = field(default_factory=set[int])
@@ -75,16 +78,29 @@ class ModuleBuilder:
         finder = FunctionDefFinder()
         finder.visit(tree)
         if func_def := finder.found_func:
-            decorator = ast.Name(id="cython.cfunc", ctx=ast.Load())
+            decorator = ast.Name(id=Names.CFUNC.value, ctx=ast.Load())
             func_def.decorator_list.insert(0, decorator)
-
+            self._add_type_annotations(func_def, id(func_obj.func))
             self.definitions[id(func_obj)] = ast.unparse(func_def)
             self.alias_map[ref_name] = func_def.name
 
-    def _add_func(self, node: CallableAst, name: str, obj_id: int) -> None:
+    def _add_func(
+        self, node: ast.FunctionDef | ast.Lambda, name: str, obj_id: int
+    ) -> None:
         func_def: ast.FunctionDef | None = match_node(node, name)
         if func_def:
+            self._add_type_annotations(func_def, obj_id)
             self.definitions[obj_id] = add_cfunc(func_def)
+
+    def _add_type_annotations(self, func_def: ast.FunctionDef, obj_id: int) -> None:
+        if not (signature := self.signatures.get(obj_id)):
+            return
+        for arg in func_def.args.args:
+            if arg_type := signature.params.get(arg.arg):
+                if type_node := create_type_node(self.imports, arg_type):
+                    arg.annotation = type_node
+        if type_node := create_type_node(self.imports, signature.return_type):
+            func_def.returns = type_node
 
     @property
     def import_section(self) -> str:
@@ -98,6 +114,9 @@ class ModuleBuilder:
 
     def _gather_dependencies(self, scope: Scope) -> None:
         for name, obj in scope.items():
+            if is_typed_lambda(obj):
+                obj = obj.func
+
             obj_id = id(obj)
             if obj_id in self.processed_ids or name.startswith(Names.PC_FUNC_.value):
                 continue

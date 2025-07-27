@@ -1,12 +1,17 @@
-import ast
 import builtins
 import textwrap
 from collections.abc import Callable, Iterable
 from enum import StrEnum, auto
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, Final, TypeGuard
+
+
+class Signature(NamedTuple):
+    params: dict[str, type]
+    return_type: type
+
 
 type Scope = dict[str, Any]
-type CallableAst = ast.Lambda | ast.FunctionDef
+type SignaturesRegistery = dict[int, Signature]
 type Check[T] = Callable[[T], bool]
 type Process[T] = Callable[[T], T]
 type Transform[T, T1] = Callable[[T], T1]
@@ -32,12 +37,21 @@ def is_placeholder(obj: Any) -> bool:
 
 
 class Func[P, R]:
+    _is_pychain_func: Final[bool] = True
+
     def __init__(
-        self, compiled_func: Callable[[P], R], source_code: str, scope: dict[str, Any]
+        self,
+        compiled_func: Callable[[P], R],
+        source_code: str,
+        scope: Scope,
+        param_type: type,
+        return_type: type,
     ):
         self.func = compiled_func
         self.source_code = source_code
         self.scope = scope
+        self.param_type = param_type
+        self.return_type = return_type
 
     def __call__(self, arg: P) -> R:
         return self.func(arg)
@@ -45,6 +59,10 @@ class Func[P, R]:
     def __repr__(self) -> str:
         indented_code: str = textwrap.indent(self.source_code, "    ")
         return f"pychain.Func\n-- Source --\n{indented_code}"
+
+
+def check_func(obj: Any) -> TypeGuard[Func[Any, Any]]:
+    return getattr(obj, "_is_pychain_func", False) is True
 
 
 class Names(StrEnum):
@@ -55,6 +73,8 @@ class Names(StrEnum):
     LAMBDA = "<lambda>"
     DUMMY = auto()
     PYCHAIN_AST = auto()
+    CFUNC = "cython.cfunc"
+    CCALL = "cython.ccall"
 
 
 BUILTIN_NAMES = set(dir(builtins))
@@ -84,4 +104,17 @@ INLINEABLE_BUILTINS: set[type | Callable[..., Any]] = {
     sorted,
     iter,
     next,
+}
+
+
+CYTHON_TYPES: dict[type, str] = {
+    builtins.int: "cython.int",
+    builtins.float: "cython.double",
+    builtins.bool: "cython.bint",
+    builtins.str: "str",
+    builtins.list: "list",
+    builtins.dict: "dict",
+    builtins.set: "set",
+    builtins.tuple: "tuple",
+    object: "object",
 }

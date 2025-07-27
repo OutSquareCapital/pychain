@@ -28,26 +28,30 @@ class CachePaths:
     base_dir: Path = Path.home() / ".pychain_cache"
 
     @property
+    def module_name(self) -> str:
+        return f"m_{self.hash}"
+
+    @property
     def build_dir(self) -> Path:
         return self.base_dir / self.hash
 
     @property
     def source_file(self) -> Path:
-        return self.build_dir / f"{self.hash}.py"
+        return self.build_dir / f"{self.module_name}.py"
 
     @property
     def setup_file(self) -> Path:
         return self.build_dir / "setup.py"
 
     def find_binary(self) -> Path | None:
-        if binary := next(self.base_dir.glob(f"{self.hash}.*.pyd"), None):
+        if binary := next(self.base_dir.glob(f"{self.module_name}.*.pyd"), None):
             return binary
-        return next(self.base_dir.glob(f"{self.hash}.*.so"), None)
+        return next(self.base_dir.glob(f"{self.module_name}.*.so"), None)
 
     def find_binary_in_build_dir(self) -> Path:
-        if binary := next(self.build_dir.glob(f"{self.hash}.*.pyd"), None):
+        if binary := next(self.build_dir.glob(f"{self.module_name}.*.pyd"), None):
             return binary
-        if binary := next(self.build_dir.glob(f"{self.hash}.*.so"), None):
+        if binary := next(self.build_dir.glob(f"{self.module_name}.*.so"), None):
             return binary
         raise FileNotFoundError("Could not find compiled Cython binary in build dir.")
 
@@ -57,7 +61,6 @@ def run_process(command: list[str], cwd: Path) -> None:
         command, cwd=cwd, capture_output=True, text=True, check=False
     )
     if result.returncode == 0:
-        print("INFO: Cython compilation successful.")
         return
 
     print("--- CYTHON BUILD FAILED ---")
@@ -75,10 +78,7 @@ class CythonCompiler:
 
     def get_func(self) -> Callable[..., Any]:
         if binary_path := self.paths.find_binary():
-            print(f"INFO: Found compiled binary in cache: {binary_path}")
             return load_from_path(binary_path, self.source.func_name)
-
-        print("INFO: No compiled binary found in cache. Starting build process...")
         final_binary_path = self._compile()
         return load_from_path(final_binary_path, self.source.func_name)
 
@@ -91,9 +91,7 @@ class CythonCompiler:
         compiled_binary = self.paths.find_binary_in_build_dir()
         final_binary_path = self.paths.base_dir / compiled_binary.name
         shutil.move(src=compiled_binary, dst=final_binary_path)
-        if not self.debug:
-            print(f"INFO: Cleaning up build directory: {self.paths.build_dir}")
-            shutil.rmtree(self.paths.build_dir)
+        shutil.rmtree(self.paths.build_dir)
 
         return final_binary_path
 

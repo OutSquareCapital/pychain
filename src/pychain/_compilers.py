@@ -1,8 +1,8 @@
 import ast
 from collections.abc import Callable
 from typing import Any, Literal
-
-from ._ast_parsers import ScopeManager, get_func_name, get_module_ast
+from ._scope import ScopeManager
+from ._ast_parsers import get_func_name, get_module_ast, TypeTracker
 from ._cythonizer import CythonCompiler
 
 from ._module_builder import ModuleBuilder, SourceCode
@@ -12,9 +12,10 @@ type CompileResult[T] = tuple[Callable[[T], Any], SourceCode]
 
 
 class Compiler[P]:
-    def __init__(self, pipeline: list[Operation[P, Any]]) -> None:
+    def __init__(self, pipeline: list[Operation[P, Any]], tracker: TypeTracker) -> None:
         self.pipeline = pipeline
         self.manager = ScopeManager()
+        self.tracker = tracker
 
     def run(self, backend: Literal["python", "numba", "cython"]):
         compiled_func, source_code = self._compile_logic()
@@ -24,16 +25,19 @@ class Compiler[P]:
 
                 compiled_func: Callable[[P], Any] = jit(compiled_func)
             case "cython":
-                _, temp_source_code = self._compile_logic()
-                cython_source = ModuleBuilder().generate(
-                    temp_source_code, self.manager.scope
-                )
-                loaded_func = CythonCompiler(cython_source).get_func()
-                return Func(loaded_func, cython_source.code, self.manager.scope)
-
+                source_code = ModuleBuilder(
+                    signatures=self.tracker.inferred_signatures
+                ).generate(source_code, self.manager.scope)
+                compiled_func = CythonCompiler(source_code).get_func()
             case _:
                 compiled_func: Callable[[P], Any] = compiled_func
-        return Func(compiled_func, source_code.code, self.manager.scope)
+        return Func(
+            compiled_func,
+            source_code.code,
+            self.manager.scope,
+            self.tracker.p_type,
+            self.tracker.r_type,
+        )
 
     def _compile_logic(self) -> CompileResult[P]:
         final_expr_ast: ast.expr = self._build_from_pipeline()

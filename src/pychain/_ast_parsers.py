@@ -2,64 +2,142 @@ import ast
 import hashlib
 import inspect
 import textwrap
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Final, TypeGuard, get_args, get_type_hints
+
 
 from ._protocols import (
-    BUILTIN_NAMES,
-    INLINEABLE_BUILTINS,
-    Func,
     Names,
     Operation,
-    Scope,
-    is_placeholder,
-    CallableAst,
+    SignaturesRegistery,
+    check_func,
+    Signature,
+    CYTHON_TYPES,
 )
 
 
-def get_func_name(final_expr_ast: ast.expr):
-    temp_body_source = ast.unparse(final_expr_ast)
-    source_hash = hashlib.sha256(temp_body_source.encode()).hexdigest()[:16]
-    return f"{Names.PC_FUNC_.value}{source_hash}"
+def create_type_node(imports: set[str], type_obj: type) -> ast.expr | None:
+    if mapped_str := CYTHON_TYPES.get(type_obj):
+        if "." in mapped_str:
+            parts = mapped_str.split(".")
+            imports.add(f"import {parts[0]}")
+            return ast.Attribute(
+                value=ast.Name(id=parts[0], ctx=ast.Load()),
+                attr=parts[1],
+                ctx=ast.Load(),
+            )
+        else:
+            return ast.Name(id=mapped_str, ctx=ast.Load())
+    return None
 
 
-def get_module_ast(func_name: str, final_expr_ast: ast.expr) -> ast.Module:
-    func_args = ast.arguments(args=[ast.arg(arg=Names.ARG.value)], defaults=[])
-    func_def = ast.FunctionDef(
-        name=func_name,
-        args=func_args,
-        body=[ast.Return(value=final_expr_ast)],
-        decorator_list=[],
+@dataclass(slots=True, frozen=True)
+class TypedLambda[P, R]:
+    func: Callable[[P], R]
+    p_type: type[P]
+    r_type: type[R]
+    _is_typed_lambda: Final[bool] = True
+
+    def __call__(self, arg: P) -> R:
+        return self.func(arg)
+
+
+def is_typed_lambda(obj: Any) -> TypeGuard[TypedLambda[Any, Any]]:
+    return getattr(obj, "_is_typed_lambda", False) is True
+
+
+def _get_inspectable_func(obj: Any) -> Callable[..., Any]:
+    seen_ids = {id(obj)}
+    while True:
+        if inspect.isfunction(obj) or inspect.ismethod(obj) or inspect.isclass(obj):
+            return obj
+        if is_typed_lambda(obj):
+            obj = obj.func
+        elif check_func(obj):
+            obj = obj.func
+        elif callable(obj):
+            obj = obj.__call__
+        else:
+            raise TypeError("L'objet n'est pas inspectable.")
+        if id(obj) in seen_ids:
+            raise TypeError("Boucle de wrappers détectée.")
+        seen_ids.add(id(obj))
+
+
+@dataclass(slots=True)
+class TypeTracker:
+    p_type: Final[type]
+    r_type: type
+    inferred_signatures: SignaturesRegistery = field(
+        default_factory=dict[int, Signature]
     )
-    return ast.fix_missing_locations(ast.Module(body=[func_def], type_ignores=[]))
 
+    def update(self, op: Operation[Any, Any]) -> None:
+        target_obj = op.args[0] if op.func in (map, filter) else op.func
 
-def add_cfunc(func_def: ast.FunctionDef) -> str:
-    decorator = ast.Name(id="cython.cfunc", ctx=ast.Load())
-    func_def.decorator_list.insert(0, decorator)
-    ast.fix_missing_locations(func_def)
-    return ast.unparse(func_def)
+        match target_obj:
+            case tl if is_typed_lambda(tl):
+                self._handle_typed_lambda(op, tl)
 
+            case func if callable(func) and not isinstance(func, type):
+                self._handle_regular_callable(op, func)
 
-def match_node(node: CallableAst, name: str) -> ast.FunctionDef | None:
-    func_def: ast.FunctionDef | None = None
-    match node:
-        case ast.Lambda() as lambda_node:
-            func_def = lambda_to_func(lambda_node, name)
-        case ast.FunctionDef() as func_def_node:
-            func_def_node.name = name
-            func_def = func_def_node
-    return func_def
+            case t if isinstance(t, type):
+                element_type = get_args(self.r_type)
+                new_type = t[element_type] if element_type else t  # type: ignore
+                self._update(new_type)  # type: ignore
 
+            case _:
+                self._update(type(target_obj))  # type: ignore
 
-def lambda_to_func(lambda_node: ast.Lambda, name: str) -> ast.FunctionDef:
-    return ast.FunctionDef(
-        name=name,
-        args=lambda_node.args,
-        body=[ast.Return(value=lambda_node.body)],
-        decorator_list=[],
-    )
+    def _handle_typed_lambda(
+        self, op: Operation[Any, Any], tl: TypedLambda[Any, Any]
+    ) -> None:
+        p_type = tl.p_type
+        r_type = tl.r_type
+
+        arg_name = get_first_arg_name(tl.func)
+        params = {arg_name: p_type} if arg_name else {}
+        self.inferred_signatures[id(tl.func)] = Signature(
+            params=params, return_type=r_type
+        )
+
+        if op.func is map:
+            self._update(Iterable[r_type])
+        elif op.func is filter:
+            pass
+        else:
+            self._update(r_type)
+
+    def _handle_regular_callable(
+        self, op: Operation[Any, Any], func: Callable[..., Any]
+    ) -> None:
+        if check_func(func):
+            return_type = func.return_type
+            arg_name = get_first_arg_name(func.func)
+            if arg_name:
+                self.inferred_signatures[id(func.func)] = Signature(
+                    params={arg_name: func.param_type}, return_type=return_type
+                )
+        else:
+            try:
+                inspectable_func = _get_inspectable_func(func)
+                hints = get_type_hints(inspectable_func)
+                return_type = hints.get("return", object)
+            except TypeError:
+                return_type = object
+
+        if op.func is map:
+            self._update(Iterable[return_type])
+        elif op.func is filter:
+            pass
+        else:
+            self._update(return_type)
+
+    def _update(self, new_type: type) -> None:
+        if self.r_type != new_type:
+            self.r_type = new_type
 
 
 @dataclass(slots=True, frozen=True)
@@ -89,13 +167,10 @@ class FunctionDefFinder(ast.NodeVisitor):
             self.found_func = node
 
 
-def _extract_return_expression(func_ast: ast.FunctionDef) -> ast.expr | None:
-    if len(func_ast.body) == 1 and isinstance(stmt := func_ast.body[0], ast.Return):
-        return stmt.value
-    return None
+def get_callable_ast(func: Callable[..., Any]) -> ast.Lambda | ast.FunctionDef | None:
+    if is_typed_lambda(func):
+        func = func.func
 
-
-def get_callable_ast(func: Callable[..., Any]) -> CallableAst | None:
     try:
         raw_source = textwrap.dedent(inspect.getsource(func)).strip()
         source_to_parse = (
@@ -118,89 +193,61 @@ def get_callable_ast(func: Callable[..., Any]) -> CallableAst | None:
         return None
 
 
-@dataclass(slots=True, frozen=True)
-class ScopeManager:
-    scope: Scope = field(default_factory=dict[str, Any])
+def extract_return_expression(func_ast: ast.FunctionDef) -> ast.expr | None:
+    if len(func_ast.body) == 1 and isinstance(stmt := func_ast.body[0], ast.Return):
+        return stmt.value
+    return None
 
-    def __getitem__(self, key: str) -> Any:
-        return self.scope[key]
 
-    def clear(self) -> None:
-        self.scope.clear()
+def get_first_arg_name(func: Callable[..., Any]) -> str | None:
+    if is_typed_lambda(func):
+        func = func.func
 
-    def populate_from_callable(self, func: Callable[..., Any]) -> None:
-        if func.__closure__:
-            for var_name, cell in zip(func.__code__.co_freevars, func.__closure__):
-                self.scope[var_name] = cell.cell_contents
-        for name in func.__code__.co_names:
-            if name in func.__globals__ and name not in BUILTIN_NAMES:
-                self.scope[name] = func.__globals__[name]
+    if node := get_callable_ast(func):
+        if node.args.args:
+            return node.args.args[0].arg
+    return Names.ARG.value
 
-    def value_to_ast(self, value: Any) -> ast.expr:
-        match value:
-            case Func() as func_obj:  # type: ignore
-                stable_id = hashlib.sha256(func_obj.source_code.encode()).hexdigest()[
-                    :16
-                ]
-                base_name = Names.FUNC.value
-                var_name = f"{Names.REF_.value}{base_name}_{stable_id}"
-                self.scope[var_name] = func_obj
-                return ast.Name(id=var_name, ctx=ast.Load())
-            case bool() | int() | float() | str() | None:
-                return ast.Constant(value)
-            case _ if value in INLINEABLE_BUILTINS:
-                return ast.Name(id=value.__name__, ctx=ast.Load())
-            case _:
-                base_name = getattr(value, "__name__", Names.FUNC.value)
-                if not base_name.isidentifier() or base_name == Names.LAMBDA.value:
-                    base_name = Names.FUNC.value
-                try:
-                    source = inspect.getsource(value)
-                    stable_id = hashlib.sha256(source.encode()).hexdigest()[:16]
-                except (TypeError, OSError):
-                    stable_id = id(value)
-                var_name = f"{Names.REF_.value}{base_name}_{stable_id}"
-                self.scope[var_name] = value
-                return ast.Name(id=var_name, ctx=ast.Load())
 
-    def resolve_placeholder_ast(self, value: Any, prev_ast: ast.expr) -> ast.expr:
-        return prev_ast if is_placeholder(value) else self.value_to_ast(value)
+def get_func_name(final_expr_ast: ast.expr):
+    temp_body_source = ast.unparse(final_expr_ast)
+    source_hash = hashlib.sha256(temp_body_source.encode()).hexdigest()[:16]
+    return f"{Names.PC_FUNC_.value}{source_hash}"
 
-    def try_inline_call(
-        self, op: Operation[Any, Any], prev_ast: ast.expr
-    ) -> ast.expr | None:
-        is_simple_call = all(is_placeholder(arg) for arg in op.args) and not op.kwargs
-        if not is_simple_call:
-            return None
 
-        if not (node := get_callable_ast(op.func)):
-            return None
+def get_module_ast(func_name: str, final_expr_ast: ast.expr) -> ast.Module:
+    func_args = ast.arguments(args=[ast.arg(arg=Names.ARG.value)], defaults=[])
+    func_def = ast.FunctionDef(
+        name=func_name,
+        args=func_args,
+        body=[ast.Return(value=final_expr_ast)],
+        decorator_list=[],
+    )
+    return ast.fix_missing_locations(ast.Module(body=[func_def], type_ignores=[]))
 
-        match node:
-            case ast.Lambda(args=lambda_args):
-                if len(lambda_args.args) == 1:
-                    self.populate_from_callable(op.func)
-                    arg_name = lambda_args.args[0].arg
-                    return NodeReplacer(arg_name, prev_ast).visit(node.body)
 
-            case ast.FunctionDef(args=func_args) as func_ast:
-                if len(func_args.args) == 1:
-                    self.populate_from_callable(op.func)
-                    if return_expr := _extract_return_expression(func_ast):
-                        arg_name = func_args.args[0].arg
-                        return NodeReplacer(arg_name, prev_ast).visit(return_expr)
+def add_cfunc(func_def: ast.FunctionDef) -> str:
+    decorator = ast.Name(id=Names.CFUNC.value, ctx=ast.Load())
+    func_def.decorator_list.insert(0, decorator)
+    ast.fix_missing_locations(func_def)
+    return ast.unparse(func_def)
 
-        return None
 
-    def build_operation_ast(
-        self, op: Operation[Any, Any], prev_ast: ast.expr
-    ) -> ast.expr:
-        if inlined_ast := self.try_inline_call(op, prev_ast):
-            return inlined_ast
-        func_node = self.value_to_ast(op.func)
-        args_nodes = [self.resolve_placeholder_ast(arg, prev_ast) for arg in op.args]
-        kwargs_nodes = [
-            ast.keyword(arg=k, value=self.resolve_placeholder_ast(v, prev_ast))
-            for k, v in op.kwargs.items()
-        ]
-        return ast.Call(func=func_node, args=args_nodes, keywords=kwargs_nodes)
+def match_node(node: ast.FunctionDef | ast.Lambda, name: str) -> ast.FunctionDef | None:
+    func_def: ast.FunctionDef | None = None
+    match node:
+        case ast.Lambda() as lambda_node:
+            func_def = lambda_to_func(lambda_node, name)
+        case ast.FunctionDef() as func_def_node:
+            func_def_node.name = name
+            func_def = func_def_node
+    return func_def
+
+
+def lambda_to_func(lambda_node: ast.Lambda, name: str) -> ast.FunctionDef:
+    return ast.FunctionDef(
+        name=name,
+        args=lambda_node.args,
+        body=[ast.Return(value=lambda_node.body)],
+        decorator_list=[],
+    )
