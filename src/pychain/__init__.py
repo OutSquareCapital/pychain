@@ -1,4 +1,4 @@
-from ._expressions._main import Expr, Iter, Struct, expr, iter, struct
+from ._main import Expr, Iter, Struct, expr, iter, struct
 from ._protocols import Func
 from ._expressions._exprs import BaseExpr
 
