@@ -42,17 +42,17 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
     def agg[T](self, f: Callable[[Iterable[VR]], T]) -> "Expr[Iterable[VP], T]":
         from ._exprs import Expr
 
-        return Expr(self._do(f, self._arg)._pipeline)
+        return Expr(self._do(f, self._arg)._pipeline, self._tracker)
 
     def group_by[K](self, on: Transform[VR, K]) -> "Struct[VP, K, VR, list[VR]]":
         from ._struct import Struct
 
-        return Struct(self._do(itz.groupby, on, self._arg)._pipeline)
+        return Struct(self._do(itz.groupby, on, self._arg)._pipeline, self._tracker)
 
     def into_frequencies(self) -> "Struct[VP, int, VR, int]":
         from ._struct import Struct
 
-        return Struct(self._do(itz.frequencies, self._arg)._pipeline)
+        return Struct(self._do(itz.frequencies, self._arg)._pipeline, self._tracker)
 
     def reduce_by[K](self, key: Transform[VR, K], binop: Callable[[VR, VR], VR]):
         return self._do(itz.reduceby, key, binop, self._arg)

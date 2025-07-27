@@ -1,17 +1,20 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any, Literal
-
 from .._compilers import Compiler
 from .._protocols import get_placeholder, Func, Operation, Process, Transform
-
+from .._tracker import TypeTracker
 
 class BaseExpr[P, R](ABC):
-    def __init__(self, pipeline: list[Operation[Any, Any]]) -> None:
+    def __init__(
+        self, pipeline: list[Operation[Any, Any]], tracker: TypeTracker
+    ) -> None:
         self._pipeline = pipeline
+        self._tracker = tracker
 
     def _new(self, op: Operation[Any, Any]) -> Any:
-        return self.__class__(self._pipeline + [op])
+        self._tracker.update(op.func)
+        return self.__class__(self._pipeline + [op], self._tracker)
 
     def __repr__(self):
         return f"class {self.__class__.__name__}(pipeline:\n{self._pipeline.__repr__()})\n)"
