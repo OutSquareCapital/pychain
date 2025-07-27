@@ -2,13 +2,7 @@ from ._expressions._exprs import Expr
 from ._expressions._iter import Iter
 from ._expressions._struct import Struct
 from ._tracker import TypeTracker
-from ._proxy import Proxy
 from collections.abc import Iterable
-
-
-def proxy[T](obj: type[T]) -> T:
-    return Proxy()  # type: ignore
-
 
 class StructConstructor:
     def __call__[K, V](self, ktype: type[K], vtype: type[V]) -> Struct[K, V, K, V]:
@@ -31,6 +25,4 @@ class IterConstructor:
 expr = ExprConstructor()
 iter = IterConstructor()
 struct = StructConstructor()
-Int = proxy(int)
-Float = proxy(float)
-Str = proxy(str)
+
