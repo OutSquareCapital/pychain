@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any, Literal
-from .._compilers import Compiler
-from .._protocols import get_placeholder, Func, Operation, Process, Transform
-from .._ast_parsers import TypeTracker
+
+from .._compilers import Compiler, TypeTracker
+from .._protocols import Func, Operation, get_placeholder
+from ._types import Process, Transform
 
 
 class BaseExpr[P, R](ABC):
@@ -33,9 +34,7 @@ class BaseExpr[P, R](ABC):
     def _arg(self) -> Any:
         raise NotImplementedError
 
-    def collect(
-        self, backend: Literal["python", "numba", "cython"] = "python"
-    ) -> Func[P, R]:
+    def collect(self, backend: Literal["python", "cython"] = "python") -> Func[P, R]:
         return Compiler(self._pipeline, self._tracker).run(backend=backend)
 
 

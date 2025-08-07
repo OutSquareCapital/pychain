@@ -5,8 +5,10 @@ from random import Random
 from typing import TYPE_CHECKING, Any
 
 import cytoolz.itertoolz as itz
+
+from .._protocols import Operation, get_placeholder
 from ._exprs import BaseExpr, Expr
-from .._protocols import get_placeholder, Operation, Transform, Process, Check
+from ._types import Check, Process, Transform
 
 if TYPE_CHECKING:
     from ._struct import Struct

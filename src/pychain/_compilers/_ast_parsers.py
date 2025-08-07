@@ -6,15 +6,13 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Any, Final, TypeGuard, get_args, get_type_hints
 
-
-from ._protocols import (
-    Names,
+from .._protocols import (
     Operation,
+    Signature,
     SignaturesRegistery,
     check_func,
-    Signature,
-    CYTHON_TYPES,
 )
+from ._enums import CYTHON_TYPES, Names
 
 
 def create_type_node(imports: set[str], type_obj: type) -> ast.expr | None:

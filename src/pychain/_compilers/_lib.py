@@ -1,12 +1,13 @@
 import ast
 from collections.abc import Callable
 from typing import Any, Literal
-from ._scope import ScopeManager
-from ._ast_parsers import get_func_name, get_module_ast, TypeTracker
-from ._cythonizer import CythonCompiler
 
+from .._protocols import Func, Operation
+from ._ast_parsers import TypeTracker, get_func_name, get_module_ast
+from ._cythonizer import CythonCompiler
+from ._enums import Names
 from ._module_builder import ModuleBuilder, SourceCode
-from ._protocols import Func, Names, Operation
+from ._scope import ScopeManager
 
 type CompileResult[T] = tuple[Callable[[T], Any], SourceCode]
 
@@ -17,13 +18,9 @@ class Compiler[P]:
         self.manager = ScopeManager()
         self.tracker = tracker
 
-    def run(self, backend: Literal["python", "numba", "cython"]):
+    def run(self, backend: Literal["python", "cython"]):
         compiled_func, source_code = self._compile_logic()
         match backend:
-            case "numba":
-                from numba import jit
-
-                compiled_func: Callable[[P], Any] = jit(compiled_func)
             case "cython":
                 source_code = ModuleBuilder(
                     signatures=self.tracker.inferred_signatures

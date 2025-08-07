@@ -5,21 +5,19 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+from .._protocols import (
+    Func,
+    Operation,
+    Scope,
+    is_placeholder,
+)
 from ._ast_parsers import (
     NodeReplacer,
     extract_return_expression,
     get_callable_ast,
     is_typed_lambda,
 )
-from ._protocols import (
-    BUILTIN_NAMES,
-    INLINEABLE_BUILTINS,
-    Func,
-    Names,
-    Operation,
-    Scope,
-    is_placeholder,
-)
+from ._enums import BUILTIN_NAMES, INLINEABLE_BUILTINS, Names
 
 
 @dataclass(slots=True, frozen=True)

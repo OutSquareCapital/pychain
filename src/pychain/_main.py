@@ -1,8 +1,7 @@
 from collections.abc import Callable, Iterable
-from ._ast_parsers import TypedLambda, TypeTracker
-from ._expressions._exprs import Expr
-from ._expressions._iter import Iter
-from ._expressions._struct import Struct
+
+from ._compilers import TypedLambda, TypeTracker
+from ._expressions import Expr, Iter, Struct
 
 
 def expr[T](dtype: type[T]) -> Expr[T, T]:
@@ -22,16 +21,17 @@ def struct[K, V](ktype: type[K], vtype: type[V]) -> Struct[K, V, K, V]:
 
 class LambdaBuilder[P, R]:
     __slots__ = ("_p_type", "_r_type")
+
     def __init__(self, p_type: type[P]) -> None:
         self._p_type: type[P] = p_type
         self._r_type = p_type
 
     def returns[T](self, r_type: type[T]) -> "LambdaBuilder[P, T]":
         self._r_type = r_type
-        return self # type: ignore[return-value]
+        return self  # type: ignore[return-value]
 
     def do(self, func: Callable[[P], R]) -> TypedLambda[P, R]:
-        return TypedLambda(func, self._p_type, self._r_type) # type: ignore[return-value]
+        return TypedLambda(func, self._p_type, self._r_type)  # type: ignore[return-value]
 
 
 def fn[T](p_type: type[T]) -> LambdaBuilder[T, T]:

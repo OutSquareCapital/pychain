@@ -1,8 +1,6 @@
-import builtins
 import textwrap
-from collections.abc import Callable, Iterable
-from enum import StrEnum, auto
-from typing import Any, NamedTuple, Final, TypeGuard
+from collections.abc import Callable
+from typing import Any, Final, NamedTuple, TypeGuard
 
 
 class Signature(NamedTuple):
@@ -12,10 +10,6 @@ class Signature(NamedTuple):
 
 type Scope = dict[str, Any]
 type SignaturesRegistery = dict[int, Signature]
-type Check[T] = Callable[[T], bool]
-type Process[T] = Callable[[T], T]
-type Transform[T, T1] = Callable[[T], T1]
-type Agg[V, V1] = Callable[[Iterable[V]], V1]
 
 
 class Placeholder[T](NamedTuple):
@@ -26,14 +20,6 @@ class Operation[R, **P](NamedTuple):
     func: Callable[P, R]
     args: tuple[Any, ...]
     kwargs: dict[str, Any]
-
-
-def get_placeholder[T](dtype: type[T] | T) -> T:
-    return Placeholder()  # type: ignore
-
-
-def is_placeholder(obj: Any) -> bool:
-    return getattr(obj, "is_pychain_arg", False) is True
 
 
 class Func[P, R]:
@@ -61,60 +47,13 @@ class Func[P, R]:
         return f"pychain.Func\n-- Source --\n{indented_code}"
 
 
+def get_placeholder[T](dtype: type[T] | T) -> T:
+    return Placeholder()  # type: ignore
+
+
+def is_placeholder(obj: Any) -> bool:
+    return getattr(obj, "is_pychain_arg", False) is True
+
+
 def check_func(obj: Any) -> TypeGuard[Func[Any, Any]]:
     return getattr(obj, "_is_pychain_func", False) is True
-
-
-class Names(StrEnum):
-    REF_ = auto()
-    PC_FUNC_ = auto()
-    ARG = auto()
-    FUNC = auto()
-    LAMBDA = "<lambda>"
-    DUMMY = auto()
-    PYCHAIN_AST = auto()
-    CFUNC = "cython.cfunc"
-    CCALL = "cython.ccall"
-
-
-BUILTIN_NAMES = set(dir(builtins))
-INLINEABLE_BUILTINS: set[type | Callable[..., Any]] = {
-    int,
-    str,
-    float,
-    list,
-    dict,
-    tuple,
-    set,
-    zip,
-    enumerate,
-    range,
-    map,
-    filter,
-    reversed,
-    len,
-    round,
-    repr,
-    sum,
-    max,
-    min,
-    abs,
-    all,
-    any,
-    sorted,
-    iter,
-    next,
-}
-
-
-CYTHON_TYPES: dict[type, str] = {
-    builtins.int: "cython.int",
-    builtins.float: "cython.double",
-    builtins.bool: "cython.bint",
-    builtins.str: "str",
-    builtins.list: "list",
-    builtins.dict: "dict",
-    builtins.set: "set",
-    builtins.tuple: "tuple",
-    object: "object",
-}

@@ -6,15 +6,16 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from .._protocols import Func, Scope, SignaturesRegistery
 from ._ast_parsers import (
-    add_cfunc,
-    get_callable_ast,
-    match_node,
     FunctionDefFinder,
-    is_typed_lambda,
+    add_cfunc,
     create_type_node,
+    get_callable_ast,
+    is_typed_lambda,
+    match_node,
 )
-from ._protocols import Func, Names, Scope, SignaturesRegistery
+from ._enums import Names
 
 
 @dataclass(slots=True)
