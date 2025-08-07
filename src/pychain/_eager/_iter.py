@@ -19,14 +19,10 @@ class Iter[T](BasePipe[Iterable[T]]):
     ):
         return Iter(func(self.obj, *args, **kwargs))
 
-    def map[**P, R](
-        self, func: Callable[Concatenate[T, P], R], *args: P.args, **kwargs: P.kwargs
-    ):
+    def map[**P, R](self, func: Callable[Concatenate[T, P], R]):
         return Iter(map(func, self.obj))
 
-    def filter[**P](
-        self, func: Callable[Concatenate[T, P], bool], *args: P.args, **kwargs: P.kwargs
-    ):
+    def filter[**P](self, func: Callable[Concatenate[T, P], bool]):
         return Iter(filter(func, self.obj))
 
     def flat_map[R, **P](
@@ -43,9 +39,9 @@ class Iter[T](BasePipe[Iterable[T]]):
     def drop_while[**P](self, predicate: fn.Check[T]):
         return Iter(dropwhile(predicate, self.obj))
 
-    def agg[R, **P](
+    def agg[**P](
         self,
-        f: Callable[Concatenate[Iterable[T], P], R],
+        f: Callable[Concatenate[Iterable[T], P], T],
         *args: P.args,
         **kwargs: P.kwargs,
     ):
@@ -170,7 +166,7 @@ class Iter[T](BasePipe[Iterable[T]]):
         return self.agg(itz.last)
 
     def length(self):
-        return self.agg(itz.count)
+        return Pipe(itz.count(self.obj))
 
     def at_index(self, index: int):
         return Pipe(itz.nth(index, self.obj))
