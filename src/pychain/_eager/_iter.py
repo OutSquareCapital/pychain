@@ -1,5 +1,5 @@
 from collections.abc import Callable, Iterable
-from functools import reduce
+from functools import partial, reduce
 from itertools import dropwhile, product, repeat, takewhile
 from random import Random
 from typing import Any, Concatenate
@@ -19,11 +19,15 @@ class Iter[T](BasePipe[Iterable[T]]):
     ):
         return Iter(func(self.obj, *args, **kwargs))
 
-    def map[**P, R](self, func: Callable[Concatenate[T, P], R]):
-        return Iter(map(func, self.obj))
+    def map[**P, R](
+        self, func: Callable[Concatenate[T, P], R], *args: P.args, **kwargs: P.kwargs
+    ):
+        return Iter(map(partial(func, *args, **kwargs), self.obj))
 
-    def filter[**P](self, func: Callable[Concatenate[T, P], bool]):
-        return Iter(filter(func, self.obj))
+    def filter[**P](
+        self, func: Callable[Concatenate[T, P], bool], *args: P.args, **kwargs: P.kwargs
+    ):
+        return Iter(filter(partial(func, *args, **kwargs), self.obj))
 
     def flat_map[R, **P](
         self,
@@ -31,7 +35,7 @@ class Iter[T](BasePipe[Iterable[T]]):
         *args: P.args,
         **kwargs: P.kwargs,
     ):
-        return Iter(itz.concat(map(func, self.obj, *args, **kwargs)))
+        return Iter(itz.concat(map(partial(func, *args, **kwargs), self.obj)))
 
     def take_while[**P](self, predicate: fn.Check[T]):
         return Iter(takewhile(predicate, self.obj))
