@@ -26,7 +26,7 @@ class BaseExpr[P, R](ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def into(self, obj: Any) -> Any:
+    def pipe(self, obj: Any) -> Any:
         raise NotImplementedError
 
     @property
@@ -47,7 +47,7 @@ class Expr[P, R](BaseExpr[P, R]):
         op = Operation(func=func, args=args, kwargs=kwargs)
         return self._new(op)
 
-    def into[T](self, obj: Transform[R, T]):
+    def pipe[T](self, obj: Transform[R, T]):
         return self._do(obj, self._arg)
 
     def compose(self, *fns: Process[R]):

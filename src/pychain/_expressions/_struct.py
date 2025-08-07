@@ -19,7 +19,7 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
         op = Operation(func=f, args=args, kwargs=kwargs)
         return self._new(op)
 
-    def into[KT, VT](self, obj: Callable[[dict[KR, VR]], dict[KT, VT]]):
+    def pipe[KT, VT](self, obj: Callable[[dict[KR, VR]], dict[KT, VT]]):
         return self._do(obj, self._arg)
 
     def map_keys[T](self, f: Transform[KR, T]):

@@ -25,7 +25,7 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
         op = Operation(func=func, args=args, kwargs=kwargs)
         return self._new(op)
 
-    def into[T](self, obj: Callable[[Iterable[VR]], T]):
+    def pipe[T](self, obj: Callable[[Iterable[VR]], T]):
         return self._do(obj, self._arg)
 
     def map[T](self, f: Transform[VR, T]) -> "Iter[VP, T]":
