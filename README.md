@@ -4,6 +4,12 @@
 
 It provides a unified, type-safe API for working with scalars, iterables, and dictionaries, making complex data manipulation pipelines concise and expressive.
 
+## Installation
+
+```bash
+uv add git+https://github.com/OutSquareCapital/pychain.git
+```
+
 ## Current basic example (WIP so it changes often)
 
 ````python
