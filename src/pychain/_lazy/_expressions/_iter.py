@@ -11,33 +11,33 @@ from ._exprs import BaseExpr, Expr
 from ._types import Check, Process, Transform
 
 if TYPE_CHECKING:
-    from ._struct import Struct
+    from ._struct import LazyStruct
 
 
-class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
+class LazyIter[VP, VR](BaseExpr[Iterable[VP], VR]):
     @property
     def _arg(self) -> Iterable[VR]:
         return get_placeholder(Iterable[VR])
 
     def _do[T, **P](
         self, func: Callable[P, T], *args: P.args, **kwargs: P.kwargs
-    ) -> "Iter[VP, T]":
+    ) -> "LazyIter[VP, T]":
         op = Operation(func=func, args=args, kwargs=kwargs)
         return self._new(op)
 
     def pipe[T](self, obj: Callable[[Iterable[VR]], T]):
         return self._do(obj, self._arg)
 
-    def map[T](self, f: Transform[VR, T]) -> "Iter[VP, T]":
+    def map[T](self, f: Transform[VR, T]) -> "LazyIter[VP, T]":
         return self._do(map, f, self._arg)  # type: ignore
 
-    def filter(self, f: Check[VR]) -> "Iter[VP, VR]":
+    def filter(self, f: Check[VR]) -> "LazyIter[VP, VR]":
         return self._do(filter, f, self._arg)  # type: ignore
 
-    def take_while(self, predicate: Check[VR]) -> "Iter[VP, VR]":
+    def take_while(self, predicate: Check[VR]) -> "LazyIter[VP, VR]":
         return self._do(takewhile, predicate, self._arg)  # type: ignore
 
-    def drop_while(self, predicate: Check[VR]) -> "Iter[VP, VR]":
+    def drop_while(self, predicate: Check[VR]) -> "LazyIter[VP, VR]":
         return self._do(dropwhile, predicate, self._arg)  # type: ignore
 
     def agg[T](self, f: Callable[[Iterable[VR]], T]) -> "Expr[Iterable[VP], T]":
@@ -45,15 +45,15 @@ class Iter[VP, VR](BaseExpr[Iterable[VP], VR]):
 
         return Expr(self._do(f, self._arg)._pipeline, self._tracker)
 
-    def group_by[K](self, on: Transform[VR, K]) -> "Struct[VP, K, VR, list[VR]]":
-        from ._struct import Struct
+    def group_by[K](self, on: Transform[VR, K]) -> "LazyStruct[VP, K, VR, list[VR]]":
+        from ._struct import LazyStruct
 
-        return Struct(self._do(itz.groupby, on, self._arg)._pipeline, self._tracker)
+        return LazyStruct(self._do(itz.groupby, on, self._arg)._pipeline, self._tracker)
 
-    def into_frequencies(self) -> "Struct[VP, int, VR, int]":
-        from ._struct import Struct
+    def into_frequencies(self) -> "LazyStruct[VP, int, VR, int]":
+        from ._struct import LazyStruct
 
-        return Struct(self._do(itz.frequencies, self._arg)._pipeline, self._tracker)
+        return LazyStruct(self._do(itz.frequencies, self._arg)._pipeline, self._tracker)
 
     def reduce_by[K](self, key: Transform[VR, K], binop: Callable[[VR, VR], VR]):
         return self._do(itz.reduceby, key, binop, self._arg)

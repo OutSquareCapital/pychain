@@ -1,5 +1,5 @@
-from ._main import Expr, Iter, Struct, expr, iter, struct, fn
-from ._protocols import Func
-from ._expressions._exprs import BaseExpr
+from ._eager._exprs import BasePipe, Pipe
+from ._eager._iter import Iter
+from ._eager._struct import Struct
 
-__all__ = ["Func", "Expr", "struct", "iter", "expr", "Struct", "Iter", "BaseExpr", "fn"]
+__all__ = ["BasePipe", "Pipe", "Iter", "Struct"]

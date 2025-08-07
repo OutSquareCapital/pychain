@@ -13,21 +13,20 @@ def pyfunc_opti(data: Iterable[int]) -> list[str]:
     ]
 
 
-fn = (
-    pc.iter(int)
-    .filter(pc.fn(int).returns(bool).do(lambda x: x > 5 and x % 2 != 0 and x + 5 != 0))
-    .map(
-        f=(
-            pc.expr(int).pipe(
-                pc.fn(int).returns(float).do(lambda x: 30 * (2 / (x + 5)))
-            )
-        )
-        .pipe(pc.fn(float).do(lambda x: round(x, 3)))
-        .pipe(pc.fn(float).returns(str).do(lambda x: f"result is: {x}"))
-        .collect()
+def map_func(x: int):
+    return (
+        pc.Pipe(x)
+        .do(lambda x: 30 * (2 / (x + 5)))
+        .do(lambda x: round(x, 3))
+        .do(lambda x: f"result is: {x}")
+        .unwrap()
     )
-    .pipe(obj=list)
-    .collect("cython")
+
+
+(
+    pc.Iter(range(STOP))
+    .filter(lambda x: x > 5 and x % 2 != 0 and x + 5 != 0)
+    .map(map_func)
+    .do(list)
+    .unwrap()
 )
-print(fn)
-print(fn(range(10)))

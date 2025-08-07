@@ -8,14 +8,14 @@ from ._exprs import BaseExpr
 from ._types import Check, Process, Transform
 
 
-class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
+class LazyStruct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
     @property
     def _arg(self) -> dict[KR, VR]:
         return get_placeholder(dict[KR, VR])
 
     def _do[KT, VT, **P](
         self, f: Callable[P, dict[KT, VT]], *args: P.args, **kwargs: P.kwargs
-    ) -> "Struct[KP, VP, KT, VT]":
+    ) -> "LazyStruct[KP, VP, KT, VT]":
         op = Operation(func=f, args=args, kwargs=kwargs)
         return self._new(op)
 
@@ -28,7 +28,7 @@ class Struct[KP, VP, KR, VR](BaseExpr[dict[KP, VP], dict[KR, VR]]):
     def map_values[T](self, f: Transform[VR, T]):
         return self._do(dcz.valmap, f, self._arg)
 
-    def flatten_keys(self) -> "Struct[KP, VP, str, VR]":
+    def flatten_keys(self) -> "LazyStruct[KP, VP, str, VR]":
         return self._do(flatten_recursive, self._arg)
 
     def select(self, predicate: Check[KR]):

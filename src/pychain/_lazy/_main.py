@@ -1,7 +1,7 @@
 from collections.abc import Callable, Iterable
 
 from ._compilers import TypedLambda, TypeTracker
-from ._expressions import Expr, Iter, Struct
+from ._expressions import Expr, LazyIter, LazyStruct
 
 
 def expr[T](dtype: type[T]) -> Expr[T, T]:
@@ -9,14 +9,14 @@ def expr[T](dtype: type[T]) -> Expr[T, T]:
     return Expr([], tracker)
 
 
-def iter[T](dtype: type[T]) -> Iter[T, T]:
+def iter[T](dtype: type[T]) -> LazyIter[T, T]:
     tracker = TypeTracker(p_type=Iterable[dtype], r_type=Iterable[dtype])
-    return Iter([], tracker)
+    return LazyIter([], tracker)
 
 
-def struct[K, V](ktype: type[K], vtype: type[V]) -> Struct[K, V, K, V]:
+def struct[K, V](ktype: type[K], vtype: type[V]) -> LazyStruct[K, V, K, V]:
     tracker = TypeTracker(p_type=dict[ktype, vtype], r_type=dict[ktype, vtype])
-    return Struct([], tracker)
+    return LazyStruct([], tracker)
 
 
 class LambdaBuilder[P, R]:
