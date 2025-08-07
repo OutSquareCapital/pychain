@@ -11,12 +11,10 @@ requires-python = ">=3.13"
 dependencies = [
     "cython>=3.1.2",
     "ipykernel>=6.29.5",
-    "polars>=1.31.0",
     "setuptools>=80.9.0",
     "toolz>=1.0.0",
     "numpy>=2.0",
     "tqdm>=4.67.1",
-    "numba>=0.61.2",
     "appdirs>=1.4.4",
     "cytoolz>=1.0.1",
     "cytoolz-stubs",

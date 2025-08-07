@@ -249,19 +249,6 @@ wheels = [
 ]
 
 [[package]]
-name = "llvmlite"
-version = "0.44.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/89/6a/95a3d3610d5c75293d5dbbb2a76480d5d4eeba641557b69fe90af6c5b84e/llvmlite-0.44.0.tar.gz", hash = "sha256:07667d66a5d150abed9157ab6c0b9393c9356f229784a4385c02f99e94fc94d4", size = 171880, upload-time = "2025-01-20T11:14:41.342Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/89/24/4c0ca705a717514c2092b18476e7a12c74d34d875e05e4d742618ebbf449/llvmlite-0.44.0-cp313-cp313-macosx_10_14_x86_64.whl", hash = "sha256:319bddd44e5f71ae2689859b7203080716448a3cd1128fb144fe5c055219d516", size = 28132306, upload-time = "2025-01-20T11:14:09.035Z" },
-    { url = "https://files.pythonhosted.org/packages/01/cf/1dd5a60ba6aee7122ab9243fd614abcf22f36b0437cbbe1ccf1e3391461c/llvmlite-0.44.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:9c58867118bad04a0bb22a2e0068c693719658105e40009ffe95c7000fcde88e", size = 26201090, upload-time = "2025-01-20T11:14:15.401Z" },
-    { url = "https://files.pythonhosted.org/packages/d2/1b/656f5a357de7135a3777bd735cc7c9b8f23b4d37465505bd0eaf4be9befe/llvmlite-0.44.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:46224058b13c96af1365290bdfebe9a6264ae62fb79b2b55693deed11657a8bf", size = 42361904, upload-time = "2025-01-20T11:14:22.949Z" },
-    { url = "https://files.pythonhosted.org/packages/d8/e1/12c5f20cb9168fb3464a34310411d5ad86e4163c8ff2d14a2b57e5cc6bac/llvmlite-0.44.0-cp313-cp313-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:aa0097052c32bf721a4efc03bd109d335dfa57d9bffb3d4c24cc680711b8b4fc", size = 41184245, upload-time = "2025-01-20T11:14:31.731Z" },
-    { url = "https://files.pythonhosted.org/packages/d0/81/e66fc86539293282fd9cb7c9417438e897f369e79ffb62e1ae5e5154d4dd/llvmlite-0.44.0-cp313-cp313-win_amd64.whl", hash = "sha256:2fb7c4f2fb86cbae6dca3db9ab203eeea0e22d73b99bc2341cdf9de93612e930", size = 30331193, upload-time = "2025-01-20T11:14:38.578Z" },
-]
-
-[[package]]
 name = "matplotlib-inline"
 version = "0.1.7"
 source = { registry = "https://pypi.org/simple" }
@@ -280,23 +267,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/83/f8/51569ac65d696c8ecbee95938f89d4abf00f47d58d48f6fbabfe8f0baefe/nest_asyncio-1.6.0.tar.gz", hash = "sha256:6f172d5449aca15afd6c646851f4e31e02c598d553a667e38cafa997cfec55fe", size = 7418, upload-time = "2024-01-21T14:25:19.227Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a0/c4/c2971a3ba4c6103a3d10c4b0f24f461ddc027f0f09763220cf35ca1401b3/nest_asyncio-1.6.0-py3-none-any.whl", hash = "sha256:87af6efd6b5e897c81050477ef65c62e2b2f35d51703cae01aff2905b1852e1c", size = 5195, upload-time = "2024-01-21T14:25:17.223Z" },
-]
-
-[[package]]
-name = "numba"
-version = "0.61.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "llvmlite" },
-    { name = "numpy" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/1c/a0/e21f57604304aa03ebb8e098429222722ad99176a4f979d34af1d1ee80da/numba-0.61.2.tar.gz", hash = "sha256:8750ee147940a6637b80ecf7f95062185ad8726c8c28a2295b8ec1160a196f7d", size = 2820615, upload-time = "2025-04-09T02:58:07.659Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/f3/0fe4c1b1f2569e8a18ad90c159298d862f96c3964392a20d74fc628aee44/numba-0.61.2-cp313-cp313-macosx_10_14_x86_64.whl", hash = "sha256:3a10a8fc9afac40b1eac55717cece1b8b1ac0b946f5065c89e00bde646b5b154", size = 2771785, upload-time = "2025-04-09T02:57:59.96Z" },
-    { url = "https://files.pythonhosted.org/packages/e9/71/91b277d712e46bd5059f8a5866862ed1116091a7cb03bd2704ba8ebe015f/numba-0.61.2-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:7d3bcada3c9afba3bed413fba45845f2fb9cd0d2b27dd58a1be90257e293d140", size = 2773289, upload-time = "2025-04-09T02:58:01.435Z" },
-    { url = "https://files.pythonhosted.org/packages/0d/e0/5ea04e7ad2c39288c0f0f9e8d47638ad70f28e275d092733b5817cf243c9/numba-0.61.2-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:bdbca73ad81fa196bd53dc12e3aaf1564ae036e0c125f237c7644fe64a4928ab", size = 3893918, upload-time = "2025-04-09T02:58:02.933Z" },
-    { url = "https://files.pythonhosted.org/packages/17/58/064f4dcb7d7e9412f16ecf80ed753f92297e39f399c905389688cf950b81/numba-0.61.2-cp313-cp313-manylinux_2_28_aarch64.whl", hash = "sha256:5f154aaea625fb32cfbe3b80c5456d514d416fcdf79733dd69c0df3a11348e9e", size = 3584056, upload-time = "2025-04-09T02:58:04.538Z" },
-    { url = "https://files.pythonhosted.org/packages/af/a4/6d3a0f2d3989e62a18749e1e9913d5fa4910bbb3e3311a035baea6caf26d/numba-0.61.2-cp313-cp313-win_amd64.whl", hash = "sha256:59321215e2e0ac5fa928a8020ab00b8e57cda8a97384963ac0dfa4d4e6aa54e7", size = 2831846, upload-time = "2025-04-09T02:58:06.125Z" },
 ]
 
 [[package]]
@@ -367,20 +337,6 @@ wheels = [
 ]
 
 [[package]]
-name = "polars"
-version = "1.32.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/55/bd/a9fe11f19e35ddee9e6b7c279653f503d60f0919389117c76f4954620ac7/polars-1.32.1.tar.gz", hash = "sha256:89a60477e74b3a3ecd341bd533a181ec5fb4dacba233b45f33e7cdf0d1349a96", size = 4788864, upload-time = "2025-08-06T16:50:04.325Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/93/50/87b98e350854b3e775f71af759cfabae5793e66c151cd8b34dc7d355f3b9/polars-1.32.1-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:e28f3f3f1f8984a0865edc432735bf70f69a8395aaeb7dd1139e377ea3744cc3", size = 37770330, upload-time = "2025-08-06T16:49:03.477Z" },
-    { url = "https://files.pythonhosted.org/packages/21/9e/a22970f74031085de208e18175cf9fb57f03721264438c9d270721117d4c/polars-1.32.1-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:0584ecf34a1e4ae96646f7dce1331b8a913747a75304f0fe2244387491359afe", size = 34461906, upload-time = "2025-08-06T16:49:07.911Z" },
-    { url = "https://files.pythonhosted.org/packages/eb/96/ecad28b30ba91d1128bbcc6d33c0b4ac60be4e35cdcbbda57f05baa3e634/polars-1.32.1-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:426b86325a47694ca1d91094ecf2ba98b9c29025a37e6372086b51837bffb8ef", size = 38280837, upload-time = "2025-08-06T16:49:11.05Z" },
-    { url = "https://files.pythonhosted.org/packages/10/d4/cf795532d44de73eb78f1905af4be4501f05aa3a04be1ca9e38f1a919e81/polars-1.32.1-cp39-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:91f8c3625eea2554b4c01efa0a342cbf99352166ee38ae4c81c6af26b10c2801", size = 35490716, upload-time = "2025-08-06T16:49:14.119Z" },
-    { url = "https://files.pythonhosted.org/packages/d7/34/62f821815d37042f448bf36ca39306fa74c5a121fda599e257067d883226/polars-1.32.1-cp39-abi3-win_amd64.whl", hash = "sha256:20d62813725c47b8f794f25d523ddad69803de9f21b958fa660296bab2db005f", size = 37897286, upload-time = "2025-08-06T16:49:17.057Z" },
-    { url = "https://files.pythonhosted.org/packages/b5/b7/4c021cd467766bfce3ff89f264f5d8f2fd1fd43e9bebad7327ddce8f4b03/polars-1.32.1-cp39-abi3-win_arm64.whl", hash = "sha256:99d54793035caf5e3d338ba7c1e636a2f896c527b9c4c8ae8e08e5213a9a287b", size = 34059105, upload-time = "2025-08-06T16:49:20.138Z" },
-]
-
-[[package]]
 name = "prompt-toolkit"
 version = "3.0.51"
 source = { registry = "https://pypi.org/simple" }
@@ -435,9 +391,7 @@ dependencies = [
     { name = "cytoolz" },
     { name = "cytoolz-stubs" },
     { name = "ipykernel" },
-    { name = "numba" },
     { name = "numpy" },
-    { name = "polars" },
     { name = "setuptools" },
     { name = "toolz" },
     { name = "tqdm" },
@@ -450,9 +404,7 @@ requires-dist = [
     { name = "cytoolz", specifier = ">=1.0.1" },
     { name = "cytoolz-stubs", git = "https://github.com/OutSquareCapital/cytoolz-stubs.git" },
     { name = "ipykernel", specifier = ">=6.29.5" },
-    { name = "numba", specifier = ">=0.61.2" },
     { name = "numpy", specifier = ">=2.0" },
-    { name = "polars", specifier = ">=1.31.0" },
     { name = "setuptools", specifier = ">=80.9.0" },
     { name = "toolz", specifier = ">=1.0.0" },
     { name = "tqdm", specifier = ">=4.67.1" },
