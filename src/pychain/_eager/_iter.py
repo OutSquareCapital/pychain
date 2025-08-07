@@ -170,3 +170,12 @@ class Iter[T](BasePipe[Iterable[T]]):
 
     def at_index(self, index: int):
         return Pipe(itz.nth(index, self.obj))
+
+    def to_list(self):
+        return Pipe(list(self.obj))
+
+    def to_set(self):
+        return Pipe(set(self.obj))
+
+    def to_tuple(self):
+        return Pipe(tuple(self.obj))

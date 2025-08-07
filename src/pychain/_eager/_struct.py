@@ -16,6 +16,21 @@ class Struct[KT, VT](BasePipe[dict[KT, VT]]):
     ):
         return Struct(func(self.obj, *args, **kwargs))
 
+    def keys(self):
+        from ._iter import Iter
+
+        return Iter(self.obj.keys())
+
+    def values(self):
+        from ._iter import Iter
+
+        return Iter(self.obj.values())
+
+    def items(self):
+        from ._iter import Iter
+
+        return Iter(self.obj.items())
+
     def map_keys[T](self, f: fn.Transform[KT, T]):
         return Struct(dcz.keymap(f, self.obj))
 
