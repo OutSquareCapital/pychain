@@ -15,15 +15,16 @@ def pyfunc_opti(data: Iterable[int]) -> list[str]:
 
 fn = (
     pc.iter(int)
-    .filter(pc.fn(int, bool, lambda x: x > 5 and x % 2 != 0 and x + 5 != 0))
+    .filter(pc.fn(int).returns(bool).do(lambda x: x > 5 and x % 2 != 0 and x + 5 != 0))
     .map(
         f=(
-            pc.expr(int)
-            .into(pc.fn(int, float, lambda x: 30 * (2 / (x + 5))))
-            .into(pc.fn(float, float, lambda x: round(x, 3)))
-            .into(pc.fn(float, str, lambda x: f"result is: {x}"))
-            .collect()
+            pc.expr(int).into(
+                pc.fn(int).returns(float).do(lambda x: 30 * (2 / (x + 5)))
+            )
         )
+        .into(pc.fn(float).do(lambda x: round(x, 3)))
+        .into(pc.fn(float).returns(str).do(lambda x: f"result is: {x}"))
+        .collect()
     )
     .into(obj=list)
     .collect("cython")

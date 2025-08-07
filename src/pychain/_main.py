@@ -20,7 +20,19 @@ def struct[K, V](ktype: type[K], vtype: type[V]) -> Struct[K, V, K, V]:
     return Struct([], tracker)
 
 
-def fn[P, R](
-    p_type: type[P], r_type: type[R], func: Callable[[P], R]
-) -> TypedLambda[P, R]:
-    return TypedLambda(func, p_type, r_type)
+class LambdaBuilder[P, R]:
+    __slots__ = ("_p_type", "_r_type")
+    def __init__(self, p_type: type[P]) -> None:
+        self._p_type: type[P] = p_type
+        self._r_type = p_type
+
+    def returns[T](self, r_type: type[T]) -> "LambdaBuilder[P, T]":
+        self._r_type = r_type
+        return self # type: ignore[return-value]
+
+    def do(self, func: Callable[[P], R]) -> TypedLambda[P, R]:
+        return TypedLambda(func, self._p_type, self._r_type) # type: ignore[return-value]
+
+
+def fn[T](p_type: type[T]) -> LambdaBuilder[T, T]:
+    return LambdaBuilder(p_type)
