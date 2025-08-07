@@ -10,7 +10,6 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "cython>=3.1.2",
-    "cytoolz>=1.0.1",
     "ipykernel>=6.29.5",
     "polars>=1.31.0",
     "setuptools>=80.9.0",
@@ -19,6 +18,8 @@ dependencies = [
     "tqdm>=4.67.1",
     "numba>=0.61.2",
     "appdirs>=1.4.4",
+    "cytoolz>=1.0.1",
+    "cytoolz-stubs",
 ]
 
 [tool.ruff.format]
@@ -26,3 +27,6 @@ docstring-code-format = true
 
 [tool.setuptools.package-data]
 "pychain" = ["py.typed"]
+
+[tool.uv.sources]
+cytoolz-stubs = { git = "https://github.com/OutSquareCapital/cytoolz-stubs.git" }
