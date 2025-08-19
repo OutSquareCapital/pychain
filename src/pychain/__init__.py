@@ -1,5 +1,3 @@
-from ._eager._exprs import BasePipe, Pipe
-from ._eager._iter import Iter
-from ._eager._struct import Struct
+from ._lib import Dict, List
 
-__all__ = ["BasePipe", "Pipe", "Iter", "Struct"]
+__all__ = ["List", "Dict"]
