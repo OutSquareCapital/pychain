@@ -222,6 +222,19 @@ class Dict[KT, VT](BaseDict[KT, VT], CommonBase[dict[KT, VT]]):
         """
         return Dict(dcz.itemmap(f, self.data))
 
+    def map_keys_values[KR, VR](
+        self,
+        f: Callable[[KT, VT], tuple[KR, VR]],
+    ):
+        """Transform (key, value) pairs using f(key, value) and return a Dict.
+        Internally unpack the key/value tuple, hence this method is syntactic sugar for map_items
+
+        Example:
+            >>> Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).data
+            {2: 20}
+        """
+        return Dict(dcz.itemmap(lambda kv: f(kv[0], kv[1]), self.data))
+
     def list_keys(self):
         """Return a List of the dict's keys.
 

@@ -30,7 +30,7 @@ wheels = [
 [[package]]
 name = "cytoolz-stubs"
 version = "0.1.1"
-source = { git = "https://github.com/py-stubs/cytoolz-stubs.git#b8121855fccdc0fe6c1846f6b8ddecc289101365" }
+source = { git = "https://github.com/py-stubs/cytoolz-stubs.git#bb64784445c1aa8d30d3b490e4dcfd3b706d323a" }
 
 [[package]]
 name = "pychain"
