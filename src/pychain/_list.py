@@ -1,9 +1,9 @@
 import itertools
 from collections import UserList
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from functools import reduce
 from random import Random
-from typing import Any, Concatenate, Self
+from typing import Any, Concatenate, Self, override
 
 import cytoolz as cz
 
@@ -35,7 +35,6 @@ class BaseList[T](UserList[T]):
             >>> List([1, 2, 3]).filter(lambda x: x > 1)
             [2, 3]
         """
-        [val for val in self.data if func(val, *args, **kwargs)]
         return self.__class__(filter(func, self.data, *args, **kwargs))
 
     def flatten(self) -> Self:
@@ -119,6 +118,26 @@ class BaseList[T](UserList[T]):
             [1, 2, 3]
         """
         return self.__class__(cz.itertoolz.cons(value, self.data))
+
+    @override
+    def append(self, value: T) -> Self:  # type: ignore[override]
+        """
+        Append object to the end of the list and return self for convenience.
+
+        **Warning**: Mutates the original list.
+        """
+        self.data.append(value)
+        return self
+
+    @override
+    def extend(self, other: Iterable[T]) -> Self:  # type: ignore[override]
+        """
+        Extend the list with elements from another iterable and return self for convenience.
+
+        **Warning**: Mutates the original list.
+        """
+        self.data.extend(other)
+        return self
 
     def peekn(self, n: int, note: str | None = None) -> Self:
         """Print and return sequence after peeking n items.
