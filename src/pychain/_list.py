@@ -125,6 +125,10 @@ class BaseList[T](UserList[T]):
         Append object to the end of the list and return self for convenience.
 
         **Warning**: Mutates the original list.
+        Example:
+            >>> from ._lib import List
+            >>> List([1, 2]).append(3)
+            [1, 2, 3]
         """
         self.data.append(value)
         return self
@@ -135,6 +139,10 @@ class BaseList[T](UserList[T]):
         Extend the list with elements from another iterable and return self for convenience.
 
         **Warning**: Mutates the original list.
+        Example:
+            >>> from ._lib import List
+            >>> List([1, 2]).extend([3, 4])
+            [1, 2, 3, 4]
         """
         self.data.extend(other)
         return self

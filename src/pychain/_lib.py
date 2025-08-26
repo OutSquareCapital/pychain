@@ -230,7 +230,7 @@ class Dict[KT, VT](BaseDict[KT, VT], CommonBase[dict[KT, VT]]):
         Internally unpack the key/value tuple, hence this method is syntactic sugar for map_items
 
         Example:
-            >>> Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).data
+            >>> Dict({1: 2}).map_keys_values(lambda k, v: (k + 1, v * 10)).data
             {2: 20}
         """
         return Dict(dcz.itemmap(lambda kv: f(kv[0], kv[1]), self.data))
