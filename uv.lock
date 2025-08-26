@@ -33,36 +33,18 @@ version = "0.1.1"
 source = { git = "https://github.com/py-stubs/cytoolz-stubs.git#b8121855fccdc0fe6c1846f6b8ddecc289101365" }
 
 [[package]]
-name = "polars"
-version = "1.32.3"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/aa/f2/1a76a8bd902bc4942e435a480f362c8687bba60d438ff3283191e38568fa/polars-1.32.3.tar.gz", hash = "sha256:57c500dc1b5cba49b0589034478db031815f3d57a20cb830b05ecee1a9ba56b1", size = 4838448, upload-time = "2025-08-14T17:28:10.702Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/4c/9b/5937ab9f8fa49c8e00617aeb817a5ffa5740434d5bb8a90f2afa657875aa/polars-1.32.3-cp39-abi3-macosx_10_12_x86_64.whl", hash = "sha256:c7c472ea1d50a5104079cb64e34f78f85774bcc69b875ba8daf21233f4c70d42", size = 37935794, upload-time = "2025-08-14T17:26:55.565Z" },
-    { url = "https://files.pythonhosted.org/packages/6e/e9/88f5332001b9dd5c8e0a4fab51015f740e01715a081c41bc0f7ad2bf76a5/polars-1.32.3-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:fd87275f0cc795e72a2030b58293198cfa748d4b009cf52218e27db5397ed07f", size = 34621102, upload-time = "2025-08-14T17:27:00.521Z" },
-    { url = "https://files.pythonhosted.org/packages/ab/8a/6f56af7e535c34c95decc8654786bfce4632ba32817dc2f8bad18571ef9a/polars-1.32.3-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c9a9b9668ef310e5a77a7e7daa9c753874779c8da52e93f654bfd7953eb4b60b", size = 38443071, upload-time = "2025-08-14T17:27:08.382Z" },
-    { url = "https://files.pythonhosted.org/packages/46/aa/63536ea5780edc0ef6850679dc81d519f3966c7bb11a5cf10ccecb541095/polars-1.32.3-cp39-abi3-manylinux_2_24_aarch64.whl", hash = "sha256:c8f5d2f43b80b68e39bfaa2948ce632563633466576f12e74e8560d6481f5851", size = 35639598, upload-time = "2025-08-14T17:27:12.261Z" },
-    { url = "https://files.pythonhosted.org/packages/d7/c8/226953cda6cf9ae63aa9714d396a9138029e31db3c504c15d6711b618f8f/polars-1.32.3-cp39-abi3-win_amd64.whl", hash = "sha256:db56a7cb4898e173d62634e182f74bdff744c62be5470e0fe20df8d10f659af7", size = 38038192, upload-time = "2025-08-14T17:27:15.993Z" },
-    { url = "https://files.pythonhosted.org/packages/ec/99/6b93c854e602927a778eabd7550204f700cc4e6c07be73372371583dda3e/polars-1.32.3-cp39-abi3-win_arm64.whl", hash = "sha256:a2e3f87c60f54eefe67b1bebd3105918d84df0fd6d59cc6b870c2f16d2d26ca1", size = 34198919, upload-time = "2025-08-14T17:27:21.423Z" },
-]
-
-[[package]]
 name = "pychain"
 version = "0.3.94"
 source = { editable = "." }
 dependencies = [
     { name = "cytoolz" },
     { name = "cytoolz-stubs" },
-    { name = "polars" },
-    { name = "toolz" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "cytoolz", specifier = ">=1.0.1" },
     { name = "cytoolz-stubs", git = "https://github.com/py-stubs/cytoolz-stubs.git" },
-    { name = "polars", specifier = ">=1.32.3" },
-    { name = "toolz", specifier = ">=1.0.0" },
 ]
 
 [[package]]

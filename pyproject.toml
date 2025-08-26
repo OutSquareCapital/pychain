@@ -9,10 +9,8 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "toolz>=1.0.0",
     "cytoolz>=1.0.1",
     "cytoolz-stubs",
-    "polars>=1.32.3",
 ]
 
 [tool.ruff.format]

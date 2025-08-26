@@ -13,6 +13,15 @@ type Agg[V, V1] = Callable[[Iterable[V]], V1]
 class CommonBase[T](ABC):
     data: T
 
+    def into[U, **P](
+        self,
+        func: Callable[Concatenate[T, P], U],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> U:
+        """Apply func to the internal data."""
+        return func(self.data, *args, **kwargs)
+
     @abstractmethod
     def pipe[U, **P](
         self,

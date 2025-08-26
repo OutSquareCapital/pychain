@@ -1,10 +1,9 @@
 import itertools
 from collections.abc import Callable
-from typing import Concatenate, Literal, overload
+from typing import Concatenate
 
 import cytoolz.dicttoolz as dcz
 import cytoolz.itertoolz as itz
-import polars as pl
 
 from ._core import CommonBase, Process, Transform, flatten_recursive
 from ._dict import BaseDict
@@ -161,15 +160,6 @@ class List[T](BaseList[T], CommonBase[list[T]]):
         """
         return List(itz.reduceby(key, binop, self.data))
 
-    def to_series(self, name: str | None = None) -> pl.Series:
-        """Convert the underlying list into a polars Series.
-
-        Example:
-            >>> List([1, 2]).to_series().to_list()
-            [1, 2]
-        """
-        return pl.Series(name=name, values=self.data)
-
 
 class Dict[KT, VT](BaseDict[KT, VT], CommonBase[dict[KT, VT]]):
     """
@@ -258,23 +248,3 @@ class Dict[KT, VT](BaseDict[KT, VT], CommonBase[dict[KT, VT]]):
             [(1, 2)]
         """
         return List(self.data.items())
-
-    @overload
-    def to_df(self, kind: Literal["lazy"]) -> pl.LazyFrame: ...
-
-    @overload
-    def to_df(self, kind: Literal["eager"]) -> pl.DataFrame: ...
-
-    def to_df(
-        self, kind: Literal["eager", "lazy"] = "lazy"
-    ) -> pl.DataFrame | pl.LazyFrame:
-        """Convert the dict to a polars DataFrame (lazy or eager).
-
-        Example:
-            >>> Dict({"a": [1, 2]}).to_df("eager").to_dicts()
-            [{'a': 1}, {'a': 2}]
-        """
-        if kind == "eager":
-            return pl.DataFrame(self.data)
-        else:
-            return pl.LazyFrame(self.data)
