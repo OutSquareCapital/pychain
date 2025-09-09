@@ -426,7 +426,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
         return Iter(cz.itertoolz.sliding_window(length, self._data))
 
-    def product(self, other: Iterable[T]) -> "Iter[tuple[T, T]]":
+    def product[U](self, other: Iterable[U]) -> "Iter[tuple[T, U]]":
         """Computes the Cartesian product with another iterable.
 
         This is the declarative equivalent of nested for-loops. It pairs
