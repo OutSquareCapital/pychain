@@ -8,8 +8,7 @@ import cytoolz as cz
 
 from pychain._dict import Dict
 
-from ._core import Check, CommonBase, Process, Transform, dict_on, list_on
-from ._funcs import peek, peekn
+from ._core import Check, CommonBase, Process, Transform, dict_on, list_on, peek, peekn
 
 if TYPE_CHECKING:
     from ._dict import Dict
