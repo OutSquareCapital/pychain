@@ -2,7 +2,7 @@ import itertools
 from collections.abc import Callable, Iterable
 from functools import reduce
 from random import Random
-from typing import TYPE_CHECKING, Any, Concatenate, Self
+from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self, overload
 
 import cytoolz as cz
 
@@ -26,6 +26,23 @@ class Iter[T](CommonBase[Iterable[T]]):
         **kwargs: P.kwargs,
     ) -> "Iter[U]":
         return Iter(func(self._data, *args, **kwargs))
+
+    @overload
+    def combinations(self, r: Literal[2]) -> "Iter[tuple[T, T]]": ...
+    @overload
+    def combinations(self, r: Literal[3]) -> "Iter[tuple[T, T, T]]": ...
+    @overload
+    def combinations(self, r: Literal[4]) -> "Iter[tuple[T, T, T, T]]": ...
+    @overload
+    def combinations(self, r: Literal[5]) -> "Iter[tuple[T, T, T, T, T]]": ...
+    def combinations(self, r: int) -> "Iter[tuple[T, ...]]":
+        """Return all combinations of length r.
+
+        Example:
+            >>> Iter([1, 2, 3]).combinations(2).into_list()
+            [(1, 2), (1, 3), (2, 3)]
+        """
+        return Iter(itertools.combinations(self._data, r))
 
     def filter[**P](
         self, func: Callable[Concatenate[T, P], bool], *args: P.args, **kwargs: P.kwargs
@@ -344,9 +361,9 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
         return Iter(itertools.batched(self._data, n))
 
-    def starmap[R, **P](
-        self: "Iter[Iterable[T]]", func: Callable[Concatenate[T, P], Iterable[R]]
-    ) -> "Iter[Iterable[R]]":
+    def starmap[U: Iterable[Any], R](
+        self: "Iter[U]", func: Callable[[U], R]
+    ) -> "Iter[R]":
         """Starmap using func and return a new Iter.
 
         Example:
