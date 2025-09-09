@@ -65,9 +65,40 @@ class CommonBase[T](ABC):
         *args: P.args,
         **kwargs: P.kwargs,
     ):
+        """Applies a function to the underlying data to terminate the chain.
+
+        This method "unwraps" the data and passes it to the given function,
+        returning the raw result.
+
+        It is used as a final step to get a
+        computed value out of the chain.
+
+        Example:
+            >>> from ._list import List
+            >>> List([1, 2, 3, 4]).into(sum)
+            10
+        """
         return func(self._data, *args, **kwargs)
 
     def pipe(self, *funcs: Process[T]) -> Self:
+        """Passes the underlying data through one or more functions in a sequence.
+
+        This allows you to insert a regular function that is not a method of
+        the class into a call chain. The underlying data is passed as the
+        first argument to the first function.
+
+        It is equivalent to the `pipe operator` (`|>`) found in other languages.
+
+        Example:
+            >>>
+            >>> from ._array import Array
+            >>> import numpy as np
+            >>> Array(np.array([1, 2, 3])).pipe(
+            ...     lambda x: x.clip(0, 2), lambda x: x * 2
+            ... ).unwrap()
+            array([2, 4, 4])
+        """
+
         return self._new(cz.functoolz.pipe(self._data, *funcs))
 
 
