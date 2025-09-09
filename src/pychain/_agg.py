@@ -38,6 +38,26 @@ class Aggregator[T]:
         """
         return sum(self._data)
 
+    def min[U: int | float](self: "Aggregator[U]") -> U:
+        """Return the minimum value of the sequence.
+
+        Example:
+            >>> from pychain import Iter
+            >>> Iter([3, 1, 2]).agg.min()
+            1
+        """
+        return min(self._data)
+
+    def max[U: int | float](self: "Aggregator[U]") -> U:
+        """Return the maximum value of the sequence.
+
+        Example:
+            >>> from pychain import Iter
+            >>> Iter([3, 1, 2]).agg.max()
+            3
+        """
+        return max(self._data)
+
     def mean[U: int | float](self: "Aggregator[U]") -> float:
         """Return the mean of the sequence.
 

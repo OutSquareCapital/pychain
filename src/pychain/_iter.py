@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self, overload
 import cytoolz as cz
 
 from ._agg import Aggregator
-from ._core import Check, CommonBase, Process, Transform, dict_on, list_on, peek, peekn
+from ._core import Check, CommonBase, Peeked, Process, Transform, dict_on, list_on
 
 if TYPE_CHECKING:
     from ._dict import Dict
@@ -24,6 +24,15 @@ class Iter[T](CommonBase[Iterable[T]]):
         **kwargs: P.kwargs,
     ) -> "Iter[U]":
         return Iter(func(self._data, *args, **kwargs))
+
+    def into_list(self) -> "List[T]":
+        """Return a List wrapping the elements of the iterable.
+
+        Example:
+            >>> Iter([1, 2, 3]).into_list()
+            [1, 2, 3]
+        """
+        return list_on(list(self._data))
 
     @property
     def agg(self) -> Aggregator[T]:
@@ -54,13 +63,22 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
         return self._new(filter(func, self._data, *args, **kwargs))
 
-    def zip_with(
-        self, *others: Iterable[T], strict: bool = False
-    ) -> "Iter[tuple[T, ...]]":
+    def filter_false[**P](
+        self, func: Callable[Concatenate[T, P], bool], *args: P.args, **kwargs: P.kwargs
+    ) -> Self:
+        """Return elements for which func is false.
+
+        Example:
+            >>> Iter([1, 2, 3]).filter_false(lambda x: x > 1).into_list()
+            [1]
+        """
+        return self._new(itertools.filterfalse(func, self._data, *args, **kwargs))
+
+    def zip(self, *others: Iterable[T], strict: bool = False) -> "Iter[tuple[T, ...]]":
         """Zip with other iterables, optionally strict, wrapped in Iter.
 
         Example:
-            >>> Iter([1, 2]).zip_with([10, 20]).into_list()
+            >>> Iter([1, 2]).zip([10, 20]).into_list()
             [(1, 10), (2, 20)]
         """
         return Iter(zip(self._data, *others, strict=strict))
@@ -101,6 +119,35 @@ class Iter[T](CommonBase[Iterable[T]]):
             [('A', 'B', 'C'), ('D', 'E', 'F'), ('G',)]
         """
         return Iter(itertools.batched(self._data, n))
+
+    def zip_longest[U](
+        self, *others: Iterable[T], fill_value: U = None
+    ) -> "Iter[tuple[U | T, ...]]":
+        """Zip with other iterables, filling missing values.
+
+        Example:
+            >>> Iter([1, 2]).zip_longest([10], fill_value=0).into_list()
+            [(1, 10), (2, 0)]
+        """
+        return Iter(itertools.zip_longest(self._data, *others, fillvalue=fill_value))
+
+    def permutations(self, r: int | None = None) -> "Iter[tuple[T, ...]]":
+        """Return all permutations of length r.
+
+        Example:
+            >>> Iter([1, 2, 3]).permutations(2).into_list()
+            [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]
+        """
+        return Iter(itertools.permutations(self._data, r))
+
+    def compress(self, *selectors: bool) -> Self:
+        """Filter elements using a boolean selector iterable.
+
+        Example:
+            >>> Iter("ABCDEF").compress(1, 0, 1, 0, 1, 1).into_list()
+            ['A', 'C', 'E', 'F']
+        """
+        return self._new(itertools.compress(self._data, selectors))
 
     def take_while(self, predicate: Check[T]) -> Self:
         """Take items while predicate holds and return a new Iterable wrapper.
@@ -224,17 +271,23 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
         return self._new(cz.itertoolz.cons(value, self._data))
 
-    def peekn(self, n: int, note: str | None = None) -> Self:
+    def peekn(self, n: int) -> Self:
         """Print and return sequence after peeking n items.
 
         Example:
             >>> Iter([1, 2, 3]).peekn(2).into_list()
-            Peeked 2 values: [1, 2]
+            Peeked 2 values: (1, 2)
             [1, 2, 3]
         """
-        return self._new(peekn(self._data, n, note))
 
-    def peek(self, note: str | None = None) -> Self:
+        def _():
+            peeked = Peeked(*cz.itertoolz.peekn(n, self._data))
+            print(f"Peeked {n} values: {peeked.value}")
+            return peeked.sequence
+
+        return self._new(_())
+
+    def peek(self) -> Self:
         """Print and return sequence after peeking first item.
 
         Example:
@@ -242,7 +295,13 @@ class Iter[T](CommonBase[Iterable[T]]):
             Peeked value: 1
             [1, 2]
         """
-        return self._new(peek(self._data, note))
+
+        def _():
+            peeked = Peeked(*cz.itertoolz.peek(self._data))
+            print(f"Peeked value: {peeked.value}")
+            return peeked.sequence
+
+        return self._new(_())
 
     def head(self, n: int) -> Self:
         """Return first n elements wrapped.
@@ -425,12 +484,3 @@ class Iter[T](CommonBase[Iterable[T]]):
             {1: 2, 2: 1}
         """
         return dict_on(cz.itertoolz.frequencies(self._data))
-
-    def into_list(self) -> "List[T]":
-        """Return a List wrapping the elements of the iterable.
-
-        Example:
-            >>> Iter([1, 2, 3]).into_list()
-            [1, 2, 3]
-        """
-        return list_on(list(self._data))

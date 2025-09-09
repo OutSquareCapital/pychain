@@ -26,6 +26,51 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     ) -> "Dict[KU, VU]":
         return Dict(func(self._data, *args, **kwargs))
 
+    # BUILTINS------------------------------------------------------------------
+
+    def into_keys(self) -> "Iter[KT]":
+        """Return a Iter of the dict's keys.
+
+        Example:
+            >>> Dict({1: 2}).into_keys().into_list()
+            [1]
+        """
+
+        return iter_on(self._data.keys())
+
+    def into_values(self) -> "Iter[VT]":
+        """Return a Iter of the dict's values.
+
+        Example:
+            >>> Dict({1: 2}).into_values().into_list()
+            [2]
+        """
+        return iter_on(self._data.values())
+
+    def into_items(self) -> "Iter[tuple[KT, VT]]":
+        """Return a Iter of the dict's items.
+
+        Example:
+            >>> Dict({1: 2}).into_items().into_list()
+            [(1, 2)]
+        """
+
+        return iter_on(self._data.items())
+
+    def copy(self) -> Self:
+        """Return a shallow copy of the dict."""
+        return self._new(self._data.copy())
+
+    def update(self, *others: dict[KT, VT]) -> Self:
+        """Update the dict with other(s) dict(s) and return self for convenience.
+
+        **Warning**: This modifies the dict in place.
+        """
+        self._data.update(*others)
+        return self
+
+    # CYTOOLZ------------------------------------------------------------------
+
     def select(self, predicate: Check[KT]) -> Self:
         """Return a new Dict containing keys that satisfy predicate.
 
@@ -111,47 +156,6 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
             {3: 4}
         """
         return self._new(cz.dicttoolz.dissoc(self._data, *keys))
-
-    def into_keys(self) -> "Iter[KT]":
-        """Return a Iter of the dict's keys.
-
-        Example:
-            >>> Dict({1: 2}).into_keys().into_list()
-            [1]
-        """
-
-        return iter_on(self._data.keys())
-
-    def into_values(self) -> "Iter[VT]":
-        """Return a Iter of the dict's values.
-
-        Example:
-            >>> Dict({1: 2}).into_values().into_list()
-            [2]
-        """
-        return iter_on(self._data.values())
-
-    def into_items(self) -> "Iter[tuple[KT, VT]]":
-        """Return a Iter of the dict's items.
-
-        Example:
-            >>> Dict({1: 2}).into_items().into_list()
-            [(1, 2)]
-        """
-
-        return iter_on(self._data.items())
-
-    def copy(self) -> Self:
-        """Return a shallow copy of the dict."""
-        return self._new(self._data.copy())
-
-    def update(self, *others: dict[KT, VT]) -> Self:
-        """Update the dict with other(s) dict(s) and return self for convenience.
-
-        **Warning**: This modifies the dict in place.
-        """
-        self._data.update(*others)
-        return self
 
     def map_keys[T](self, f: Transform[KT, T]) -> "Dict[T, VT]":
         """Return a Dict with keys transformed by f.

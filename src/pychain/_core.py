@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, Concatenate, Self
+from typing import TYPE_CHECKING, Any, Concatenate, NamedTuple, Self
 
 import cytoolz as cz
 
@@ -16,22 +16,9 @@ type Transform[T, T1] = Callable[[T], T1]
 type Agg[V, V1] = Callable[[Iterable[V]], V1]
 
 
-def peekn[T](seq: Iterable[T], n: int, note: str | None = None):
-    values, sequence = cz.itertoolz.peekn(n, seq)
-    if note:
-        print(f"Peeked {n} values ({note}): {list(values)}")
-    else:
-        print(f"Peeked {n} values: {list(values)}")
-    return sequence
-
-
-def peek[T](seq: Iterable[T], note: str | None = None):
-    value, sequence = cz.itertoolz.peek(seq)
-    if note:
-        print(f"Peeked value ({note}): {value}")
-    else:
-        print(f"Peeked value: {value}")
-    return sequence
+class Peeked[T](NamedTuple):
+    value: T | tuple[T, ...]
+    sequence: Iterable[T]
 
 
 class CommonBase[T](ABC):
