@@ -1,5 +1,5 @@
-from collections.abc import Iterable
-from typing import TYPE_CHECKING, Self
+from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING, Concatenate, Self
 
 from ._core import CommonBase, iter_on
 
@@ -10,6 +10,14 @@ if TYPE_CHECKING:
 class List[T](CommonBase[list[T]]):
     _data: list[T]
     __slots__ = ("_data",)
+
+    def transform[**P, U](
+        self,
+        func: Callable[Concatenate[list[T], P], list[U]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> "List[U]":
+        return List(func(self._data, *args, **kwargs))
 
     def into_iter(self) -> "Iter[T]":
         """Return an iterator over the list's elements."""

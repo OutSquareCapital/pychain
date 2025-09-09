@@ -19,6 +19,14 @@ class Iter[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
     __slots__ = ("_data",)
 
+    def transform[**P, U](
+        self,
+        func: Callable[Concatenate[Iterable[T], P], Iterable[U]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> "Iter[U]":
+        return Iter(func(self._data, *args, **kwargs))
+
     def filter[**P](
         self, func: Callable[Concatenate[T, P], bool], *args: P.args, **kwargs: P.kwargs
     ) -> Self:

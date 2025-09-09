@@ -1,5 +1,6 @@
+from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Concatenate, Self
+from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 import cytoolz as cz
 
@@ -33,7 +34,7 @@ def peek[T](seq: Iterable[T], note: str | None = None):
     return sequence
 
 
-class CommonBase[T]:
+class CommonBase[T](ABC):
     __slots__ = ("_data",)
 
     def __init__(self, data: T) -> None:
@@ -48,6 +49,15 @@ class CommonBase[T]:
     def unwrap(self) -> T:
         """Return the underlying data."""
         return self._data
+
+    @abstractmethod
+    def transform[**P](
+        self,
+        func: Callable[Concatenate[T, P], Any],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Any:
+        raise NotImplementedError
 
     def into[U, **P](
         self,

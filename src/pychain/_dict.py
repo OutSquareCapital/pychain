@@ -1,5 +1,5 @@
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Concatenate, Self
 
 import cytoolz as cz
 
@@ -17,6 +17,14 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
 
     Methods return Dict instances wrapping the underlying mapping.
     """
+
+    def transform[**P, KU, VU](
+        self,
+        func: Callable[Concatenate[dict[KT, VT], P], dict[KU, VU]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> "Dict[KU, VU]":
+        return Dict(func(self._data, *args, **kwargs))
 
     def select(self, predicate: Check[KT]) -> Self:
         """Return a new Dict containing keys that satisfy predicate.

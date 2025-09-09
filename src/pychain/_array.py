@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, Concatenate, Self
 
 import numpy as np
 from numpy.typing import NDArray
@@ -25,6 +25,14 @@ type ArrFunc[T: NumpyType] = Callable[..., NDArray[T]]
 class Array[T: NumpyType](CommonBase[NDArray[T]]):
     __slots__ = "_data"
     _data: NDArray[T]
+
+    def transform[**P, U: NumpyType](
+        self,
+        func: Callable[Concatenate[NDArray[T], P], NDArray[U]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> "Array[U]":
+        return Array(func(self._data, *args, **kwargs))
 
     def add(self, other: IntoArr[T]) -> Self:
         return self._new(np.add(self._data, other))
@@ -66,7 +74,7 @@ class Array[T: NumpyType](CommonBase[NDArray[T]]):
         return self._new(np.negative(self._data))
 
     def cast[U: NumpyType](self, dtype: U) -> "Array[U]":
-        return Array(self._data.astype(dtype))
+        return self.transform(lambda x: x.astype(dtype))
 
     def into_iter(self) -> "Iter[float]":
         return iter_on(self._data)
