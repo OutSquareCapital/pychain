@@ -362,7 +362,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         return Iter(itertools.batched(self._data, n))
 
     def starmap[U: Iterable[Any], R](
-        self: "Iter[U]", func: Callable[[U], R]
+        self: "Iter[U]", func: Callable[..., R]
     ) -> "Iter[R]":
         """Starmap using func and return a new Iter.
 
