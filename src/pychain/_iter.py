@@ -1,5 +1,5 @@
 import itertools
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from functools import reduce
 from random import Random
 from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self, overload
@@ -18,6 +18,9 @@ if TYPE_CHECKING:
 class Iter[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
     __slots__ = ("_data",)
+
+    def __iter__(self) -> Iterator[T]:
+        return iter(self._data)
 
     def transform[**P, U](
         self,
