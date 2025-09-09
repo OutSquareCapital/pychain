@@ -11,7 +11,11 @@ type Agg[V, V1] = Callable[[Iterable[V]], V1]
 
 
 class CommonBase[T](ABC):
-    data: T
+    _data: T
+
+    def unwrap(self) -> T:
+        """Return the underlying data."""
+        return self._data
 
     def into[U, **P](
         self,
@@ -20,7 +24,7 @@ class CommonBase[T](ABC):
         **kwargs: P.kwargs,
     ) -> U:
         """Apply func to the internal data."""
-        return func(self.data, *args, **kwargs)
+        return func(self._data, *args, **kwargs)
 
     @abstractmethod
     def pipe[U, **P](
@@ -32,13 +36,8 @@ class CommonBase[T](ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def compose(self, *funcs: Callable[[T], T]) -> Self:
+    def compose(self, *funcs: Process[T]) -> Self:
         raise NotImplementedError
-
-    def print(self) -> Self:
-        """Print the contained data (side-effect) and return self."""
-        print(self.data)
-        return self
 
 
 def peekn[T](seq: Iterable[T], n: int, note: str | None = None):

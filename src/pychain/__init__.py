@@ -1,3 +1,3 @@
-from ._lib import Dict, List
+from ._lib import Dict, Iter, List
 
-__all__ = ["List", "Dict"]
+__all__ = ["List", "Dict", "Iter"]
