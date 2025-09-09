@@ -26,7 +26,7 @@ class Array[T: NumpyType](CommonBase[NDArray[T]]):
     __slots__ = "_data"
     _data: NDArray[T]
 
-    def transform[**P, U: NumpyType](
+    def into[**P, U: NumpyType](
         self,
         func: Callable[Concatenate[NDArray[T], P], NDArray[U]],
         *args: P.args,
@@ -72,9 +72,6 @@ class Array[T: NumpyType](CommonBase[NDArray[T]]):
 
     def neg(self) -> Self:
         return self._new(np.negative(self._data))
-
-    def cast[U: NumpyType](self, dtype: U) -> "Array[U]":
-        return self.transform(lambda x: x.astype(dtype))
 
     def into_iter(self) -> "Iter[float]":
         return iter_on(self._data)

@@ -19,7 +19,7 @@ class Iter[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
     __slots__ = ("_data",)
 
-    def transform[**P, U](
+    def into[**P, U](
         self,
         func: Callable[Concatenate[Iterable[T], P], Iterable[U]],
         *args: P.args,

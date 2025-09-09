@@ -18,7 +18,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     Methods return Dict instances wrapping the underlying mapping.
     """
 
-    def transform[**P, KU, VU](
+    def into[**P, KU, VU](
         self,
         func: Callable[Concatenate[dict[KT, VT], P], dict[KU, VU]],
         *args: P.args,

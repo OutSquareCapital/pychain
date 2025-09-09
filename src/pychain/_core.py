@@ -51,34 +51,13 @@ class CommonBase[T](ABC):
         return self._data
 
     @abstractmethod
-    def transform[**P](
+    def into[**P](
         self,
         func: Callable[Concatenate[T, P], Any],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Any:
         raise NotImplementedError
-
-    def into[U, **P](
-        self,
-        func: Callable[Concatenate[T, P], U],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ):
-        """Applies a function to the underlying data to terminate the chain.
-
-        This method "unwraps" the data and passes it to the given function,
-        returning the raw result.
-
-        It is used as a final step to get a
-        computed value out of the chain.
-
-        Example:
-            >>> from ._list import List
-            >>> List([1, 2, 3, 4]).into(sum)
-            10
-        """
-        return func(self._data, *args, **kwargs)
 
     def pipe(self, *funcs: Process[T]) -> Self:
         """Passes the underlying data through one or more functions in a sequence.

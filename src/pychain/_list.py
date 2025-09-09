@@ -11,7 +11,7 @@ class List[T](CommonBase[list[T]]):
     _data: list[T]
     __slots__ = ("_data",)
 
-    def transform[**P, U](
+    def into[**P, U](
         self,
         func: Callable[Concatenate[list[T], P], list[U]],
         *args: P.args,
