@@ -295,7 +295,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
         return Iter(map(func, self._data, *args, **kwargs))
 
-    def flatten(self: "Iter[Iterable[T]]") -> "Iter[T]":
+    def flatten(self: "Iter[Iterable[Any]]") -> "Iter[T]":
         """Flatten one level of nesting and return a new Iterable wrapper.
 
         Example:

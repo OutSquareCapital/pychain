@@ -51,14 +51,14 @@ class CommonBase[T]:
 
     def into[U, **P](
         self,
-        func: Callable[Concatenate[Self, P], U],
+        func: Callable[Concatenate[T, P], U],
         *args: P.args,
         **kwargs: P.kwargs,
     ):
-        return func(self, *args, **kwargs)
+        return func(self._data, *args, **kwargs)
 
-    def pipe(self, *funcs: Process[Self]) -> Self:
-        return self._new(cz.functoolz.pipe(*funcs))
+    def pipe(self, *funcs: Process[T]) -> Self:
+        return self._new(cz.functoolz.pipe(self._data, *funcs))
 
 
 def iter_on[T](data: Iterable[T]) -> "Iter[T]":
