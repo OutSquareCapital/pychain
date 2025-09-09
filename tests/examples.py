@@ -1,6 +1,6 @@
-import pychain as pc
+import numpy as np
 
-# Create a list with chainable operations
+import pychain as pc
 
 assert (
     pc.Iter((1, 2, 3, 4))
@@ -16,3 +16,6 @@ assert (
     .map_values(lambda v: v * 10)
     .unwrap()
 ) == {"b": 20, "c": 30}
+
+
+print(pc.Array[np.int64](np.array([1, 2, 3, 4])).add(2))

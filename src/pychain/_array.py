@@ -1,0 +1,72 @@
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Self
+
+import numpy as np
+from numpy.typing import NDArray
+
+from ._core import CommonBase, iter_on
+
+if TYPE_CHECKING:
+    from ._iter import Iter
+type Float = np.float32 | np.float64
+
+type Integer = np.int_ | np.int8 | np.int16 | np.int32 | np.int64
+
+type UnsignedInteger = np.uint | np.uint8 | np.uint16 | np.uint32 | np.uint64
+
+type Numeric = Float | Integer | UnsignedInteger
+
+
+type NumpyType = Numeric | np.bool_
+type IntoArr[T: NumpyType] = NDArray[T] | float | int
+type ArrFunc[T: NumpyType] = Callable[..., NDArray[T]]
+
+
+class Array[T: NumpyType](CommonBase[NDArray[T]]):
+    __slots__ = "_data"
+    _data: NDArray[T]
+
+    def add(self, other: IntoArr[T]) -> Self:
+        return self._new(np.add(self._data, other))
+
+    def sub(self, other: IntoArr[T]) -> Self:
+        return self._new(np.subtract(self._data, other))
+
+    def sub_r(self, other: IntoArr[T]) -> Self:
+        return self._new(np.subtract(other, self._data))
+
+    def mul(self, other: IntoArr[T]) -> Self:
+        return self._new(np.multiply(self._data, other))
+
+    def truediv(self, other: IntoArr[T]) -> Self:
+        return self._new(np.divide(self._data, other))
+
+    def truediv_r(self, other: IntoArr[T]) -> Self:
+        return self._new(np.divide(other, self._data))
+
+    def floor_div(self, other: IntoArr[T]) -> Self:
+        return self._new(np.floor_divide(self._data, other))
+
+    def floor_div_r(self, other: IntoArr[T]) -> Self:
+        return self._new(np.floor_divide(other, self._data))
+
+    def sign(self) -> Self:
+        return self._new(np.sign(self._data))
+
+    def abs(self) -> Self:
+        return self._new(np.abs(self._data))
+
+    def sqrt(self) -> Self:
+        return self._new(np.sqrt(self._data))
+
+    def pow(self, exponent: int) -> Self:
+        return self._new(np.power(self._data, exponent))
+
+    def neg(self) -> Self:
+        return self._new(np.negative(self._data))
+
+    def cast[U: NumpyType](self, dtype: U) -> "Array[U]":
+        return Array(self._data.astype(dtype))
+
+    def into_iter(self) -> "Iter[float]":
+        return iter_on(self._data)
