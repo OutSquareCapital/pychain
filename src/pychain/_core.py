@@ -1,8 +1,13 @@
-from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
-from typing import Any, Concatenate, Self
+from typing import TYPE_CHECKING, Concatenate, Self
 
-import cytoolz.itertoolz as itz
+import cytoolz as cz
+
+if TYPE_CHECKING:
+    from ._dict import Dict
+    from ._iter import Iter
+    from ._list import List
+
 
 type Check[T] = Callable[[T], bool]
 type Process[T] = Callable[[T], T]
@@ -10,8 +15,17 @@ type Transform[T, T1] = Callable[[T], T1]
 type Agg[V, V1] = Callable[[Iterable[V]], V1]
 
 
-class CommonBase[T](ABC):
-    _data: T
+class CommonBase[T]:
+    __slots__ = ("_data",)
+
+    def __init__(self, data: T) -> None:
+        self._data = data
+
+    def __repr__(self) -> str:
+        return f"{self._data.__repr__()}"
+
+    def _new(self, data: T) -> Self:
+        return self.__class__(data)
 
     def unwrap(self) -> T:
         """Return the underlying data."""
@@ -19,86 +33,29 @@ class CommonBase[T](ABC):
 
     def into[U, **P](
         self,
-        func: Callable[Concatenate[T, P], U],
+        func: Callable[Concatenate[Self, P], U],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> U:
-        """Apply func to the internal data."""
-        return func(self._data, *args, **kwargs)
+    ):
+        return func(self, *args, **kwargs)
 
-    @abstractmethod
-    def pipe[U, **P](
-        self,
-        func: Callable[Concatenate[T, P], U],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> U:
-        raise NotImplementedError
-
-    @abstractmethod
-    def compose(self, *funcs: Process[T]) -> Self:
-        raise NotImplementedError
+    def pipe(self, *funcs: Process[Self]) -> Self:
+        return self._new(cz.functoolz.pipe(*funcs))
 
 
-def peekn[T](seq: Iterable[T], n: int, note: str | None = None):
-    """Return an iterator equivalent to seq after printing the first n items.
+def iter_on[T](data: Iterable[T]) -> "Iter[T]":
+    from ._iter import Iter
 
-    Example:
-        >>> list(peekn([0, 1, 2, 3], 2))
-        Peeked 2 values: [0, 1]
-        [0, 1, 2, 3]
-    """
-    values, sequence = itz.peekn(n, seq)
-    if note:
-        print(f"Peeked {n} values ({note}): {list(values)}")
-    else:
-        print(f"Peeked {n} values: {list(values)}")
-    return sequence
+    return Iter(data)
 
 
-def peek[T](seq: Iterable[T], note: str | None = None):
-    """Return an iterator equivalent to seq after printing its first value.
+def dict_on[K, V](data: dict[K, V]) -> "Dict[K, V]":
+    from ._dict import Dict
 
-    Example:
-        >>> list(peek([10, 20]))
-        Peeked value: 10
-        [10, 20]
-    """
-    value, sequence = itz.peek(seq)
-    if note:
-        print(f"Peeked value ({note}): {value}")
-    else:
-        print(f"Peeked value: {value}")
-    return sequence
+    return Dict(data)
 
 
-def tap[V](value: Iterable[V], func: Callable[[V], None]):
-    """Yield items from value while calling func on each item (side-effect).
+def list_on[T](data: list[T]) -> "List[T]":
+    from ._list import List
 
-    Example:
-        >>> list(tap([1, 2], lambda x: None))
-        [1, 2]
-    """
-    for item in value:
-        func(item)
-        yield item
-
-
-def flatten_recursive[T](
-    d: dict[Any, T], parent_key: str = "", sep: str = "."
-) -> dict[str, T]:
-    """Flatten a nested dict into a single-level dict with dotted keys.
-
-    Example:
-        >>> flatten_recursive({"a": {"b": 1}})
-        {'a.b': 1}
-    """
-    items: dict[str, T] = {}
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if hasattr(v, "items"):
-            items.update(flatten_recursive(v, new_key, sep))
-        else:
-            v: Any
-            items[new_key] = v
-    return items
+    return List(data)

@@ -1,31 +1,24 @@
 import itertools
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
 from functools import reduce
 from random import Random
-from typing import Any, Concatenate, Self
+from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 import cytoolz as cz
 
-from ._core import Check, Process, peek, peekn, tap
+from pychain._dict import Dict
+
+from ._core import Check, CommonBase, Process, Transform, dict_on, list_on
+from ._funcs import peek, peekn
+
+if TYPE_CHECKING:
+    from ._dict import Dict
+    from ._list import List
 
 
-@dataclass(slots=True)
-class BaseIter[T]:
+class Iter[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
-    """
-    Base wrapper for Iterable-like eager transformations. Use Iter for public API.
-    """
-
-    def compose(self, *funcs: Process[Iterable[T]]) -> Self:
-        """Compose functions and return a new Iterable wrapper.
-
-        Example:
-            >>> from ._lib import Iter
-            >>> Iter([1]).compose(lambda l: l).into_list().unwrap()
-            [1]
-        """
-        return self.__class__(cz.functoolz.pipe(self._data, *funcs))
+    __slots__ = ("_data",)
 
     def filter[**P](
         self, func: Callable[Concatenate[T, P], bool], *args: P.args, **kwargs: P.kwargs
@@ -33,61 +26,46 @@ class BaseIter[T]:
         """Filter elements according to func and return a new Iterable wrapper.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2, 3]).filter(lambda x: x > 1).into_list().unwrap()
+            >>> Iter([1, 2, 3]).filter(lambda x: x > 1).into_list()
             [2, 3]
         """
-        return self.__class__(filter(func, self._data, *args, **kwargs))
-
-    def flatten(self) -> Self:
-        """Flatten one level of nesting and return a new Iterable wrapper.
-
-        Example:
-            >>> from ._lib import Iter
-            >>> Iter([[1, 2], [3]]).flatten().into_list().unwrap()
-            [1, 2, 3]
-        """
-        return self.__class__(cz.itertoolz.concat(self._data))
+        return self._new(filter(func, self._data, *args, **kwargs))
 
     def take_while(self, predicate: Check[T]) -> Self:
         """Take items while predicate holds and return a new Iterable wrapper.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2, 0]).take_while(lambda x: x > 0).into_list().unwrap()
+            >>> Iter([1, 2, 0]).take_while(lambda x: x > 0).into_list()
             [1, 2]
         """
-        return self.__class__(itertools.takewhile(predicate, self._data))
+        return self._new(itertools.takewhile(predicate, self._data))
 
     def drop_while(self, predicate: Check[T]) -> Self:
         """Drop items while predicate holds and return the remainder.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2, 0]).drop_while(lambda x: x > 0).into_list().unwrap()
+            >>> Iter([1, 2, 0]).drop_while(lambda x: x > 0).into_list()
             [0]
         """
-        return self.__class__(itertools.dropwhile(predicate, self._data))
+        return self._new(itertools.dropwhile(predicate, self._data))
 
     def interpose(self, element: T) -> Self:
         """Interpose element between items and return a new Iterable wrapper.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2]).interpose(0).into_list().unwrap()
+            >>> Iter([1, 2]).interpose(0).into_list()
             [1, 0, 2]
         """
-        return self.__class__(cz.itertoolz.interpose(element, self._data))
+        return self._new(cz.itertoolz.interpose(element, self._data))
 
     def top_n(self, n: int, key: Callable[[T], Any] | None = None) -> Self:
         """Return the top-n items according to key.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 3, 2]).top_n(2).into_list().unwrap()
+            >>> Iter([1, 3, 2]).top_n(2).into_list()
             [3, 2]
         """
-        return self.__class__(cz.itertoolz.topk(n, self._data, key))
+        return self._new(cz.itertoolz.topk(n, self._data, key))
 
     def random_sample(
         self, probability: float, state: Random | int | None = None
@@ -95,115 +73,93 @@ class BaseIter[T]:
         """Randomly sample items with given probability.
 
         Example:
-            >>> from ._lib import Iter
             >>> len(Iterable(Iter([1, 2, 3]).random_sample(0.5)))  # doctest: +SKIP
             1
         """
-        return self.__class__(
-            cz.itertoolz.random_sample(probability, self._data, state)
-        )
+        return self._new(cz.itertoolz.random_sample(probability, self._data, state))
 
     def accumulate(self, f: Callable[[T, T], T]) -> Self:
         """Return cumulative application of binary op f.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2, 3]).accumulate(lambda a, b: a + b).into_list().unwrap()
+            >>> Iter([1, 2, 3]).accumulate(lambda a, b: a + b).into_list()
             [1, 3, 6]
         """
-        return self.__class__(cz.itertoolz.accumulate(f, self._data))
+        return self._new(cz.itertoolz.accumulate(f, self._data))
 
     def insert_left(self, value: T) -> Self:
         """Prepend value to the sequence and return a new Iterable wrapper.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([2, 3]).insert_left(1).into_list().unwrap()
+            >>> Iter([2, 3]).insert_left(1).into_list()
             [1, 2, 3]
         """
-        return self.__class__(cz.itertoolz.cons(value, self._data))
+        return self._new(cz.itertoolz.cons(value, self._data))
 
     def peekn(self, n: int, note: str | None = None) -> Self:
         """Print and return sequence after peeking n items.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2, 3]).peekn(2).into_list().unwrap()
+            >>> Iter([1, 2, 3]).peekn(2).into_list()
             Peeked 2 values: [1, 2]
             [1, 2, 3]
         """
-        return self.__class__(peekn(self._data, n, note))
+        return self._new(peekn(self._data, n, note))
 
     def peek(self, note: str | None = None) -> Self:
         """Print and return sequence after peeking first item.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2]).peek().into_list().unwrap()
+            >>> Iter([1, 2]).peek().into_list()
             Peeked value: 1
             [1, 2]
         """
-        return self.__class__(peek(self._data, note))
+        return self._new(peek(self._data, note))
 
     def head(self, n: int) -> Self:
         """Return first n elements wrapped.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2, 3]).head(2).into_list().unwrap()
+            >>> Iter([1, 2, 3]).head(2).into_list()
             [1, 2]
         """
-        return self.__class__(cz.itertoolz.take(n, self._data))
+        return self._new(cz.itertoolz.take(n, self._data))
 
     def tail(self, n: int) -> Self:
         """Return last n elements wrapped.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2, 3]).tail(2).into_list().unwrap()
+            >>> Iter([1, 2, 3]).tail(2).into_list()
             [2, 3]
         """
-        return self.__class__(cz.itertoolz.tail(n, self._data))
+        return self._new(cz.itertoolz.tail(n, self._data))
 
     def drop_first(self, n: int) -> Self:
         """Drop first n elements and return the remainder wrapped.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2, 3]).drop_first(1).into_list().unwrap()
+            >>> Iter([1, 2, 3]).drop_first(1).into_list()
             [2, 3]
         """
-        return self.__class__(cz.itertoolz.drop(n, self._data))
+        return self._new(cz.itertoolz.drop(n, self._data))
 
     def every(self, index: int) -> Self:
         """Return every nth item starting from first.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([10, 20, 30, 40]).every(2).into_list().unwrap()
+            >>> Iter([10, 20, 30, 40]).every(2).into_list()
             [10, 30]
         """
-        return self.__class__(cz.itertoolz.take_nth(index, self._data))
+        return self._new(cz.itertoolz.take_nth(index, self._data))
 
     def unique(self) -> Self:
         """Return unique items preserving order.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2, 1]).unique().into_list().unwrap()
+            >>> Iter([1, 2, 1]).unique().into_list()
             [1, 2]
         """
-        return self.__class__(cz.itertoolz.unique(self._data))
-
-    def tap(self, func: Callable[[T], None]) -> Self:
-        """Call func on each item and return the original sequence wrapped.
-
-        Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2]).tap(lambda x: None).into_list().unwrap()
-            [1, 2]
-        """
-        return self.__class__(tap(self._data, func))
+        return self._new(cz.itertoolz.unique(self._data))
 
     def merge_sorted(
         self, *others: Iterable[T], sort_on: Callable[[T], Any] | None = None
@@ -211,39 +167,33 @@ class BaseIter[T]:
         """Merge already-sorted sequences.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 3]).merge_sorted([2, 4]).into_list().unwrap()
+            >>> Iter([1, 3]).merge_sorted([2, 4]).into_list()
             [1, 2, 3, 4]
         """
-        return self.__class__(
-            cz.itertoolz.merge_sorted(self._data, *others, key=sort_on)
-        )
+        return self._new(cz.itertoolz.merge_sorted(self._data, *others, key=sort_on))
 
     def interleave(self, *others: Iterable[T]) -> Self:
         """Interleave multiple sequences element-wise.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1, 2]).interleave([3, 4]).into_list().unwrap()
+            >>> Iter([1, 2]).interleave([3, 4]).into_list()
             [1, 3, 2, 4]
         """
-        return self.__class__(cz.itertoolz.interleave((self._data, *others)))
+        return self._new(cz.itertoolz.interleave((self._data, *others)))
 
     def concat(self, *others: Iterable[T]) -> Self:
         """Concatenate multiple sequences.
 
         Example:
-            >>> from ._lib import Iter
-            >>> Iter([1]).concat([2, 3]).into_list().unwrap()
+            >>> Iter([1]).concat([2, 3]).into_list()
             [1, 2, 3]
         """
-        return self.__class__(cz.itertoolz.concat((self._data, *others)))
+        return self._new(cz.itertoolz.concat((self._data, *others)))
 
     def reduce(self, func: Callable[[T, T], T]) -> T:
         """Reduce the sequence using func.
 
         Example:
-            >>> from ._lib import Iter
             >>> Iter([1, 2, 3]).reduce(lambda a, b: a + b)
             6
         """
@@ -253,7 +203,6 @@ class BaseIter[T]:
         """Return True if all items are distinct.
 
         Example:
-            >>> from ._lib import Iter
             >>> Iter([1, 2]).is_distinct()
             True
         """
@@ -263,7 +212,6 @@ class BaseIter[T]:
         """Return True if all items are truthy.
 
         Example:
-            >>> from ._lib import Iter
             >>> Iter([1, True]).all()
             True
         """
@@ -273,7 +221,6 @@ class BaseIter[T]:
         """Return True if any item is truthy.
 
         Example:
-            >>> from ._lib import Iter
             >>> Iter([0, 1]).any()
             True
         """
@@ -288,7 +235,6 @@ class BaseIter[T]:
         """Apply aggregator f to the whole Iterable and return result.
 
         Example:
-            >>> from ._lib import Iter
             >>> Iter([1, 2]).agg(sum)
             3
         """
@@ -298,7 +244,6 @@ class BaseIter[T]:
         """Return the first element.
 
         Example:
-            >>> from ._lib import Iter
             >>> Iter([9]).first()
             9
         """
@@ -308,7 +253,6 @@ class BaseIter[T]:
         """Return the second element.
 
         Example:
-            >>> from ._lib import Iter
             >>> Iter([9, 8]).second()
             8
         """
@@ -318,7 +262,6 @@ class BaseIter[T]:
         """Return the last element.
 
         Example:
-            >>> from ._lib import Iter
             >>> Iter([7, 8, 9]).last()
             9
         """
@@ -328,7 +271,6 @@ class BaseIter[T]:
         """Return the length of the sequence.
 
         Example:
-            >>> from ._lib import Iter
             >>> Iter([1, 2]).length()
             2
         """
@@ -338,8 +280,182 @@ class BaseIter[T]:
         """Return item at index.
 
         Example:
-            >>> from ._lib import Iter
             >>> Iter([10, 20]).at_index(1)
             20
         """
         return cz.itertoolz.nth(index, self._data)
+
+    def map[**P, R](
+        self, func: Callable[Concatenate[T, P], R], *args: P.args, **kwargs: P.kwargs
+    ) -> "Iter[R]":
+        """Map each element through func and return a Iter of results.
+
+        Example:
+            >>> Iter([1, 2]).map(lambda x: x + 1).into_list()
+            [2, 3]
+        """
+        return Iter(map(func, self._data, *args, **kwargs))
+
+    def flatten(self: "Iter[Iterable[T]]") -> "Iter[T]":
+        """Flatten one level of nesting and return a new Iterable wrapper.
+
+        Example:
+            >>> Iter([[1, 2], [3]]).flatten().into_list()
+            [1, 2, 3]
+        """
+        return Iter(cz.itertoolz.concat(self._data))
+
+    def flat_map[R, **P](
+        self,
+        func: Callable[Concatenate[T, P], Iterable[R]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> "Iter[R]":
+        """Apply func producing iterables and flatten the results into a Iter.
+
+        Example:
+            >>> Iter([1, 2]).flat_map(lambda x: [x, -x]).into_list()
+            [1, -1, 2, -2]
+        """
+        return Iter(cz.itertoolz.concat(map(func, self._data, *args, **kwargs)))
+
+    def enumerate(self) -> "Iter[tuple[int, T]]":
+        """Return a Iter of (index, value) pairs.
+
+        Example:
+            >>> Iter(["a", "b"]).enumerate().into_list()
+            [(0, 'a'), (1, 'b')]
+        """
+        return Iter(enumerate(self._data))
+
+    def batch(self, n: int) -> "Iter[tuple[T, ...]]":
+        """Batch elements into tuples of length n and return a new Iter.
+
+        Example:
+            >>> Iter("ABCDEFG").batch(3).into_list()
+            [('A', 'B', 'C'), ('D', 'E', 'F'), ('G',)]
+        """
+        return Iter(itertools.batched(self._data, n))
+
+    def starmap[R, **P](
+        self: "Iter[Iterable[T]]", func: Callable[Concatenate[T, P], Iterable[R]]
+    ) -> "Iter[Iterable[R]]":
+        """Starmap using func and return a new Iter.
+
+        Example:
+            >>> Iter([(2, 3), (3, 1), (4, 6), (5, 3), (6, 5), (7, 2)]).starmap(
+            ...     lambda x, y: x + y
+            ... ).into_list()
+            [5, 4, 10, 8, 11, 9]
+        """
+        return Iter(itertools.starmap(func, self._data))
+
+    def partition(self, n: int, pad: T | None = None) -> "Iter[tuple[T, ...]]":
+        """Partition into tuples of length n, optionally padded.
+
+        Example:
+            >>> Iter([1, 2, 3, 4]).partition(2).into_list()
+            [(1, 2), (3, 4)]
+        """
+        return Iter(cz.itertoolz.partition(n, self._data, pad))
+
+    def partition_all(self, n: int) -> "Iter[tuple[T, ...]]":
+        """Partition into tuples of length at most n.
+
+        Example:
+            >>> Iter([1, 2, 3]).partition_all(2).into_list()
+            [(1, 2), (3,)]
+        """
+        return Iter(cz.itertoolz.partition_all(n, self._data))
+
+    def rolling(self, length: int) -> "Iter[tuple[T, ...]]":
+        """Return sliding windows of the given length.
+
+        Example:
+            >>> Iter([1, 2, 3]).rolling(2).into_list()
+            [(1, 2), (2, 3)]
+        """
+        return Iter(cz.itertoolz.sliding_window(length, self._data))
+
+    def product(self, other: Iterable[T]) -> "Iter[tuple[T, T]]":
+        """Cartesian product with another iterable, wrapped as Iter.
+        Equivalent to nested for-loops.
+
+        Example:
+            >>> Iter([1, 2]).product([10]).into_list()
+            [(1, 10), (2, 10)]
+        """
+        return Iter(itertools.product(self._data, other))
+
+    def repeat(self, n: int) -> "Iter[Iterable[T]]":
+        """Repeat the entire iterable n times (as elements) and return Iter.
+
+        Example:
+            >>> Iter([1, 2]).repeat(2).into_list()
+            [[1, 2], [1, 2]]
+        """
+        return Iter(itertools.repeat(self._data, n))
+
+    def diff(
+        self,
+        *others: Iterable[T],
+        key: Process[T] | None = None,
+    ) -> "Iter[tuple[T, ...]]":
+        """Yield differences between sequences.
+
+        Example:
+            >>> Iter([1, 2, 3]).diff([1, 2, 10]).into_list()
+            [(3, 10)]
+        """
+        return Iter(cz.itertoolz.diff(self._data, *others, ccpdefault=None, key=key))
+
+    def zip_with(
+        self, *others: Iterable[T], strict: bool = False
+    ) -> "Iter[tuple[T, ...]]":
+        """Zip with other iterables, optionally strict, wrapped in Iter.
+
+        Example:
+            >>> Iter([1, 2]).zip_with([10, 20]).into_list()
+            [(1, 10), (2, 20)]
+        """
+        return Iter(zip(self._data, *others, strict=strict))
+
+    def reduce_by[K](
+        self, key: Transform[T, K], binop: Callable[[T, T], T]
+    ) -> "Iter[K]":
+        """Reduce grouped elements by binop, returning a Iter of results.
+
+        Example:
+            >>> Iter([1, 2, 3, 4]).reduce_by(
+            ...     lambda x: x % 2, lambda a, b: a + b
+            ... ).into_list()
+            [1, 0]
+        """
+        return Iter(cz.itertoolz.reduceby(key, binop, self._data))
+
+    def group_by[K](self, on: Transform[T, K]) -> "Dict[K, list[T]]":
+        """Group elements by key function and return a Dict result.
+
+        Example:
+            >>> Iter(["a", "bb"]).group_by(len)
+            {1: ['a'], 2: ['bb']}
+        """
+        return dict_on(cz.itertoolz.groupby(on, self._data))
+
+    def frequencies(self) -> "Dict[T, int]":
+        """Return a Dict of value frequencies.
+
+        Example:
+            >>> Iter([1, 1, 2]).frequencies()
+            {1: 2, 2: 1}
+        """
+        return dict_on(cz.itertoolz.frequencies(self._data))
+
+    def into_list(self) -> "List[T]":
+        """Return a List wrapping the elements of the iterable.
+
+        Example:
+            >>> Iter([1, 2, 3]).into_list()
+            [1, 2, 3]
+        """
+        return list_on(list(self._data))

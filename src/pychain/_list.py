@@ -1,19 +1,29 @@
 from collections.abc import Iterable
-from dataclasses import dataclass
-from typing import Self
+from typing import TYPE_CHECKING, Self
+
+from ._core import CommonBase, iter_on
+
+if TYPE_CHECKING:
+    from ._iter import Iter
 
 
-@dataclass(slots=True)
-class BaseList[T]:
+class List[T](CommonBase[list[T]]):
     _data: list[T]
+    __slots__ = ("_data",)
+
+    def into_iter(self) -> "Iter[T]":
+        """Return an iterator over the list's elements."""
+
+        return iter_on(iter(self._data))
 
     def clear(self) -> Self:
         """
         Clear the list and return self for convenience.
 
+        **Warning**: Mutates the original list.
+
         Example:
-            >>> from ._lib import List
-            >>> List([1, 2]).clear().unwrap()
+            >>> List([1, 2]).clear()
             []
         """
         self._data.clear()
@@ -23,9 +33,10 @@ class BaseList[T]:
         """
         Insert an object into the list at the specified index and return self for convenience.
 
+        **Warning**: Mutates the original list.
+
         Example:
-            >>> from ._lib import List
-            >>> List([1, 2]).insert(1, 3).unwrap()
+            >>> List([1, 2]).insert(1, 3)
             [1, 3, 2]
         """
         self._data.insert(index, value)
@@ -36,8 +47,7 @@ class BaseList[T]:
         Return a shallow copy of the list.
 
         Example:
-            >>> from ._lib import List
-            >>> List([1, 2]).copy().unwrap()
+            >>> List([1, 2]).copy()
             [1, 2]
         """
         return self.__class__(self._data.copy())
@@ -47,25 +57,25 @@ class BaseList[T]:
         Append object to the end of the list and return self for convenience.
 
         **Warning**: Mutates the original list.
+
         Example:
-            >>> from ._lib import List
-            >>> List([1, 2]).append(3).unwrap()
+            >>> List([1, 2]).append(3)
             [1, 2, 3]
         """
         self._data.append(value)
         return self
 
-    def extend(self, other: Iterable[T]) -> Self:
+    def extend(self, *others: Iterable[T]) -> Self:
         """
         Extend the list with elements from another iterable and return self for convenience.
 
         **Warning**: Mutates the original list.
+
         Example:
-            >>> from ._lib import List
-            >>> List([1, 2]).extend([3, 4]).unwrap()
+            >>> List([1, 2]).extend([3, 4])
             [1, 2, 3, 4]
         """
-        self._data.extend(other)
+        self._data.extend(*others)
         return self
 
     def remove(self, value: T) -> Self:
@@ -73,9 +83,9 @@ class BaseList[T]:
         Remove an object from the list and return self for convenience.
 
         **Warning**: Mutates the original list.
+
         Example:
-            >>> from ._lib import List
-            >>> List([1, 2]).remove(2).unwrap()
+            >>> List([1, 2]).remove(2)
             [1]
         """
         self._data.remove(value)
@@ -85,9 +95,10 @@ class BaseList[T]:
         """
         Reverse the order of the list and return self for convenience.
 
+        **Warning**: Mutates the original list.
+
         Example:
-            >>> from ._lib import List
-            >>> List([1, 2]).reverse().unwrap()
+            >>> List([1, 2]).reverse()
             [2, 1]
         """
         self._data.reverse()
