@@ -39,6 +39,8 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return an aggregator namespace for the current sequence."""
         return Aggregator(self._data)
 
+    # CONSTRUCTORS------------------------------------------------------------------
+
     @classmethod
     def from_count(cls, start: int = 0, step: int = 1) -> "Iter[int]":
         """Create an infinite iterator of evenly spaced values.
@@ -52,7 +54,7 @@ class Iter[T](core.CommonBase[Iterable[T]]):
             >>> Iter.from_count(10, 2).head(3).into_list()
             [10, 12, 14]
         """
-        return Iter(itertools.count(start, step))
+        return cls.__call__(itertools.count(start, step))
 
     @classmethod
     def from_range(cls, start: int, stop: int, step: int = 1) -> "Iter[int]":
@@ -62,6 +64,28 @@ class Iter[T](core.CommonBase[Iterable[T]]):
             [1, 2, 3, 4]
         """
         return Iter(range(start, stop, step))
+
+    @classmethod
+    def from_elements(cls, *elements: T) -> "Iter[T]":
+        """Create an Iter from a sequence of elements.
+
+        This is a class method that acts as a constructor from unpacked arguments.
+
+        **Example:**
+            >>> Iter.from_elements(1, 2, 3).into_list()
+            [1, 2, 3]
+        """
+        return cls(elements)
+
+    @classmethod
+    def from_func(cls, func: core.Process[T], n: T) -> "Iter[T]":
+        """Create an infinite iterator by repeatedly applying a function.
+
+        **Example:**
+            >>> Iter.from_func(lambda x: x + 1, 0).head(3).into_list()
+            [0, 1, 2]
+        """
+        return cls(cz.itertoolz.iterate(func, n))
 
     # BUILTINS------------------------------------------------------------------
 
@@ -286,6 +310,30 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         return self._new(itertools.cycle(self._data))
 
     # CYTOOLZ------------------------------------------------------------------
+
+    def join[R, K](
+        self,
+        other: Iterable[R],
+        left_on: core.Transform[T, K],
+        right_on: core.Transform[R, K],
+        left_default: T | None = None,
+        right_default: R | None = None,
+    ) -> "Iter[tuple[T, R]]":
+        """Perform a relational join with another iterable.
+
+        **Example:**
+            >>> colors = Iter(["blue", "red"])
+            >>> sizes = ["S", "M"]
+            >>> colors.join(
+            ...     sizes, left_on=lambda c: c, right_on=lambda s: s
+            ... ).into_list()
+            [(None, 'S'), (None, 'M'), ('blue', None), ('red', None)]
+        """
+        return Iter(
+            cz.itertoolz.join(
+                left_on, self._data, right_on, other, left_default, right_default
+            )
+        )
 
     def juxt[R](self, *funcs: core.Transform[T, R]) -> "Iter[tuple[R, ...]]":
         """Apply several functions to each item.

@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "cytoolz>=1.0.1",
     "numpy>=2.3.2",
+    "rustats",
 ]
 
 [tool.ruff.format]
@@ -15,6 +16,7 @@ docstring-code-format = true
 
 [tool.uv.sources]
 cytoolz-stubs = { git = "https://github.com/OutSquareCapital/cytoolz-stubs.git" }
+rustats = { git = "https://github.com/OutSquareCapital/rustats.git" }
 
 [dependency-groups]
 dev = [

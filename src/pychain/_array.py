@@ -2,20 +2,15 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Concatenate, Self
 
 import numpy as np
+import rustats as rs
 from numpy.typing import NDArray
 
 from ._core import CommonBase, iter_on
 
 if TYPE_CHECKING:
     from ._iter import Iter
-type Float = np.float32 | np.float64
 
-type Integer = np.int_ | np.int8 | np.int16 | np.int32 | np.int64
-
-type UnsignedInteger = np.uint | np.uint8 | np.uint16 | np.uint32 | np.uint64
-
-type Numeric = Float | Integer | UnsignedInteger
-
+type Numeric = np.floating | np.integer | np.unsignedinteger
 
 type NumpyType = Numeric | np.bool_
 type IntoArr[T: NumpyType] = NDArray[T] | float | int
@@ -73,5 +68,75 @@ class Array[T: NumpyType](CommonBase[NDArray[T]]):
     def neg(self) -> Self:
         return self._new(np.negative(self._data))
 
-    def into_iter(self) -> "Iter[float]":
+    def rolling_mean[U: np.floating](
+        self: "Array[U]",
+        window_size: int,
+        min_samples: int,
+    ) -> "Array[U]":
+        return self._new(rs.move_mean(self._data, window_size, min_samples))
+
+    def rolling_median[U: np.floating](
+        self: "Array[U]",
+        window_size: int,
+        min_samples: int,
+    ) -> "Array[U]":
+        return self._new(rs.move_median(self._data, window_size, min_samples))
+
+    def rolling_max[U: np.floating](
+        self: "Array[U]",
+        window_size: int,
+        min_samples: int,
+    ) -> "Array[U]":
+        return self._new(rs.move_max(self._data, window_size, min_samples))
+
+    def rolling_min[U: np.floating](
+        self: "Array[U]",
+        window_size: int,
+        min_samples: int,
+    ) -> "Array[U]":
+        return self._new(rs.move_min(self._data, window_size, min_samples))
+
+    def rolling_sum[U: np.floating](
+        self: "Array[U]",
+        window_size: int,
+        min_samples: int,
+    ) -> "Array[U]":
+        return self._new(rs.move_sum(self._data, window_size, min_samples))
+
+    def rolling_std[U: np.floating](
+        self: "Array[U]",
+        window_size: int,
+        min_samples: int,
+    ) -> "Array[U]":
+        return self._new(rs.move_std(self._data, window_size, min_samples))
+
+    def rolling_var[U: np.floating](
+        self: "Array[U]",
+        window_size: int,
+        min_samples: int,
+    ) -> "Array[U]":
+        return self._new(rs.move_var(self._data, window_size, min_samples))
+
+    def rolling_skew[U: np.floating](
+        self: "Array[U]",
+        window_size: int,
+        min_samples: int,
+    ) -> "Array[U]":
+        return self._new(rs.move_skewness(self._data, window_size, min_samples))
+
+    def rolling_kurtosis[U: np.floating](
+        self: "Array[U]",
+        window_size: int,
+        min_samples: int,
+    ) -> "Array[U]":
+        return self._new(rs.move_kurtosis(self._data, window_size, min_samples))
+
+    def rolling_rank[U: np.floating](
+        self: "Array[U]",
+        window_size: int,
+        min_samples: int,
+    ) -> "Array[U]":
+        return self._new(rs.move_rank(self._data, window_size, min_samples))
+
+    def into_iter(self) -> "Iter[T]":
         return iter_on(self._data)
