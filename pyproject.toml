@@ -22,5 +22,7 @@ rustats = { git = "https://github.com/OutSquareCapital/rustats.git" }
 dev = [
     "cytoolz-stubs",
 ]
+
 [build-system]
-requires = ["setuptools"]
+requires = ["uv_build>=0.8.15,<0.9.0"]
+build-backend = "uv_build"
