@@ -66,7 +66,7 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         return Iter(range(start, stop, step))
 
     @classmethod
-    def from_elements(cls, *elements: T) -> "Iter[T]":
+    def from_elements[U](cls, *elements: U) -> "Iter[U]":
         """Create an Iter from a sequence of elements.
 
         This is a class method that acts as a constructor from unpacked arguments.
@@ -75,17 +75,17 @@ class Iter[T](core.CommonBase[Iterable[T]]):
             >>> Iter.from_elements(1, 2, 3).into_list()
             [1, 2, 3]
         """
-        return cls(elements)
+        return Iter(elements)
 
     @classmethod
-    def from_func(cls, func: core.Process[T], n: T) -> "Iter[T]":
+    def from_func[U](cls, func: core.Process[U], n: U) -> "Iter[U]":
         """Create an infinite iterator by repeatedly applying a function.
 
         **Example:**
             >>> Iter.from_func(lambda x: x + 1, 0).head(3).into_list()
             [0, 1, 2]
         """
-        return cls(cz.itertoolz.iterate(func, n))
+        return Iter(cz.itertoolz.iterate(func, n))
 
     # BUILTINS------------------------------------------------------------------
 
