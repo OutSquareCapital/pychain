@@ -55,7 +55,7 @@ class CommonBase[T](ABC):
 
         It is equivalent to the `pipe operator` (`|>`) found in other languages.
 
-        Example:
+        **Example:**
             >>>
             >>> from ._array import Array
             >>> import numpy as np

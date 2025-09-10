@@ -21,7 +21,7 @@ class Aggregator[T]:
     ) -> T:
         """Apply aggregator f to the whole Iterable and return result.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, 2]).agg(sum)
             3
@@ -31,7 +31,7 @@ class Aggregator[T]:
     def sum[U: int | float](self: "Aggregator[U]") -> U | Literal[0]:
         """Return the sum of the sequence.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, 2, 3]).agg.sum()
             6
@@ -41,7 +41,7 @@ class Aggregator[T]:
     def min[U: int | float](self: "Aggregator[U]") -> U:
         """Return the minimum value of the sequence.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([3, 1, 2]).agg.min()
             1
@@ -51,7 +51,7 @@ class Aggregator[T]:
     def max[U: int | float](self: "Aggregator[U]") -> U:
         """Return the maximum value of the sequence.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([3, 1, 2]).agg.max()
             3
@@ -61,7 +61,7 @@ class Aggregator[T]:
     def mean[U: int | float](self: "Aggregator[U]") -> float:
         """Return the mean of the sequence.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, 2, 3]).agg.mean()
             2
@@ -71,7 +71,7 @@ class Aggregator[T]:
     def median[U: int | float](self: "Aggregator[U]") -> float:
         """Return the median of the sequence.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, 3, 2]).agg.median()
             2
@@ -81,7 +81,7 @@ class Aggregator[T]:
     def mode[U: int | float](self: "Aggregator[U]") -> U | Literal[0]:
         """Return the mode of the sequence.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, 2, 2, 3]).agg.mode()
             2
@@ -91,7 +91,7 @@ class Aggregator[T]:
     def stdev[U: int | float](self: "Aggregator[U]") -> float | Literal[0]:
         """Return the standard deviation of the sequence.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, 2, 3]).agg.stdev()
             1.0
@@ -101,7 +101,7 @@ class Aggregator[T]:
     def variance[U: int | float](self: "Aggregator[U]") -> float | Literal[0]:
         """Return the variance of the sequence.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, 2, 3, 7, 8]).agg.variance()
             9.7
@@ -111,7 +111,7 @@ class Aggregator[T]:
     def reduce(self, func: Callable[[T, T], T]) -> T:
         """Reduce the sequence using func.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, 2, 3]).agg.reduce(lambda a, b: a + b)
             6
@@ -121,7 +121,7 @@ class Aggregator[T]:
     def is_distinct(self) -> bool:
         """Return True if all items are distinct.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, 2]).agg.is_distinct()
             True
@@ -131,7 +131,7 @@ class Aggregator[T]:
     def all(self) -> bool:
         """Return True if all items are truthy.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, True]).agg.all()
             True
@@ -141,7 +141,7 @@ class Aggregator[T]:
     def any(self) -> bool:
         """Return True if any item is truthy.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([0, 1]).agg.any()
             True
@@ -151,7 +151,7 @@ class Aggregator[T]:
     def first(self) -> T:
         """Return the first element.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([9]).agg.first()
             9
@@ -161,7 +161,7 @@ class Aggregator[T]:
     def second(self) -> T:
         """Return the second element.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([9, 8]).agg.second()
             8
@@ -171,7 +171,7 @@ class Aggregator[T]:
     def last(self) -> T:
         """Return the last element.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([7, 8, 9]).agg.last()
             9
@@ -181,7 +181,7 @@ class Aggregator[T]:
     def length(self) -> int:
         """Return the length of the sequence.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([1, 2]).agg.length()
             2
@@ -191,7 +191,7 @@ class Aggregator[T]:
     def at_index(self, index: int) -> T:
         """Return item at index.
 
-        Example:
+        **Example:**
             >>> from pychain import Iter
             >>> Iter([10, 20]).agg.at_index(1)
             20

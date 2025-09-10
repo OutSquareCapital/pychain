@@ -31,7 +31,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def into_keys(self) -> "Iter[KT]":
         """Return a Iter of the dict's keys.
 
-        Example:
+        **Example:**
             >>> Dict({1: 2}).into_keys().into_list()
             [1]
         """
@@ -41,7 +41,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def into_values(self) -> "Iter[VT]":
         """Return a Iter of the dict's values.
 
-        Example:
+        **Example:**
             >>> Dict({1: 2}).into_values().into_list()
             [2]
         """
@@ -50,7 +50,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def into_items(self) -> "Iter[tuple[KT, VT]]":
         """Return a Iter of the dict's items.
 
-        Example:
+        **Example:**
             >>> Dict({1: 2}).into_items().into_list()
             [(1, 2)]
         """
@@ -74,7 +74,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def select(self, predicate: Check[KT]) -> Self:
         """Return a new Dict containing keys that satisfy predicate.
 
-        Example:
+        **Example:**
             >>> Dict({1: 2, 3: 4}).select(lambda k: k % 2 == 0)
             {}
         """
@@ -83,7 +83,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def filter(self, predicate: Check[VT]) -> Self:
         """Return a new Dict containing items whose values satisfy predicate.
 
-        Example:
+        **Example:**
             >>> Dict({1: 2, 3: 4}).filter(lambda v: v > 2)
             {3: 4}
         """
@@ -95,7 +95,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     ) -> Self:
         """Filter items by predicate applied to (key, value) tuples.
 
-        Example:
+        **Example:**
             >>> Dict({1: 2, 3: 4}).filter_items(lambda kv: kv[1] > 2)
             {3: 4}
         """
@@ -104,7 +104,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def with_key(self, key: KT, value: VT) -> Self:
         """Return a new Dict with key set to value.
 
-        Example:
+        **Example:**
             >>> Dict({}).with_key("x", 1)
             {'x': 1}
         """
@@ -113,7 +113,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def with_nested_key(self, keys: Iterable[KT] | KT, value: VT) -> Self:
         """Set a nested key path and return a new Dict.
 
-        Example:
+        **Example:**
             >>> Dict({}).with_nested_key(["a", "b"], 1)
             {'a': {'b': 1}}
         """
@@ -122,7 +122,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def update_in(self, *keys: KT, f: Process[VT]) -> Self:
         """Update a nested value via function f and return a new Dict.
 
-        Example:
+        **Example:**
             >>> Dict({"a": {"b": 1}}).update_in("a", "b", f=lambda x: x + 1)
             {'a': {'b': 2}}
         """
@@ -131,7 +131,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def merge(self, *others: dict[KT, VT]) -> Self:
         """Merge other dicts into this one and return a new Dict.
 
-        Example:
+        **Example:**
             >>> Dict({1: 2}).merge({3: 4})
             {1: 2, 3: 4}
         """
@@ -142,7 +142,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     ) -> Self:
         """Merge dicts using f to combine values for duplicate keys.
 
-        Example:
+        **Example:**
             >>> Dict({1: 1}).merge_with(sum, {1: 2})
             {1: 3}
         """
@@ -151,7 +151,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def drop(self, *keys: KT) -> Self:
         """Return a new Dict with given keys removed.
 
-        Example:
+        **Example:**
             >>> Dict({1: 2, 3: 4}).drop(1)
             {3: 4}
         """
@@ -160,7 +160,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def map_keys[T](self, f: Transform[KT, T]) -> "Dict[T, VT]":
         """Return a Dict with keys transformed by f.
 
-        Example:
+        **Example:**
             >>> Dict({1: "a"}).map_keys(str)
             {'1': 'a'}
         """
@@ -169,7 +169,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     def map_values[T](self, f: Transform[VT, T]) -> "Dict[KT, T]":
         """Return a Dict with values transformed by f.
 
-        Example:
+        **Example:**
             >>> Dict({1: 1}).map_values(lambda v: v + 1)
             {1: 2}
         """
@@ -181,7 +181,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     ) -> "Dict[KR, VR]":
         """Transform (key, value) pairs using f and return a Dict.
 
-        Example:
+        **Example:**
             >>> Dict({1: 2}).map_items(lambda kv: (kv[0] + 1, kv[1] * 10))
             {2: 20}
         """

@@ -30,7 +30,7 @@ class List[T](CommonBase[list[T]]):
 
         **Warning**: Mutates the original list.
 
-        Example:
+        **Example:**
             >>> List([1, 2]).clear()
             []
         """
@@ -43,7 +43,7 @@ class List[T](CommonBase[list[T]]):
 
         **Warning**: Mutates the original list.
 
-        Example:
+        **Example:**
             >>> List([1, 2]).insert(1, 3)
             [1, 3, 2]
         """
@@ -54,7 +54,7 @@ class List[T](CommonBase[list[T]]):
         """
         Return a shallow copy of the list.
 
-        Example:
+        **Example:**
             >>> List([1, 2]).copy()
             [1, 2]
         """
@@ -66,7 +66,7 @@ class List[T](CommonBase[list[T]]):
 
         **Warning**: Mutates the original list.
 
-        Example:
+        **Example:**
             >>> List([1, 2]).append(3)
             [1, 2, 3]
         """
@@ -79,7 +79,7 @@ class List[T](CommonBase[list[T]]):
 
         **Warning**: Mutates the original list.
 
-        Example:
+        **Example:**
             >>> List([1, 2]).extend([3, 4])
             [1, 2, 3, 4]
         """
@@ -92,7 +92,7 @@ class List[T](CommonBase[list[T]]):
 
         **Warning**: Mutates the original list.
 
-        Example:
+        **Example:**
             >>> List([1, 2]).remove(2)
             [1]
         """
@@ -105,7 +105,7 @@ class List[T](CommonBase[list[T]]):
 
         **Warning**: Mutates the original list.
 
-        Example:
+        **Example:**
             >>> List([1, 2]).reverse()
             [2, 1]
         """
