@@ -71,20 +71,20 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
 
     # CYTOOLZ------------------------------------------------------------------
 
-    def select(self, predicate: Check[KT]) -> Self:
+    def filter_keys(self, predicate: Check[KT]) -> Self:
         """Return a new Dict containing keys that satisfy predicate.
 
         **Example:**
-            >>> Dict({1: 2, 3: 4}).select(lambda k: k % 2 == 0)
+            >>> Dict({1: 2, 3: 4}).filter_keys(lambda k: k % 2 == 0)
             {}
         """
         return self._new(cz.dicttoolz.keyfilter(predicate, self._data))
 
-    def filter(self, predicate: Check[VT]) -> Self:
+    def filter_values(self, predicate: Check[VT]) -> Self:
         """Return a new Dict containing items whose values satisfy predicate.
 
         **Example:**
-            >>> Dict({1: 2, 3: 4}).filter(lambda v: v > 2)
+            >>> Dict({1: 2, 3: 4}).filter_values(lambda v: v > 2)
             {3: 4}
         """
         return self._new(cz.dicttoolz.valfilter(predicate, self._data))
