@@ -111,7 +111,7 @@ wheels = [
 
 [[package]]
 name = "pychain"
-version = "0.3.95"
+version = "0.3.96"
 source = { editable = "." }
 dependencies = [
     { name = "cytoolz" },
@@ -137,7 +137,7 @@ dev = [{ name = "cytoolz-stubs", git = "https://github.com/py-stubs/cytoolz-stub
 [[package]]
 name = "rustats"
 version = "0.1.326"
-source = { git = "https://github.com/OutSquareCapital/rustats.git#f8837cf6a971fecc4a758341f2e6d855ff6c93e0" }
+source = { git = "https://github.com/OutSquareCapital/rustats.git#41cfc7426e572c430a45189a3fde2607da325942" }
 dependencies = [
     { name = "numpy" },
 ]
