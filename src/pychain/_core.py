@@ -34,6 +34,10 @@ class CommonBase[T](ABC):
     def __repr__(self) -> str:
         return f"{self._data.__repr__()}"
 
+    def println(self) -> Self:
+        print(self)
+        return self
+
     def _new(self, data: T) -> Self:
         return self.__class__(data)
 
