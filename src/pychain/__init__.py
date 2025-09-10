@@ -1,3 +1,5 @@
+"""Pychain"""
+
 from ._array import Array
 from ._dict import Dict
 from ._iter import Iter

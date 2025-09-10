@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self, overload
 
 import cytoolz as cz
 
+from . import _core as core
 from ._agg import Aggregator
-from ._core import Check, CommonBase, Peeked, Process, Transform, dict_on, list_on
 
 if TYPE_CHECKING:
     from ._dict import Dict
     from ._list import List
 
 
-class Iter[T](CommonBase[Iterable[T]]):
+class Iter[T](core.CommonBase[Iterable[T]]):
     _data: Iterable[T]
     __slots__ = ("_data",)
 
@@ -32,12 +32,36 @@ class Iter[T](CommonBase[Iterable[T]]):
             >>> Iter([1, 2, 3]).into_list()
             [1, 2, 3]
         """
-        return list_on(list(self._data))
+        return core.list_on(list(self._data))
 
     @property
     def agg(self) -> Aggregator[T]:
         """Return an aggregator namespace for the current sequence."""
         return Aggregator(self._data)
+
+    @classmethod
+    def from_count(cls, start: int = 0, step: int = 1) -> "Iter[int]":
+        """Create an infinite iterator of evenly spaced values.
+
+        This is a class method that acts as a constructor.
+
+        Warning: This creates an infinite iterator. Be sure to use .head() or
+        .slice() to limit the number of items taken.
+
+        **Example:**
+            >>> Iter.from_count(10, 2).head(3).into_list()
+            [10, 12, 14]
+        """
+        return Iter(itertools.count(start, step))
+
+    @classmethod
+    def from_range(cls, start: int, stop: int, step: int = 1) -> "Iter[int]":
+        """Create an iterator from a range.
+        **Example:**
+            >>> Iter.from_range(1, 5).into_list()
+            [1, 2, 3, 4]
+        """
+        return Iter(range(start, stop, step))
 
     # BUILTINS------------------------------------------------------------------
 
@@ -149,7 +173,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
         return self._new(itertools.compress(self._data, selectors))
 
-    def take_while(self, predicate: Check[T]) -> Self:
+    def take_while(self, predicate: core.Check[T]) -> Self:
         """Take items while predicate holds and return a new Iterable wrapper.
 
         **Example:**
@@ -158,7 +182,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
         return self._new(itertools.takewhile(predicate, self._data))
 
-    def drop_while(self, predicate: Check[T]) -> Self:
+    def drop_while(self, predicate: core.Check[T]) -> Self:
         """Drop items while predicate holds and return the remainder.
 
         **Example:**
@@ -263,6 +287,22 @@ class Iter[T](CommonBase[Iterable[T]]):
 
     # CYTOOLZ------------------------------------------------------------------
 
+    def juxt[R](self, *funcs: core.Transform[T, R]) -> "Iter[tuple[R, ...]]":
+        """Apply several functions to each item.
+
+        Returns a new Iter where each item is a tuple of the results of
+        applying each function to the original item.
+
+        **Example:**
+            >>> def is_even(n):
+            ...     return n % 2 == 0
+            >>> def is_positive(n):
+            ...     return n > 0
+            >>> Iter([1, -2, 3]).juxt(is_even, is_positive).into_list()
+            [(False, True), (True, False), (False, True)]
+        """
+        return self.map(cz.functoolz.juxt(*funcs))
+
     def interpose(self, element: T) -> Self:
         """Interpose element between items and return a new Iterable wrapper.
 
@@ -272,7 +312,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
         return self._new(cz.itertoolz.interpose(element, self._data))
 
-    def top_n(self, n: int, key: Callable[[T], Any] | None = None) -> Self:
+    def top_n(self, n: int, key: core.Transform[T, Any] | None = None) -> Self:
         """Return the top-n items according to key.
 
         **Example:**
@@ -320,7 +360,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
 
         def _():
-            peeked = Peeked(*cz.itertoolz.peekn(n, self._data))
+            peeked = core.Peeked(*cz.itertoolz.peekn(n, self._data))
             print(f"Peeked {n} values: {peeked.value}")
             return peeked.sequence
 
@@ -336,7 +376,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
 
         def _():
-            peeked = Peeked(*cz.itertoolz.peek(self._data))
+            peeked = core.Peeked(*cz.itertoolz.peek(self._data))
             print(f"Peeked value: {peeked.value}")
             return peeked.sequence
 
@@ -388,7 +428,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         return self._new(cz.itertoolz.unique(self._data))
 
     def merge_sorted(
-        self, *others: Iterable[T], sort_on: Callable[[T], Any] | None = None
+        self, *others: Iterable[T], sort_on: core.Transform[T, Any] | None = None
     ) -> Self:
         """Merge already-sorted sequences.
 
@@ -425,7 +465,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         """
         return Iter(cz.itertoolz.concat(self._data))
 
-    def flat_map[R, **P](
+    def map_flat[R, **P](
         self,
         func: Callable[Concatenate[T, P], Iterable[R]],
         *args: P.args,
@@ -446,10 +486,41 @@ class Iter[T](CommonBase[Iterable[T]]):
             ...     # This could be an API call that returns a list of books
             ...     return [f"{author_id}_book1", f"{author_id}_book2"]
             >>>
-            >>> authors.flat_map(get_books).into_list()
+            >>> authors.map_flat(get_books).into_list()
             ['author_A_book1', 'author_A_book2', 'author_B_book1', 'author_B_book2']
         """
         return Iter(cz.itertoolz.concat(map(func, self._data, *args, **kwargs)))
+
+    def map_concat[R](
+        self,
+        func: core.Transform[Iterable[T], Iterable[R]],
+        *others: Iterable[T],
+    ) -> "Iter[R]":
+        """Map and concatenate the results of applying a function to each
+        element of the input iterables.
+
+        **Example**:
+            >>> Iter(["a", "b"]).map_concat(
+            ...     lambda s: [c.upper() for c in s], ["c", "d", "e"]
+            ... ).into_list()
+            ['A', 'B', 'C', 'D', 'E']
+        """
+        return Iter(cz.itertoolz.mapcat(func, (self._data, *others)))
+
+    def pluck[K, V](self: "Iter[core.Pluckable[K, V]]", key: K) -> "Iter[V]":
+        """Extract a value from each element in the sequence using a key or index.
+
+        This is a shortcut for `.map(lambda x: x[key])`.
+
+        **Example:**
+            >>> data = Iter([{"id": 1, "val": "a"}, {"id": 2, "val": "b"}])
+            >>> data.pluck("val").into_list()
+            ['a', 'b']
+
+            >>> Iter([[10, 20], [30, 40]]).pluck(0).into_list()
+            [10, 30]
+        """
+        return Iter(cz.itertoolz.pluck(key, self._data))
 
     def partition(self, n: int, pad: T | None = None) -> "Iter[tuple[T, ...]]":
         """Partition into tuples of length n, optionally padded.
@@ -481,7 +552,7 @@ class Iter[T](CommonBase[Iterable[T]]):
     def diff(
         self,
         *others: Iterable[T],
-        key: Process[T] | None = None,
+        key: core.Process[T] | None = None,
     ) -> "Iter[tuple[T, ...]]":
         """Yield differences between sequences.
 
@@ -492,7 +563,7 @@ class Iter[T](CommonBase[Iterable[T]]):
         return Iter(cz.itertoolz.diff(self._data, *others, ccpdefault=None, key=key))
 
     def reduce_by[K](
-        self, key: Transform[T, K], binop: Callable[[T, T], T]
+        self, key: core.Transform[T, K], binop: Callable[[T, T], T]
     ) -> "Iter[K]":
         """Perform a simultaneous groupby and reduction
         on the elements of the sequence.
@@ -506,14 +577,14 @@ class Iter[T](CommonBase[Iterable[T]]):
 
         return Iter(cz.itertoolz.reduceby(key, binop, self._data))
 
-    def group_by[K](self, on: Transform[T, K]) -> "Dict[K, list[T]]":
+    def group_by[K](self, on: core.Transform[T, K]) -> "Dict[K, list[T]]":
         """Group elements by key function and return a Dict result.
 
         **Example:**
             >>> Iter(["a", "bb"]).group_by(len)
             {1: ['a'], 2: ['bb']}
         """
-        return dict_on(cz.itertoolz.groupby(on, self._data))
+        return core.dict_on(cz.itertoolz.groupby(on, self._data))
 
     def frequencies(self) -> "Dict[T, int]":
         """Return a Dict of value frequencies.
@@ -522,4 +593,4 @@ class Iter[T](CommonBase[Iterable[T]]):
             >>> Iter([1, 1, 2]).frequencies()
             {1: 2, 2: 1}
         """
-        return dict_on(cz.itertoolz.frequencies(self._data))
+        return core.dict_on(cz.itertoolz.frequencies(self._data))

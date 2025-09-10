@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, Concatenate, NamedTuple, Self
+from typing import TYPE_CHECKING, Any, Concatenate, NamedTuple, Protocol, Self
 
 import cytoolz as cz
 
@@ -19,6 +19,10 @@ type Agg[V, V1] = Callable[[Iterable[V]], V1]
 class Peeked[T](NamedTuple):
     value: T | tuple[T, ...]
     sequence: Iterable[T]
+
+
+class Pluckable[KT, VT](Protocol):
+    def __getitem__(self, key: KT) -> VT: ...
 
 
 class CommonBase[T](ABC):
