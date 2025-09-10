@@ -28,25 +28,23 @@ def _test_modules(modules: list[ModuleType], verbose: bool) -> None:
             sys.exit(1)
 
 
-def run_all_doctests(package: str, verbose: bool = False) -> None:
-    modules: list[ModuleType] = _get_modules(package)
-    _test_modules(modules, verbose)
-    print("\nAll doctests passed! ✅")
-
-
-def find_package_name(src_path: str) -> str:
-    src = Path(src_path)
-    for child in src.iterdir():
+def _find_package_name(src_path: str) -> str:
+    for child in Path(src_path).iterdir():
         if (
             child.is_dir()
-            and (child / "__init__.py").exists()
-            or (child / "__init__.pyi").exists()
+            and child.joinpath("__init__.py").exists()
+            or child.joinpath("__init__.pyi").exists()
         ):
             return child.name
     raise RuntimeError("No package found in src")
 
 
-if __name__ == "__main__":
-    package_name = find_package_name("src")
+def main(verbose: bool = False) -> None:
+    package_name = _find_package_name("src")
     print(f"Running doctests for package: {package_name}")
-    run_all_doctests(package=package_name)
+    _test_modules(_get_modules(package_name), verbose)
+    print("\nAll doctests passed! ✅")
+
+
+if __name__ == "__main__":
+    main()
