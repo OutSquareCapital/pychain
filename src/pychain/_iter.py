@@ -213,6 +213,33 @@ class Iter[T](CommonBase[Iterable[T]]):
 
         return Iter(itertools.product(self._data, other))
 
+    def combinations_with_replacement(self, r: int) -> "Iter[tuple[T, ...]]":
+        """Return all combinations with replacement of length r.
+
+        Example:
+            >>> Iter([1, 2, 3]).combinations_with_replacement(2).into_list()
+            [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
+        """
+        return Iter(itertools.combinations_with_replacement(self._data, r))
+
+    def pairwise(self) -> "Iter[tuple[T, T]]":
+        """Return an iterator over pairs of consecutive elements.
+
+        Example:
+            >>> Iter([1, 2, 3]).pairwise().into_list()
+            [(1, 2), (2, 3)]
+        """
+        return Iter(itertools.pairwise(self._data))
+
+    def slice(self, start: int, stop: int) -> "Iter[T]":
+        """Return a slice of the iterable.
+
+        Example:
+            >>> Iter([1, 2, 3, 4, 5]).slice(1, 4).into_list()
+            [2, 3, 4]
+        """
+        return Iter(itertools.islice(self._data, start, stop))
+
     def repeat(self, n: int) -> "Iter[Iterable[T]]":
         """Repeat the entire iterable n times (as elements) and return Iter.
 
@@ -221,6 +248,18 @@ class Iter[T](CommonBase[Iterable[T]]):
             [[1, 2], [1, 2]]
         """
         return Iter(itertools.repeat(self._data, n))
+
+    def cycle(self) -> Self:
+        """Repeat the sequence indefinitely.
+
+        Warning: This creates an infinite iterator. Be sure to use .head() or
+        .slice() to limit the number of items taken.
+
+        Example:
+            >>> Iter([1, 2]).cycle().head(5).into_list()
+            [1, 2, 1, 2, 1]
+        """
+        return self._new(itertools.cycle(self._data))
 
     # CYTOOLZ------------------------------------------------------------------
 
