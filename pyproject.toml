@@ -15,7 +15,7 @@ docstring-code-format = true
 
 
 [tool.uv.sources]
-cytoolz-stubs = { git = "https://github.com/OutSquareCapital/cytoolz-stubs.git" }
+cytoolz-stubs = { git = "https://github.com/py-stubs/cytoolz-stubs.git" }
 rustats = { git = "https://github.com/OutSquareCapital/rustats.git" }
 
 [dependency-groups]
