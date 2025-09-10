@@ -122,7 +122,50 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """
         return self._new(itertools.filterfalse(func, self._data, *args, **kwargs))
 
-    def zip(self, *others: Iterable[T], strict: bool = False) -> "Iter[tuple[T, ...]]":
+    @overload
+    def zip[T1](
+        self, iter1: Iterable[T1], /, *, strict: bool = ...
+    ) -> "Iter[tuple[T, T1]]": ...
+    @overload
+    def zip[T1, T2](
+        self, iter1: Iterable[T1], iter2: Iterable[T2], /, *, strict: bool = ...
+    ) -> "Iter[tuple[T, T1, T2]]": ...
+    @overload
+    def zip[T1, T2, T3](
+        self,
+        iter1: Iterable[T1],
+        iter2: Iterable[T2],
+        iter3: Iterable[T3],
+        /,
+        *,
+        strict: bool = ...,
+    ) -> "Iter[tuple[T, T1, T2, T3]]": ...
+    @overload
+    def zip[T1, T2, T3, T4](
+        self,
+        iter1: Iterable[T1],
+        iter2: Iterable[T2],
+        iter3: Iterable[T3],
+        iter4: Iterable[T4],
+        /,
+        *,
+        strict: bool = ...,
+    ) -> "Iter[tuple[T, T1, T2, T3, T4]]": ...
+    @overload
+    def zip[T1, T2, T3, T4, T5](
+        self,
+        iter1: Iterable[T1],
+        iter2: Iterable[T2],
+        iter3: Iterable[T3],
+        iter4: Iterable[T4],
+        iter5: Iterable[T5],
+        /,
+        *,
+        strict: bool = ...,
+    ) -> "Iter[tuple[T, T1, T2, T3, T4, T5]]": ...
+    def zip(
+        self, *others: Iterable[Any], strict: bool = False
+    ) -> "Iter[tuple[Any, ...]]":
         """Zip with other iterables, optionally strict, wrapped in Iter.
 
         **Example:**
@@ -504,7 +547,7 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """
         return self._new(cz.itertoolz.concat((self._data, *others)))
 
-    def flatten(self: "Iter[Iterable[Any]]") -> "Iter[T]":
+    def flatten[U](self: "Iter[Iterable[U]]") -> "Iter[U]":
         """Flatten one level of nesting and return a new Iterable wrapper.
 
         **Example:**
