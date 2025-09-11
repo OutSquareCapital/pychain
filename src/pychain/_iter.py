@@ -1,4 +1,6 @@
+import functools
 import itertools
+import statistics
 from collections.abc import Callable, Iterable
 from random import Random
 from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self, overload
@@ -6,7 +8,6 @@ from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self, overload
 import cytoolz as cz
 
 from . import _core as core
-from ._agg import Aggregator
 
 if TYPE_CHECKING:
     from ._dict import Dict
@@ -33,11 +34,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
             [1, 2, 3]
         """
         return core.list_on(list(self._data))
-
-    @property
-    def agg(self) -> Aggregator[T]:
-        """Return an aggregator namespace for the current sequence."""
-        return Aggregator(self._data)
 
     # CONSTRUCTORS------------------------------------------------------------------
 
@@ -704,3 +700,175 @@ class Iter[T](core.CommonBase[Iterable[T]]):
             {1: 2, 2: 1}
         """
         return core.dict_on(cz.itertoolz.frequencies(self._data))
+
+    # AGGREGATIONS------------------------------------------------------------------
+
+    def sum[U: int | float](self: "Iter[U]") -> U | Literal[0]:
+        """Return the sum of the sequence.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 3]).sum()
+            6
+        """
+        return sum(self._data)
+
+    def min[U: int | float](self: "Iter[U]") -> U:
+        """Return the minimum value of the sequence.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([3, 1, 2]).min()
+            1
+        """
+        return min(self._data)
+
+    def max[U: int | float](self: "Iter[U]") -> U:
+        """Return the maximum value of the sequence.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([3, 1, 2]).max()
+            3
+        """
+        return max(self._data)
+
+    def mean[U: int | float](self: "Iter[U]") -> float:
+        """Return the mean of the sequence.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 3]).mean()
+            2
+        """
+        return statistics.mean(self._data)
+
+    def median[U: int | float](self: "Iter[U]") -> float:
+        """Return the median of the sequence.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, 3, 2]).median()
+            2
+        """
+        return statistics.median(self._data)
+
+    def mode[U: int | float](self: "Iter[U]") -> U | Literal[0]:
+        """Return the mode of the sequence.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 2, 3]).mode()
+            2
+        """
+        return statistics.mode(self._data)
+
+    def stdev[U: int | float](self: "Iter[U]") -> float | Literal[0]:
+        """Return the standard deviation of the sequence.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 3]).stdev()
+            1.0
+        """
+        return statistics.stdev(self._data)
+
+    def variance[U: int | float](self: "Iter[U]") -> float | Literal[0]:
+        """Return the variance of the sequence.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 3, 7, 8]).variance()
+            9.7
+        """
+        return statistics.variance(self._data)
+
+    def reduce(self, func: Callable[[T, T], T]) -> T:
+        """Reduce the sequence using func.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 3]).reduce(lambda a, b: a + b)
+            6
+        """
+        return functools.reduce(func, self._data)
+
+    def is_distinct(self) -> bool:
+        """Return True if all items are distinct.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, 2]).is_distinct()
+            True
+        """
+        return cz.itertoolz.isdistinct(self._data)
+
+    def all(self) -> bool:
+        """Return True if all items are truthy.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, True]).all()
+            True
+        """
+        return all(self._data)
+
+    def any(self) -> bool:
+        """Return True if any item is truthy.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([0, 1]).any()
+            True
+        """
+        return any(self._data)
+
+    def first(self) -> T:
+        """Return the first element.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([9]).first()
+            9
+        """
+        return cz.itertoolz.first(self._data)
+
+    def second(self) -> T:
+        """Return the second element.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([9, 8]).second()
+            8
+        """
+        return cz.itertoolz.second(self._data)
+
+    def last(self) -> T:
+        """Return the last element.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([7, 8, 9]).last()
+            9
+        """
+        return cz.itertoolz.last(self._data)
+
+    def length(self) -> int:
+        """Return the length of the sequence.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, 2]).length()
+            2
+        """
+        return cz.itertoolz.count(self._data)
+
+    def at_index(self, index: int) -> T:
+        """Return item at index.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([10, 20]).at_index(1)
+            20
+        """
+        return cz.itertoolz.nth(index, self._data)
