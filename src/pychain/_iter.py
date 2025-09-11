@@ -570,6 +570,8 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """
         return self._new(cz.itertoolz.concat((self._data, *others)))
 
+    @overload
+    def flatten[U](self: "Iter[tuple[U, ...]]") -> "Iter[U]": ...
     def flatten[U](self: "Iter[Iterable[U]]") -> "Iter[U]":
         """Flatten one level of nesting and return a new Iterable wrapper.
 
