@@ -25,6 +25,34 @@ class Pluckable[KT, VT](Protocol):
     def __getitem__(self, key: KT) -> VT: ...
 
 
+class SupportsDunderLT[T](Protocol):
+    def __lt__(self, other: T, /) -> bool: ...
+
+
+class SupportsDunderGT[T](Protocol):
+    def __gt__(self, other: T, /) -> bool: ...
+
+
+class SupportsDunderLE[T](Protocol):
+    def __le__(self, other: T, /) -> bool: ...
+
+
+class SupportsDunderGE[T](Protocol):
+    def __ge__(self, other: T, /) -> bool: ...
+
+
+class SupportsAllComparisons(
+    SupportsDunderLT[Any],
+    SupportsDunderGT[Any],
+    SupportsDunderLE[Any],
+    SupportsDunderGE[Any],
+    Protocol,
+): ...
+
+
+type SupportsRichComparison[T] = SupportsDunderLT[T] | SupportsDunderGT[T]
+
+
 class CommonBase[T](ABC):
     __slots__ = ("_data",)
 
@@ -45,8 +73,16 @@ class CommonBase[T](ABC):
         """Return the underlying data."""
         return self._data
 
+    def into[**P, R](
+        self,
+        func: Callable[Concatenate[T, P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> R:
+        return func(self._data, *args, **kwargs)
+
     @abstractmethod
-    def into[**P](
+    def pipe[**P](
         self,
         func: Callable[Concatenate[T, P], Any],
         *args: P.args,
@@ -54,25 +90,7 @@ class CommonBase[T](ABC):
     ) -> Any:
         raise NotImplementedError
 
-    def pipe(self, *funcs: Process[T]) -> Self:
-        """Passes the underlying data through one or more functions in a sequence.
-
-        This allows you to insert a regular function that is not a method of
-        the class into a call chain. The underlying data is passed as the
-        first argument to the first function.
-
-        It is equivalent to the `pipe operator` (`|>`) found in other languages.
-
-        **Example:**
-            >>>
-            >>> from ._array import Array
-            >>> import numpy as np
-            >>> Array(np.array([1, 2, 3])).pipe(
-            ...     lambda x: x.clip(0, 2), lambda x: x * 2
-            ... ).unwrap()
-            array([2, 4, 4])
-        """
-
+    def pipe_chain(self, *funcs: Process[T]) -> Self:
         return self._new(cz.functoolz.pipe(self._data, *funcs))
 
 

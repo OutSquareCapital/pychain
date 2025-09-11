@@ -17,7 +17,7 @@ class Iter[T](core.CommonBase[Iterable[T]]):
     _data: Iterable[T]
     __slots__ = ("_data",)
 
-    def into[**P, U](
+    def pipe[**P, U](
         self,
         func: Callable[Concatenate[Iterable[T], P], Iterable[U]],
         *args: P.args,

@@ -22,7 +22,7 @@ class Array[T: NumpyType](CommonBase[NDArray[T]]):
     __slots__ = "_data"
     _data: NDArray[T]
 
-    def into[**P, U: NumpyType](
+    def pipe[**P, U: NumpyType](
         self,
         func: Callable[Concatenate[NDArray[T], P], NDArray[U]],
         *args: P.args,
