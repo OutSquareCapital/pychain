@@ -183,6 +183,25 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """
         return Iter(enumerate(self._data))
 
+    def sort[U: core.SupportsRichComparison[Any]](
+        self: "Iter[U]",
+        key: core.Transform[U, U] | None = None,
+        reverse: bool = False,
+    ) -> "Iter[U]":
+        """Sort the elements of the sequence.
+
+        Note: This method must consume the entire iterable to perform the sort.
+        The result is a new iterable over the sorted sequence.
+
+        Example:
+            >>> Iter([3, 1, 2]).sort().into_list()
+            [1, 2, 3]
+            >>> data = Iter([{"age": 30}, {"age": 20}])
+            >>> data.sort(key=lambda x: x["age"]).into_list()
+            [{'age': 20}, {'age': 30}]
+        """
+        return self._new(sorted(self._data, key=key, reverse=reverse))
+
     # ITERTOOLS------------------------------------------------------------------
 
     @overload
