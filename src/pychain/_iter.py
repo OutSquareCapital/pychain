@@ -191,7 +191,7 @@ class Iter[T](core.CommonBase[Iterable[T]]):
 
     def sort[U: core.SupportsRichComparison[Any]](
         self: "Iter[U]",
-        key: core.Transform[U, U] | None = None,
+        key: core.Transform[U, Any] | None = None,
         reverse: bool = False,
     ) -> "Iter[U]":
         """Sort the elements of the sequence.
