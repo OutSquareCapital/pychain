@@ -1,5 +1,5 @@
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Concatenate, Self
+from typing import TYPE_CHECKING, Concatenate, Self, overload
 
 import cytoolz as cz
 
@@ -12,11 +12,6 @@ if TYPE_CHECKING:
 class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     _data: dict[KT, VT]
     __slots__ = ("_data",)
-    """
-    Public eager Dict wrapper providing chainable dict operations.
-
-    Methods return Dict instances wrapping the underlying mapping.
-    """
 
     def pipe[**P, KU, VU](
         self,
@@ -67,6 +62,26 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
         **Warning**: This modifies the dict in place.
         """
         self._data.update(*others)
+        return self
+
+    @overload
+    def get_value(self, key: KT, default: None = None) -> VT | None: ...
+    @overload
+    def get_value(self, key: KT, default: VT = ...) -> VT: ...
+
+    def get_value(self, key: KT, default: VT | None = None) -> VT | None:
+        """Get the value for a key, returning default if not found."""
+        return self._data.get(key, default)
+
+    def set_value(self, key: KT, value: VT) -> Self:
+        """Set the value for a key and return self for convenience.
+        **Warning**: This modifies the dict in place.
+
+        **Example:**
+            >>> Dict({}).set_value("x", 1)
+            {'x': 1}
+        """
+        self._data[key] = value
         return self
 
     # CYTOOLZ------------------------------------------------------------------

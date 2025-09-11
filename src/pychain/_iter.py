@@ -705,7 +705,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the sum of the sequence.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([1, 2, 3]).sum()
             6
         """
@@ -715,7 +714,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the minimum value of the sequence.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([3, 1, 2]).min()
             1
         """
@@ -725,7 +723,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the maximum value of the sequence.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([3, 1, 2]).max()
             3
         """
@@ -735,7 +732,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the mean of the sequence.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([1, 2, 3]).mean()
             2
         """
@@ -745,7 +741,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the median of the sequence.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([1, 3, 2]).median()
             2
         """
@@ -755,7 +750,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the mode of the sequence.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([1, 2, 2, 3]).mode()
             2
         """
@@ -765,7 +759,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the standard deviation of the sequence.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([1, 2, 3]).stdev()
             1.0
         """
@@ -775,7 +768,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the variance of the sequence.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([1, 2, 3, 7, 8]).variance()
             9.7
         """
@@ -785,7 +777,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Reduce the sequence using func.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([1, 2, 3]).reduce(lambda a, b: a + b)
             6
         """
@@ -795,7 +786,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return True if all items are distinct.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([1, 2]).is_distinct()
             True
         """
@@ -805,7 +795,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return True if all items are truthy.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([1, True]).all()
             True
         """
@@ -815,7 +804,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return True if any item is truthy.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([0, 1]).any()
             True
         """
@@ -825,7 +813,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the first element.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([9]).first()
             9
         """
@@ -835,7 +822,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the second element.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([9, 8]).second()
             8
         """
@@ -845,7 +831,6 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the last element.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([7, 8, 9]).last()
             9
         """
@@ -855,18 +840,16 @@ class Iter[T](core.CommonBase[Iterable[T]]):
         """Return the length of the sequence.
 
         **Example:**
-            >>> from pychain import Iter
             >>> Iter([1, 2]).length()
             2
         """
         return cz.itertoolz.count(self._data)
 
-    def at_index(self, index: int) -> T:
+    def item(self, index: int) -> T:
         """Return item at index.
 
         **Example:**
-            >>> from pychain import Iter
-            >>> Iter([10, 20]).at_index(1)
+            >>> Iter([10, 20]).item(1)
             20
         """
         return cz.itertoolz.nth(index, self._data)
