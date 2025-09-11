@@ -6,7 +6,7 @@ import numpy as np
 import rustats as rs
 from numpy.typing import NDArray
 
-from ._core import CommonBase, iter_on
+from ._core import CommonBase, iter_factory
 
 if TYPE_CHECKING:
     from ._iter import Iter
@@ -149,5 +149,5 @@ class Array[T: NumpyType](CommonBase[NDArray[T]]):
     ) -> "Array[U]":
         return self._new(nbg.bfill(self._data, limit=limit, axis=axis))
 
-    def into_iter(self) -> "Iter[T]":
-        return iter_on(self._data)
+    def to_iter(self) -> "Iter[T]":
+        return iter_factory(self._data)

@@ -8,7 +8,7 @@ def check_iter():
         pc.Iter((1, 2, 3, 4))
         .filter(func=lambda x: x % 2 == 0)
         .map(func=lambda x: x * 10)
-        .into_list()
+        .to_list()
         .unwrap()
     ) == [20, 40]
 
@@ -27,12 +27,12 @@ def check_array():
     (
         pc.Array(np.array(data))
         .add(2)
-        .into_iter()
+        .to_iter()
         .map(lambda x: x + 2)
         .println()
         .peekn(2)
         .println()
-        .into_list()
+        .to_list()
         .println()
     )
 

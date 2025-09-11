@@ -1,7 +1,7 @@
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Concatenate, Self
 
-from ._core import CommonBase, iter_on
+from ._core import CommonBase, iter_factory
 
 if TYPE_CHECKING:
     from ._iter import Iter
@@ -19,10 +19,10 @@ class List[T](CommonBase[list[T]]):
     ) -> "List[U]":
         return List(func(self._data, *args, **kwargs))
 
-    def into_iter(self) -> "Iter[T]":
+    def to_iter(self) -> "Iter[T]":
         """Return an iterator over the list's elements."""
 
-        return iter_on(iter(self._data))
+        return iter_factory(iter(self._data))
 
     def clear(self) -> Self:
         """

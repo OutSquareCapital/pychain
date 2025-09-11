@@ -73,7 +73,7 @@ class CommonBase[T](ABC):
         """Return the underlying data."""
         return self._data
 
-    def into[**P, R](
+    def to_obj[**P, R: object](
         self,
         func: Callable[Concatenate[T, P], R],
         *args: P.args,
@@ -94,19 +94,19 @@ class CommonBase[T](ABC):
         return self._new(cz.functoolz.pipe(self._data, *funcs))
 
 
-def iter_on[T](data: Iterable[T]) -> "Iter[T]":
+def iter_factory[T](data: Iterable[T]) -> "Iter[T]":
     from ._iter import Iter
 
     return Iter(data)
 
 
-def dict_on[K, V](data: dict[K, V]) -> "Dict[K, V]":
+def dict_factory[K, V](data: dict[K, V]) -> "Dict[K, V]":
     from ._dict import Dict
 
     return Dict(data)
 
 
-def list_on[T](data: list[T]) -> "List[T]":
+def list_factory[T](data: list[T]) -> "List[T]":
     from ._list import List
 
     return List(data)

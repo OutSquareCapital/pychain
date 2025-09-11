@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Concatenate, Self
 
 import cytoolz as cz
 
-from ._core import Check, CommonBase, Process, Transform, iter_on
+from ._core import Check, CommonBase, Process, Transform, iter_factory
 
 if TYPE_CHECKING:
     from pychain import Iter
@@ -28,34 +28,34 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
 
     # BUILTINS------------------------------------------------------------------
 
-    def into_keys(self) -> "Iter[KT]":
+    def to_keys(self) -> "Iter[KT]":
         """Return a Iter of the dict's keys.
 
         **Example:**
-            >>> Dict({1: 2}).into_keys().into_list()
+            >>> Dict({1: 2}).to_keys().to_list()
             [1]
         """
 
-        return iter_on(self._data.keys())
+        return iter_factory(self._data.keys())
 
-    def into_values(self) -> "Iter[VT]":
+    def to_values(self) -> "Iter[VT]":
         """Return a Iter of the dict's values.
 
         **Example:**
-            >>> Dict({1: 2}).into_values().into_list()
+            >>> Dict({1: 2}).to_values().to_list()
             [2]
         """
-        return iter_on(self._data.values())
+        return iter_factory(self._data.values())
 
-    def into_items(self) -> "Iter[tuple[KT, VT]]":
+    def to_items(self) -> "Iter[tuple[KT, VT]]":
         """Return a Iter of the dict's items.
 
         **Example:**
-            >>> Dict({1: 2}).into_items().into_list()
+            >>> Dict({1: 2}).to_items().to_list()
             [(1, 2)]
         """
 
-        return iter_on(self._data.items())
+        return iter_factory(self._data.items())
 
     def copy(self) -> Self:
         """Return a shallow copy of the dict."""
