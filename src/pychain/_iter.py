@@ -1,6 +1,7 @@
 import functools
 import itertools
 import statistics
+from collections import deque
 from collections.abc import Callable, Iterable
 from random import Random
 from typing import TYPE_CHECKING, Any, Concatenate, Literal, Self, overload
@@ -11,7 +12,7 @@ from . import _core as core
 
 if TYPE_CHECKING:
     from ._dict import Dict
-    from ._list import List
+    from ._sequence import SeqMut
 
 
 class Iter[T](core.CommonBase[Iterable[T]]):
@@ -26,14 +27,23 @@ class Iter[T](core.CommonBase[Iterable[T]]):
     ) -> "Iter[U]":
         return Iter(func(self._data, *args, **kwargs))
 
-    def to_list(self) -> "List[T]":
-        """Return a List wrapping the elements of the iterable.
+    def to_list(self) -> "SeqMut[T]":
+        """Return a SeqMut wrapping the elements of the iterable.
 
         **Example:**
             >>> Iter([1, 2, 3]).to_list()
             [1, 2, 3]
         """
-        return core.list_factory(list(self._data))
+        return core.mut_seq_factory(list(self._data))
+
+    def to_deque(self, maxlen: int | None = None) -> "SeqMut[T]":
+        """Return a SeqMut wrapping the elements of the iterable.
+
+        **Example:**
+            >>> Iter([1, 2, 3]).to_deque()
+            deque([1, 2, 3])
+        """
+        return core.mut_seq_factory(deque(self._data, maxlen))
 
     # CONSTRUCTORS------------------------------------------------------------------
 

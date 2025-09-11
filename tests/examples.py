@@ -3,6 +3,18 @@ import numpy as np
 import pychain as pc
 
 
+def check_slots():
+    data = (1, 2, 3)
+    seq_cls = pc.Seq(data)
+    mut_seq_cls = pc.SeqMut(data)
+    iter_cls = pc.Iter(data)
+    dct_cls = pc.Dict({1: "a", 2: "b", 3: "c"})
+    assert not getattr(seq_cls, "__dict__", False)
+    assert not getattr(mut_seq_cls, "__dict__", False)
+    assert not getattr(iter_cls, "__dict__", False)
+    assert not getattr(dct_cls, "__dict__", False)
+
+
 def check_iter():
     assert (
         pc.Iter((1, 2, 3, 4))
@@ -38,6 +50,7 @@ def check_array():
 
 
 if __name__ == "__main__":
+    check_slots()
     check_iter()
     check_dict()
     check_array()

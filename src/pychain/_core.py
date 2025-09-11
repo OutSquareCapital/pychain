@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, MutableSequence, Sequence
 from typing import TYPE_CHECKING, Any, Concatenate, NamedTuple, Protocol, Self
 
 import cytoolz as cz
@@ -7,7 +7,7 @@ import cytoolz as cz
 if TYPE_CHECKING:
     from ._dict import Dict
     from ._iter import Iter
-    from ._list import List
+    from ._sequence import Seq, SeqMut
 
 
 type Check[T] = Callable[[T], bool]
@@ -106,7 +106,13 @@ def dict_factory[K, V](data: dict[K, V]) -> "Dict[K, V]":
     return Dict(data)
 
 
-def list_factory[T](data: list[T]) -> "List[T]":
-    from ._list import List
+def mut_seq_factory[T](data: MutableSequence[T]) -> "SeqMut[T]":
+    from ._sequence import SeqMut
 
-    return List(data)
+    return SeqMut(data)
+
+
+def seq_factory[T](data: Sequence[T]) -> "Seq[T]":
+    from ._sequence import Seq
+
+    return Seq(data)
