@@ -1,6 +1,6 @@
 import itertools
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, Concatenate, Literal, overload
+from typing import Any, Concatenate, Literal, overload
 
 import cytoolz as cz
 import more_itertools as mit
@@ -9,9 +9,6 @@ from .. import _core as core
 from ._aggregations import IterAgg
 from ._conversions import IterConvert
 from ._process import IterProcess
-
-if TYPE_CHECKING:
-    pass
 
 
 class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
