@@ -1,7 +1,6 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Concatenate, Self
 
-import numbagg as nbg
 import numpy as np
 import rustats as rs
 from numpy.typing import NDArray
@@ -138,16 +137,6 @@ class Array[T: NumpyType](CommonBase[NDArray[T]]):
         min_samples: int,
     ) -> "Array[U]":
         return self._new(rs.move_rank(self._data, window_size, min_samples))
-
-    def forward_fill[U: np.floating](
-        self: "Array[U]", limit: int, axis: int
-    ) -> "Array[U]":
-        return self._new(nbg.ffill(self._data, limit=limit, axis=axis))
-
-    def backward_fill[U: np.floating](
-        self: "Array[U]", limit: int, axis: int
-    ) -> "Array[U]":
-        return self._new(nbg.bfill(self._data, limit=limit, axis=axis))
 
     def to_iter(self) -> "Iter[T]":
         return iter_factory(self._data)
