@@ -126,7 +126,6 @@ dependencies = [
     { name = "cytoolz" },
     { name = "more-itertools" },
     { name = "numpy" },
-    { name = "rustats" },
 ]
 
 [package.dev-dependencies]
@@ -139,19 +138,10 @@ requires-dist = [
     { name = "cytoolz", specifier = ">=1.0.1" },
     { name = "more-itertools", specifier = ">=10.8.0" },
     { name = "numpy", specifier = ">=2.2.6" },
-    { name = "rustats", git = "https://github.com/OutSquareCapital/rustats.git" },
 ]
 
 [package.metadata.requires-dev]
 dev = [{ name = "cytoolz-stubs", git = "https://github.com/py-stubs/cytoolz-stubs.git" }]
-
-[[package]]
-name = "rustats"
-version = "0.1.326"
-source = { git = "https://github.com/OutSquareCapital/rustats.git#41cfc7426e572c430a45189a3fde2607da325942" }
-dependencies = [
-    { name = "numpy" },
-]
 
 [[package]]
 name = "toolz"
