@@ -73,24 +73,37 @@ class CommonBase[T](ABC):
         """Return the underlying data."""
         return self._data
 
-    def to_obj[**P, R: object](
+    @abstractmethod
+    def pipe[**P, R](
+        self,
+        func: Callable[Concatenate[T, P], "CommonBase[R]"],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> "CommonBase[R]":
+        """Pipe the underlying data through a function and return the result wrapped in the same class.
+
+        Use `pipe_into` to terminate the chain and return a non-wrapper type,
+
+        Use `pipe_chain` to pipe through multiple functions that return the same type.
+        """
+        raise NotImplementedError
+
+    def pipe_into[**P, R: object](
         self,
         func: Callable[Concatenate[T, P], R],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> R:
+        """Terminate the chain by piping into a function that returns a non-wrapper type."""
         return func(self._data, *args, **kwargs)
 
-    @abstractmethod
-    def pipe[**P](
-        self,
-        func: Callable[Concatenate[T, P], Any],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Any:
-        raise NotImplementedError
-
     def pipe_chain(self, *funcs: Process[T]) -> Self:
+        """Pipe a value through a sequence of functions.
+
+        Prefer this method over multiple pipe calls when the functions don't transform the type.
+
+        I.e. Iter(data).pipe_chain(f, g, h).unwrap() is equivalent to h(g(f(data)))
+        """
         return self._new(cz.functoolz.pipe(self._data, *funcs))
 
 
