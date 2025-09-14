@@ -12,6 +12,16 @@ from .. import _core as core
 class IterProcess[T](core.CommonBase[Iterable[T]]):
     _data: Iterable[T]
 
+    def slice(self, start: int | None = None, stop: int | None = None) -> Self:
+        """Return a slice of the iterable.
+
+        **Example:**
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 3, 4, 5]).slice(1, 4).to_list()
+            [2, 3, 4]
+        """
+        return self._new(itertools.islice(self._data, start, stop))
+
     def filter[**P](
         self, func: Callable[Concatenate[T, P], bool], *args: P.args, **kwargs: P.kwargs
     ) -> Self:
