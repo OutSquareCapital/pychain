@@ -82,6 +82,15 @@ class CommonBase[T](ABC):
         """Pipe the instance in the function and return the result."""
         return func(self, *args, **kwargs)
 
+    def pipe_into[**P, R](
+        self,
+        func: Callable[Concatenate[T, P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> R:
+        """Pipe the underlying data in the function and return the result."""
+        return func(self._data, *args, **kwargs)
+
     @abstractmethod
     def pipe_unwrap[**P](
         self,
