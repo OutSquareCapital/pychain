@@ -71,6 +71,18 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         """
         return Iter(cz.itertoolz.iterate(func, n))
 
+    @classmethod
+    def from_iterables(cls, *iterables: Iterable[T]) -> "Iter[T]":
+        """Create an Iter by chaining multiple iterables.
+
+        This is a class method that acts as a constructor from multiple iterables.
+
+        **Example:**
+            >>> Iter.from_iterables([1, 2], (3, 4)).to_list()
+            [1, 2, 3, 4]
+        """
+        return Iter(itertools.chain(*iterables))
+
     # MAPS------------------------------------------------------------------
 
     def map[**P, R](
@@ -134,23 +146,25 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
             >>> authors.map_flat(get_books).to_list()
             ['author_A_book1', 'author_A_book2', 'author_B_book1', 'author_B_book2']
         """
-        return Iter(cz.itertoolz.concat(map(func, self._data, *args, **kwargs)))
+        return Iter(
+            itertools.chain.from_iterable(map(func, self._data, *args, **kwargs))
+        )
 
-    def map_concat[R](
+    def map_join[R](
         self,
         func: core.Transform[Iterable[T], Iterable[R]],
         *others: Iterable[T],
     ) -> "Iter[R]":
-        """Map and concatenate the results of applying a function to each
-        element of the input iterables.
+        """Equivalent to flat_map, but allow to join other iterables. However, it don't take additional arguments for the function.
 
         **Example**:
-            >>> Iter(["a", "b"]).map_concat(
+            >>> Iter(["a", "b"]).map_join(
             ...     lambda s: [c.upper() for c in s], ["c", "d", "e"]
             ... ).to_list()
             ['A', 'B', 'C', 'D', 'E']
         """
-        return Iter(cz.itertoolz.mapcat(func, (self._data, *others)))
+
+        return Iter(itertools.chain.from_iterable(map(func, (self._data, *others))))
 
     def map_if[R](
         self,
@@ -269,6 +283,98 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         """
         return Iter(zip(self._data, *others, strict=strict))
 
+    def zip_offset[U](
+        self,
+        *others: Iterable[T],
+        offsets: list[int],
+        longest: bool = False,
+        fillvalue: U = None,
+    ) -> "Iter[tuple[T | U, ...]]":
+        """zip the input iterables together, but offset the i-th iterable by the i-th item in offsets.
+
+        >>> Iter("0123").zip_offset("abcdef", offsets=(0, 1)).to_list()
+        [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e')]
+
+        This can be used as a lightweight alternative to SciPy or pandas to analyze data sets in which some series have a lead or lag relationship.
+
+        By default, the sequence will end when the shortest iterable is exhausted. To continue until the longest iterable is exhausted, set longest to True.
+
+        >>> Iter("0123").zip_offset("abcdef", offsets=(0, 1), longest=True).to_list()
+        [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e'), (None, 'f')]"""
+        return Iter(
+            mit.zip_offset(
+                self._data,
+                *others,
+                offsets=offsets,
+                longest=longest,
+                fillvalue=fillvalue,
+            )
+        )
+
+    def zip_broadcast(
+        self,
+        *others: Iterable[T],
+        scalar_types: tuple[type, type] | None = (str, bytes),
+        strict: bool = False,
+    ) -> "Iter[tuple[T, ...]]":
+        """version of zip that "broadcasts" any scalar (i.e., non-iterable) items into output tuples.
+
+        >>> iterable_1 = [1, 2, 3]
+        >>> iterable_2 = ["a", "b", "c"]
+        >>> scalar = "_"
+        >>> Iter(iterable_1).zip_broadcast(iterable_2, scalar).to_list()
+        [(1, 'a', '_'), (2, 'b', '_'), (3, 'c', '_')]
+
+        The scalar_types keyword argument determines what types are considered scalar.
+
+        It is set to (str, bytes) by default. Set it to None to treat strings and byte strings as iterable:
+
+        >>> Iter("abc").zip_broadcast(0, "xyz", scalar_types=None).to_list()
+        [('a', 0, 'x'), ('b', 0, 'y'), ('c', 0, 'z')]
+
+        If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths."""
+        return Iter(
+            mit.zip_broadcast(
+                self._data, *others, scalar_types=scalar_types, strict=strict
+            )
+        )
+
+    @overload
+    def zip_equal(self) -> "Iter[tuple[T]]": ...
+    @overload
+    def zip_equal[T2](self, __iter2: Iterable[T2]) -> "Iter[tuple[T, T2]]": ...
+    @overload
+    def zip_equal[T2, T3](
+        self, __iter2: Iterable[T2], __iter3: Iterable[T3]
+    ) -> "Iter[tuple[T, T2, T3]]": ...
+    @overload
+    def zip_equal[T2, T3, T4](
+        self,
+        __iter2: Iterable[T2],
+        __iter3: Iterable[T3],
+        __iter4: Iterable[T4],
+    ) -> "Iter[tuple[T, T2, T3, T4]]": ...
+    @overload
+    def zip_equal[T2, T3, T4, T5](
+        self,
+        __iter2: Iterable[T2],
+        __iter3: Iterable[T3],
+        __iter4: Iterable[T4],
+        __iter5: Iterable[T5],
+    ) -> "Iter[tuple[T, T2, T3, T4, T5]]": ...
+    @overload
+    def zip_equal(
+        __iter1: Iterable[Any],
+        __iter2: Iterable[Any],
+        __iter3: Iterable[Any],
+        __iter4: Iterable[Any],
+        __iter5: Iterable[Any],
+        __iter6: Iterable[Any],
+        *iterables: Iterable[Any],
+    ) -> "Iter[tuple[Any, ...]]": ...
+    def zip_equal(self, *others: Iterable[Any]):
+        return Iter(mit.zip_equal(self._data, *others))
+
     def enumerate(self) -> "Iter[tuple[int, T]]":
         """Return a Iter of (index, value) pairs.
 
@@ -361,15 +467,6 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
             [(1, 2), (2, 3)]
         """
         return Iter(itertools.pairwise(self._data))
-
-    def slice(self, start: int, stop: int) -> "Iter[T]":
-        """Return a slice of the iterable.
-
-        **Example:**
-            >>> Iter([1, 2, 3, 4, 5]).slice(1, 4).to_list()
-            [2, 3, 4]
-        """
-        return Iter(itertools.islice(self._data, start, stop))
 
     def join[R, K](
         self,
@@ -472,6 +569,28 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
     def adjacent(
         self, predicate: core.Check[T], distance: int = 1
     ) -> "Iter[tuple[bool, T]]":
+        """Return an iterable over (bool, item) tuples.
+        The output is a sequence of tuples where the item is drawn from iterable.
+
+        The bool indicates whether that item satisfies the predicate or is adjacent to an item that does.
+
+        For example, to find whether items are adjacent to a 3:
+
+            >>> Iter(range(6)).adjacent(lambda x: x == 3).to_list()
+            [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
+
+        Set distance to change what counts as adjacent. For example, to find whether items are two places away from a 3:
+
+            >>> Iter(range(6)).adjacent(lambda x: x == 3, distance=2).to_list()
+            [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
+
+        This is useful for contextualizing the results of a search function.
+
+        For example, a code comparison tool might want to identify lines that have changed, but also surrounding lines to give the viewer of the diff context.
+
+        The predicate function will only be called once for each item in the iterable.
+
+        See also groupby_transform, which can be used with this function to group ranges of items with the same bool value."""
         return Iter(mit.adjacent(predicate, self._data, distance))
 
     def repeat(self, n: int) -> "Iter[Iterable[T]]":
@@ -483,6 +602,23 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         """
         return Iter(itertools.repeat(self._data, n))
 
+    @overload
+    def repeat_last(self, default: T) -> "Iter[T]": ...
+    @overload
+    def repeat_last[U](self, default: U) -> "Iter[T | U]": ...
+
+    def repeat_last[U](self, default: U = None) -> "Iter[T | U]":
+        """After the iterable is exhausted, keep yielding its last element.
+
+        >>> Iter(range(3)).repeat_last().head(5).to_list()
+        [0, 1, 2, 2, 2]
+
+        If the iterable is empty, yield default forever::
+
+        >>> Iter(range(0)).repeat_last(42).head(5).to_list()
+        [42, 42, 42, 42, 42]"""
+        return Iter(mit.repeat_last(self._data, default))
+
     def flatten[U](self: "Iter[Iterable[U]]") -> "Iter[U]":
         """Flatten one level of nesting and return a new Iterable wrapper.
 
@@ -490,11 +626,24 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
             >>> Iter([[1, 2], [3]]).flatten().to_list()
             [1, 2, 3]
         """
-        return Iter(cz.itertoolz.concat(self._data))
+        return Iter(itertools.chain.from_iterable(self._data))
 
     def split_after(
         self, predicate: core.Check[T], max_split: int = -1
     ) -> "Iter[list[T]]":
+        """Yield lists of items from iterable, where each list ends with an item where callable pred returns True:
+        At most maxsplit splits are done.
+        If maxsplit is not specified or -1, then there is no limit on the number of splits:
+
+        >>> Iter("one1two2").split_after(lambda s: s.isdigit()).to_list()
+        [['o', 'n', 'e', '1'], ['t', 'w', 'o', '2']]
+
+        >>> Iter(range(10)).split_after(lambda n: n % 3 == 0).to_list()
+        [[0], [1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+
+        >>> Iter(range(10)).split_after(lambda n: n % 3 == 0, max_split=2).to_list()
+        [[0], [1, 2, 3], [4, 5, 6, 7, 8, 9]]"""
         return Iter(mit.split_after(self._data, predicate, max_split))
 
     def chunked(self, n: int, strict: bool = False) -> "Iter[list[T]]":
@@ -518,7 +667,9 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         return Iter(mit.chunked(self._data, n, strict))
 
     def chunked_even(self, n: int) -> "Iter[list[T]]":
-        """Break iterable into lists of approximately length n. Items are distributed such the lengths of the lists differ by at most 1 item.
+        """Break iterable into lists of approximately length n.
+
+        Items are distributed such the lengths of the lists differ by at most 1 item.
         >>> iterable = [1, 2, 3, 4, 5, 6, 7]
         >>> Iter(iterable).chunked_even(3).to_list()  # List lengths: 3, 2, 2
         [[1, 2, 3], [4, 5], [6, 7]]
