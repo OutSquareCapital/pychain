@@ -11,6 +11,14 @@ class Seq[T](CommonBase[Sequence[T]]):
     _data: Sequence[T]
     __slots__ = ("_data",)
 
+    def pipe_unwrap[**P, U](
+        self,
+        func: Callable[Concatenate[Sequence[T], P], Sequence[U]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> "Seq[U]":
+        return Seq(func(self._data, *args, **kwargs))
+
     def to_iter(self) -> "Iter[T]":
         """Return an iterator over the sequence elements."""
 

@@ -15,6 +15,14 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
     _data: Iterable[T]
     __slots__ = ("_data",)
 
+    def pipe_unwrap[**P, U](
+        self,
+        func: Callable[Concatenate[Iterable[T], P], Iterable[U]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> "Iter[U]":
+        return Iter(func(self._data, *args, **kwargs))
+
     # CONSTRUCTORS------------------------------------------------------------------
 
     @classmethod

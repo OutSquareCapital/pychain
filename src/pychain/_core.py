@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable, MutableSequence, Sequence
 from typing import TYPE_CHECKING, Any, Concatenate, NamedTuple, Protocol, Self
 
@@ -79,12 +79,23 @@ class CommonBase[T](ABC):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> R:
+        """Pipe the instance in the function and return the result."""
         return func(self, *args, **kwargs)
+
+    @abstractmethod
+    def pipe_unwrap[**P](
+        self,
+        func: Callable[Concatenate[Self, P], Any],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Any:
+        """Pipe underlying data in the function and return a new wrapped instance."""
+        raise NotImplementedError
 
     def pipe_chain(self, *funcs: Process[T]) -> Self:
         """Pipe a value through a sequence of functions.
 
-        Prefer this method over multiple pipe calls when the functions don't transform the type.
+        Prefer this method over multiple pipe_unwrap calls when the functions don't transform the type.
 
         I.e. Iter(data).pipe_chain(f, g, h).unwrap() is equivalent to h(g(f(data)))
         """

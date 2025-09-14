@@ -1,5 +1,5 @@
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Self, overload
+from typing import TYPE_CHECKING, Concatenate, Self, overload
 
 import cytoolz as cz
 
@@ -12,6 +12,14 @@ if TYPE_CHECKING:
 class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
     _data: dict[KT, VT]
     __slots__ = ("_data",)
+
+    def pipe_unwrap[**P, KU, VU](
+        self,
+        func: Callable[Concatenate[dict[KT, VT], P], dict[KU, VU]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> "Dict[KU, VU]":
+        return Dict(func(self._data, *args, **kwargs))
 
     # BUILTINS------------------------------------------------------------------
 
