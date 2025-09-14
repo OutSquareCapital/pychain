@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from collections.abc import Callable, Iterable, MutableSequence, Sequence
 from typing import TYPE_CHECKING, Any, Concatenate, NamedTuple, Protocol, Self
 
@@ -73,29 +73,13 @@ class CommonBase[T](ABC):
         """Return the underlying data."""
         return self._data
 
-    @abstractmethod
     def pipe[**P, R](
         self,
-        func: Callable[Concatenate[T, P], "CommonBase[R]"],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> "CommonBase[R]":
-        """Pipe the underlying data through a function and return the result wrapped in the same class.
-
-        Use `pipe_into` to terminate the chain and return a non-wrapper type,
-
-        Use `pipe_chain` to pipe through multiple functions that return the same type.
-        """
-        raise NotImplementedError
-
-    def pipe_into[**P, R: object](
-        self,
-        func: Callable[Concatenate[T, P], R],
+        func: Callable[Concatenate[Self, P], R],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> R:
-        """Terminate the chain by piping into a function that returns a non-wrapper type."""
-        return func(self._data, *args, **kwargs)
+        return func(self, *args, **kwargs)
 
     def pipe_chain(self, *funcs: Process[T]) -> Self:
         """Pipe a value through a sequence of functions.

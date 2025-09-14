@@ -36,17 +36,7 @@ def check_dict():
 
 def check_array():
     data = pc.Iter.from_range(1, 10).unwrap()
-    (
-        pc.Array[np.int64](np.array(data))
-        .pipe(lambda x: x + 2)
-        .to_iter()
-        .map(lambda x: x + 2)
-        .println()
-        .peekn(2)
-        .println()
-        .to_list()
-        .println()
-    )
+    pc.Array(np.array(data)).pipe_chain(lambda x: x + 2, lambda x: x * 3).println()
 
 
 if __name__ == "__main__":
