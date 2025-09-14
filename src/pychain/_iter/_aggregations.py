@@ -13,12 +13,18 @@ class IterAgg[T](core.CommonBase[Iterable[T]]):
     _data: Iterable[T]
 
     def reduce(self, func: Callable[[T, T], T]) -> T:
-        """Reduce the sequence using func.
+        """Apply a function of two arguments cumulatively to the items of an iterable, from left to right.
 
-        **Example:**
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).reduce(lambda a, b: a + b)
-            6
+        This effectively reduces the iterable to a single value.
+
+        If initial is present, it is placed before the items of the iterable in the calculation.
+
+        It then serves as a default when the iterable is empty.
+
+                **Example:**
+                    >>> from pychain import Iter
+                    >>> Iter([1, 2, 3]).reduce(lambda a, b: a + b)
+                    6
         """
         return functools.reduce(func, self._data)
 

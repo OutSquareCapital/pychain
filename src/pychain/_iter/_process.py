@@ -36,6 +36,23 @@ class IterProcess[T](core.CommonBase[Iterable[T]]):
         """
         return self._new(itertools.filterfalse(func, self._data, *args, **kwargs))
 
+    def filter_except(
+        self, func: core.Transform[T, object], *exceptions: type[BaseException]
+    ) -> Self:
+        """Yield the items from iterable for which the validator function does not raise one of the specified exceptions.
+
+        validator is called for each item in iterable. It should be a function that accepts one argument and raises an exception if that item is not valid.
+
+        If an exception other than one given by exceptions is raised by validator, it is raised like normal.
+
+        **Example:**
+        >>> from pychain import Iter
+        >>> iterable = ["1", "2", "three", "4", None]
+        >>> Iter(iterable).filter_except(int, ValueError, TypeError).to_list()
+        ['1', '2', '4']
+        """
+        return self._new(mit.filter_except(func, self._data, *exceptions))
+
     def compress(self, *selectors: bool) -> Self:
         """Filter elements using a boolean selector iterable.
 
@@ -246,20 +263,3 @@ class IterProcess[T](core.CommonBase[Iterable[T]]):
             [1, 2, 3]
         """
         return self._new(cz.itertoolz.concat((self._data, *others)))
-
-    def filter_except(
-        self, func: core.Transform[T, object], *exceptions: type[BaseException]
-    ) -> Self:
-        """Yield the items from iterable for which the validator function does not raise one of the specified exceptions.
-
-        validator is called for each item in iterable. It should be a function that accepts one argument and raises an exception if that item is not valid.
-
-        If an exception other than one given by exceptions is raised by validator, it is raised like normal.
-
-        **Example:**
-        >>> from pychain import Iter
-        >>> iterable = ["1", "2", "three", "4", None]
-        >>> Iter(iterable).filter_except(int, ValueError, TypeError).to_list()
-        ['1', '2', '4']
-        """
-        return self._new(mit.filter_except(func, self._data, *exceptions))

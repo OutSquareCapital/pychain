@@ -3,13 +3,13 @@ from typing import TYPE_CHECKING, Concatenate, Self, overload
 
 import cytoolz as cz
 
-from ._core import Check, CommonBase, Process, Transform, iter_factory
+from . import _core as core
 
 if TYPE_CHECKING:
-    from pychain import Iter
+    from ._core import Iter
 
 
-class Dict[KT, VT](CommonBase[dict[KT, VT]]):
+class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
     _data: dict[KT, VT]
     __slots__ = ("_data",)
 
@@ -31,7 +31,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
             [1]
         """
 
-        return iter_factory(self._data.keys())
+        return core.iter_factory(self._data.keys())
 
     def to_values(self) -> "Iter[VT]":
         """Return a Iter of the dict's values.
@@ -40,7 +40,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
             >>> Dict({1: 2}).to_values().to_list()
             [2]
         """
-        return iter_factory(self._data.values())
+        return core.iter_factory(self._data.values())
 
     def to_items(self) -> "Iter[tuple[KT, VT]]":
         """Return a Iter of the dict's items.
@@ -50,7 +50,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
             [(1, 2)]
         """
 
-        return iter_factory(self._data.items())
+        return core.iter_factory(self._data.items())
 
     def copy(self) -> Self:
         """Return a shallow copy of the dict."""
@@ -86,7 +86,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
 
     # CYTOOLZ------------------------------------------------------------------
 
-    def filter_keys(self, predicate: Check[KT]) -> Self:
+    def filter_keys(self, predicate: core.Check[KT]) -> Self:
         """Return a new Dict containing keys that satisfy predicate.
 
         **Example:**
@@ -95,7 +95,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
         """
         return self._new(cz.dicttoolz.keyfilter(predicate, self._data))
 
-    def filter_values(self, predicate: Check[VT]) -> Self:
+    def filter_values(self, predicate: core.Check[VT]) -> Self:
         """Return a new Dict containing items whose values satisfy predicate.
 
         **Example:**
@@ -106,7 +106,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
 
     def filter_items(
         self,
-        predicate: Check[tuple[KT, VT]],
+        predicate: core.Check[tuple[KT, VT]],
     ) -> Self:
         """Filter items by predicate applied to (key, value) tuples.
 
@@ -134,7 +134,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
         """
         return self._new(cz.dicttoolz.assoc_in(self._data, keys=keys, value=value))
 
-    def update_in(self, *keys: KT, f: Process[VT]) -> Self:
+    def update_in(self, *keys: KT, f: core.Process[VT]) -> Self:
         """Update a nested value via function f and return a new Dict.
 
         **Example:**
@@ -172,32 +172,32 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
         """
         return self._new(cz.dicttoolz.dissoc(self._data, *keys))
 
-    def map_keys[T](self, f: Transform[KT, T]) -> "Dict[T, VT]":
-        """Return a Dict with keys transformed by f.
+    def map_keys[T](self, func: core.Transform[KT, T]) -> "Dict[T, VT]":
+        """Return a Dict with keys transformed by ffunc.
 
         **Example:**
             >>> Dict({1: "a"}).map_keys(str)
             {'1': 'a'}
         """
-        return Dict(cz.dicttoolz.keymap(f, self._data))
+        return Dict(cz.dicttoolz.keymap(func, self._data))
 
-    def map_values[T](self, f: Transform[VT, T]) -> "Dict[KT, T]":
-        """Return a Dict with values transformed by f.
+    def map_values[T](self, func: core.Transform[VT, T]) -> "Dict[KT, T]":
+        """Return a Dict with values transformed by func.
 
         **Example:**
             >>> Dict({1: 1}).map_values(lambda v: v + 1)
             {1: 2}
         """
-        return Dict(cz.dicttoolz.valmap(f, self._data))
+        return Dict(cz.dicttoolz.valmap(func, self._data))
 
     def map_items[KR, VR](
         self,
-        f: Transform[tuple[KT, VT], tuple[KR, VR]],
+        func: core.Transform[tuple[KT, VT], tuple[KR, VR]],
     ) -> "Dict[KR, VR]":
-        """Transform (key, value) pairs using f and return a Dict.
+        """Transform (key, value) pairs using func and return a Dict.
 
         **Example:**
             >>> Dict({1: 2}).map_items(lambda kv: (kv[0] + 1, kv[1] * 10))
             {2: 20}
         """
-        return Dict(cz.dicttoolz.itemmap(f, self._data))
+        return Dict(cz.dicttoolz.itemmap(func, self._data))

@@ -71,7 +71,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         """
         return Iter(cz.itertoolz.iterate(func, n))
 
-    # TRANSFORMATIONS------------------------------------------------------------------
+    # MAPS------------------------------------------------------------------
 
     def map[**P, R](
         self, func: Callable[Concatenate[T, P], R], *args: P.args, **kwargs: P.kwargs
@@ -214,6 +214,8 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
             [(False, True), (True, False), (False, True)]
         """
         return self.map(cz.functoolz.juxt(*funcs))
+
+    # TRANSFORMATIONS------------------------------------------------------------------
 
     @overload
     def zip[T1](
