@@ -37,8 +37,8 @@ def check_dict():
 def check_array():
     data = pc.Iter.from_range(1, 10).unwrap()
     (
-        pc.Array(np.array(data))
-        .add(2)
+        pc.Array[np.int64](np.array(data))
+        .pipe(lambda x: x + 2)
         .to_iter()
         .map(lambda x: x + 2)
         .println()
