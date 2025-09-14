@@ -1,10 +1,8 @@
-import ast
 from collections.abc import Callable
 from typing import Any, Literal
 
-from ._ast_parsers import TypeTracker, get_func_name, get_module_ast
+from ._ast_parsers import TypeTracker
 from ._cythonizer import CythonCompiler
-from ._enums import Names
 from ._module_builder import ModuleBuilder, SourceCode
 from ._protocols import Func, Operation
 from ._scope import ScopeManager
@@ -19,7 +17,7 @@ class Compiler[P]:
         self.tracker = tracker
 
     def run(self, backend: Literal["python", "cython"]):
-        compiled_func, source_code = self._compile_logic()
+        compiled_func, source_code = self.manager.build(self.pipeline)
         match backend:
             case "cython":
                 source_code = ModuleBuilder(
@@ -35,21 +33,3 @@ class Compiler[P]:
             self.tracker.p_type,
             self.tracker.r_type,
         )
-
-    def _compile_logic(self) -> CompileResult[P]:
-        final_expr_ast: ast.expr = self._build_from_pipeline()
-        func_name = get_func_name(final_expr_ast)
-        module_ast = get_module_ast(func_name, final_expr_ast)
-        exec(
-            compile(module_ast, filename=Names.PYCHAIN_AST.value, mode="exec"),
-            self.manager.scope,
-        )
-        return self.manager.scope[func_name], SourceCode(
-            ast.unparse(module_ast), func_name
-        )
-
-    def _build_from_pipeline(self) -> ast.expr:
-        final_expr_ast: ast.expr = ast.Name(id=Names.ARG.value, ctx=ast.Load())
-        for op in self.pipeline:
-            final_expr_ast = self.manager.build_operation_ast(op, final_expr_ast)
-        return final_expr_ast

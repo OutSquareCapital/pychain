@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ._enums import Ext
 from ._module_builder import SourceCode
 
 
@@ -37,21 +38,21 @@ class CachePaths:
 
     @property
     def source_file(self) -> Path:
-        return self.build_dir.joinpath(f"{self.module_name}").with_suffix(".py")
+        return self.build_dir.joinpath(f"{self.module_name}").with_suffix(Ext.PY)
 
     @property
     def setup_file(self) -> Path:
-        return self.build_dir.joinpath("setup").with_suffix(".py")
+        return self.build_dir.joinpath("setup").with_suffix(Ext.PY)
 
     def find_binary(self) -> Path | None:
-        if binary := next(self.base_dir.glob(f"{self.module_name}.*.pyd"), None):
+        if binary := next(self.base_dir.glob(f"{self.module_name}.*{Ext.PYD}"), None):
             return binary
-        return next(self.base_dir.glob(f"{self.module_name}.*.so"), None)
+        return next(self.base_dir.glob(f"{self.module_name}.*{Ext.SO}"), None)
 
     def find_binary_in_build_dir(self) -> Path:
-        if binary := next(self.build_dir.glob(f"{self.module_name}.*.pyd"), None):
+        if binary := next(self.build_dir.glob(f"{self.module_name}.*{Ext.PYD}"), None):
             return binary
-        if binary := next(self.build_dir.glob(f"{self.module_name}.*.so"), None):
+        if binary := next(self.build_dir.glob(f"{self.module_name}.*{Ext.SO}"), None):
             return binary
         raise FileNotFoundError("Could not find compiled Cython binary in build dir.")
 
@@ -63,7 +64,7 @@ def run_process(command: list[str], cwd: Path) -> None:
     if result.returncode == 0:
         return
 
-    print("--- CYTHON BUILD FAILED ---")
+    print("--- CYTHON BUILD FAILED ---\n")
     print("STDOUT:", result.stdout)
     print("STDERR:", result.stderr)
     raise RuntimeError("Cython compilation failed.")

@@ -2,7 +2,6 @@ import ast
 import hashlib
 import inspect
 from collections.abc import Callable
-from dataclasses import dataclass, field
 from typing import Any
 
 from ._ast_parsers import (
@@ -12,6 +11,7 @@ from ._ast_parsers import (
     get_callable_ast,
 )
 from ._enums import BUILTIN_NAMES, INLINEABLE_BUILTINS, Names
+from ._module_builder import SourceCode
 from ._protocols import (
     Func,
     Operation,
@@ -20,12 +20,26 @@ from ._protocols import (
 )
 
 
-@dataclass(slots=True, frozen=True)
 class ScopeManager:
-    scope: Scope = field(default_factory=dict[str, Any])
+    module: ast.Module
+    func_name: str
+    expr: ast.expr
+    scope: Scope
+
+    def __init__(self) -> None:
+        self.scope: Scope = {}
 
     def __getitem__(self, key: str) -> Any:
         return self.scope[key]
+
+    def build(self, pipeline: list[Operation[Any, Any]]):
+        return (
+            self.from_pipeline(pipeline)
+            .get_func_name()
+            .get_module_ast()
+            .execute()
+            .into_result()
+        )
 
     def clear(self) -> None:
         self.scope.clear()
@@ -119,4 +133,42 @@ class ScopeManager:
                 ast.keyword(arg=k, value=self.resolve_placeholder_ast(v, prev_ast))
                 for k, v in op.kwargs.items()
             ],
+        )
+
+    def from_pipeline(self, pipeline: list[Operation[Any, Any]]):
+        final_expr_ast: ast.expr = ast.Name(id=Names.ARG.value, ctx=ast.Load())
+        for op in pipeline:
+            final_expr_ast = self.build_operation_ast(op, final_expr_ast)
+        self.expr = final_expr_ast
+        return self
+
+    def get_func_name(self):
+        temp_body_source = ast.unparse(self.expr)
+        source_hash = hashlib.sha256(temp_body_source.encode()).hexdigest()[:16]
+        self.func_name = f"{Names.PC_FUNC_.value}{source_hash}"
+        return self
+
+    def get_module_ast(self):
+        func_args = ast.arguments(args=[ast.arg(arg=Names.ARG.value)], defaults=[])
+        func_def = ast.FunctionDef(
+            name=self.func_name,
+            args=func_args,
+            body=[ast.Return(value=self.expr)],
+            decorator_list=[],
+        )
+        self.module = ast.fix_missing_locations(
+            ast.Module(body=[func_def], type_ignores=[])
+        )
+        return self
+
+    def execute(self):
+        exec(
+            compile(self.module, filename=Names.PYCHAIN_AST.value, mode="exec"),
+            self.scope,
+        )
+        return self
+
+    def into_result(self):
+        return self.scope[self.func_name], SourceCode(
+            ast.unparse(self.module), self.func_name
         )

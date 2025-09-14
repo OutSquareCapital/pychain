@@ -4,6 +4,13 @@ from enum import StrEnum, auto
 from typing import Any
 
 
+class Ext(StrEnum):
+    PYD = ".pyd"
+    PYX = ".pyx"
+    PY = ".py"
+    SO = ".so"
+
+
 class Names(StrEnum):
     REF_ = auto()
     PC_FUNC_ = auto()

@@ -4,7 +4,7 @@ import inspect
 import textwrap
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 from ._ast_parsers import (
     FunctionDefFinder,
@@ -41,7 +41,7 @@ class SourceCode:
     def write_to_file(self, path: Path) -> None:
         path.write_text(self.code, encoding="utf-8")
 
-    def add_cython_decorators(self):
+    def add_cython_decorators(self) -> Self:
         tree = self.as_tree()
         if isinstance(tree.body[0], ast.FunctionDef):
             decorator = ast.Name(id=Names.CCALL.value, ctx=ast.Load())
@@ -74,7 +74,7 @@ class ModuleBuilder:
     def _add_import(self, name: str) -> None:
         self.imports.add(f"import {name}")
 
-    def _add_func_dependency(self, func_obj: Func[Any, Any], ref_name: str) -> None:
+    def _add_func_dependency(self, func_obj: Func[Any, Any], ref_name: str) -> Self:
         tree = ast.parse(func_obj.source_code)
         finder = FunctionDefFinder()
         finder.visit(tree)
@@ -85,23 +85,27 @@ class ModuleBuilder:
             self.definitions[id(func_obj)] = ast.unparse(func_def)
             self.alias_map[ref_name] = func_def.name
 
+        return self
+
     def _add_func(
         self, node: ast.FunctionDef | ast.Lambda, name: str, obj_id: int
     ) -> None:
-        func_def: ast.FunctionDef | None = match_node(node, name)
-        if func_def:
-            self._add_type_annotations(func_def, obj_id)
-            self.definitions[obj_id] = add_cfunc(func_def)
+        if func_def := match_node(node, name):
+            self._add_type_annotations(func_def, obj_id).definitions[obj_id] = (
+                add_cfunc(func_def)
+            )
 
-    def _add_type_annotations(self, func_def: ast.FunctionDef, obj_id: int) -> None:
+    def _add_type_annotations(self, func_def: ast.FunctionDef, obj_id: int) -> Self:
         if not (signature := self.signatures.get(obj_id)):
-            return
+            return self
         for arg in func_def.args.args:
             if arg_type := signature.params.get(arg.arg):
                 if type_node := create_type_node(self.imports, arg_type):
                     arg.annotation = type_node
         if type_node := create_type_node(self.imports, signature.return_type):
             func_def.returns = type_node
+
+        return self
 
     @property
     def import_section(self) -> str:
@@ -113,7 +117,7 @@ class ModuleBuilder:
     def dependencies_section(self) -> str:
         return "# --- Dependencies ---\n" + "\n\n".join(self.definitions.values())
 
-    def _gather_dependencies(self, scope: Scope) -> None:
+    def _gather_dependencies(self, scope: Scope) -> Self:
         for name, obj in scope.items():
             if TypedLambda.identity(obj):
                 obj = obj.func
@@ -124,8 +128,7 @@ class ModuleBuilder:
             self.processed_ids.add(obj_id)
 
             if isinstance(obj, Func):
-                self._add_func_dependency(obj, name)  # type: ignore
-                self._gather_dependencies(obj.scope)
+                self._add_func_dependency(obj, name)._gather_dependencies(obj.scope)  # type: ignore
                 continue
 
             if inspect.ismodule(obj):
@@ -141,3 +144,5 @@ class ModuleBuilder:
                     self._add_func(node, name, obj_id)
             elif module:
                 self._add_import(module.__name__)
+
+        return self
