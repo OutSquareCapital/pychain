@@ -23,30 +23,30 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
 
     # BUILTINS------------------------------------------------------------------
 
-    def to_keys(self) -> "Iter[KT]":
+    def iter_keys(self) -> "Iter[KT]":
         """Return a Iter of the dict's keys.
 
         **Example:**
-            >>> Dict({1: 2}).to_keys().to_list()
+            >>> Dict({1: 2}).iter_keys().to_list()
             [1]
         """
 
         return core.iter_factory(self._data.keys())
 
-    def to_values(self) -> "Iter[VT]":
+    def iter_values(self) -> "Iter[VT]":
         """Return a Iter of the dict's values.
 
         **Example:**
-            >>> Dict({1: 2}).to_values().to_list()
+            >>> Dict({1: 2}).iter_values().to_list()
             [2]
         """
         return core.iter_factory(self._data.values())
 
-    def to_items(self) -> "Iter[tuple[KT, VT]]":
+    def iter_items(self) -> "Iter[tuple[KT, VT]]":
         """Return a Iter of the dict's items.
 
         **Example:**
-            >>> Dict({1: 2}).to_items().to_list()
+            >>> Dict({1: 2}).iter_items().to_list()
             [(1, 2)]
         """
 
@@ -106,15 +106,17 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
 
     def filter_items(
         self,
-        predicate: core.Check[tuple[KT, VT]],
+        predicate: Callable[[KT, VT], bool],
     ) -> Self:
         """Filter items by predicate applied to (key, value) tuples.
 
         **Example:**
-            >>> Dict({1: 2, 3: 4}).filter_items(lambda kv: kv[1] > 2)
+            >>> Dict({1: 2, 3: 4}).filter_items(lambda k, v: v > 2)
             {3: 4}
         """
-        return self._new(cz.dicttoolz.itemfilter(predicate, self._data))
+        return self._new(
+            cz.dicttoolz.itemfilter(lambda kv: predicate(kv[0], kv[1]), self._data)
+        )
 
     def with_key(self, key: KT, value: VT) -> Self:
         """Return a new Dict with key set to value.
@@ -192,12 +194,12 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
 
     def map_items[KR, VR](
         self,
-        func: core.Transform[tuple[KT, VT], tuple[KR, VR]],
+        func: Callable[[KT, VT], tuple[KR, VR]],
     ) -> "Dict[KR, VR]":
-        """Transform (key, value) pairs using func and return a Dict.
+        """Transform (key, value) pairs using a function that takes key and value as separate arguments.
 
         **Example:**
-            >>> Dict({1: 2}).map_items(lambda kv: (kv[0] + 1, kv[1] * 10))
+            >>> Dict({1: 2}).map_items(lambda k, v: (k + 1, v * 10))
             {2: 20}
         """
-        return Dict(cz.dicttoolz.itemmap(func, self._data))
+        return Dict(cz.dicttoolz.itemmap(lambda kv: func(kv[0], kv[1]), self._data))
