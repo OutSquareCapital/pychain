@@ -1,9 +1,10 @@
 
+
 # index
 
 # PyChain Documentation
 
-# Contents
+# Contents:
 
 * [Iter Module](iter.md)
   * [`Iter`](iter.md#pychain.Iter)
@@ -16,22 +17,23 @@
 
 PyChain is a Python library that provides functional-style chaining operations for data structures.
 Most of the computations are done with implementations from the cytoolz library.
+
 <[https://github.com/pytoolz/cytoolz](https://github.com/pytoolz/cytoolz)>
+
 The stubs used for the developpement can be found here:
+
 <[https://github.com/py-stubs/cytoolz-stubs](https://github.com/py-stubs/cytoolz-stubs)>
 
 ## Overview
-
 \* **Primary Goal**: To provide a fluent, declarative, and functional method-chaining API for data manipulation in Python.
-\* **Philosophy**: Eliminate imperative loops (for, while) in favor of a sequence of high-level operations. Each method transforms the data and returns a new wrapper instance, enabling continuous chaining until a terminal method is called to extract the result.
-\* **Key Dependencies**: itertools, cytoolz, more-itertools, numpy. The library acts as a unifying and simplifying API layer over these powerful tools.
-\* **Design**: Based on wrapper classes that encapsulate native Python data structures or third-party library objects.
 
-> * **\`Iter[T]\`**: For any Iterable. This is the most generic and powerful wrapper. Most operations are **lazy**.
-> * **\`Seq[T]\` / \`SeqMut[T]\`**: For Sequence (immutable) and MutableSequence (mutable) objects.
-> * **\`Dict[KT, VT]\`**: For dict objects.
-> * **\`Array[T]\`**: For numpy.ndarray objects.
->
+* **Philosophy**: Eliminate imperative loops (for, while) in favor of a sequence of high-level operations. Each method transforms the data and returns a new wrapper instance, enabling continuous chaining until a terminal method is called to extract the result.
+* **Key Dependencies**: itertools, cytoolz, more-itertools, numpy. The library acts as a unifying and simplifying API layer over these powerful tools.
+* **Design**: Based on wrapper classes that encapsulate native Python data structures or third-party library objects.
+  * **\`Iter[T]\`**: For any Iterable. This is the most generic and powerful wrapper. Most operations are **lazy**.
+  * **\`Seq[T]\` / \`SeqMut[T]\`**: For Sequence (immutable) and MutableSequence (mutable) objects.
+  * **\`Dict[KT, VT]\`**: For dict objects.
+  * **\`Array[T]\`**: For numpy.ndarray objects.
 * **Interoperability**: Designed to integrate seamlessly with other data manipulation libraries, like polars, using the pipe_into and unwrap methods.
 
 ### *class* pychain.SeqMut(data)
@@ -240,7 +242,7 @@ Return a Iter of the dict’s items.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[KT, VT)]
+  [Iter](#pychain.Iter)[tuple[KT, VT]]
 
 #### iter_keys()
 
@@ -252,7 +254,7 @@ Return a Iter of the dict’s keys.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](KT)
+  [Iter](#pychain.Iter)[KT]
 
 #### iter_values()
 
@@ -264,7 +266,7 @@ Return a Iter of the dict’s values.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](VT)
+  [Iter](#pychain.Iter)[VT]
 
 #### map_items(func)
 
@@ -292,7 +294,7 @@ Return a Dict with keys transformed by ffunc.
 * **Parameters:**
   **func** (*Transform*)
 * **Return type:**
-  [Dict][#pychain.Dict](T, VT)
+  [Dict](#pychain.Dict)[T, VT]
 
 #### map_values(func)
 
@@ -306,7 +308,7 @@ Return a Dict with values transformed by func.
 * **Parameters:**
   **func** (*Transform*)
 * **Return type:**
-  [Dict][#pychain.Dict](KT, T)
+  [Dict](#pychain.Dict)[KT, T]
 
 #### merge(\*others)
 
@@ -467,7 +469,7 @@ See also groupby_transform, which can be used with this function to group ranges
   * **predicate** (*Check*)
   * **distance** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[bool, T)]
+  [Iter](#pychain.Iter)[tuple[bool, T]]
 
 #### batch(n)
 
@@ -481,7 +483,7 @@ Batch elements into tuples of length n and return a new Iter.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### chunked(n, strict=False)
 
@@ -506,7 +508,7 @@ list is yielded.
   * **n** (*int*)
   * **strict** (*bool*)
 * **Return type:**
-  [Iter][#pychain.Iter](list[T)]
+  [Iter](#pychain.Iter)[list[T]]
 
 #### chunked_even(n)
 
@@ -524,7 +526,7 @@ Items are distributed such the lengths of the lists differ by at most 1 item.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](list[T)]
+  [Iter](#pychain.Iter)[list[T]]
 
 #### combinations(r)
 
@@ -539,7 +541,7 @@ Return all combinations of length r.
 * **Parameters:**
   **r** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### combinations_with_replacement(r)
 
@@ -553,7 +555,7 @@ Return all combinations with replacement of length r.
 * **Parameters:**
   **r** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### diff(\*others, key=None)
 
@@ -568,7 +570,7 @@ Yield differences between sequences.
   * **others** (*Iterable*)
   * **key** (*Process* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### enumerate()
 
@@ -580,7 +582,7 @@ Return a Iter of (index, value) pairs.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[int, T)]
+  [Iter](#pychain.Iter)[tuple[int, T]]
 
 #### flatten()
 
@@ -612,7 +614,7 @@ Warning: This creates an infinite iterator. Be sure to use .head() or
   * **start** (*int*)
   * **step** (*int*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](int)
+  [*Iter*](#pychain.Iter)[int]
 
 #### *classmethod* from_elements(\*elements)
 
@@ -673,7 +675,7 @@ Create an iterator from a range.
   * **stop** (*int*)
   * **step** (*int*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](int)
+  [*Iter*](#pychain.Iter)[int]
 
 #### join(other, left_on, right_on, left_default=None, right_default=None)
 
@@ -693,7 +695,7 @@ Perform a relational join with another iterable.
   * **left_default** (*T* *|* *None*)
   * **right_default** (*R* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, R)]
+  [Iter](#pychain.Iter)[tuple[T, R]]
 
 #### map(func, \*args, \*\*kwargs)
 
@@ -796,7 +798,6 @@ By default, func_else is the identity function.
   ...     lambda x: None,
   ... ).to_list()
   [None, None, None, None, None, '0.00', '1.00', '1.41', '1.73', '2.00']
-
   ```
 
 * **Parameters:**
@@ -840,7 +841,7 @@ applying each function to the original item.
 * **Parameters:**
   **funcs** (*Transform*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](tuple[R, …)]
+  [*Iter*](#pychain.Iter)[tuple[R, …]]
 
 #### map_star(func)
 
@@ -878,7 +879,7 @@ Return an iterator over pairs of consecutive elements.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, T)]
+  [Iter](#pychain.Iter)[tuple[T, T]]
 
 #### partition(n, pad=None)
 
@@ -893,7 +894,7 @@ Partition into tuples of length n, optionally padded.
   * **n** (*int*)
   * **pad** (*T* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### partition_all(n)
 
@@ -907,7 +908,7 @@ Partition into tuples of length at most n.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### permutations(r=None)
 
@@ -922,7 +923,7 @@ Return all permutations of length r.
 * **Parameters:**
   **r** (*int* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### pipe_unwrap(func, \*args, \*\*kwargs)
 
@@ -985,7 +986,7 @@ function to each generated pair.
 * **Parameters:**
   **other** (*Iterable*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, U)]
+  [Iter](#pychain.Iter)[tuple[T, U]]
 
 #### reduce_by(key, binop)
 
@@ -1017,7 +1018,7 @@ Repeat the entire iterable n times (as elements) and return Iter.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](Iterable[T)]
+  [Iter](#pychain.Iter)[Iterable[T]]
 
 #### repeat_last(default=None)
 
@@ -1038,7 +1039,7 @@ If the iterable is empty, yield default forever:
 * **Parameters:**
   **default** (*U*)
 * **Return type:**
-  [Iter][#pychain.Iter](T | U)
+  [Iter](#pychain.Iter)[T | U]
 
 #### rolling(length)
 
@@ -1052,7 +1053,7 @@ Return sliding windows of the given length.
 * **Parameters:**
   **length** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### sort(key=None, reverse=False)
 
@@ -1100,7 +1101,7 @@ If maxsplit is not specified or -1, then there is no limit on the number of spli
   * **predicate** (*Check*)
   * **max_split** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](list[T)]
+  [Iter](#pychain.Iter)[list[T]]
 
 #### zip(\*others, strict=False)
 
@@ -1115,7 +1116,7 @@ Zip with other iterables, optionally strict, wrapped in Iter.
   * **others** (*Iterable* *[**Any* *]*)
   * **strict** (*bool*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](tuple[*Any*, …)]
+  [*Iter*](#pychain.Iter)[tuple[*Any*, …]]
 
 #### zip_broadcast(\*others, scalar_types=(<class 'str'>, <class 'bytes'>), strict=False)
 
@@ -1144,7 +1145,7 @@ If the strict keyword argument is True, then UnequalIterablesError will be raise
   * **scalar_types** (*tuple* *[**type* *,* *type* *]*  *|* *None*)
   * **strict** (*bool*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### zip_equal(\*others)
 
@@ -1164,7 +1165,7 @@ Zip with other iterables, filling missing values.
   * **others** (*Iterable*)
   * **fill_value** (*U*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[U | T, …)]
+  [Iter](#pychain.Iter)[tuple[U | T, …]]
 
 #### zip_offset(\*others, offsets, longest=False, fillvalue=None)
 
@@ -1191,7 +1192,7 @@ By default, the sequence will end when the shortest iterable is exhausted. To co
   * **longest** (*bool*)
   * **fillvalue** (*U*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T | U, …)]
+  [Iter](#pychain.Iter)[tuple[T | U, …]]
 
 ### *class* pychain.CommonBase(data)
 
@@ -1317,7 +1318,45 @@ This function must be implemented by subclasses.
 Return an iterator over the sequence elements.
 
 * **Return type:**
-  [Iter][#pychain.Iter](T)
+  [Iter](#pychain.Iter)[T]
+
+### *class* pychain.Array(data)
+
+Wrapper for numpy arrays and similar objects.
+This is a simple class but that allows to use the same API as the other wrappers.
+It is mainly useful to chain operations on numpy arrays.
+
+```python
+>>> import numpy as np
+>>> import pychain as pc
+>>> data = np.array([1, 2, 3, 4, 5])
+>>> pc.Array(data).pipe_chain(lambda x: x + 2, lambda x: x * 3).pipe_unwrap(
+...     lambda x: x.clip(10, 20)
+... )
+array([10, 12, 15, 18, 20])
+```
+
+* **Parameters:**
+  **data** (*T*)
+
+#### pipe_unwrap(func, \*args, \*\*kwargs)
+
+Apply a function to the wrapped data and return a new Array wrapping the result.
+
+* **Parameters:**
+  * **func** (*Callable* *[* *[**Concatenate* *[**T* *,* *P* *]* *]* *,* *U* *]*)
+  * **args** (*P*)
+  * **kwargs** (*P*)
+* **Return type:**
+  [*Array*](#pychain.Array)
+
+#### to_iter()
+
+Convert the wrapped array to an Iter wrapper.
+
+* **Return type:**
+  [Iter](#pychain.Iter)[T]
+
 
 # dict
 
@@ -1366,7 +1405,7 @@ Return a Iter of the dict’s keys.
 ```
 
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](KT)
+  [Iter](iter.md#pychain.Iter)[KT]
 
 #### iter_values()
 
@@ -1378,7 +1417,7 @@ Return a Iter of the dict’s values.
 ```
 
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](VT)
+  [Iter](iter.md#pychain.Iter)[VT]
 
 #### iter_items()
 
@@ -1390,7 +1429,7 @@ Return a Iter of the dict’s items.
 ```
 
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[KT, VT)]
+  [Iter](iter.md#pychain.Iter)[tuple[KT, VT]]
 
 #### copy()
 
@@ -1573,7 +1612,7 @@ Return a Dict with keys transformed by ffunc.
 * **Parameters:**
   **func** (*Transform*)
 * **Return type:**
-  [Dict][index.md#pychain.Dict](T, VT)
+  [Dict](index.md#pychain.Dict)[T, VT]
 
 #### map_values(func)
 
@@ -1587,7 +1626,7 @@ Return a Dict with values transformed by func.
 * **Parameters:**
   **func** (*Transform*)
 * **Return type:**
-  [Dict][index.md#pychain.Dict](KT, T)
+  [Dict](index.md#pychain.Dict)[KT, T]
 
 #### map_items(func)
 
@@ -1602,6 +1641,7 @@ Transform (key, value) pairs using a function that takes key and value as separa
   **func** (*Callable* *[* *[**KT* *,* *VT* *]* *,* *tuple* *[**KR* *,* *VR* *]* *]*)
 * **Return type:**
   [*Dict*](index.md#pychain.Dict)
+
 
 # iter
 
@@ -1662,7 +1702,7 @@ Warning: This creates an infinite iterator. Be sure to use .head() or
   * **start** (*int*)
   * **step** (*int*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](int)
+  [*Iter*](#pychain.Iter)[int]
 
 #### *classmethod* from_range(start, stop, step=1)
 
@@ -1678,7 +1718,7 @@ Create an iterator from a range.
   * **stop** (*int*)
   * **step** (*int*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](int)
+  [*Iter*](#pychain.Iter)[int]
 
 #### *classmethod* from_elements(\*elements)
 
@@ -1801,7 +1841,6 @@ Equivalent to flat_map, but allow to join other iterables. However, it don’t t
   >>> right = ["c", "d", "e"]
   >>> Iter(left).map_join(lambda s: [c.upper() for c in s], right).to_list()
   ['A', 'B', 'C', 'D', 'E']
-
   ```
 
 * **Parameters:**
@@ -1896,17 +1935,17 @@ applying each function to the original item.
 * **Parameters:**
   **funcs** (*Transform*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](tuple[R, …)]
+  [*Iter*](#pychain.Iter)[tuple[R, …]]
 
-#### zip(iter1: Iterable[T1], , , strict: bool = False) → [Iter][#pychain.Iter](tuple[T, T1)]
+#### zip(iter1: Iterable[T1], , , strict: bool = False) → [Iter](#pychain.Iter)[tuple[T, T1]]
 
-#### zip(iter1: Iterable[T1], iter2: Iterable[T2], , , strict: bool = False) → [Iter][#pychain.Iter](tuple[T, T1, T2)]
+#### zip(iter1: Iterable[T1], iter2: Iterable[T2], , , strict: bool = False) → [Iter](#pychain.Iter)[tuple[T, T1, T2]]
 
-#### zip(iter1: Iterable[T1], iter2: Iterable[T2], iter3: Iterable[T3], , , strict: bool = False) → [Iter][#pychain.Iter](tuple[T, T1, T2, T3)]
+#### zip(iter1: Iterable[T1], iter2: Iterable[T2], iter3: Iterable[T3], , , strict: bool = False) → [Iter](#pychain.Iter)[tuple[T, T1, T2, T3]]
 
-#### zip(iter1: Iterable[T1], iter2: Iterable[T2], iter3: Iterable[T3], iter4: Iterable[T4], , , strict: bool = False) → [Iter][#pychain.Iter](tuple[T, T1, T2, T3, T4)]
+#### zip(iter1: Iterable[T1], iter2: Iterable[T2], iter3: Iterable[T3], iter4: Iterable[T4], , , strict: bool = False) → [Iter](#pychain.Iter)[tuple[T, T1, T2, T3, T4]]
 
-#### zip(iter1: Iterable[T1], iter2: Iterable[T2], iter3: Iterable[T3], iter4: Iterable[T4], iter5: Iterable[T5], , , strict: bool = False) → [Iter][#pychain.Iter](tuple[T, T1, T2, T3, T4, T5)]
+#### zip(iter1: Iterable[T1], iter2: Iterable[T2], iter3: Iterable[T3], iter4: Iterable[T4], iter5: Iterable[T5], , , strict: bool = False) → [Iter](#pychain.Iter)[tuple[T, T1, T2, T3, T4, T5]]
 
 Zip with other iterables, optionally strict, wrapped in Iter.
 
@@ -1940,7 +1979,7 @@ By default, the sequence will end when the shortest iterable is exhausted. To co
   * **longest** (*bool*)
   * **fillvalue** (*U*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T | U, …)]
+  [Iter](#pychain.Iter)[tuple[T | U, …]]
 
 #### zip_broadcast(\*others, scalar_types=(<class 'str'>, <class 'bytes'>), strict=False)
 
@@ -1969,19 +2008,19 @@ If the strict keyword argument is True, then UnequalIterablesError will be raise
   * **scalar_types** (*tuple* *[**type* *,* *type* *]*  *|* *None*)
   * **strict** (*bool*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
-#### zip_equal() → [Iter][#pychain.Iter](tuple[T)]
+#### zip_equal() → [Iter](#pychain.Iter)[tuple[T]]
 
-#### zip_equal(\_\_iter2: Iterable[T2]) → [Iter][#pychain.Iter](tuple[T, T2)]
+#### zip_equal(\_\_iter2: Iterable[T2]) → [Iter](#pychain.Iter)[tuple[T, T2]]
 
-#### zip_equal(\_\_iter2: Iterable[T2], \_\_iter3: Iterable[T3]) → [Iter][#pychain.Iter](tuple[T, T2, T3)]
+#### zip_equal(\_\_iter2: Iterable[T2], \_\_iter3: Iterable[T3]) → [Iter](#pychain.Iter)[tuple[T, T2, T3]]
 
-#### zip_equal(\_\_iter2: Iterable[T2], \_\_iter3: Iterable[T3], \_\_iter4: Iterable[T4]) → [Iter][#pychain.Iter](tuple[T, T2, T3, T4)]
+#### zip_equal(\_\_iter2: Iterable[T2], \_\_iter3: Iterable[T3], \_\_iter4: Iterable[T4]) → [Iter](#pychain.Iter)[tuple[T, T2, T3, T4]]
 
-#### zip_equal(\_\_iter2: Iterable[T2], \_\_iter3: Iterable[T3], \_\_iter4: Iterable[T4], \_\_iter5: Iterable[T5]) → [Iter][#pychain.Iter](tuple[T, T2, T3, T4, T5)]
+#### zip_equal(\_\_iter2: Iterable[T2], \_\_iter3: Iterable[T3], \_\_iter4: Iterable[T4], \_\_iter5: Iterable[T5]) → [Iter](#pychain.Iter)[tuple[T, T2, T3, T4, T5]]
 
-#### zip_equal(\_\_iter2: Iterable[Any], \_\_iter3: Iterable[Any], \_\_iter4: Iterable[Any], \_\_iter5: Iterable[Any], \_\_iter6: Iterable[Any], \*iterables: Iterable[Any]) → [Iter][#pychain.Iter](tuple[Any, ...)]
+#### zip_equal(\_\_iter2: Iterable[Any], \_\_iter3: Iterable[Any], \_\_iter4: Iterable[Any], \_\_iter5: Iterable[Any], \_\_iter6: Iterable[Any], \*iterables: Iterable[Any]) → [Iter](#pychain.Iter)[tuple[Any, ...]]
 
 #### enumerate()
 
@@ -1993,15 +2032,15 @@ Return a Iter of (index, value) pairs.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[int, T)]
+  [Iter](#pychain.Iter)[tuple[int, T]]
 
-#### combinations(r: Literal[2]) → [Iter][#pychain.Iter](tuple[T, T)]
+#### combinations(r: Literal[2]) → [Iter](#pychain.Iter)[tuple[T, T]]
 
-#### combinations(r: Literal[3]) → [Iter][#pychain.Iter](tuple[T, T, T)]
+#### combinations(r: Literal[3]) → [Iter](#pychain.Iter)[tuple[T, T, T]]
 
-#### combinations(r: Literal[4]) → [Iter][#pychain.Iter](tuple[T, T, T, T)]
+#### combinations(r: Literal[4]) → [Iter](#pychain.Iter)[tuple[T, T, T, T]]
 
-#### combinations(r: Literal[5]) → [Iter][#pychain.Iter](tuple[T, T, T, T, T)]
+#### combinations(r: Literal[5]) → [Iter](#pychain.Iter)[tuple[T, T, T, T, T]]
 
 ¨
 Return all combinations of length r.
@@ -2023,7 +2062,7 @@ Batch elements into tuples of length n and return a new Iter.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### zip_longest(\*others, fill_value=None)
 
@@ -2038,7 +2077,7 @@ Zip with other iterables, filling missing values.
   * **others** (*Iterable*)
   * **fill_value** (*U*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[U | T, …)]
+  [Iter](#pychain.Iter)[tuple[U | T, …]]
 
 #### permutations(r=None)
 
@@ -2053,7 +2092,7 @@ Return all permutations of length r.
 * **Parameters:**
   **r** (*int* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### product(other)
 
@@ -2076,7 +2115,7 @@ function to each generated pair.
 * **Parameters:**
   **other** (*Iterable*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, U)]
+  [Iter](#pychain.Iter)[tuple[T, U]]
 
 #### combinations_with_replacement(r)
 
@@ -2090,7 +2129,7 @@ Return all combinations with replacement of length r.
 * **Parameters:**
   **r** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### pairwise()
 
@@ -2102,7 +2141,7 @@ Return an iterator over pairs of consecutive elements.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, T)]
+  [Iter](#pychain.Iter)[tuple[T, T]]
 
 #### join(other, left_on, right_on, left_default=None, right_default=None)
 
@@ -2122,7 +2161,7 @@ Perform a relational join with another iterable.
   * **left_default** (*T* *|* *None*)
   * **right_default** (*R* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, R)]
+  [Iter](#pychain.Iter)[tuple[T, R]]
 
 #### pluck(key)
 
@@ -2156,7 +2195,7 @@ Partition into tuples of length n, optionally padded.
   * **n** (*int*)
   * **pad** (*T* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### partition_all(n)
 
@@ -2170,7 +2209,7 @@ Partition into tuples of length at most n.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### rolling(length)
 
@@ -2184,7 +2223,7 @@ Return sliding windows of the given length.
 * **Parameters:**
   **length** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### diff(\*others, key=None)
 
@@ -2199,7 +2238,7 @@ Yield differences between sequences.
   * **others** (*Iterable*)
   * **key** (*Process* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
 #### reduce_by(key, binop)
 
@@ -2250,7 +2289,7 @@ See also groupby_transform, which can be used with this function to group ranges
   * **predicate** (*Check*)
   * **distance** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[bool, T)]
+  [Iter](#pychain.Iter)[tuple[bool, T]]
 
 #### repeat(n)
 
@@ -2264,11 +2303,11 @@ Repeat the entire iterable n times (as elements) and return Iter.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](Iterable[T)]
+  [Iter](#pychain.Iter)[Iterable[T]]
 
-#### repeat_last(default: T) → [Iter][#pychain.Iter](T)
+#### repeat_last(default: T) → [Iter](#pychain.Iter)[T]
 
-#### repeat_last(default: U) → [Iter][#pychain.Iter](T | U)
+#### repeat_last(default: U) → [Iter](#pychain.Iter)[T | U]
 
 After the iterable is exhausted, keep yielding its last element.
 
@@ -2323,7 +2362,7 @@ If maxsplit is not specified or -1, then there is no limit on the number of spli
   * **predicate** (*Check*)
   * **max_split** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](list[T)]
+  [Iter](#pychain.Iter)[list[T]]
 
 #### chunked(n, strict=False)
 
@@ -2348,7 +2387,7 @@ list is yielded.
   * **n** (*int*)
   * **strict** (*bool*)
 * **Return type:**
-  [Iter][#pychain.Iter](list[T)]
+  [Iter](#pychain.Iter)[list[T]]
 
 #### chunked_even(n)
 
@@ -2366,7 +2405,7 @@ Items are distributed such the lengths of the lists differ by at most 1 item.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](list[T)]
+  [Iter](#pychain.Iter)[list[T]]
 
 #### sort(key=None, reverse=False)
 

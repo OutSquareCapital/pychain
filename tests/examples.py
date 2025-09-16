@@ -1,19 +1,23 @@
+import numpy as np
+
 import pychain as pc
 
 
-def check_slots():
+def check_slots() -> None:
     data = (1, 2, 3)
     seq_cls = pc.Seq(data)
     mut_seq_cls = pc.SeqMut(data)
     iter_cls = pc.Iter(data)
     dct_cls = pc.Dict({1: "a", 2: "b", 3: "c"})
+    arr_cls = pc.Array(np.array(data))
     assert not getattr(seq_cls, "__dict__", False)
     assert not getattr(mut_seq_cls, "__dict__", False)
     assert not getattr(iter_cls, "__dict__", False)
     assert not getattr(dct_cls, "__dict__", False)
+    assert not getattr(arr_cls, "__dict__", False)
 
 
-def check_iter():
+def check_iter() -> None:
     assert (
         pc.Iter((1, 2, 3, 4))
         .filter(func=lambda x: x % 2 == 0)
@@ -23,7 +27,7 @@ def check_iter():
     ) == [20, 40]
 
 
-def check_dict():
+def check_dict() -> None:
     assert (
         pc.Dict({"a": 1, "b": 2, "c": 3})
         .filter_values(lambda v: v > 1)
@@ -32,7 +36,16 @@ def check_dict():
     ) == {"b": 20, "c": 30}
 
 
+def check_array() -> None:
+    data = pc.Iter.from_range(1, 10).unwrap()
+    arr: np.typing.NDArray[np.int_] = np.array(data)
+    pc.Array(arr).pipe_chain(lambda x: x + 2, lambda x: x * 3).pipe_unwrap(
+        lambda x: x.clip(10, 20)
+    )
+
+
 if __name__ == "__main__":
     check_slots()
     check_iter()
     check_dict()
+    check_array()
