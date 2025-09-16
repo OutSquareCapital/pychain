@@ -27,11 +27,20 @@ def build_docs() -> bool:
 
     print("Création du fichier docs.md final...")
     with open(Paths.FINAL_DOC.value, "w", encoding="utf-8") as outfile:
-        for md_file in sorted(Paths.OUTPUT.value.glob("*.md")):
-            outfile.write(f"\n\n# {md_file.stem}\n\n")
-            with open(md_file, "r", encoding="utf-8") as infile:
+        # Traiter d'abord le fichier index.md s'il existe
+        index_file = Paths.OUTPUT.value / "index.md"
+        if index_file.exists():
+            with open(index_file, "r", encoding="utf-8") as infile:
                 content = infile.read()
-                outfile.write(content)
+                outfile.write(f"\n\n# index\n\n{content}")
+
+        # Puis traiter tous les autres fichiers (sauf index.md)
+        for md_file in sorted(Paths.OUTPUT.value.glob("*.md")):
+            if md_file.name != "index.md":
+                outfile.write(f"\n\n# {md_file.stem}\n\n")
+                with open(md_file, "r", encoding="utf-8") as infile:
+                    content = infile.read()
+                    outfile.write(content)
 
     print(f"Documentation générée avec succès: {Paths.FINAL_DOC.value}")
     return True
