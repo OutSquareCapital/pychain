@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import itertools
+from collections import Counter
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, Concatenate, Literal, overload
 
@@ -475,11 +476,11 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         Extract a value from each element in the sequence using a key or index.
         This is a shortcut for `.map(lambda x: x[key])`.
 
-            >>> data = Iter([{"id": 1, "val": "a"}, {"id": 2, "val": "b"}])
-            >>> data.pluck("val").to_list()
-            ['a', 'b']
-            >>> Iter([[10, 20], [30, 40]]).pluck(0).to_list()
-            [10, 30]
+        >>> data = Iter([{"id": 1, "val": "a"}, {"id": 2, "val": "b"}])
+        >>> data.pluck("val").to_list()
+        ['a', 'b']
+        >>> Iter([[10, 20], [30, 40]]).pluck(0).to_list()
+        [10, 30]
         """
         return Iter(cz.itertoolz.pluck(key, self._data))
 
@@ -487,8 +488,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         Partition into tuples of length n, optionally padded.
 
-            >>> Iter([1, 2, 3, 4]).partition(2).to_list()
-            [(1, 2), (3, 4)]
+        >>> Iter([1, 2, 3, 4]).partition(2).to_list()
+        [(1, 2), (3, 4)]
         """
         return Iter(cz.itertoolz.partition(n, self._data, pad))
 
@@ -496,8 +497,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         Partition into tuples of length at most n.
 
-            >>> Iter([1, 2, 3]).partition_all(2).to_list()
-            [(1, 2), (3,)]
+        >>> Iter([1, 2, 3]).partition_all(2).to_list()
+        [(1, 2), (3,)]
         """
         return Iter(cz.itertoolz.partition_all(n, self._data))
 
@@ -524,14 +525,14 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         A sequence of overlapping subsequences
 
-            >>> Iter([1, 2, 3, 4]).rolling(2).to_list()
-            [(1, 2), (2, 3), (3, 4)]
+        >>> Iter([1, 2, 3, 4]).rolling(2).to_list()
+        [(1, 2), (2, 3), (3, 4)]
 
         This function creates a sliding window suitable for transformations like sliding means / smoothing
 
-            >>> mean = lambda seq: float(sum(seq)) / len(seq)
-            >>> Iter([1, 2, 3, 4]).rolling(2).map(mean).to_list()
-            [1.5, 2.5, 3.5]
+        >>> mean = lambda seq: float(sum(seq)) / len(seq)
+        >>> Iter([1, 2, 3, 4]).rolling(2).map(mean).to_list()
+        [1.5, 2.5, 3.5]
         """
         return Iter(cz.itertoolz.sliding_window(length, self._data))
 
@@ -543,8 +544,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         Yield differences between sequences.
 
-            >>> Iter([1, 2, 3]).diff([1, 2, 10]).to_list()
-            [(3, 10)]
+        >>> Iter([1, 2, 3]).diff([1, 2, 10]).to_list()
+        [(3, 10)]
         """
         return Iter(cz.itertoolz.diff(self._data, *others, ccpdefault=None, key=key))
 
@@ -555,10 +556,10 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         Perform a simultaneous groupby and reduction
         on the elements of the sequence.
 
-            >>> Iter([1, 2, 3, 4]).reduce_by(
-            ...     key=lambda x: x % 2, binop=lambda a, b: a + b
-            ... ).to_list()
-            [1, 0]
+        >>> Iter([1, 2, 3, 4]).reduce_by(
+        ...     key=lambda x: x % 2, binop=lambda a, b: a + b
+        ... ).to_list()
+        [1, 0]
         """
         return Iter(cz.itertoolz.reduceby(key, binop, self._data))
 
@@ -573,13 +574,13 @@ class Iter[T](IterAgg[T], IterProcess[T]):
 
         For example, to find whether items are adjacent to a 3:
 
-            >>> Iter(range(6)).adjacent(lambda x: x == 3).to_list()
-            [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
+        >>> Iter(range(6)).adjacent(lambda x: x == 3).to_list()
+        [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
 
         Set distance to change what counts as adjacent. For example, to find whether items are two places away from a 3:
 
-            >>> Iter(range(6)).adjacent(lambda x: x == 3, distance=2).to_list()
-            [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
+        >>> Iter(range(6)).adjacent(lambda x: x == 3, distance=2).to_list()
+        [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
 
         This is useful for contextualizing the results of a search function.
         For example, a code comparison tool might want to identify lines that have changed, but also surrounding lines to give the viewer of the diff context.
@@ -593,8 +594,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         Repeat the entire iterable n times (as elements) and return Iter.
 
-            >>> Iter([1, 2]).repeat(2).to_list()
-            [[1, 2], [1, 2]]
+        >>> Iter([1, 2]).repeat(2).to_list()
+        [[1, 2], [1, 2]]
         """
         return Iter(itertools.repeat(self._data, n))
 
@@ -606,13 +607,13 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         After the iterable is exhausted, keep yielding its last element.
 
-            >>> Iter(range(3)).repeat_last().head(5).to_list()
-            [0, 1, 2, 2, 2]
+        >>> Iter(range(3)).repeat_last().head(5).to_list()
+        [0, 1, 2, 2, 2]
 
         If the iterable is empty, yield default forever:
 
-            >>> Iter(range(0)).repeat_last(42).head(5).to_list()
-            [42, 42, 42, 42, 42]
+        >>> Iter(range(0)).repeat_last(42).head(5).to_list()
+        [42, 42, 42, 42, 42]
         """
         return Iter(mit.repeat_last(self._data, default))
 
@@ -620,8 +621,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         Flatten one level of nesting and return a new Iterable wrapper.
 
-            >>> Iter([[1, 2], [3]]).flatten().to_list()
-            [1, 2, 3]
+        >>> Iter([[1, 2], [3]]).flatten().to_list()
+        [1, 2, 3]
         """
         return Iter(itertools.chain.from_iterable(self._data))
 
@@ -633,14 +634,14 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         At most maxsplit splits are done.
         If maxsplit is not specified or -1, then there is no limit on the number of splits:
 
-            >>> Iter("one1two2").split_after(lambda s: s.isdigit()).to_list()
-            [['o', 'n', 'e', '1'], ['t', 'w', 'o', '2']]
+        >>> Iter("one1two2").split_after(lambda s: s.isdigit()).to_list()
+        [['o', 'n', 'e', '1'], ['t', 'w', 'o', '2']]
 
-            >>> Iter(range(10)).split_after(lambda n: n % 3 == 0).to_list()
-            [[0], [1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        >>> Iter(range(10)).split_after(lambda n: n % 3 == 0).to_list()
+        [[0], [1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
-            >>> Iter(range(10)).split_after(lambda n: n % 3 == 0, max_split=2).to_list()
-            [[0], [1, 2, 3], [4, 5, 6, 7, 8, 9]]
+        >>> Iter(range(10)).split_after(lambda n: n % 3 == 0, max_split=2).to_list()
+        [[0], [1, 2, 3], [4, 5, 6, 7, 8, 9]]
         """
         return Iter(mit.split_after(self._data, predicate, max_split))
 
@@ -656,10 +657,10 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         ``True``, then ``ValueError`` will be raised before the last
         list is yielded.
 
-            >>> Iter([1, 2, 3, 4, 5, 6]).chunked(3).to_list()
-            [[1, 2, 3], [4, 5, 6]]
-            >>> Iter([1, 2, 3, 4, 5, 6, 7, 8]).chunked(3).to_list()
-            [[1, 2, 3], [4, 5, 6], [7, 8]]
+        >>> Iter([1, 2, 3, 4, 5, 6]).chunked(3).to_list()
+        [[1, 2, 3], [4, 5, 6]]
+        >>> Iter([1, 2, 3, 4, 5, 6, 7, 8]).chunked(3).to_list()
+        [[1, 2, 3], [4, 5, 6], [7, 8]]
         """
         return Iter(mit.chunked(self._data, n, strict))
 
@@ -668,11 +669,11 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         Break iterable into lists of approximately length n.
         Items are distributed such the lengths of the lists differ by at most 1 item.
 
-            >>> iterable = [1, 2, 3, 4, 5, 6, 7]
-            >>> Iter(iterable).chunked_even(3).to_list()  # List lengths: 3, 2, 2
-            [[1, 2, 3], [4, 5], [6, 7]]
-            >>> Iter(iterable).chunked(3).to_list()  # List lengths: 3, 3, 1
-            [[1, 2, 3], [4, 5, 6], [7]]
+        >>> iterable = [1, 2, 3, 4, 5, 6, 7]
+        >>> Iter(iterable).chunked_even(3).to_list()  # List lengths: 3, 2, 2
+        [[1, 2, 3], [4, 5], [6, 7]]
+        >>> Iter(iterable).chunked(3).to_list()  # List lengths: 3, 3, 1
+        [[1, 2, 3], [4, 5, 6], [7]]
         """
         return Iter(mit.chunked_even(self._data, n))
 
@@ -686,21 +687,51 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         Note: This method must consume the entire iterable to perform the sort.
         The result is a new iterable over the sorted sequence.
 
-            >>> Iter([3, 1, 2]).sort().to_list()
-            [1, 2, 3]
-            >>> data = Iter([{"age": 30}, {"age": 20}])
-            >>> data.sort(key=lambda x: x["age"]).to_list()
-            [{'age': 20}, {'age': 30}]
+        >>> Iter([3, 1, 2]).sort().to_list()
+        [1, 2, 3]
+        >>> data = Iter([{"age": 30}, {"age": 20}])
+        >>> data.sort(key=lambda x: x["age"]).to_list()
+        [{'age': 20}, {'age': 30}]
         """
         return self._new(sorted(self._data, key=key, reverse=reverse))
+
+    def most_common(self, n: int | None = None) -> Iter[tuple[T, int]]:
+        """
+        Return an iterable over the n most common elements and their counts from the most common to the least.
+        If n is None, then all elements are returned.
+
+        >>> Iter([1, 1, 2, 3, 3, 3]).most_common(2).to_list()
+        [(3, 3), (1, 2)]
+        """
+
+        return Iter(Counter(self._data).most_common(n))
+
+    def elements(self) -> Iter[T]:
+        """
+        Iterator over elements repeating each as many times as its count.
+
+        >>> Iter("ABCABC").elements().sort()
+        ['A', 'A', 'B', 'B', 'C', 'C']
+
+        Knuth's example for prime factors of 1836:  2**2 * 3**3 * 17**1
+
+        >>> import math
+        >>> Iter({2: 2, 3: 3, 17: 1}).elements().pipe_into(math.prod)
+        1836
+
+        Note, if an element's count has been set to zero or is a negative
+        number, elements() will ignore it.
+
+        """
+        return Iter(Counter(self._data).elements())
 
     def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
         """
         Group elements by key function and return a Dict result.
 
-            >>> from pychain import Iter
-            >>> Iter(["a", "bb"]).group_by(len)
-            {1: ['a'], 2: ['bb']}
+        >>> from pychain import Iter
+        >>> Iter(["a", "bb"]).group_by(len)
+        {1: ['a'], 2: ['bb']}
         """
         return dict_factory(cz.itertoolz.groupby(on, self._data))
 
@@ -708,8 +739,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         Return a Dict of value frequencies.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 1, 2]).frequencies()
-            {1: 2, 2: 1}
+        >>> from pychain import Iter
+        >>> Iter([1, 1, 2]).frequencies()
+        {1: 2, 2: 1}
         """
         return dict_factory(cz.itertoolz.frequencies(self._data))

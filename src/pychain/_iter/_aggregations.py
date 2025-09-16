@@ -6,7 +6,7 @@ from typing import Literal
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase
+from .._core import CommonBase, SupportsRichComparison
 
 
 class IterAgg[T](CommonBase[Iterable[T]]):
@@ -170,7 +170,10 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return sum(self._data)
 
-    def min[U: int | float](self: CommonBase[Iterable[U]]) -> U:
+    def min[U: int | float](
+        self: CommonBase[Iterable[U]],
+        key: Callable[[U], SupportsRichComparison[U]] | None = None,
+    ) -> U:
         """
         Return the minimum value of the sequence.
 
@@ -178,9 +181,12 @@ class IterAgg[T](CommonBase[Iterable[T]]):
             >>> Iter([3, 1, 2]).min()
             1
         """
-        return min(self._data)
+        return min(self._data, key=key)
 
-    def max[U: int | float](self: CommonBase[Iterable[U]]) -> U:
+    def max[U: int | float](
+        self: CommonBase[Iterable[U]],
+        key: Callable[[U], SupportsRichComparison[U]] | None = None,
+    ) -> U:
         """
         Return the maximum value of the sequence.
 
@@ -188,7 +194,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
             >>> Iter([3, 1, 2]).max()
             3
         """
-        return max(self._data)
+        return max(self._data, key=key)
 
     def mean[U: int | float](self: CommonBase[Iterable[U]]) -> float:
         """

@@ -454,6 +454,29 @@ Yield differences between sequences.
 * **Return type:**
   [Iter](#pychain.Iter)[tuple[T, …]]
 
+### elements()
+
+Iterator over elements repeating each as many times as its count.
+
+```python
+>>> Iter("ABCABC").elements().sort()
+['A', 'A', 'B', 'B', 'C', 'C']
+```
+
+Knuth’s example for prime factors of 1836:  2\*\*2 \* 3\*\*3 \* 17\*\*1
+
+```python
+>>> import math
+>>> Iter({2: 2, 3: 3, 17: 1}).elements().pipe_into(math.prod)
+1836
+```
+
+Note, if an element’s count has been set to zero or is a negative
+number, elements() will ignore it.
+
+* **Return type:**
+  [Iter](#pychain.Iter)[T]
+
 ### enumerate()
 
 Return a Iter of (index, value) pairs.
@@ -697,6 +720,21 @@ In short, for each element in the sequence, it computes func(\*element).
   * **func** (*Callable* *[* *[* *...* *]* *,* *R* *]*)
 * **Return type:**
   [*Iter*](#pychain.Iter)
+
+### most_common(n=None)
+
+Return an iterable over the n most common elements and their counts from the most common to the least.
+If n is None, then all elements are returned.
+
+```python
+>>> Iter([1, 1, 2, 3, 3, 3]).most_common(2).to_list()
+[(3, 3), (1, 2)]
+```
+
+* **Parameters:**
+  **n** (*int* *|* *None*)
+* **Return type:**
+  [Iter](#pychain.Iter)[tuple[T, int]]
 
 ### pairwise()
 
