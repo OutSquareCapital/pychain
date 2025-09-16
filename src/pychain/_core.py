@@ -11,9 +11,13 @@ if TYPE_CHECKING:
     from ._sequence import Seq, SeqMut
 
 type Check[T] = Callable[[T], bool]
+"""Predicate function that checks a condition on type T and returns a boolean."""
 type Process[T] = Callable[[T], T]
+"""Function that processes and returns a value of the same type T."""
 type Transform[T, T1] = Callable[[T], T1]
+"""Function that transforms a value of type T to type T1."""
 type Agg[V, V1] = Callable[[Iterable[V]], V1]
+"""Aggregation function that takes an iterable of V and returns a single value of type V1."""
 
 
 class Peeked[T](NamedTuple):
@@ -54,7 +58,8 @@ type SupportsRichComparison[T] = SupportsDunderLT[T] | SupportsDunderGT[T]
 
 
 class CommonBase[T](ABC):
-    """Base class for all wrappers.
+    """
+    Base class for all wrappers.
     You can subclass this to create your own wrapper types.
     The pipe unwrap method must be implemented to allow piping functions that transform the underlying data type, whilst retaining the wrapper.
     """
@@ -68,6 +73,9 @@ class CommonBase[T](ABC):
         return f"{self._data.__repr__()}"
 
     def println(self, pretty: bool = True) -> Self:
+        """
+        Print the underlying data and return self for chaining.
+        """
         if pretty:
             pprint.pprint(self._data)
         else:
@@ -106,12 +114,18 @@ class CommonBase[T](ABC):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Any:
-        """Pipe underlying data in the function and return a new wrapped instance."""
+        """
+        Pipe underlying data in the function and return a new wrapped instance.
+        This function must be implemented by subclasses.
+        """
         raise NotImplementedError
 
     def pipe_chain(self, *funcs: Process[T]) -> Self:
-        """Pipe a value through a sequence of functions.
+        """
+        Pipe a value through a sequence of functions.
+
         Prefer this method over multiple pipe_unwrap calls when the functions don't transform the type.
+
         I.e. Iter(data).pipe_chain(f, g, h).unwrap() is equivalent to h(g(f(data)))
         """
         return self._new(cz.functoolz.pipe(self._data, *funcs))
