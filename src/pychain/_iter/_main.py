@@ -5,7 +5,7 @@ from typing import Any, Concatenate, Literal, overload
 import cytoolz as cz
 import more_itertools as mit
 
-from .. import _core as core
+from .._core import Check, Pluckable, Process, SupportsRichComparison, Transform
 from ._aggregations import IterAgg
 from ._conversions import IterConvert
 from ._process import IterProcess
@@ -62,7 +62,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         return Iter(elements)
 
     @classmethod
-    def from_func[U](cls, func: core.Process[U], n: U) -> "Iter[U]":
+    def from_func[U](cls, func: Process[U], n: U) -> "Iter[U]":
         """Create an infinite iterator by repeatedly applying a function.
 
         **Example:**
@@ -152,7 +152,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
 
     def map_join[R](
         self,
-        func: core.Transform[Iterable[T], Iterable[R]],
+        func: Transform[Iterable[T], Iterable[R]],
         *others: Iterable[T],
     ) -> "Iter[R]":
         """Equivalent to flat_map, but allow to join other iterables. However, it don't take additional arguments for the function.
@@ -168,9 +168,9 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
 
     def map_if[R](
         self,
-        predicate: core.Check[T],
-        func: core.Transform[T, R],
-        func_else: core.Transform[T, R] | None = None,
+        predicate: Check[T],
+        func: Transform[T, R],
+        func_else: Transform[T, R] | None = None,
     ) -> "Iter[R]":
         """Evaluate each item from iterable using pred. If the result is equivalent to True, transform the item with func and yield it. Otherwise, transform the item with func_else and yield it.
 
@@ -189,7 +189,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         [None, None, None, None, None, '0.00', '1.00', '1.41', '1.73', '2.00']"""
         return Iter(mit.map_if(self._data, predicate, func, func_else=func_else))
 
-    def map_filter[R](self, func: core.Transform[T, R]) -> "Iter[R]":
+    def map_filter[R](self, func: Transform[T, R]) -> "Iter[R]":
         """Apply func to every element of iterable, yielding only those which are not None.
 
         >>> elems = ["1", "a", "2", "b", "3"]
@@ -200,7 +200,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         return Iter(mit.filter_map(func, self._data))
 
     def map_except[R](
-        self, func: core.Transform[T, R], *exceptions: type[BaseException]
+        self, func: Transform[T, R], *exceptions: type[BaseException]
     ) -> "Iter[R]":
         """Transform each item from iterable with function and yield the result, unless function raises one of the specified exceptions.
 
@@ -213,7 +213,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         [1, 2, 4]"""
         return Iter(mit.map_except(func, self._data, *exceptions))
 
-    def map_juxt[R](self, *funcs: core.Transform[T, R]) -> "Iter[tuple[R, ...]]":
+    def map_juxt[R](self, *funcs: Transform[T, R]) -> "Iter[tuple[R, ...]]":
         """Apply several functions to each item.
 
         Returns a new Iter where each item is a tuple of the results of
@@ -471,8 +471,8 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
     def join[R, K](
         self,
         other: Iterable[R],
-        left_on: core.Transform[T, K],
-        right_on: core.Transform[R, K],
+        left_on: Transform[T, K],
+        right_on: Transform[R, K],
         left_default: T | None = None,
         right_default: R | None = None,
     ) -> "Iter[tuple[T, R]]":
@@ -496,7 +496,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
             )
         )
 
-    def pluck[K, V](self: "Iter[core.Pluckable[K, V]]", key: K) -> "Iter[V]":
+    def pluck[K, V](self: "Iter[Pluckable[K, V]]", key: K) -> "Iter[V]":
         """Extract a value from each element in the sequence using a key or index.
 
         This is a shortcut for `.map(lambda x: x[key])`.
@@ -541,7 +541,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
     def diff(
         self,
         *others: Iterable[T],
-        key: core.Process[T] | None = None,
+        key: Process[T] | None = None,
     ) -> "Iter[tuple[T, ...]]":
         """Yield differences between sequences.
 
@@ -552,7 +552,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         return Iter(cz.itertoolz.diff(self._data, *others, ccpdefault=None, key=key))
 
     def reduce_by[K](
-        self, key: core.Transform[T, K], binop: Callable[[T, T], T]
+        self, key: Transform[T, K], binop: Callable[[T, T], T]
     ) -> "Iter[K]":
         """Perform a simultaneous groupby and reduction
         on the elements of the sequence.
@@ -567,7 +567,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         return Iter(cz.itertoolz.reduceby(key, binop, self._data))
 
     def adjacent(
-        self, predicate: core.Check[T], distance: int = 1
+        self, predicate: Check[T], distance: int = 1
     ) -> "Iter[tuple[bool, T]]":
         """Return an iterable over (bool, item) tuples.
         The output is a sequence of tuples where the item is drawn from iterable.
@@ -628,9 +628,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         """
         return Iter(itertools.chain.from_iterable(self._data))
 
-    def split_after(
-        self, predicate: core.Check[T], max_split: int = -1
-    ) -> "Iter[list[T]]":
+    def split_after(self, predicate: Check[T], max_split: int = -1) -> "Iter[list[T]]":
         """Yield lists of items from iterable, where each list ends with an item where callable pred returns True:
         At most maxsplit splits are done.
         If maxsplit is not specified or -1, then there is no limit on the number of splits:
@@ -680,9 +678,9 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
 
     # PROCESSING------------------------------------------------------------------
 
-    def sort[U: core.SupportsRichComparison[Any]](
+    def sort[U: SupportsRichComparison[Any]](
         self: "Iter[U]",
-        key: core.Transform[U, Any] | None = None,
+        key: Transform[U, Any] | None = None,
         reverse: bool = False,
     ) -> "Iter[U]":
         """Sort the elements of the sequence.

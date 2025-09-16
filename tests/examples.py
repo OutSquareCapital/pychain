@@ -1,5 +1,3 @@
-import numpy as np
-
 import pychain as pc
 
 
@@ -34,15 +32,7 @@ def check_dict():
     ) == {"b": 20, "c": 30}
 
 
-def check_array():
-    data = pc.Iter.from_range(1, 10).unwrap()
-    pc.Array(np.array(data)).pipe_chain(
-        lambda x: x + 2, lambda x: x * 3
-    ).println().pipe_unwrap(lambda x: x.clip(10, 20))
-
-
 if __name__ == "__main__":
     check_slots()
     check_iter()
     check_dict()
-    check_array()

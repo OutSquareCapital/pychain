@@ -6,10 +6,10 @@ from typing import Any, Concatenate, Self
 import cytoolz as cz
 import more_itertools as mit
 
-from .. import _core as core
+from .._core import Check, CommonBase, Peeked, Transform
 
 
-class IterProcess[T](core.CommonBase[Iterable[T]]):
+class IterProcess[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
 
     def slice(self, start: int | None = None, stop: int | None = None) -> Self:
@@ -47,7 +47,7 @@ class IterProcess[T](core.CommonBase[Iterable[T]]):
         return self._new(itertools.filterfalse(func, self._data, *args, **kwargs))
 
     def filter_except(
-        self, func: core.Transform[T, object], *exceptions: type[BaseException]
+        self, func: Transform[T, object], *exceptions: type[BaseException]
     ) -> Self:
         """Yield the items from iterable for which the validator function does not raise one of the specified exceptions.
 
@@ -73,7 +73,7 @@ class IterProcess[T](core.CommonBase[Iterable[T]]):
         """
         return self._new(itertools.compress(self._data, selectors))
 
-    def take_while(self, predicate: core.Check[T]) -> Self:
+    def take_while(self, predicate: Check[T]) -> Self:
         """Take items while predicate holds and return a new Iterable wrapper.
 
         **Example:**
@@ -83,7 +83,7 @@ class IterProcess[T](core.CommonBase[Iterable[T]]):
         """
         return self._new(itertools.takewhile(predicate, self._data))
 
-    def drop_while(self, predicate: core.Check[T]) -> Self:
+    def drop_while(self, predicate: Check[T]) -> Self:
         """Drop items while predicate holds and return the remainder.
 
         **Example:**
@@ -116,7 +116,7 @@ class IterProcess[T](core.CommonBase[Iterable[T]]):
         """
         return self._new(cz.itertoolz.interpose(element, self._data))
 
-    def top_n(self, n: int, key: core.Transform[T, Any] | None = None) -> Self:
+    def top_n(self, n: int, key: Transform[T, Any] | None = None) -> Self:
         """Return the top-n items according to key.
 
         **Example:**
@@ -169,7 +169,7 @@ class IterProcess[T](core.CommonBase[Iterable[T]]):
         """
 
         def _():
-            peeked = core.Peeked(*cz.itertoolz.peekn(n, self._data))
+            peeked = Peeked(*cz.itertoolz.peekn(n, self._data))
             print(f"Peeked {n} values: {peeked.value}")
             return peeked.sequence
 
@@ -186,7 +186,7 @@ class IterProcess[T](core.CommonBase[Iterable[T]]):
         """
 
         def _():
-            peeked = core.Peeked(*cz.itertoolz.peek(self._data))
+            peeked = Peeked(*cz.itertoolz.peek(self._data))
             print(f"Peeked value: {peeked.value}")
             return peeked.sequence
 
@@ -243,7 +243,7 @@ class IterProcess[T](core.CommonBase[Iterable[T]]):
         return self._new(cz.itertoolz.unique(self._data))
 
     def merge_sorted(
-        self, *others: Iterable[T], sort_on: core.Transform[T, Any] | None = None
+        self, *others: Iterable[T], sort_on: Transform[T, Any] | None = None
     ) -> Self:
         """Merge already-sorted sequences.
 

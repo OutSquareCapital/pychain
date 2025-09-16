@@ -55,6 +55,11 @@ type SupportsRichComparison[T] = SupportsDunderLT[T] | SupportsDunderGT[T]
 
 
 class CommonBase[T](ABC):
+    """Base class for all wrappers.
+    You can subclass this to create your own wrapper types.
+    The pipe unwrap method must be implemented to allow piping functions that transform the underlying data type, whilst retaining the wrapper.
+    """
+
     __slots__ = ("_data",)
 
     def __init__(self, data: T) -> None:

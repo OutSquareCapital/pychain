@@ -3,13 +3,13 @@ from typing import TYPE_CHECKING, Concatenate, Self, overload
 
 import cytoolz as cz
 
-from . import _core as core
+from ._core import Check, CommonBase, Process, Transform, iter_factory
 
 if TYPE_CHECKING:
     from ._core import Iter
 
 
-class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
+class Dict[KT, VT](CommonBase[dict[KT, VT]]):
     _data: dict[KT, VT]
     __slots__ = ("_data",)
 
@@ -43,7 +43,7 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
             [1]
         """
 
-        return core.iter_factory(self._data.keys())
+        return iter_factory(self._data.keys())
 
     def iter_values(self) -> "Iter[VT]":
         """Return a Iter of the dict's values.
@@ -52,7 +52,7 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
             >>> Dict({1: 2}).iter_values().to_list()
             [2]
         """
-        return core.iter_factory(self._data.values())
+        return iter_factory(self._data.values())
 
     def iter_items(self) -> "Iter[tuple[KT, VT]]":
         """Return a Iter of the dict's items.
@@ -62,7 +62,7 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
             [(1, 2)]
         """
 
-        return core.iter_factory(self._data.items())
+        return iter_factory(self._data.items())
 
     def copy(self) -> Self:
         """Return a shallow copy of the dict."""
@@ -98,7 +98,7 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
 
     # CYTOOLZ------------------------------------------------------------------
 
-    def filter_keys(self, predicate: core.Check[KT]) -> Self:
+    def filter_keys(self, predicate: Check[KT]) -> Self:
         """Return a new Dict containing keys that satisfy predicate.
 
         **Example:**
@@ -107,7 +107,7 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
         """
         return self._new(cz.dicttoolz.keyfilter(predicate, self._data))
 
-    def filter_values(self, predicate: core.Check[VT]) -> Self:
+    def filter_values(self, predicate: Check[VT]) -> Self:
         """Return a new Dict containing items whose values satisfy predicate.
 
         **Example:**
@@ -148,7 +148,7 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
         """
         return self._new(cz.dicttoolz.assoc_in(self._data, keys=keys, value=value))
 
-    def update_in(self, *keys: KT, f: core.Process[VT]) -> Self:
+    def update_in(self, *keys: KT, f: Process[VT]) -> Self:
         """Update a nested value via function f and return a new Dict.
 
         **Example:**
@@ -186,7 +186,7 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
         """
         return self._new(cz.dicttoolz.dissoc(self._data, *keys))
 
-    def map_keys[T](self, func: core.Transform[KT, T]) -> "Dict[T, VT]":
+    def map_keys[T](self, func: Transform[KT, T]) -> "Dict[T, VT]":
         """Return a Dict with keys transformed by ffunc.
 
         **Example:**
@@ -195,7 +195,7 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
         """
         return Dict(cz.dicttoolz.keymap(func, self._data))
 
-    def map_values[T](self, func: core.Transform[VT, T]) -> "Dict[KT, T]":
+    def map_values[T](self, func: Transform[VT, T]) -> "Dict[KT, T]":
         """Return a Dict with values transformed by func.
 
         **Example:**
