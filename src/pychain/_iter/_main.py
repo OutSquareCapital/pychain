@@ -72,7 +72,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
         return Iter(cz.itertoolz.iterate(func, n))
 
     @classmethod
-    def from_iterables(cls, *iterables: Iterable[T]) -> "Iter[T]":
+    def from_iterables[U](cls, *iterables: Iterable[U]) -> "Iter[U]":
         """Create an Iter by chaining multiple iterables.
 
         This is a class method that acts as a constructor from multiple iterables.

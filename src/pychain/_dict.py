@@ -13,6 +13,13 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
     _data: dict[KT, VT]
     __slots__ = ("_data",)
 
+    @classmethod
+    def from_iterables[KN, VN](
+        cls, keys: Iterable[KN], values: Iterable[VN]
+    ) -> "Dict[KN, VN]":
+        """Create a Dict from two iterables of keys and values."""
+        return Dict(dict(zip(keys, values)))
+
     def pipe_unwrap[**P, KU, VU](
         self,
         func: Callable[Concatenate[dict[KT, VT], P], dict[KU, VU]],

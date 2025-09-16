@@ -1,3 +1,4 @@
+import pprint
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable, MutableSequence, Sequence
 from typing import TYPE_CHECKING, Any, Concatenate, NamedTuple, Protocol, Self
@@ -62,8 +63,11 @@ class CommonBase[T](ABC):
     def __repr__(self) -> str:
         return f"{self._data.__repr__()}"
 
-    def println(self) -> Self:
-        print(self)
+    def println(self, pretty: bool = True) -> Self:
+        if pretty:
+            pprint.pprint(self._data)
+        else:
+            print(self._data)
         return self
 
     def _new(self, data: T) -> Self:
