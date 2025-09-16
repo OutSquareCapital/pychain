@@ -12,6 +12,12 @@ uv add git+https://github.com/OutSquareCapital/pychain.git
 uv run tests/doctests.py
 ```
 
+## Build docs
+
+```bash
+uv run scripts/docgen.py pychain docs_md
+```
+
 ## Overview
 
 ### 1. Core Philosophy & Summary
@@ -86,7 +92,7 @@ Wrapper for `collections.abc.Iterable[T]`. Most operations are lazy and return n
 
 * `Iter.from_iterables(*iterables: Iterable[T]) -> Iter[T]`
   * **Description**: Creates a single `Iter` by chaining multiple iterables.
-  * **Underlying**: `itertools.chain`
+  * **Underlying**: `itertools.chain.from_iterable`
 
 #### 3.2. Mapping Operations
 
@@ -227,32 +233,74 @@ These methods consume the iterator and return a new wrapper or collection.
 
 Wrapper for `dict[KT, VT]`.
 
-#### 4.1. Conversion to `Iter`
+#### 4.1. Constructors (Class Methods)
+
+* `Dict.from_iterables[KN, VN](keys: Iterable[KN], values: Iterable[VN]) -> Dict[KN, VN]`
+  * **Description**: Creates a `Dict` from two separate iterables of keys and values.
+  * **Underlying**: `zip` and `dict` constructor.
+
+#### 4.2. Conversion to `Iter`
 
 * `iter_keys() -> Iter[KT]`
 * `iter_values() -> Iter[VT]`
 * `iter_items() -> Iter[tuple[KT, VT]]`
 
-#### 4.2. Immutable Operations (return a new `Dict`)
+#### 4.3. Immutable Operations (return a new `Dict`)
 
 * `filter_keys(self, predicate: Check[KT]) -> Self`
+  * **Description**: Returns a new `Dict` containing only the keys that satisfy the predicate.
   * **Underlying**: `cytoolz.dicttoolz.keyfilter`
 * `filter_values(self, predicate: Check[VT]) -> Self`
+  * **Description**: Returns a new `Dict` containing only the items whose values satisfy the predicate.
   * **Underlying**: `cytoolz.dicttoolz.valfilter`
+* `filter_items(self, predicate: Callable[[KT, VT], bool]) -> Self`
+  * **Description**: Returns a new `Dict` by filtering items based on a predicate that accepts both key and value.
+  * **Underlying**: `cytoolz.dicttoolz.itemfilter`
 * `map_keys[T](self, func: Transform[KT, T]) -> Dict[T, VT]`
+  * **Description**: Applies a function to each key and returns a new `Dict`.
   * **Underlying**: `cytoolz.dicttoolz.keymap`
 * `map_values[T](self, func: Transform[VT, T]) -> Dict[KT, T]`
+  * **Description**: Applies a function to each value and returns a new `Dict`.
   * **Underlying**: `cytoolz.dicttoolz.valmap`
+* `map_items[KR, VR](self, func: Callable[[KT, VT], tuple[KR, VR]]) -> Dict[KR, VR]`
+  * **Description**: Applies a function to each `(key, value)` pair, returning a new `Dict` of transformed pairs.
+  * **Underlying**: `cytoolz.dicttoolz.itemmap`
 * `merge(self, *others: dict[KT, VT]) -> Self`
+  * **Description**: Merges one or more dictionaries into the current one, returning a new `Dict`. Later dictionaries override earlier ones.
   * **Underlying**: `cytoolz.dicttoolz.merge`
+* `merge_with(self, f: Callable[[Iterable[VT]], VT], *others: dict[KT, VT]) -> Self`
+  * **Description**: Merges dictionaries, using a function `f` to combine values for duplicate keys.
+  * **Underlying**: `cytoolz.dicttoolz.merge_with`
 * `drop(self, *keys: KT) -> Self`
+  * **Description**: Returns a new `Dict` with the specified keys removed.
   * **Underlying**: `cytoolz.dicttoolz.dissoc`
+* `with_key(self, key: KT, value: VT) -> Self`
+  * **Description**: Returns a new `Dict` with a key set to a new value.
+  * **Underlying**: `cytoolz.dicttoolz.assoc`
+* `with_nested_key(self, keys: Iterable[KT] | KT, value: VT) -> Self`
+  * **Description**: Returns a new `Dict` with a nested key path set to a new value.
+  * **Underlying**: `cytoolz.dicttoolz.assoc_in`
+* `update_in(self, *keys: KT, f: core.Process[VT]) -> Self`
+  * **Description**: Returns a new `Dict` with a nested value updated via a function `f`.
+  * **Underlying**: `cytoolz.dicttoolz.update_in`
 * `copy() -> Self`
+  * **Description**: Returns a shallow copy of the `Dict`.
+  * **Underlying**: `dict.copy`
 
-#### 4.3. Mutable Operations (modify in-place and return `Self`)
+#### 4.4. Mutable Operations (modify in-place and return `Self`)
 
 * `update(self, *others: dict[KT, VT]) -> Self`
+  * **Description**: Updates the dictionary with items from one or more other dictionaries. Modifies the `Dict` in-place.
+  * **Underlying**: `dict.update`
 * `set_value(self, key: KT, value: VT) -> Self`
+  * **Description**: Sets a key to a given value. Modifies the `Dict` in-place.
+  * **Underlying**: `dict.__setitem__`
+
+#### 4.5. Accessor Methods
+
+* `get_value(self, key: KT, default: VT | None = None) -> VT | None`
+  * **Description**: Retrieves the value for a key, returning a default value if the key is not found.
+  * **Underlying**: `dict.get`
 
 ---
 
@@ -303,3 +351,4 @@ result = (
     .to_list()                    # -> SeqMut([0, 4, 16])
     .unwrap()                     # -> [0, 4, 16]
 )
+```
