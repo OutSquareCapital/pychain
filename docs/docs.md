@@ -1,44 +1,22 @@
-
-# index
-
 # PyChain Documentation
 
 <a id="module-pychain"></a>
 
-PyChain is a Python library that provides functional-style chaining operations for data structures.
-Most of the computations are done with implementations from the cytoolz library.
+## *class* pychain.Dict(data)
 
-<[https://github.com/pytoolz/cytoolz](https://github.com/pytoolz/cytoolz)>
-
-The stubs used for the developpement can be found here:
-
-<[https://github.com/py-stubs/cytoolz-stubs](https://github.com/py-stubs/cytoolz-stubs)>
-
-## Overview
-
-\* **Primary Goal**: To provide a fluent, declarative, and functional method-chaining API for data manipulation in Python.
-
-* **Philosophy**: Eliminate imperative loops (for, while) in favor of a sequence of high-level operations. Each method transforms the data and returns a new wrapper instance, enabling continuous chaining until a terminal method is called to extract the result.
-* **Key Dependencies**: itertools, cytoolz, more-itertools, numpy. The library acts as a unifying and simplifying API layer over these powerful tools.
-* **Design**: Based on wrapper classes that encapsulate native Python data structures or third-party library objects.
-  * **\`Iter[T]\`**: For any Iterable. This is the most generic and powerful wrapper. Most operations are **lazy**.
-  * **\`Dict[KT, VT]\`**: For dict objects.
-  * **\`Array[T]\`**: For numpy.ndarray objects.
-* **Interoperability**: Designed to integrate seamlessly with other data manipulation libraries, like polars, using the pipe_into and unwrap methods.
-
-### *class* pychain.Dict(data)
+Wrapper for Python dictionaries with chainable methods.
 
 * **Parameters:**
   **data** (*T*)
 
-#### copy()
+### copy()
 
 Return a shallow copy of the dict.
 
 * **Return type:**
   *Self*
 
-#### drop(\*keys)
+### drop(\*keys)
 
 Return a new Dict with given keys removed.
 
@@ -50,9 +28,9 @@ Return a new Dict with given keys removed.
 * **Parameters:**
   **keys** (*KT*)
 * **Return type:**
-  *Self*
+  Self
 
-#### filter_items(predicate)
+### filter_items(predicate)
 
 Filter items by predicate applied to (key, value) tuples.
 
@@ -64,9 +42,9 @@ Filter items by predicate applied to (key, value) tuples.
 * **Parameters:**
   **predicate** (*Callable* *[* *[**KT* *,* *VT* *]* *,* *bool* *]*)
 * **Return type:**
-  *Self*
+  Self
 
-#### filter_keys(predicate)
+### filter_keys(predicate)
 
 Return a new Dict containing keys that satisfy predicate.
 
@@ -76,11 +54,11 @@ Return a new Dict containing keys that satisfy predicate.
 ```
 
 * **Parameters:**
-  **predicate** (*Check*)
+  **predicate** (*Callable* *[* *[**KT* *]* *,* *bool* *]*)
 * **Return type:**
-  *Self*
+  Self
 
-#### filter_values(predicate)
+### filter_values(predicate)
 
 Return a new Dict containing items whose values satisfy predicate.
 
@@ -90,11 +68,11 @@ Return a new Dict containing items whose values satisfy predicate.
 ```
 
 * **Parameters:**
-  **predicate** (*Check*)
+  **predicate** (*Callable* *[* *[**VT* *]* *,* *bool* *]*)
 * **Return type:**
-  *Self*
+  Self
 
-#### *classmethod* from_zipped(keys, values)
+### *classmethod* from_zipped(keys, values)
 
 Create a Dict from two iterables of keys and values.
 
@@ -109,7 +87,7 @@ Create a Dict from two iterables of keys and values.
 * **Return type:**
   [*Dict*](#pychain.Dict)
 
-#### get_value(key, default=None)
+### get_value(key, default=None)
 
 Get the value for a key, returning default if not found.
 
@@ -119,7 +97,7 @@ Get the value for a key, returning default if not found.
 * **Return type:**
   VT | None
 
-#### iter_items()
+### iter_items()
 
 Return a Iter of the dict’s items.
 
@@ -129,9 +107,9 @@ Return a Iter of the dict’s items.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[KT, VT)]
+  [Iter](#pychain.Iter)[tuple[KT, VT]]
 
-#### iter_keys()
+### iter_keys()
 
 Return a Iter of the dict’s keys.
 
@@ -141,9 +119,9 @@ Return a Iter of the dict’s keys.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](KT)
+  [Iter](#pychain.Iter)[KT]
 
-#### iter_values()
+### iter_values()
 
 Return a Iter of the dict’s values.
 
@@ -153,9 +131,9 @@ Return a Iter of the dict’s values.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](VT)
+  [Iter](#pychain.Iter)[VT]
 
-#### map_items(func)
+### map_items(func)
 
 Transform (key, value) pairs using a function that takes key and value as separate arguments.
 
@@ -167,9 +145,9 @@ Transform (key, value) pairs using a function that takes key and value as separa
 * **Parameters:**
   **func** (*Callable* *[* *[**KT* *,* *VT* *]* *,* *tuple* *[**KR* *,* *VR* *]* *]*)
 * **Return type:**
-  [*Dict*](#pychain.Dict)
+  [Dict](#pychain.Dict)[KR, VR]
 
-#### map_keys(func)
+### map_keys(func)
 
 Return a Dict with keys transformed by ffunc.
 
@@ -179,11 +157,11 @@ Return a Dict with keys transformed by ffunc.
 ```
 
 * **Parameters:**
-  **func** (*Transform*)
+  **func** (*Callable* *[* *[**KT* *]* *,* *T* *]*)
 * **Return type:**
-  [Dict][#pychain.Dict](T, VT)
+  [Dict](#pychain.Dict)[T, VT]
 
-#### map_values(func)
+### map_values(func)
 
 Return a Dict with values transformed by func.
 
@@ -193,11 +171,11 @@ Return a Dict with values transformed by func.
 ```
 
 * **Parameters:**
-  **func** (*Transform*)
+  **func** (*Callable* *[* *[**VT* *]* *,* *T* *]*)
 * **Return type:**
-  [Dict][#pychain.Dict](KT, T)
+  [Dict](#pychain.Dict)[KT, T]
 
-#### merge(\*others)
+### merge(\*others)
 
 Merge other dicts into this one and return a new Dict.
 
@@ -209,11 +187,11 @@ Merge other dicts into this one and return a new Dict.
 * **Parameters:**
   **others** (*dict* *[**KT* *,* *VT* *]*)
 * **Return type:**
-  *Self*
+  Self
 
-#### merge_with(f, \*others)
+### merge_with(func, \*others)
 
-Merge dicts using f to combine values for duplicate keys.
+Merge dicts using a function to combine values for duplicate keys.
 
 ```python
 >>> Dict({1: 1}).merge_with(sum, {1: 2})
@@ -221,24 +199,33 @@ Merge dicts using f to combine values for duplicate keys.
 ```
 
 * **Parameters:**
-  * **f** (*Callable* *[* *[**Iterable* *]* *,* *VT* *]*)
+  * **func** (*Callable* *[* *[**Iterable* *[**VT* *]* *]* *,* *VT* *]*)
   * **others** (*dict* *[**KT* *,* *VT* *]*)
 * **Return type:**
-  *Self*
+  Self
 
-#### pipe_unwrap(func, \*args, \*\*kwargs)
+### pipe_into(func, \*args, \*\*kwargs)
 
-Pipe underlying data in the function and return a new wrapped instance.
-This function must be implemented by subclasses.
+Apply a function to the wrapped dict and return a new Dict wrapping the result.
+
+```python
+>>> def key_to_upper(d: dict[str, int]) -> dict[str, int]:
+...     return {str(k).upper(): v for k, v in d.items()}
+>>>
+>>> data = {"theo": 20, "alice": 25, "bob": 30}
+>>>
+>>> Dict(data).pipe_into(key_to_upper).unwrap()
+{'THEO': 20, 'ALICE': 25, 'BOB': 30}
+```
 
 * **Parameters:**
-  * **func** (*Callable* *[* *[**Concatenate* *[**dict* *[**KT* *,* *VT* *]* *,* *P* *]* *]* *,* *dict* *[**KU* *,* *VU* *]* *]*)
-  * **args** (*P*)
-  * **kwargs** (*P*)
+  * **func** (*Callable* *[**Concatenate* *[**dict* *[**KT* *,* *VT* *]* *,* *P* *]* *,* *dict* *[**KU* *,* *VU* *]* *]*)
+  * **args** (*P.args*)
+  * **kwargs** (*P.kwargs*)
 * **Return type:**
-  [*Dict*](#pychain.Dict)
+  [Dict](#pychain.Dict)[KU, VU]
 
-#### set_value(key, value)
+### set_value(key, value)
 
 Set the value for a key and return self for convenience.
 
@@ -255,9 +242,9 @@ This modifies the dict in place.
   * **key** (*KT*)
   * **value** (*VT*)
 * **Return type:**
-  *Self*
+  Self
 
-#### update(\*others)
+### update(\*others)
 
 Update the dict with other(s) dict(s) and return self for convenience.
 
@@ -273,24 +260,24 @@ This modifies the dict in place.
 * **Parameters:**
   **others** (*dict* *[**KT* *,* *VT* *]*)
 * **Return type:**
-  *Self*
+  Self
 
-#### update_in(\*keys, f)
+### update_in(\*keys, func)
 
-Update a nested value via function f and return a new Dict.
+Update a nested value via a function, and return a new Dict.
 
 ```python
->>> Dict({"a": {"b": 1}}).update_in("a", "b", f=lambda x: x + 1)
+>>> Dict({"a": {"b": 1}}).update_in("a", "b", func=lambda x: x + 1)
 {'a': {'b': 2}}
 ```
 
 * **Parameters:**
   * **keys** (*KT*)
-  * **f** (*Process*)
+  * **func** (*Callable* *[* *[**VT* *]* *,* *VT* *]*)
 * **Return type:**
-  *Self*
+  Self
 
-#### with_key(key, value)
+### with_key(key, value)
 
 Return a new Dict with key set to value.
 
@@ -303,9 +290,9 @@ Return a new Dict with key set to value.
   * **key** (*KT*)
   * **value** (*VT*)
 * **Return type:**
-  *Self*
+  Self
 
-#### with_nested_key(keys, value)
+### with_nested_key(keys, value)
 
 Set a nested key path and return a new Dict.
 
@@ -315,28 +302,25 @@ Set a nested key path and return a new Dict.
 ```
 
 * **Parameters:**
-  * **keys** (*Iterable* *|* *KT*)
+  * **keys** (*Iterable* *[**KT* *]*  *|* *KT*)
   * **value** (*VT*)
 * **Return type:**
-  *Self*
+  Self
 
-### *class* pychain.Iter(data)
+## *class* pychain.Iter(data)
 
 A wrapper around Python’s built-in iterable types, providing a rich set of functional programming tools.
-It supports lazy evaluation, allowing for efficient processing of large datasets.
-It is not a collection itself, but a wrapper that provides additional methods for working with iterables.
-It can be constructed from any iterable, including lists, tuples, sets, and generators.
 
-```python
->>> from pychain import Iter
->>> Iter([1, 2, 3]).to_list()
-[1, 2, 3]
-```
+It supports lazy evaluation, allowing for efficient processing of large datasets.
+
+It is not a collection itself, but a wrapper that provides additional methods for working with iterables.
+
+It can be constructed from any iterable, including lists, tuples, sets, and generators.
 
 * **Parameters:**
   **data** (*T*)
 
-#### adjacent(predicate, distance=1)
+### adjacent(predicate, distance=1)
 
 Return an iterable over (bool, item) tuples.
 The output is a sequence of tuples where the item is drawn from iterable.
@@ -364,12 +348,12 @@ The predicate function will only be called once for each item in the iterable.
 See also groupby_transform, which can be used with this function to group ranges of items with the same bool value.
 
 * **Parameters:**
-  * **predicate** (*Check*)
+  * **predicate** (*Callable* *[* *[**T* *]* *,* *bool* *]*)
   * **distance** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[bool, T)]
+  [Iter](#pychain.Iter)[tuple[bool, T]]
 
-#### batch(n)
+### batch(n)
 
 Batch elements into tuples of length n and return a new Iter.
 
@@ -381,9 +365,9 @@ Batch elements into tuples of length n and return a new Iter.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
-#### chunked(n, strict=False)
+### chunked(n, strict=False)
 
 Break iterable into lists of length n.
 
@@ -406,9 +390,9 @@ list is yielded.
   * **n** (*int*)
   * **strict** (*bool*)
 * **Return type:**
-  [Iter][#pychain.Iter](list[T)]
+  [Iter](#pychain.Iter)[list[T]]
 
-#### chunked_even(n)
+### chunked_even(n)
 
 Break iterable into lists of approximately length n.
 Items are distributed such the lengths of the lists differ by at most 1 item.
@@ -424,11 +408,10 @@ Items are distributed such the lengths of the lists differ by at most 1 item.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](list[T)]
+  [Iter](#pychain.Iter)[list[T]]
 
-#### combinations(r)
+### combinations(r)
 
-¨
 Return all combinations of length r.
 
 ```python
@@ -439,9 +422,9 @@ Return all combinations of length r.
 * **Parameters:**
   **r** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
-#### combinations_with_replacement(r)
+### combinations_with_replacement(r)
 
 Return all combinations with replacement of length r.
 
@@ -453,9 +436,9 @@ Return all combinations with replacement of length r.
 * **Parameters:**
   **r** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
-#### diff(\*others, key=None)
+### diff(\*others, key=None)
 
 Yield differences between sequences.
 
@@ -465,12 +448,12 @@ Yield differences between sequences.
 ```
 
 * **Parameters:**
-  * **others** (*Iterable*)
-  * **key** (*Process* *|* *None*)
+  * **others** (*Iterable* *[**T* *]*)
+  * **key** (*Callable* *[* *[**T* *]* *,* *T* *]*  *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
-#### enumerate()
+### enumerate()
 
 Return a Iter of (index, value) pairs.
 
@@ -480,9 +463,9 @@ Return a Iter of (index, value) pairs.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[int, T)]
+  [Iter](#pychain.Iter)[tuple[int, T]]
 
-#### flatten()
+### flatten()
 
 Flatten one level of nesting and return a new Iterable wrapper.
 
@@ -496,7 +479,7 @@ Flatten one level of nesting and return a new Iterable wrapper.
 * **Return type:**
   [*Iter*](#pychain.Iter)
 
-#### frequencies()
+### frequencies()
 
 Return a Dict of value frequencies.
 
@@ -507,9 +490,9 @@ Return a Dict of value frequencies.
 ```
 
 * **Return type:**
-  [Dict][#pychain.Dict](T, int)
+  [Dict](#pychain.Dict)[T, int]
 
-#### group_by(on)
+### group_by(on)
 
 Group elements by key function and return a Dict result.
 
@@ -520,11 +503,11 @@ Group elements by key function and return a Dict result.
 ```
 
 * **Parameters:**
-  **on** (*Transform*)
+  **on** (*Callable* *[* *[**T* *]* *,* *K* *]*)
 * **Return type:**
-  [Dict][#pychain.Dict](K, list[T)]
+  [Dict](#pychain.Dict)[K, list[T]]
 
-#### join(other, left_on, right_on, left_default=None, right_default=None)
+### join(other, left_on, right_on, left_default=None, right_default=None)
 
 Perform a relational join with another iterable.
 
@@ -536,15 +519,15 @@ Perform a relational join with another iterable.
 ```
 
 * **Parameters:**
-  * **other** (*Iterable*)
-  * **left_on** (*Transform*)
-  * **right_on** (*Transform*)
+  * **other** (*Iterable* *[**R* *]*)
+  * **left_on** (*Callable* *[* *[**T* *]* *,* *K* *]*)
+  * **right_on** (*Callable* *[* *[**R* *]* *,* *K* *]*)
   * **left_default** (*T* *|* *None*)
   * **right_default** (*R* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, R)]
+  [Iter](#pychain.Iter)[tuple[T, R]]
 
-#### map(func, \*args, \*\*kwargs)
+### map(func, \*args, \*\*kwargs)
 
 Map each element through func and return a Iter of results.
 
@@ -554,13 +537,13 @@ Map each element through func and return a Iter of results.
 ```
 
 * **Parameters:**
-  * **func** (*Callable* *[* *[**Concatenate* *[**T* *,* *P* *]* *]* *,* *R* *]*)
-  * **args** (*P*)
-  * **kwargs** (*P*)
+  * **func** (*Callable* *[**Concatenate* *[**T* *,* *P* *]* *,* *R* *]*)
+  * **args** (*P.args*)
+  * **kwargs** (*P.kwargs*)
 * **Return type:**
-  [*Iter*](#pychain.Iter)
+  [Iter](#pychain.Iter)[R]
 
-#### map_except(func, \*exceptions)
+### map_except(func, \*exceptions)
 
 Transform each item from iterable with function and yield the result, unless function raises one of the specified exceptions.
 function is called to transform each item in iterable.
@@ -576,12 +559,12 @@ If an exception other than one given by exceptions is raised by function, it is 
 ```
 
 * **Parameters:**
-  * **func** (*Transform*)
+  * **func** (*Callable* *[* *[**T* *]* *,* *R* *]*)
   * **exceptions** (*type* *[**BaseException* *]*)
 * **Return type:**
-  [*Iter*](#pychain.Iter)
+  [Iter](#pychain.Iter)[R]
 
-#### map_filter(func)
+### map_filter(func)
 
 Apply func to every element of iterable, yielding only those which are not None.
 
@@ -594,11 +577,11 @@ Apply func to every element of iterable, yielding only those which are not None.
 ```
 
 * **Parameters:**
-  **func** (*Transform*)
+  **func** (*Callable* *[* *[**T* *]* *,* *R* *]*)
 * **Return type:**
-  [*Iter*](#pychain.Iter)
+  [Iter](#pychain.Iter)[R]
 
-#### map_flat(func, \*args, \*\*kwargs)
+### map_flat(func, \*args, \*\*kwargs)
 
 Maps a function over a sequence and flattens the result by one level.
 It applies a function to each element, where the function must return
@@ -618,13 +601,13 @@ It’s an efficient shortcut for .map(func).flatten().
 ```
 
 * **Parameters:**
-  * **func** (*Callable* *[* *[**Concatenate* *[**T* *,* *P* *]* *]* *,* *Iterable* *]*)
-  * **args** (*P*)
-  * **kwargs** (*P*)
+  * **func** (*Callable* *[**Concatenate* *[**T* *,* *P* *]* *,* *Iterable* *[**R* *]* *]*)
+  * **args** (*P.args*)
+  * **kwargs** (*P.kwargs*)
 * **Return type:**
-  [*Iter*](#pychain.Iter)
+  [Iter](#pychain.Iter)[R]
 
-#### map_if(predicate, func, func_else=None)
+### map_if(predicate, func, func_else=None)
 
 Evaluate each item from iterable using pred. If the result is equivalent to True, transform the item with func and yield it.
 
@@ -649,13 +632,13 @@ By default, func_else is the identity function.
 ```
 
 * **Parameters:**
-  * **predicate** (*Check*)
-  * **func** (*Transform*)
-  * **func_else** (*Transform* *|* *None*)
+  * **predicate** (*Callable* *[* *[**T* *]* *,* *bool* *]*)
+  * **func** (*Callable* *[* *[**T* *]* *,* *R* *]*)
+  * **func_else** (*Callable* *[* *[**T* *]* *,* *R* *]*  *|* *None*)
 * **Return type:**
-  [*Iter*](#pychain.Iter)
+  [Iter](#pychain.Iter)[R]
 
-#### map_join(func, \*others)
+### map_join(func, \*others)
 
 Equivalent to flat_map, but allow to join other iterables.
 
@@ -669,12 +652,12 @@ However, it don’t take additional arguments for the function.
 ```
 
 * **Parameters:**
-  * **func** (*Transform* *[**Iterable* *,* *Iterable* *]*)
-  * **others** (*Iterable*)
+  * **func** (*Callable* *[* *[**Iterable* *[**T* *]* *]* *,* *Iterable* *[**R* *]* *]*)
+  * **others** (*Iterable* *[**T* *]*)
 * **Return type:**
-  [*Iter*](#pychain.Iter)
+  [Iter](#pychain.Iter)[R]
 
-#### map_juxt(\*funcs)
+### map_juxt(\*funcs)
 
 Apply several functions to each item.
 Returns a new Iter where each item is a tuple of the results of applying each function to the original item.
@@ -687,11 +670,11 @@ Returns a new Iter where each item is a tuple of the results of applying each fu
 ```
 
 * **Parameters:**
-  **funcs** (*Transform*)
+  **funcs** (*Callable* *[* *[**T* *]* *,* *object* *]*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](tuple[R, …)]
+  [Iter](#pychain.Iter)[tuple[object, …]]
 
-#### map_star(func)
+### map_star(func)
 
 Applies a function to each element, where each element is an iterable.
 
@@ -714,7 +697,7 @@ In short, for each element in the sequence, it computes func(\*element).
 * **Return type:**
   [*Iter*](#pychain.Iter)
 
-#### pairwise()
+### pairwise()
 
 Return an iterator over pairs of consecutive elements.
 
@@ -724,9 +707,9 @@ Return an iterator over pairs of consecutive elements.
 ```
 
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, T)]
+  [Iter](#pychain.Iter)[tuple[T, T]]
 
-#### partition(n, pad=None)
+### partition(n, pad=None)
 
 Partition into tuples of length n, optionally padded.
 
@@ -739,9 +722,9 @@ Partition into tuples of length n, optionally padded.
   * **n** (*int*)
   * **pad** (*T* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
-#### partition_all(n)
+### partition_all(n)
 
 Partition into tuples of length at most n.
 
@@ -753,11 +736,10 @@ Partition into tuples of length at most n.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
-#### permutations(r=None)
+### permutations(r=None)
 
-¨
 Return all permutations of length r.
 
 ```python
@@ -768,30 +750,33 @@ Return all permutations of length r.
 * **Parameters:**
   **r** (*int* *|* *None*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
-#### pipe_unwrap(func, \*args, \*\*kwargs)
+### pipe_into(func, \*args, \*\*kwargs)
 
-Pipe the entire iterable into a function that takes an iterable as its first argument.
-Returns a new Iter wrapping the result.
+Pipe the underlying data into a function, then wrap the result in the same wrapper type.
+
+Each pychain class implement this method to allow chaining of functions that transform the
+underlying data and return a new wrapped instance of the same subclass.
+
+## Example
 
 ```python
->>> from pychain import Iter
->>> def func(iterable, n):
-...     return (x * n for x in iterable)
->>>
->>> Iter([1, 2, 3]).pipe_unwrap(func, 10).to_list()
-[10, 20, 30]
+>>> from pychain import Dict
+>>> Dict({1: 2}).pipe_into(lambda d: {k: v + 1 for k, v in d.items()})
+{1: 3}
 ```
 
-* **Parameters:**
-  * **func** (*Callable* *[* *[**Concatenate* *[**Iterable* *,* *P* *]* *]* *,* *Iterable* *]*)
-  * **args** (*P*)
-  * **kwargs** (*P*)
-* **Return type:**
-  [*Iter*](#pychain.Iter)
+Use this to keep the chainable API after applying a transformation to the data.
 
-#### pluck(key)
+* **Parameters:**
+  * **func** (*Callable* *[**Concatenate* *[**Iterable* *[**T* *]* *,* *P* *]* *,* *Iterable* *[**U* *]* *]*)
+  * **args** (*P.args*)
+  * **kwargs** (*P.kwargs*)
+* **Return type:**
+  [Iter](#pychain.Iter)[U]
+
+### pluck(key)
 
 Extract a value from each element in the sequence using a key or index.
 This is a shortcut for .map(lambda x: x[key]).
@@ -810,7 +795,7 @@ This is a shortcut for .map(lambda x: x[key]).
 * **Return type:**
   [*Iter*](#pychain.Iter)
 
-#### product(other)
+### product(other)
 
 Computes the Cartesian product with another iterable.
 This is the declarative equivalent of nested for-loops.
@@ -829,11 +814,11 @@ function to each generated pair.
 ```
 
 * **Parameters:**
-  **other** (*Iterable*)
+  **other** (*Iterable* *[**U* *]*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, U)]
+  [Iter](#pychain.Iter)[tuple[T, U]]
 
-#### reduce_by(key, binop)
+### reduce_by(key, binop)
 
 Perform a simultaneous groupby and reduction
 on the elements of the sequence.
@@ -846,12 +831,12 @@ on the elements of the sequence.
 ```
 
 * **Parameters:**
-  * **key** (*Transform*)
+  * **key** (*Callable* *[* *[**T* *]* *,* *K* *]*)
   * **binop** (*Callable* *[* *[**T* *,* *T* *]* *,* *T* *]*)
 * **Return type:**
-  [*Iter*](#pychain.Iter)
+  [Iter](#pychain.Iter)[K]
 
-#### repeat(n)
+### repeat(n)
 
 Repeat the entire iterable n times (as elements) and return Iter.
 
@@ -863,9 +848,9 @@ Repeat the entire iterable n times (as elements) and return Iter.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](Iterable[T)]
+  [Iter](#pychain.Iter)[Iterable[T]]
 
-#### repeat_last(default=None)
+### repeat_last(default=None)
 
 After the iterable is exhausted, keep yielding its last element.
 
@@ -884,23 +869,31 @@ If the iterable is empty, yield default forever:
 * **Parameters:**
   **default** (*U*)
 * **Return type:**
-  [Iter][#pychain.Iter](T | U)
+  [Iter](#pychain.Iter)[T | U]
 
-#### rolling(length)
+### rolling(length)
 
-Return sliding windows of the given length.
+A sequence of overlapping subsequences
 
 ```python
->>> Iter([1, 2, 3]).rolling(2).to_list()
-[(1, 2), (2, 3)]
+>>> Iter([1, 2, 3, 4]).rolling(2).to_list()
+[(1, 2), (2, 3), (3, 4)]
+```
+
+This function creates a sliding window suitable for transformations like sliding means / smoothing
+
+```python
+>>> mean = lambda seq: float(sum(seq)) / len(seq)
+>>> Iter([1, 2, 3, 4]).rolling(2).map(mean).to_list()
+[1.5, 2.5, 3.5]
 ```
 
 * **Parameters:**
   **length** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
-#### sort(key=None, reverse=False)
+### sort(key=None, reverse=False)
 
 Sort the elements of the sequence.
 Note: This method must consume the entire iterable to perform the sort.
@@ -916,12 +909,12 @@ The result is a new iterable over the sorted sequence.
 
 * **Parameters:**
   * **self** ([*Iter*](#pychain.Iter))
-  * **key** (*Transform* *[**U* *,* *Any* *]*  *|* *None*)
+  * **key** (*Callable* *[* *[**U* *]* *,* *Any* *]*  *|* *None*)
   * **reverse** (*bool*)
 * **Return type:**
   [*Iter*](#pychain.Iter)
 
-#### split_after(predicate, max_split=-1)
+### split_after(predicate, max_split=-1)
 
 Yield lists of items from iterable, where each list ends with an item where callable pred returns True:
 At most maxsplit splits are done.
@@ -943,12 +936,12 @@ If maxsplit is not specified or -1, then there is no limit on the number of spli
 ```
 
 * **Parameters:**
-  * **predicate** (*Check*)
+  * **predicate** (*Callable* *[* *[**T* *]* *,* *bool* *]*)
   * **max_split** (*int*)
 * **Return type:**
-  [Iter][#pychain.Iter](list[T)]
+  [Iter](#pychain.Iter)[list[T]]
 
-#### zip(\*others, strict=False)
+### zip(\*others, strict=False)
 
 Zip with other iterables, optionally strict, wrapped in Iter.
 
@@ -961,9 +954,9 @@ Zip with other iterables, optionally strict, wrapped in Iter.
   * **others** (*Iterable* *[**Any* *]*)
   * **strict** (*bool*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](tuple[*Any*, …)]
+  [*Iter*](#pychain.Iter)[tuple[*Any*, …]]
 
-#### zip_broadcast(\*others, scalar_types=(<class 'str'>, <class 'bytes'>), strict=False)
+### zip_broadcast(\*others, scalar_types=(<class 'str'>, <class 'bytes'>), strict=False)
 
 Version of zip that “broadcasts” any scalar (i.e., non-iterable) items into output tuples.
 
@@ -986,18 +979,18 @@ It is set to (str, bytes) by default. Set it to None to treat strings and byte s
 If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
 
 * **Parameters:**
-  * **others** (*Iterable*)
+  * **others** (*Iterable* *[**T* *]*)
   * **scalar_types** (*tuple* *[**type* *,* *type* *]*  *|* *None*)
   * **strict** (*bool*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T, …)]
+  [Iter](#pychain.Iter)[tuple[T, …]]
 
-#### zip_equal(\*others)
+### zip_equal(\*others)
 
 * **Parameters:**
   **others** (*Iterable* *[**Any* *]*)
 
-#### zip_longest(\*others, fill_value=None)
+### zip_longest(\*others, fill_value=None)
 
 Zip with other iterables, filling missing values.
 
@@ -1007,12 +1000,12 @@ Zip with other iterables, filling missing values.
 ```
 
 * **Parameters:**
-  * **others** (*Iterable*)
+  * **others** (*Iterable* *[**T* *]*)
   * **fill_value** (*U*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[U | T, …)]
+  [Iter](#pychain.Iter)[tuple[U | T, …]]
 
-#### zip_offset(\*others, offsets, longest=False, fillvalue=None)
+### zip_offset(\*others, offsets, longest=False, fillvalue=None)
 
 Zip the input iterables together, but offset the i-th iterable by the i-th item in offsets.
 
@@ -1032,35 +1025,38 @@ By default, the sequence will end when the shortest iterable is exhausted. To co
 ```
 
 * **Parameters:**
-  * **others** (*Iterable*)
+  * **others** (*Iterable* *[**T* *]*)
   * **offsets** (*list* *[**int* *]*)
   * **longest** (*bool*)
   * **fillvalue** (*U*)
 * **Return type:**
-  [Iter][#pychain.Iter](tuple[T | U, …)]
+  [Iter](#pychain.Iter)[tuple[T | U, …]]
 
-### *class* pychain.Array(data)
+## *class* pychain.Array(data)
 
 Wrapper for numpy arrays and similar objects.
 This is a simple class but that allows to use the same API as the other wrappers.
 It is mainly useful to chain operations on numpy arrays.
 
-```python
->>> import numpy as np
->>> import pychain as pc
->>> data = np.array([1, 2, 3, 4, 5])
->>> pc.Array(data).pipe_chain(lambda x: x + 2, lambda x: x * 3).pipe_unwrap(
-...     lambda x: x.clip(10, 20)
-... )
-array([10, 12, 15, 18, 20])
-```
-
 * **Parameters:**
   **data** (*T*)
 
-#### pipe_unwrap(func, \*args, \*\*kwargs)
+### pipe_into(func, \*args, \*\*kwargs)
 
-Apply a function to the wrapped data and return a new Array wrapping the result.
+Pipe the underlying data into a function, then wrap the result in the same wrapper type.
+
+Each pychain class implement this method to allow chaining of functions that transform the
+underlying data and return a new wrapped instance of the same subclass.
+
+## Example
+
+```python
+>>> from pychain import Dict
+>>> Dict({1: 2}).pipe_into(lambda d: {k: v + 1 for k, v in d.items()})
+{1: 3}
+```
+
+Use this to keep the chainable API after applying a transformation to the data.
 
 * **Parameters:**
   * **func** (*Callable* *[* *[**Concatenate* *[**T* *,* *P* *]* *]* *,* *U* *]*)
@@ -1069,14 +1065,24 @@ Apply a function to the wrapped data and return a new Array wrapping the result.
 * **Return type:**
   [*Array*](#pychain.Array)
 
-#### to_iter()
+### to_iter()
 
 Convert the wrapped array to an Iter wrapper.
 
-* **Return type:**
-  [Iter][#pychain.Iter](T)
+```python
+>>> import numpy as np
+>>> import pychain as pc
+>>>
+>>> data = np.array([1, 2, 3])
+>>>
+>>> pc.Array(data).to_iter().to_list()
+[np.int64(1), np.int64(2), np.int64(3)]
+```
 
-### pychain.iter_count(start=0, step=1)
+* **Return type:**
+  [Iter](#pychain.Iter)[T]
+
+## pychain.iter_count(start=0, step=1)
 
 Create an infinite iterator of evenly spaced values.
 
@@ -1095,9 +1101,9 @@ Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
   * **start** (*int*)
   * **step** (*int*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](int)
+  [*Iter*](#pychain.Iter)[int]
 
-### pychain.iter_func(func, n)
+## pychain.iter_func(func, n)
 
 Create an infinite iterator by repeatedly applying a function.
 
@@ -1113,12 +1119,12 @@ Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 ```
 
 * **Parameters:**
-  * **func** (*Process*)
+  * **func** (*Callable* *[* *[**U* *]* *,* *U* *]*)
   * **n** (*U*)
 * **Return type:**
   [*Iter*](#pychain.Iter)
 
-### pychain.iter_range(start, stop, step=1)
+## pychain.iter_range(start, stop, step=1)
 
 Create an iterator from a range.
 
@@ -1134,4 +1140,4 @@ Syntactic sugar for Iter(range(start, stop, step)).
   * **stop** (*int*)
   * **step** (*int*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](int)
+  [*Iter*](#pychain.Iter)[int]

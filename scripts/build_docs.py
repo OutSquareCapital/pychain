@@ -2,6 +2,8 @@ import subprocess
 from enum import Enum, StrEnum
 from pathlib import Path
 
+# TODO: Actuellement je dois supprimer a la main le header `# index`, puis enlever un `#` dans les titres pour avoir une hierarchie correcte
+
 ENCODING = "utf-8"
 
 

@@ -169,14 +169,14 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
         """
         return self._new(cz.dicttoolz.assoc_in(self._data, keys=keys, value=value))
 
-    def update_in(self, *keys: KT, f: Callable[[VT], VT]) -> Self:
+    def update_in(self, *keys: KT, func: Callable[[VT], VT]) -> Self:
         """
-        Update a nested value via function f and return a new Dict.
+        Update a nested value via a function, and return a new Dict.
 
-            >>> Dict({"a": {"b": 1}}).update_in("a", "b", f=lambda x: x + 1)
+            >>> Dict({"a": {"b": 1}}).update_in("a", "b", func=lambda x: x + 1)
             {'a': {'b': 2}}
         """
-        return self._new(cz.dicttoolz.update_in(self._data, keys=keys, func=f))
+        return self._new(cz.dicttoolz.update_in(self._data, keys=keys, func=func))
 
     def merge(self, *others: dict[KT, VT]) -> Self:
         """
@@ -188,15 +188,15 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
         return self._new(cz.dicttoolz.merge(self._data, *others))
 
     def merge_with(
-        self, f: Callable[[Iterable[VT]], VT], *others: dict[KT, VT]
+        self, func: Callable[[Iterable[VT]], VT], *others: dict[KT, VT]
     ) -> Self:
         """
-        Merge dicts using f to combine values for duplicate keys.
+        Merge dicts using a function to combine values for duplicate keys.
 
             >>> Dict({1: 1}).merge_with(sum, {1: 2})
             {1: 3}
         """
-        return self._new(cz.dicttoolz.merge_with(f, self._data, *others))
+        return self._new(cz.dicttoolz.merge_with(func, self._data, *others))
 
     def drop(self, *keys: KT) -> Self:
         """

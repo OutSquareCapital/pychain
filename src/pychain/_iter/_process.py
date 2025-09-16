@@ -164,15 +164,15 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         """
         return self._new(cz.itertoolz.random_sample(probability, self._data, state))
 
-    def accumulate(self, f: Callable[[T, T], T]) -> Self:
+    def accumulate(self, func: Callable[[T, T], T]) -> Self:
         """
-        Return cumulative application of binary op f.
+        Return cumulative application of binary op provided by the function.
 
             >>> from pychain import Iter
             >>> Iter([1, 2, 3]).accumulate(lambda a, b: a + b).to_list()
             [1, 3, 6]
         """
-        return self._new(cz.itertoolz.accumulate(f, self._data))
+        return self._new(cz.itertoolz.accumulate(func, self._data))
 
     def insert_left(self, value: T) -> Self:
         """
