@@ -5,7 +5,8 @@ __pycache__/
 build/
 dist/
 wheels/
-docs/sphinx/
+docs/sphinx/*.rst
+docs/sphinx/_build/
 *.egg-info
 # ignore cython compiled files
 *.so
