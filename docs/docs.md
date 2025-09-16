@@ -759,8 +759,6 @@ Pipe the underlying data into a function, then wrap the result in the same wrapp
 Each pychain class implement this method to allow chaining of functions that transform the
 underlying data and return a new wrapped instance of the same subclass.
 
-## Example
-
 ```python
 >>> from pychain import Dict
 >>> Dict({1: 2}).pipe_into(lambda d: {k: v + 1 for k, v in d.items()})
@@ -1047,8 +1045,6 @@ Pipe the underlying data into a function, then wrap the result in the same wrapp
 
 Each pychain class implement this method to allow chaining of functions that transform the
 underlying data and return a new wrapped instance of the same subclass.
-
-## Example
 
 ```python
 >>> from pychain import Dict
