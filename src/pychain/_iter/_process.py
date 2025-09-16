@@ -265,11 +265,15 @@ class IterProcess[T](core.CommonBase[Iterable[T]]):
         return self._new(cz.itertoolz.interleave((self._data, *others)))
 
     def concat(self, *others: Iterable[T]) -> Self:
-        """Concatenate multiple sequences.
+        """Concatenate zero or more iterables, any of which may be infinite.
+
+        An infinite sequence will prevent the rest of the arguments from being included.
+
+        We use chain.from_iterable rather than chain(*seqs) so that seqs can be a generator.
 
         **Example:**
             >>> from pychain import Iter
-            >>> Iter([1]).concat([2, 3]).to_list()
-            [1, 2, 3]
+            >>> Iter([1, 2]).concat([3, 4], [5]).to_list()
+            [1, 2, 3, 4, 5]
         """
-        return self._new(cz.itertoolz.concat((self._data, *others)))
+        return self._new(itertools.chain.from_iterable((self._data, *others)))

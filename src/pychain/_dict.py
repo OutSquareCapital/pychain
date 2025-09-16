@@ -14,10 +14,15 @@ class Dict[KT, VT](core.CommonBase[dict[KT, VT]]):
     __slots__ = ("_data",)
 
     @classmethod
-    def from_iterables[KN, VN](
+    def from_zipped[KN, VN](
         cls, keys: Iterable[KN], values: Iterable[VN]
     ) -> "Dict[KN, VN]":
-        """Create a Dict from two iterables of keys and values."""
+        """Create a Dict from two iterables of keys and values.
+
+        **Example:**
+            >>> Dict.from_zipped([1, 2], ["a", "b"])
+            {1: 'a', 2: 'b'}
+        """
         return Dict(dict(zip(keys, values)))
 
     def pipe_unwrap[**P, KU, VU](
