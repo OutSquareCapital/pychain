@@ -2,7 +2,7 @@ import ast
 import hashlib
 import inspect
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Self
 
 from ._ast_parsers import (
     NodeReplacer,
@@ -134,13 +134,13 @@ class ScopeManager:
         self.expr = final_expr_ast
         return self
 
-    def get_func_name(self):
+    def get_func_name(self) -> Self:
         temp_body_source = ast.unparse(self.expr)
         source_hash = hashlib.sha256(temp_body_source.encode()).hexdigest()[:16]
         self.func_name = f"{Names.PC_FUNC_.value}{source_hash}"
         return self
 
-    def get_module_ast(self):
+    def get_module_ast(self) -> Self:
         func_args = ast.arguments(args=[ast.arg(arg=Names.ARG.value)], defaults=[])
         func_def = ast.FunctionDef(
             name=self.func_name,
@@ -153,7 +153,7 @@ class ScopeManager:
         )
         return self
 
-    def execute(self):
+    def execute(self) -> Self:
         exec(
             compile(self.module, filename=Names.PYCHAIN_AST.value, mode="exec"),
             self.scope,
