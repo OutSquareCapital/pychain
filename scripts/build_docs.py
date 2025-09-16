@@ -1,6 +1,13 @@
 import subprocess
-from enum import Enum
+from enum import Enum, StrEnum
 from pathlib import Path
+
+ENCODING = "utf-8"
+
+
+class Files(StrEnum):
+    INDEX = "index.md"
+    DOCS = "docs.md"
 
 
 class Paths(Enum):
@@ -8,17 +15,25 @@ class Paths(Enum):
     DOCS = ROOT.joinpath("docs")
     SPHINX = DOCS.joinpath("sphinx")
     OUTPUT = SPHINX.joinpath("_build", "markdown")
-    FINAL_DOC = DOCS.joinpath("docs.md")
+    FINAL_DOC = DOCS.joinpath(Files.DOCS)
 
 
-def build_docs() -> bool:
-    print("Génération de la documentation...")
-    result = subprocess.run(
+def fix_code_blocks(content: str) -> str:
+    return content.replace("```pycon", "```python")
+
+
+def run_sphinx_build():
+    return subprocess.run(
         ["sphinx-build", "-b", "markdown", ".", "_build/markdown"],
         cwd=Paths.SPHINX.value,
         capture_output=True,
         text=True,
     )
+
+
+def build_docs() -> bool:
+    print("Génération de la documentation...")
+    result = run_sphinx_build()
 
     if result.returncode != 0:
         print("Erreur lors de la génération de la documentation:")
@@ -27,20 +42,17 @@ def build_docs() -> bool:
 
     print("Création du fichier docs.md final...")
     with open(Paths.FINAL_DOC.value, "w", encoding="utf-8") as outfile:
-        # Traiter d'abord le fichier index.md s'il existe
-        index_file = Paths.OUTPUT.value / "index.md"
+        index_file = Paths.OUTPUT.value.joinpath(Files.INDEX)
         if index_file.exists():
             with open(index_file, "r", encoding="utf-8") as infile:
-                content = infile.read()
-                outfile.write(f"\n\n# index\n\n{content}")
-
-        # Puis traiter tous les autres fichiers (sauf index.md)
+                outfile.write(
+                    f"\n\n# index\n\n{fix_code_blocks(content=infile.read())}"
+                )
         for md_file in sorted(Paths.OUTPUT.value.glob("*.md")):
-            if md_file.name != "index.md":
+            if md_file.name != Files.INDEX:
                 outfile.write(f"\n\n# {md_file.stem}\n\n")
                 with open(md_file, "r", encoding="utf-8") as infile:
-                    content = infile.read()
-                    outfile.write(content)
+                    outfile.write(fix_code_blocks(content=infile.read()))
 
     print(f"Documentation générée avec succès: {Paths.FINAL_DOC.value}")
     return True

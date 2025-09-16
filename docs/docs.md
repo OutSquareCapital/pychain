@@ -240,7 +240,7 @@ Return a Iter of the dict’s items.
 ```
 
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[KT, VT)]
+  [Iter][#pychain.Iter](tuple[KT, VT)]
 
 #### iter_keys()
 
@@ -252,7 +252,7 @@ Return a Iter of the dict’s keys.
 ```
 
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](KT)
+  [Iter][#pychain.Iter](KT)
 
 #### iter_values()
 
@@ -264,7 +264,7 @@ Return a Iter of the dict’s values.
 ```
 
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](VT)
+  [Iter][#pychain.Iter](VT)
 
 #### map_items(func)
 
@@ -340,6 +340,7 @@ Merge dicts using f to combine values for duplicate keys.
 #### pipe_unwrap(func, \*args, \*\*kwargs)
 
 Pipe underlying data in the function and return a new wrapped instance.
+This function must be implemented by subclasses.
 
 * **Parameters:**
   * **func** (*Callable* *[* *[**Concatenate* *[**dict* *[**KT* *,* *VT* *]* *,* *P* *]* *]* *,* *dict* *[**KU* *,* *VU* *]* *]*)
@@ -466,7 +467,7 @@ See also groupby_transform, which can be used with this function to group ranges
   * **predicate** (*Check*)
   * **distance** (*int*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[bool, T)]
+  [Iter][#pychain.Iter](tuple[bool, T)]
 
 #### batch(n)
 
@@ -480,7 +481,7 @@ Batch elements into tuples of length n and return a new Iter.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, …)]
+  [Iter][#pychain.Iter](tuple[T, …)]
 
 #### chunked(n, strict=False)
 
@@ -505,7 +506,7 @@ list is yielded.
   * **n** (*int*)
   * **strict** (*bool*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](list[T)]
+  [Iter][#pychain.Iter](list[T)]
 
 #### chunked_even(n)
 
@@ -523,7 +524,7 @@ Items are distributed such the lengths of the lists differ by at most 1 item.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](list[T)]
+  [Iter][#pychain.Iter](list[T)]
 
 #### combinations(r)
 
@@ -538,7 +539,7 @@ Return all combinations of length r.
 * **Parameters:**
   **r** (*int*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, …)]
+  [Iter][#pychain.Iter](tuple[T, …)]
 
 #### combinations_with_replacement(r)
 
@@ -552,7 +553,7 @@ Return all combinations with replacement of length r.
 * **Parameters:**
   **r** (*int*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, …)]
+  [Iter][#pychain.Iter](tuple[T, …)]
 
 #### diff(\*others, key=None)
 
@@ -567,7 +568,7 @@ Yield differences between sequences.
   * **others** (*Iterable*)
   * **key** (*Process* *|* *None*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, …)]
+  [Iter][#pychain.Iter](tuple[T, …)]
 
 #### enumerate()
 
@@ -579,7 +580,7 @@ Return a Iter of (index, value) pairs.
 ```
 
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[int, T)]
+  [Iter][#pychain.Iter](tuple[int, T)]
 
 #### flatten()
 
@@ -591,9 +592,9 @@ Flatten one level of nesting and return a new Iterable wrapper.
 ```
 
 * **Parameters:**
-  **self** ([*Iter*](iter.md#pychain.Iter) *[**Iterable* *]*)
+  **self** ([*Iter*](#pychain.Iter) *[**Iterable* *]*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### *classmethod* from_count(start=0, step=1)
 
@@ -611,7 +612,7 @@ Warning: This creates an infinite iterator. Be sure to use .head() or
   * **start** (*int*)
   * **step** (*int*)
 * **Return type:**
-  [*Iter*][iter.md#pychain.Iter](int)
+  [*Iter*][#pychain.Iter](int)
 
 #### *classmethod* from_elements(\*elements)
 
@@ -626,7 +627,7 @@ This is a class method that acts as a constructor from unpacked arguments.
 * **Parameters:**
   **elements** (*U*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### *classmethod* from_func(func, n)
 
@@ -641,7 +642,7 @@ Create an infinite iterator by repeatedly applying a function.
   * **func** (*Process*)
   * **n** (*U*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### *classmethod* from_iterables(\*iterables)
 
@@ -656,23 +657,23 @@ This is a class method that acts as a constructor from multiple iterables.
 * **Parameters:**
   **iterables** (*Iterable*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### *classmethod* from_range(start, stop, step=1)
 
 Create an iterator from a range.
-: ```python
-  >>> Iter.from_range(1, 5).to_list()
-  [1, 2, 3, 4]
 
-  ```
+```python
+>>> Iter.from_range(1, 5).to_list()
+[1, 2, 3, 4]
+```
 
 * **Parameters:**
   * **start** (*int*)
   * **stop** (*int*)
   * **step** (*int*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)[int]
+  [*Iter*][#pychain.Iter](int)
 
 #### join(other, left_on, right_on, left_default=None, right_default=None)
 
@@ -692,7 +693,7 @@ Perform a relational join with another iterable.
   * **left_default** (*T* *|* *None*)
   * **right_default** (*R* *|* *None*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, R)]
+  [Iter][#pychain.Iter](tuple[T, R)]
 
 #### map(func, \*args, \*\*kwargs)
 
@@ -708,7 +709,7 @@ Map each element through func and return a Iter of results.
   * **args** (*P*)
   * **kwargs** (*P*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### map_except(func, \*exceptions)
 
@@ -729,7 +730,7 @@ If an exception other than one given by exceptions is raised by function, it is 
   * **func** (*Transform*)
   * **exceptions** (*type* *[**BaseException* *]*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### map_filter(func)
 
@@ -746,7 +747,7 @@ Apply func to every element of iterable, yielding only those which are not None.
 * **Parameters:**
   **func** (*Transform*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### map_flat(func, \*args, \*\*kwargs)
 
@@ -772,7 +773,7 @@ It’s an efficient shortcut for .map(func).flatten().
   * **args** (*P*)
   * **kwargs** (*P*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### map_if(predicate, func, func_else=None)
 
@@ -803,24 +804,23 @@ By default, func_else is the identity function.
   * **func** (*Transform*)
   * **func_else** (*Transform* *|* *None*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### map_join(func, \*others)
 
 Equivalent to flat_map, but allow to join other iterables. However, it don’t take additional arguments for the function.
-
-```python
->>> Iter(["a", "b"]).map_join(
-...     lambda s: [c.upper() for c in s], ["c", "d", "e"]
-... ).to_list()
-['A', 'B', 'C', 'D', 'E']
-```
+: ```python
+  >>> left = ["a", "b"]
+  >>> right = ["c", "d", "e"]
+  >>> Iter(left).map_join(lambda s: [c.upper() for c in s], right).to_list()
+  ['A', 'B', 'C', 'D', 'E']
+  ```
 
 * **Parameters:**
   * **func** (*Transform* *[**Iterable* *,* *Iterable* *]*)
   * **others** (*Iterable*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### map_juxt(\*funcs)
 
@@ -840,35 +840,33 @@ applying each function to the original item.
 * **Parameters:**
   **funcs** (*Transform*)
 * **Return type:**
-  [*Iter*][iter.md#pychain.Iter](tuple[R, …)]
+  [*Iter*][#pychain.Iter](tuple[R, …)]
 
 #### map_star(func)
 
 Applies a function to each element, where each element is an iterable.
-Unlike .map(), which passes each element as a single argument,
-.starmap() unpacks each element into positional arguments for the function.
+Unlike .map(), which passes each element as a single argument, .starmap() unpacks each element into positional arguments for the function.
+
 In short, for each element in the sequence, it computes func(\*element).
-**Tip**:
 
-> It is the perfect tool to process pairs generated by .product()
-> or .zip_with().
+**Tip**: It is the perfect tool to process pairs generated by .product() or .zip_with().
 
-> ```python
-> >>> colors = Iter(["blue", "red"])
-> >>> sizes = ["S", "M"]
-> >>>
-> >>> def make_sku(color, size):
-> ...     return f"{color}-{size}"
-> >>>
-> >>> colors.product(sizes).map_star(make_sku).to_list()
-> ['blue-S', 'blue-M', 'red-S', 'red-M']
-> ```
->
+```python
+>>> colors = Iter(["blue", "red"])
+>>> sizes = ["S", "M"]
+>>>
+>>> def make_sku(color, size):
+...     return f"{color}-{size}"
+>>>
+>>> colors.product(sizes).map_star(make_sku).to_list()
+['blue-S', 'blue-M', 'red-S', 'red-M']
+```
+
 * **Parameters:**
-  * **self** ([*Iter*](iter.md#pychain.Iter))
+  * **self** ([*Iter*](#pychain.Iter))
   * **func** (*Callable* *[* *[* *...* *]* *,* *R* *]*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### pairwise()
 
@@ -880,7 +878,7 @@ Return an iterator over pairs of consecutive elements.
 ```
 
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, T)]
+  [Iter][#pychain.Iter](tuple[T, T)]
 
 #### partition(n, pad=None)
 
@@ -895,7 +893,7 @@ Partition into tuples of length n, optionally padded.
   * **n** (*int*)
   * **pad** (*T* *|* *None*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, …)]
+  [Iter][#pychain.Iter](tuple[T, …)]
 
 #### partition_all(n)
 
@@ -909,7 +907,7 @@ Partition into tuples of length at most n.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, …)]
+  [Iter][#pychain.Iter](tuple[T, …)]
 
 #### permutations(r=None)
 
@@ -924,7 +922,7 @@ Return all permutations of length r.
 * **Parameters:**
   **r** (*int* *|* *None*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, …)]
+  [Iter][#pychain.Iter](tuple[T, …)]
 
 #### pipe_unwrap(func, \*args, \*\*kwargs)
 
@@ -945,7 +943,7 @@ Returns a new Iter wrapping the result.
   * **args** (*P*)
   * **kwargs** (*P*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### pluck(key)
 
@@ -961,10 +959,10 @@ This is a shortcut for .map(lambda x: x[key]).
 ```
 
 * **Parameters:**
-  * **self** ([*Iter*](iter.md#pychain.Iter) *[**Pluckable* *]*)
+  * **self** ([*Iter*](#pychain.Iter) *[**Pluckable* *]*)
   * **key** (*K*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### product(other)
 
@@ -987,7 +985,7 @@ function to each generated pair.
 * **Parameters:**
   **other** (*Iterable*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, U)]
+  [Iter][#pychain.Iter](tuple[T, U)]
 
 #### reduce_by(key, binop)
 
@@ -1005,7 +1003,7 @@ on the elements of the sequence.
   * **key** (*Transform*)
   * **binop** (*Callable* *[* *[**T* *,* *T* *]* *,* *T* *]*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### repeat(n)
 
@@ -1019,7 +1017,7 @@ Repeat the entire iterable n times (as elements) and return Iter.
 * **Parameters:**
   **n** (*int*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](Iterable[T)]
+  [Iter][#pychain.Iter](Iterable[T)]
 
 #### repeat_last(default=None)
 
@@ -1040,7 +1038,7 @@ If the iterable is empty, yield default forever:
 * **Parameters:**
   **default** (*U*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](T | U)
+  [Iter][#pychain.Iter](T | U)
 
 #### rolling(length)
 
@@ -1054,7 +1052,7 @@ Return sliding windows of the given length.
 * **Parameters:**
   **length** (*int*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, …)]
+  [Iter][#pychain.Iter](tuple[T, …)]
 
 #### sort(key=None, reverse=False)
 
@@ -1071,11 +1069,11 @@ The result is a new iterable over the sorted sequence.
 ```
 
 * **Parameters:**
-  * **self** ([*Iter*](iter.md#pychain.Iter))
+  * **self** ([*Iter*](#pychain.Iter))
   * **key** (*Transform* *[**U* *,* *Any* *]*  *|* *None*)
   * **reverse** (*bool*)
 * **Return type:**
-  [*Iter*](iter.md#pychain.Iter)
+  [*Iter*](#pychain.Iter)
 
 #### split_after(predicate, max_split=-1)
 
@@ -1102,7 +1100,7 @@ If maxsplit is not specified or -1, then there is no limit on the number of spli
   * **predicate** (*Check*)
   * **max_split** (*int*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](list[T)]
+  [Iter][#pychain.Iter](list[T)]
 
 #### zip(\*others, strict=False)
 
@@ -1117,7 +1115,7 @@ Zip with other iterables, optionally strict, wrapped in Iter.
   * **others** (*Iterable* *[**Any* *]*)
   * **strict** (*bool*)
 * **Return type:**
-  [*Iter*][iter.md#pychain.Iter](tuple[*Any*, …)]
+  [*Iter*][#pychain.Iter](tuple[*Any*, …)]
 
 #### zip_broadcast(\*others, scalar_types=(<class 'str'>, <class 'bytes'>), strict=False)
 
@@ -1146,7 +1144,7 @@ If the strict keyword argument is True, then UnequalIterablesError will be raise
   * **scalar_types** (*tuple* *[**type* *,* *type* *]*  *|* *None*)
   * **strict** (*bool*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T, …)]
+  [Iter][#pychain.Iter](tuple[T, …)]
 
 #### zip_equal(\*others)
 
@@ -1166,7 +1164,7 @@ Zip with other iterables, filling missing values.
   * **others** (*Iterable*)
   * **fill_value** (*U*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[U | T, …)]
+  [Iter][#pychain.Iter](tuple[U | T, …)]
 
 #### zip_offset(\*others, offsets, longest=False, fillvalue=None)
 
@@ -1193,7 +1191,7 @@ By default, the sequence will end when the shortest iterable is exhausted. To co
   * **longest** (*bool*)
   * **fillvalue** (*U*)
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](tuple[T | U, …)]
+  [Iter][#pychain.Iter](tuple[T | U, …)]
 
 ### *class* pychain.CommonBase(data)
 
@@ -1218,7 +1216,9 @@ Pipe the instance in the function and return the result.
 #### pipe_chain(\*funcs)
 
 Pipe a value through a sequence of functions.
+
 Prefer this method over multiple pipe_unwrap calls when the functions don’t transform the type.
+
 I.e. Iter(data).pipe_chain(f, g, h).unwrap() is equivalent to h(g(f(data)))
 
 * **Parameters:**
@@ -1240,6 +1240,7 @@ Pipe the underlying data in the function and return the result.
 #### *abstractmethod* pipe_unwrap(func, \*args, \*\*kwargs)
 
 Pipe underlying data in the function and return a new wrapped instance.
+This function must be implemented by subclasses.
 
 * **Parameters:**
   * **func** (*Callable* *[* *[**Concatenate* *[**Self* *,* *P* *]* *]* *,* *Any* *]*)
@@ -1249,6 +1250,8 @@ Pipe underlying data in the function and return a new wrapped instance.
   *Any*
 
 #### println(pretty=True)
+
+Print the underlying data and return self for chaining.
 
 * **Parameters:**
   **pretty** (*bool*)
@@ -1300,6 +1303,7 @@ Return the index of the first occurrence of value in the sequence.
 #### pipe_unwrap(func, \*args, \*\*kwargs)
 
 Pipe underlying data in the function and return a new wrapped instance.
+This function must be implemented by subclasses.
 
 * **Parameters:**
   * **func** (*Callable* *[* *[**Concatenate* *[**Sequence* *,* *P* *]* *]* *,* *Sequence* *]*)
@@ -1313,7 +1317,7 @@ Pipe underlying data in the function and return a new wrapped instance.
 Return an iterator over the sequence elements.
 
 * **Return type:**
-  [Iter][iter.md#pychain.Iter](T)
+  [Iter][#pychain.Iter](T)
 
 # dict
 
@@ -1663,18 +1667,18 @@ Warning: This creates an infinite iterator. Be sure to use .head() or
 #### *classmethod* from_range(start, stop, step=1)
 
 Create an iterator from a range.
-: ```python
-  >>> Iter.from_range(1, 5).to_list()
-  [1, 2, 3, 4]
 
-  ```
+```python
+>>> Iter.from_range(1, 5).to_list()
+[1, 2, 3, 4]
+```
 
 * **Parameters:**
   * **start** (*int*)
   * **stop** (*int*)
   * **step** (*int*)
 * **Return type:**
-  [*Iter*](#pychain.Iter)[int]
+  [*Iter*][#pychain.Iter](int)
 
 #### *classmethod* from_elements(\*elements)
 
@@ -1740,25 +1744,23 @@ Map each element through func and return a Iter of results.
 #### map_star(func)
 
 Applies a function to each element, where each element is an iterable.
-Unlike .map(), which passes each element as a single argument,
-.starmap() unpacks each element into positional arguments for the function.
+Unlike .map(), which passes each element as a single argument, .starmap() unpacks each element into positional arguments for the function.
+
 In short, for each element in the sequence, it computes func(\*element).
-**Tip**:
 
-> It is the perfect tool to process pairs generated by .product()
-> or .zip_with().
+**Tip**: It is the perfect tool to process pairs generated by .product() or .zip_with().
 
-> ```python
-> >>> colors = Iter(["blue", "red"])
-> >>> sizes = ["S", "M"]
-> >>>
-> >>> def make_sku(color, size):
-> ...     return f"{color}-{size}"
-> >>>
-> >>> colors.product(sizes).map_star(make_sku).to_list()
-> ['blue-S', 'blue-M', 'red-S', 'red-M']
-> ```
->
+```python
+>>> colors = Iter(["blue", "red"])
+>>> sizes = ["S", "M"]
+>>>
+>>> def make_sku(color, size):
+...     return f"{color}-{size}"
+>>>
+>>> colors.product(sizes).map_star(make_sku).to_list()
+['blue-S', 'blue-M', 'red-S', 'red-M']
+```
+
 * **Parameters:**
   * **self** ([*Iter*](#pychain.Iter))
   * **func** (*Callable* *[* *[* *...* *]* *,* *R* *]*)
@@ -1794,13 +1796,13 @@ It’s an efficient shortcut for .map(func).flatten().
 #### map_join(func, \*others)
 
 Equivalent to flat_map, but allow to join other iterables. However, it don’t take additional arguments for the function.
+: ```python
+  >>> left = ["a", "b"]
+  >>> right = ["c", "d", "e"]
+  >>> Iter(left).map_join(lambda s: [c.upper() for c in s], right).to_list()
+  ['A', 'B', 'C', 'D', 'E']
 
-```python
->>> Iter(["a", "b"]).map_join(
-...     lambda s: [c.upper() for c in s], ["c", "d", "e"]
-... ).to_list()
-['A', 'B', 'C', 'D', 'E']
-```
+  ```
 
 * **Parameters:**
   * **func** (*Transform* *[**Iterable* *,* *Iterable* *]*)
@@ -1829,7 +1831,6 @@ By default, func_else is the identity function.
   ...     lambda x: None,
   ... ).to_list()
   [None, None, None, None, None, '0.00', '1.00', '1.41', '1.73', '2.00']
-
   ```
 
 * **Parameters:**
