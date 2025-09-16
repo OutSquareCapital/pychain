@@ -15,37 +15,41 @@ class IterConvert[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
 
     def to_list(self) -> "SeqMut[T]":
-        """Return a SeqMut wrapping the elements of the iterable.
+        """
+        Return a SeqMut wrapping the elements of the iterable.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).to_list()
-        [1, 2, 3]
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 3]).to_list()
+            [1, 2, 3]
         """
         return mut_seq_factory(list(self._data))
 
     def to_deque(self, maxlen: int | None = None) -> "SeqMut[T]":
-        """Return a SeqMut wrapping the elements of the iterable.
+        """
+        Return a SeqMut wrapping the elements of the iterable.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).to_deque()
-        deque([1, 2, 3])
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 3]).to_deque()
+            deque([1, 2, 3])
         """
         return mut_seq_factory(deque(self._data, maxlen))
 
     def group_by[K](self, on: Transform[T, K]) -> "Dict[K, list[T]]":
-        """Group elements by key function and return a Dict result.
+        """
+        Group elements by key function and return a Dict result.
 
-        >>> from pychain import Iter
-        >>> Iter(["a", "bb"]).group_by(len)
-        {1: ['a'], 2: ['bb']}
+            >>> from pychain import Iter
+            >>> Iter(["a", "bb"]).group_by(len)
+            {1: ['a'], 2: ['bb']}
         """
         return dict_factory(cz.itertoolz.groupby(on, self._data))
 
     def frequencies(self) -> "Dict[T, int]":
-        """Return a Dict of value frequencies.
+        """
+        Return a Dict of value frequencies.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 1, 2]).frequencies()
-        {1: 2, 2: 1}
+            >>> from pychain import Iter
+            >>> Iter([1, 1, 2]).frequencies()
+            {1: 2, 2: 1}
         """
         return dict_factory(cz.itertoolz.frequencies(self._data))
