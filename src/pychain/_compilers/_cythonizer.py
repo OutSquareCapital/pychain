@@ -63,7 +63,6 @@ def run_process(command: list[str], cwd: Path) -> None:
     )
     if result.returncode == 0:
         return
-
     print("--- CYTHON BUILD FAILED ---\n")
     print("STDOUT:", result.stdout)
     print("STDERR:", result.stderr)
@@ -84,17 +83,14 @@ class CythonCompiler:
 
     def _compile(self) -> Path:
         self._write_build_files()
-
         run_process(
             command=[sys.executable, "setup.py", "build_ext", "--inplace"],
             cwd=self.paths.build_dir,
         )
-
         compiled_binary = self.paths.find_binary_in_build_dir()
         final_binary_path = self.paths.base_dir.joinpath(compiled_binary.name)
         shutil.move(src=compiled_binary, dst=final_binary_path)
         shutil.rmtree(self.paths.build_dir)
-
         return final_binary_path
 
     def _write_build_files(self) -> None:
@@ -107,7 +103,6 @@ class CythonCompiler:
         setup_content = f"""
 from setuptools import setup
 from Cython.Build import cythonize
-
 setup(
     ext_modules=cythonize("{self.paths.source_file.name}", language_level=3),
 )

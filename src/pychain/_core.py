@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from ._iter import Iter
     from ._sequence import Seq, SeqMut
 
-
 type Check[T] = Callable[[T], bool]
 type Process[T] = Callable[[T], T]
 type Transform[T, T1] = Callable[[T], T1]
@@ -112,9 +111,7 @@ class CommonBase[T](ABC):
 
     def pipe_chain(self, *funcs: Process[T]) -> Self:
         """Pipe a value through a sequence of functions.
-
         Prefer this method over multiple pipe_unwrap calls when the functions don't transform the type.
-
         I.e. Iter(data).pipe_chain(f, g, h).unwrap() is equivalent to h(g(f(data)))
         """
         return self._new(cz.functoolz.pipe(self._data, *funcs))

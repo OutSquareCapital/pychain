@@ -21,14 +21,12 @@ class Seq[T](CommonBase[Sequence[T]]):
 
     def to_iter(self) -> "Iter[T]":
         """Return an iterator over the sequence elements."""
-
         return iter_factory(iter(self._data))
 
     def count(self, value: T) -> int:
         """
         Count occurrences of value in the sequence.
 
-        **Example:**
             >>> Seq([1, 2, 1]).count(1)
             2
         """
@@ -38,7 +36,6 @@ class Seq[T](CommonBase[Sequence[T]]):
         """
         Return the index of the first occurrence of value in the sequence.
 
-        **Example:**
             >>> Seq([1, 2, 1]).index(1)
             0
         """
@@ -62,10 +59,8 @@ class SeqMut[T](Seq[T]):
     def clear(self) -> Self:
         """
         Clear the sequence and return self for convenience.
-
         **Warning**: Mutates the original sequence.
 
-        **Example:**
             >>> SeqMut([1, 2]).clear()
             []
         """
@@ -75,10 +70,8 @@ class SeqMut[T](Seq[T]):
     def insert(self, index: int, value: T) -> Self:
         """
         Insert an object into the sequence at the specified index and return self for convenience.
-
         **Warning**: Mutates the original sequence.
 
-        **Example:**
             >>> SeqMut([1, 2]).insert(1, 3)
             [1, 3, 2]
         """
@@ -88,10 +81,8 @@ class SeqMut[T](Seq[T]):
     def append(self, value: T) -> Self:
         """
         Append object to the end of the sequence and return self for convenience.
-
         **Warning**: Mutates the original sequence.
 
-        **Example:**
             >>> SeqMut([1, 2]).append(3)
             [1, 2, 3]
         """
@@ -101,10 +92,8 @@ class SeqMut[T](Seq[T]):
     def extend(self, *others: Iterable[T]) -> Self:
         """
         Extend the sequence with elements from another iterable and return self for convenience.
-
         **Warning**: Mutates the original sequence.
 
-        **Example:**
             >>> SeqMut([1, 2]).extend([3, 4])
             [1, 2, 3, 4]
         """
@@ -114,10 +103,8 @@ class SeqMut[T](Seq[T]):
     def remove(self, value: T) -> Self:
         """
         Remove an object from the sequence and return self for convenience.
-
         **Warning**: Mutates the original sequence.
 
-        **Example:**
             >>> SeqMut([1, 2]).remove(2)
             [1]
         """
@@ -127,10 +114,8 @@ class SeqMut[T](Seq[T]):
     def reverse(self) -> Self:
         """
         Reverse the order of the sequence and return self for convenience.
-
         **Warning**: Mutates the original sequence.
 
-        **Example:**
             >>> SeqMut([1, 2]).reverse()
             [2, 1]
         """

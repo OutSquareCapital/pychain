@@ -72,19 +72,15 @@ class TypeTracker:
 
     def update(self, op: Operation[Any, Any]) -> None:
         target_obj = op.args[0] if op.func in (map, filter) else op.func
-
         match target_obj:
             case tl if TypedLambda.identity(tl):
                 self._handle_typed_lambda(op, tl)
-
             case func if callable(func) and not isinstance(func, type):
                 self._handle_regular_callable(op, func)
-
             case t if isinstance(t, type):
                 element_type = get_args(self.r_type)
                 new_type = t[element_type] if element_type else t  # type: ignore
                 self._update(new_type)  # type: ignore
-
             case _:
                 self._update(type(target_obj))  # type: ignore
 
@@ -93,13 +89,11 @@ class TypeTracker:
     ) -> None:
         p_type = tl.p_type
         r_type = tl.r_type
-
         arg_name = get_first_arg_name(tl.func)
         params = {arg_name: p_type} if arg_name else {}
         self.inferred_signatures[id(tl.func)] = Signature(
             params=params, return_type=r_type
         )
-
         if op.func is map:
             self._update(Iterable[r_type])
         elif op.func is filter:
@@ -124,7 +118,6 @@ class TypeTracker:
                 return_type = hints.get("return", object)
             except TypeError:
                 return_type = object
-
         if op.func is map:
             self._update(Iterable[return_type])
         elif op.func is filter:
@@ -169,7 +162,6 @@ class FunctionDefFinder(ast.NodeVisitor):
 def get_callable_ast(func: Callable[..., Any]) -> ast.Lambda | ast.FunctionDef | None:
     if TypedLambda.identity(func):
         func = func.func
-
     try:
         raw_source = textwrap.dedent(inspect.getsource(func)).strip()
         source_to_parse = (
@@ -178,16 +170,13 @@ def get_callable_ast(func: Callable[..., Any]) -> ast.Lambda | ast.FunctionDef |
             else raw_source
         )
         tree = ast.parse(source_to_parse)
-
         lambda_finder = LambdaFinder()
         lambda_finder.visit(tree)
         if lambda_node := lambda_finder.found_lambda:
             return lambda_node
-
         func_def_finder = FunctionDefFinder()
         func_def_finder.visit(tree)
         return func_def_finder.found_func
-
     except (TypeError, OSError, SyntaxError):
         return None
 
@@ -201,7 +190,6 @@ def extract_return_expression(func_ast: ast.FunctionDef) -> ast.expr | None:
 def get_first_arg_name(func: Callable[..., Any]) -> str | None:
     if TypedLambda.identity(func):
         func = func.func
-
     if node := get_callable_ast(func):
         if node.args.args:
             return node.args.args[0].arg

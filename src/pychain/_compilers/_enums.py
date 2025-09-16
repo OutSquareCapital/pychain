@@ -52,7 +52,6 @@ INLINEABLE_BUILTINS: set[type | Callable[..., Any]] = {
     next,
 }
 
-
 CYTHON_TYPES: dict[type, str] = {
     builtins.int: "cython.int",
     builtins.float: "cython.double",

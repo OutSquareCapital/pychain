@@ -1,13 +1,9 @@
 """# Pychain
-
 PyChain is a Python library that provides functional-style chaining operations for data structures.
-
 Most of the computations are done with implementations from the cytoolz library.
 <https://github.com/pytoolz/cytoolz>
-
 The stubs used for the developpement can be found here:
 <https://github.com/py-stubs/cytoolz-stubs>
-
 ## Overview
 * **Primary Goal**: To provide a fluent, declarative, and functional method-chaining API for data manipulation in Python.
 * **Philosophy**: Eliminate imperative loops (`for`, `while`) in favor of a sequence of high-level operations. Each method transforms the data and returns a new wrapper instance, enabling continuous chaining until a terminal method is called to extract the result.

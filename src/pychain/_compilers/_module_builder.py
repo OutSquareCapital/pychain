@@ -84,7 +84,6 @@ class ModuleBuilder:
             self._add_type_annotations(func_def, id(func_obj.func))
             self.definitions[id(func_obj)] = ast.unparse(func_def)
             self.alias_map[ref_name] = func_def.name
-
         return self
 
     def _add_func(
@@ -104,7 +103,6 @@ class ModuleBuilder:
                     arg.annotation = type_node
         if type_node := create_type_node(self.imports, signature.return_type):
             func_def.returns = type_node
-
         return self
 
     @property
@@ -121,28 +119,22 @@ class ModuleBuilder:
         for name, obj in scope.items():
             if TypedLambda.identity(obj):
                 obj = obj.func
-
             obj_id = id(obj)
             if obj_id in self.processed_ids or name.startswith(Names.PC_FUNC_.value):
                 continue
             self.processed_ids.add(obj_id)
-
             if isinstance(obj, Func):
                 self._add_func_dependency(obj, name)._gather_dependencies(obj.scope)  # type: ignore
                 continue
-
             if inspect.ismodule(obj):
                 self._add_import(obj.__name__)
                 continue
-
             if not (inspect.isfunction(obj) or inspect.isclass(obj)):
                 continue
-
             module = inspect.getmodule(obj)
             if module and module.__name__ == "__main__":
                 if node := get_callable_ast(obj):
                     self._add_func(node, name, obj_id)
             elif module:
                 self._add_import(module.__name__)
-
         return self

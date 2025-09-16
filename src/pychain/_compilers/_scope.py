@@ -70,18 +70,15 @@ class ScopeManager:
                 original_value = value
                 if TypedLambda.identity(value):
                     value = value.func
-
                 base_name = getattr(value, "__name__", Names.FUNC.value)
                 if not base_name.isidentifier() or base_name == Names.LAMBDA.value:
                     base_name = Names.FUNC.value
-
                 try:
                     source = inspect.getsource(value)
                     stable_id = hashlib.sha256(source.encode()).hexdigest()[:16]
                 except (TypeError, OSError):
                     # Fallback déterministe sur le bytecode
                     stable_id = hashlib.sha256(value.__code__.co_code).hexdigest()[:16]
-
                 var_name = f"{Names.REF_.value}{base_name}_{stable_id}"
                 self.scope[var_name] = original_value
                 return ast.Name(id=var_name, ctx=ast.Load())
@@ -95,30 +92,25 @@ class ScopeManager:
         user_func = op.func
         if TypedLambda.identity(user_func):
             user_func = user_func.func
-
         is_simple_call = (
             all(Placeholder.identity(arg) for arg in op.args) and not op.kwargs
         )
         if not is_simple_call:
             return None
-
         if not (node := get_callable_ast(user_func)):
             return None
-
         match node:
             case ast.Lambda(args=lambda_args):
                 if len(lambda_args.args) == 1:
                     self.populate_from_callable(user_func)
                     arg_name = lambda_args.args[0].arg
                     return NodeReplacer(arg_name, prev_ast).visit(node.body)
-
             case ast.FunctionDef(args=func_args) as func_ast:
                 if len(func_args.args) == 1:
                     self.populate_from_callable(user_func)
                     if return_expr := extract_return_expression(func_ast):
                         arg_name = func_args.args[0].arg
                         return NodeReplacer(arg_name, prev_ast).visit(return_expr)
-
         return None
 
     def build_operation_ast(
