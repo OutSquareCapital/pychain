@@ -42,17 +42,10 @@ def build_docs() -> bool:
 
     print("Création du fichier docs.md final...")
     with open(Paths.FINAL_DOC.value, "w", encoding="utf-8") as outfile:
-        index_file = Paths.OUTPUT.value.joinpath(Files.INDEX)
-        if index_file.exists():
-            with open(index_file, "r", encoding="utf-8") as infile:
-                outfile.write(
-                    f"\n\n# index\n\n{fix_code_blocks(content=infile.read())}"
-                )
         for md_file in sorted(Paths.OUTPUT.value.glob("*.md")):
-            if md_file.name != Files.INDEX:
-                outfile.write(f"\n\n# {md_file.stem}\n\n")
-                with open(md_file, "r", encoding="utf-8") as infile:
-                    outfile.write(fix_code_blocks(content=infile.read()))
+            outfile.write(f"\n\n# {md_file.stem}\n\n")
+            with open(md_file, "r", encoding="utf-8") as infile:
+                outfile.write(fix_code_blocks(content=infile.read()))
 
     print(f"Documentation générée avec succès: {Paths.FINAL_DOC.value}")
     return True
