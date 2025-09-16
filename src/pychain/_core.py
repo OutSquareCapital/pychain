@@ -108,7 +108,6 @@ class CommonBase[T](ABC):
 
         The result is not wrapped.
 
-        Example:
             >>> from pychain import Dict
             >>> Dict({"a": 1, "b": 2}).pipe_unwrap(
             ...     lambda d: {k: v + 1 for k, v in d.items()}
@@ -132,7 +131,6 @@ class CommonBase[T](ABC):
         Each pychain class implement this method to allow chaining of functions that transform the
         underlying data and return a new wrapped instance of the same subclass.
 
-        Example:
             >>> from pychain import Dict
             >>> Dict({1: 2}).pipe_into(lambda d: {k: v + 1 for k, v in d.items()})
             {1: 3}
