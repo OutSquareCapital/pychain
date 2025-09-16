@@ -62,8 +62,15 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
         return self._new(self._data.copy())
 
     def update(self, *others: dict[KT, VT]) -> Self:
-        """Update the dict with other(s) dict(s) and return self for convenience.
-        **Warning**: This modifies the dict in place.
+        """
+        Update the dict with other(s) dict(s) and return self for convenience.
+
+        **Warning** ⚠️
+
+        This modifies the dict in place.
+
+            >>> Dict({1: 2}).update({3: 4})
+            {1: 2, 3: 4}
         """
         self._data.update(*others)
         return self
@@ -77,8 +84,12 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
         return self._data.get(key, default)
 
     def set_value(self, key: KT, value: VT) -> Self:
-        """Set the value for a key and return self for convenience.
-        **Warning**: This modifies the dict in place.
+        """
+        Set the value for a key and return self for convenience.
+
+        **Warning** ⚠️
+
+        This modifies the dict in place.
 
             >>> Dict({}).set_value("x", 1)
             {'x': 1}

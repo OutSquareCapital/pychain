@@ -5,8 +5,6 @@
 
 <a id="module-pychain"></a>
 
-# Pychain
-
 PyChain is a Python library that provides functional-style chaining operations for data structures.
 Most of the computations are done with implementations from the cytoolz library.
 
@@ -24,113 +22,9 @@ The stubs used for the developpement can be found here:
 * **Key Dependencies**: itertools, cytoolz, more-itertools, numpy. The library acts as a unifying and simplifying API layer over these powerful tools.
 * **Design**: Based on wrapper classes that encapsulate native Python data structures or third-party library objects.
   * **\`Iter[T]\`**: For any Iterable. This is the most generic and powerful wrapper. Most operations are **lazy**.
-  * **\`Seq[T]\` / \`SeqMut[T]\`**: For Sequence (immutable) and MutableSequence (mutable) objects.
   * **\`Dict[KT, VT]\`**: For dict objects.
   * **\`Array[T]\`**: For numpy.ndarray objects.
 * **Interoperability**: Designed to integrate seamlessly with other data manipulation libraries, like polars, using the pipe_into and unwrap methods.
-
-### *class* pychain.SeqMut(data)
-
-* **Parameters:**
-  **data** (*T*)
-
-#### append(value)
-
-Append object to the end of the sequence and return self for convenience.
-**Warning**: Mutates the original sequence.
-
-```python
->>> SeqMut([1, 2]).append(3)
-[1, 2, 3]
-```
-
-* **Parameters:**
-  **value** (*T*)
-* **Return type:**
-  *Self*
-
-#### clear()
-
-Clear the sequence and return self for convenience.
-**Warning**: Mutates the original sequence.
-
-```python
->>> SeqMut([1, 2]).clear()
-[]
-```
-
-* **Return type:**
-  *Self*
-
-#### extend(\*others)
-
-Extend the sequence with elements from another iterable and return self for convenience.
-**Warning**: Mutates the original sequence.
-
-```python
->>> SeqMut([1, 2]).extend([3, 4])
-[1, 2, 3, 4]
-```
-
-* **Parameters:**
-  **others** (*Iterable*)
-* **Return type:**
-  *Self*
-
-#### insert(index, value)
-
-Insert an object into the sequence at the specified index and return self for convenience.
-**Warning**: Mutates the original sequence.
-
-```python
->>> SeqMut([1, 2]).insert(1, 3)
-[1, 3, 2]
-```
-
-* **Parameters:**
-  * **index** (*int*)
-  * **value** (*T*)
-* **Return type:**
-  *Self*
-
-#### pipe(func, \*args, \*\*kwargs)
-
-Pipe the instance in the function and return the result.
-
-* **Parameters:**
-  * **func** (*Callable* *[* *[**Concatenate* *[**MutableSequence* *,* *P* *]* *]* *,* *MutableSequence* *]*)
-  * **args** (*P*)
-  * **kwargs** (*P*)
-* **Return type:**
-  [*SeqMut*](#pychain.SeqMut)
-
-#### remove(value)
-
-Remove an object from the sequence and return self for convenience.
-**Warning**: Mutates the original sequence.
-
-```python
->>> SeqMut([1, 2]).remove(2)
-[1]
-```
-
-* **Parameters:**
-  **value** (*T*)
-* **Return type:**
-  *Self*
-
-#### reverse()
-
-Reverse the order of the sequence and return self for convenience.
-**Warning**: Mutates the original sequence.
-
-```python
->>> SeqMut([1, 2]).reverse()
-[2, 1]
-```
-
-* **Return type:**
-  *Self*
 
 ### *class* pychain.Dict(data)
 
@@ -347,7 +241,10 @@ This function must be implemented by subclasses.
 #### set_value(key, value)
 
 Set the value for a key and return self for convenience.
-**Warning**: This modifies the dict in place.
+
+**Warning** ⚠️
+
+This modifies the dict in place.
 
 ```python
 >>> Dict({}).set_value("x", 1)
@@ -363,7 +260,15 @@ Set the value for a key and return self for convenience.
 #### update(\*others)
 
 Update the dict with other(s) dict(s) and return self for convenience.
-**Warning**: This modifies the dict in place.
+
+**Warning** ⚠️
+
+This modifies the dict in place.
+
+```python
+>>> Dict({1: 2}).update({3: 4})
+{1: 2, 3: 4}
+```
 
 * **Parameters:**
   **others** (*dict* *[**KT* *,* *VT* *]*)
@@ -591,84 +496,33 @@ Flatten one level of nesting and return a new Iterable wrapper.
 * **Return type:**
   [*Iter*](#pychain.Iter)
 
-#### *classmethod* from_count(start=0, step=1)
+#### frequencies()
 
-Create an infinite iterator of evenly spaced values.
-This is a class method that acts as a constructor.
-Warning: This creates an infinite iterator. Be sure to use .head() or
-.slice() to limit the number of items taken.
+Return a Dict of value frequencies.
 
 ```python
->>> Iter.from_count(10, 2).head(3).to_list()
-[10, 12, 14]
+>>> from pychain import Iter
+>>> Iter([1, 1, 2]).frequencies()
+{1: 2, 2: 1}
+```
+
+* **Return type:**
+  [Dict][#pychain.Dict](T, int)
+
+#### group_by(on)
+
+Group elements by key function and return a Dict result.
+
+```python
+>>> from pychain import Iter
+>>> Iter(["a", "bb"]).group_by(len)
+{1: ['a'], 2: ['bb']}
 ```
 
 * **Parameters:**
-  * **start** (*int*)
-  * **step** (*int*)
+  **on** (*Transform*)
 * **Return type:**
-  [*Iter*][#pychain.Iter](int)
-
-#### *classmethod* from_elements(\*elements)
-
-Create an Iter from a sequence of elements.
-This is a class method that acts as a constructor from unpacked arguments.
-
-```python
->>> Iter.from_elements(1, 2, 3).to_list()
-[1, 2, 3]
-```
-
-* **Parameters:**
-  **elements** (*U*)
-* **Return type:**
-  [*Iter*](#pychain.Iter)
-
-#### *classmethod* from_func(func, n)
-
-Create an infinite iterator by repeatedly applying a function.
-
-```python
->>> Iter.from_func(lambda x: x + 1, 0).head(3).to_list()
-[0, 1, 2]
-```
-
-* **Parameters:**
-  * **func** (*Process*)
-  * **n** (*U*)
-* **Return type:**
-  [*Iter*](#pychain.Iter)
-
-#### *classmethod* from_iterables(\*iterables)
-
-Create an Iter by chaining multiple iterables.
-This is a class method that acts as a constructor from multiple iterables.
-
-```python
->>> Iter.from_iterables([1, 2], (3, 4)).to_list()
-[1, 2, 3, 4]
-```
-
-* **Parameters:**
-  **iterables** (*Iterable*)
-* **Return type:**
-  [*Iter*](#pychain.Iter)
-
-#### *classmethod* from_range(start, stop, step=1)
-
-Create an iterator from a range.
-
-```python
->>> Iter.from_range(1, 5).to_list()
-[1, 2, 3, 4]
-```
-
-* **Parameters:**
-  * **start** (*int*)
-  * **stop** (*int*)
-  * **step** (*int*)
-* **Return type:**
-  [*Iter*][#pychain.Iter](int)
+  [Dict][#pychain.Dict](K, list[T)]
 
 #### join(other, left_on, right_on, left_default=None, right_default=None)
 
@@ -1185,132 +1039,6 @@ By default, the sequence will end when the shortest iterable is exhausted. To co
 * **Return type:**
   [Iter][#pychain.Iter](tuple[T | U, …)]
 
-### *class* pychain.CommonBase(data)
-
-Base class for all wrappers.
-You can subclass this to create your own wrapper types.
-The pipe unwrap method must be implemented to allow piping functions that transform the underlying data type, whilst retaining the wrapper.
-
-* **Parameters:**
-  **data** (*T*)
-
-#### pipe(func, \*args, \*\*kwargs)
-
-Pipe the instance in the function and return the result.
-
-* **Parameters:**
-  * **func** (*Callable* *[* *[**Concatenate* *[**Self* *,* *P* *]* *]* *,* *R* *]*)
-  * **args** (*P*)
-  * **kwargs** (*P*)
-* **Return type:**
-  R
-
-#### pipe_chain(\*funcs)
-
-Pipe a value through a sequence of functions.
-
-Prefer this method over multiple pipe_unwrap calls when the functions don’t transform the type.
-
-I.e. Iter(data).pipe_chain(f, g, h).unwrap() is equivalent to h(g(f(data)))
-
-* **Parameters:**
-  **funcs** (*Process*)
-* **Return type:**
-  *Self*
-
-#### pipe_into(func, \*args, \*\*kwargs)
-
-Pipe the underlying data in the function and return the result.
-
-* **Parameters:**
-  * **func** (*Callable* *[* *[**Concatenate* *[**T* *,* *P* *]* *]* *,* *R* *]*)
-  * **args** (*P*)
-  * **kwargs** (*P*)
-* **Return type:**
-  R
-
-#### *abstractmethod* pipe_unwrap(func, \*args, \*\*kwargs)
-
-Pipe underlying data in the function and return a new wrapped instance.
-This function must be implemented by subclasses.
-
-* **Parameters:**
-  * **func** (*Callable* *[* *[**Concatenate* *[**Self* *,* *P* *]* *]* *,* *Any* *]*)
-  * **args** (*P*)
-  * **kwargs** (*P*)
-* **Return type:**
-  *Any*
-
-#### println(pretty=True)
-
-Print the underlying data and return self for chaining.
-
-* **Parameters:**
-  **pretty** (*bool*)
-* **Return type:**
-  *Self*
-
-#### unwrap()
-
-Return the underlying data.
-
-* **Return type:**
-  T
-
-### *class* pychain.Seq(data)
-
-* **Parameters:**
-  **data** (*T*)
-
-#### count(value)
-
-Count occurrences of value in the sequence.
-
-```python
->>> Seq([1, 2, 1]).count(1)
-2
-```
-
-* **Parameters:**
-  **value** (*T*)
-* **Return type:**
-  int
-
-#### index(value, start=0, stop=None)
-
-Return the index of the first occurrence of value in the sequence.
-
-```python
->>> Seq([1, 2, 1]).index(1)
-0
-```
-
-* **Parameters:**
-  * **value** (*T*)
-  * **start** (*int*)
-  * **stop** (*int* *|* *None*)
-* **Return type:**
-  int
-
-#### pipe_unwrap(func, \*args, \*\*kwargs)
-
-Pipe underlying data in the function and return a new wrapped instance.
-This function must be implemented by subclasses.
-
-* **Parameters:**
-  * **func** (*Callable* *[* *[**Concatenate* *[**Sequence* *,* *P* *]* *]* *,* *Sequence* *]*)
-  * **args** (*P*)
-  * **kwargs** (*P*)
-* **Return type:**
-  [*Seq*](#pychain.Seq)
-
-#### to_iter()
-
-Return an iterator over the sequence elements.
-
-* **Return type:**
-  [Iter][#pychain.Iter](T)
-
 ### *class* pychain.Array(data)
 
 Wrapper for numpy arrays and similar objects.
@@ -1347,3 +1075,63 @@ Convert the wrapped array to an Iter wrapper.
 
 * **Return type:**
   [Iter][#pychain.Iter](T)
+
+### pychain.iter_count(start=0, step=1)
+
+Create an infinite iterator of evenly spaced values.
+
+**Warning** ⚠️
+
+This creates an infinite iterator.
+
+Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
+
+```python
+>>> iter_count(10, 2).head(3).to_list()
+[10, 12, 14]
+```
+
+* **Parameters:**
+  * **start** (*int*)
+  * **step** (*int*)
+* **Return type:**
+  [*Iter*][#pychain.Iter](int)
+
+### pychain.iter_func(func, n)
+
+Create an infinite iterator by repeatedly applying a function.
+
+**Warning** ⚠️
+
+This creates an infinite iterator.
+
+Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
+
+```python
+>>> iter_func(lambda x: x + 1, 0).head(3).to_list()
+[0, 1, 2]
+```
+
+* **Parameters:**
+  * **func** (*Process*)
+  * **n** (*U*)
+* **Return type:**
+  [*Iter*](#pychain.Iter)
+
+### pychain.iter_range(start, stop, step=1)
+
+Create an iterator from a range.
+
+Syntactic sugar for Iter(range(start, stop, step)).
+
+```python
+>>> iter_range(1, 5).to_list()
+[1, 2, 3, 4]
+```
+
+* **Parameters:**
+  * **start** (*int*)
+  * **stop** (*int*)
+  * **step** (*int*)
+* **Return type:**
+  [*Iter*][#pychain.Iter](int)
