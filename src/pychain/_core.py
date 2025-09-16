@@ -1,6 +1,6 @@
 import pprint
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable, MutableSequence, Sequence
+from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, Concatenate, NamedTuple, Protocol, Self
 
 import cytoolz as cz
@@ -8,7 +8,6 @@ import cytoolz as cz
 if TYPE_CHECKING:
     from ._dict import Dict
     from ._iter import Iter
-    from ._sequence import Seq, SeqMut
 
 type Check[T] = Callable[[T], bool]
 """Predicate function that checks a condition on type T and returns a boolean."""
@@ -141,15 +140,3 @@ def dict_factory[K, V](data: dict[K, V]) -> "Dict[K, V]":
     from ._dict import Dict
 
     return Dict(data)
-
-
-def mut_seq_factory[T](data: MutableSequence[T]) -> "SeqMut[T]":
-    from ._sequence import SeqMut
-
-    return SeqMut(data)
-
-
-def seq_factory[T](data: Sequence[T]) -> "Seq[T]":
-    from ._sequence import Seq
-
-    return Seq(data)

@@ -1,17 +1,26 @@
 import itertools
 from collections.abc import Callable, Iterable
-from typing import Any, Concatenate, Literal, overload
+from typing import TYPE_CHECKING, Any, Concatenate, Literal, overload
 
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import Check, Pluckable, Process, SupportsRichComparison, Transform
+from .._core import (
+    Check,
+    Pluckable,
+    Process,
+    SupportsRichComparison,
+    Transform,
+    dict_factory,
+)
 from ._aggregations import IterAgg
-from ._conversions import IterConvert
 from ._process import IterProcess
 
+if TYPE_CHECKING:
+    from .._dict import Dict
 
-class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
+
+class Iter[T](IterAgg[T], IterProcess[T]):
     """
     A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
     It supports lazy evaluation, allowing for efficient processing of large datasets.
@@ -44,62 +53,6 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
             [10, 20, 30]
         """
         return Iter(func(self._data, *args, **kwargs))
-
-    # CONSTRUCTORS------------------------------------------------------------------
-    @classmethod
-    def from_count(cls, start: int = 0, step: int = 1) -> "Iter[int]":
-        """
-        Create an infinite iterator of evenly spaced values.
-        This is a class method that acts as a constructor.
-        Warning: This creates an infinite iterator. Be sure to use .head() or
-        .slice() to limit the number of items taken.
-
-            >>> Iter.from_count(10, 2).head(3).to_list()
-            [10, 12, 14]
-        """
-        return Iter(itertools.count(start, step))
-
-    @classmethod
-    def from_range(cls, start: int, stop: int, step: int = 1) -> "Iter[int]":
-        """
-        Create an iterator from a range.
-
-            >>> Iter.from_range(1, 5).to_list()
-            [1, 2, 3, 4]
-        """
-        return Iter(range(start, stop, step))
-
-    @classmethod
-    def from_elements[U](cls, *elements: U) -> "Iter[U]":
-        """
-        Create an Iter from a sequence of elements.
-        This is a class method that acts as a constructor from unpacked arguments.
-
-            >>> Iter.from_elements(1, 2, 3).to_list()
-            [1, 2, 3]
-        """
-        return Iter(elements)
-
-    @classmethod
-    def from_func[U](cls, func: Process[U], n: U) -> "Iter[U]":
-        """
-        Create an infinite iterator by repeatedly applying a function.
-
-            >>> Iter.from_func(lambda x: x + 1, 0).head(3).to_list()
-            [0, 1, 2]
-        """
-        return Iter(cz.itertoolz.iterate(func, n))
-
-    @classmethod
-    def from_iterables[U](cls, *iterables: Iterable[U]) -> "Iter[U]":
-        """
-        Create an Iter by chaining multiple iterables.
-        This is a class method that acts as a constructor from multiple iterables.
-
-            >>> Iter.from_iterables([1, 2], (3, 4)).to_list()
-            [1, 2, 3, 4]
-        """
-        return Iter(itertools.chain(*iterables))
 
     # MAPS------------------------------------------------------------------
     def map[**P, R](
@@ -707,3 +660,23 @@ class Iter[T](IterAgg[T], IterProcess[T], IterConvert[T]):
             [{'age': 20}, {'age': 30}]
         """
         return self._new(sorted(self._data, key=key, reverse=reverse))
+
+    def group_by[K](self, on: Transform[T, K]) -> "Dict[K, list[T]]":
+        """
+        Group elements by key function and return a Dict result.
+
+            >>> from pychain import Iter
+            >>> Iter(["a", "bb"]).group_by(len)
+            {1: ['a'], 2: ['bb']}
+        """
+        return dict_factory(cz.itertoolz.groupby(on, self._data))
+
+    def frequencies(self) -> "Dict[T, int]":
+        """
+        Return a Dict of value frequencies.
+
+            >>> from pychain import Iter
+            >>> Iter([1, 1, 2]).frequencies()
+            {1: 2, 2: 1}
+        """
+        return dict_factory(cz.itertoolz.frequencies(self._data))

@@ -1,4 +1,5 @@
 import itertools
+from collections import deque
 from collections.abc import Callable, Iterable
 from random import Random
 from typing import Any, Concatenate, Self
@@ -11,6 +12,26 @@ from .._core import Check, CommonBase, Peeked, Transform
 
 class IterProcess[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
+
+    def to_list(self) -> Self:
+        """
+        Transform the iterable into a list and return self.
+
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 3]).to_list()
+            [1, 2, 3]
+        """
+        return self.__class__(list(self._data))
+
+    def to_deque(self, maxlen: int | None = None) -> Self:
+        """
+        Return an Iter wrapping the elements of the iterable.
+
+            >>> from pychain import Iter
+            >>> Iter([1, 2, 3]).to_deque()
+            deque([1, 2, 3])
+        """
+        return self.__class__(deque(self._data, maxlen))
 
     def slice(self, start: int | None = None, stop: int | None = None) -> Self:
         """
@@ -99,8 +120,11 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         """
         Repeat the sequence indefinitely.
 
-        **Warning**: This creates an infinite iterator. Be sure to use .head() or
-        .slice() to limit the number of items taken.
+        **Warning** ⚠️
+
+        This creates an infinite iterator.
+
+        Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 
             >>> from pychain import Iter
             >>> Iter([1, 2]).cycle().head(5).to_list()

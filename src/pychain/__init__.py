@@ -1,4 +1,4 @@
-"""# Pychain
+"""
 
 PyChain is a Python library that provides functional-style chaining operations for data structures.
 Most of the computations are done with implementations from the cytoolz library.
@@ -19,16 +19,21 @@ The stubs used for the developpement can be found here:
 * **Design**: Based on wrapper classes that encapsulate native Python data structures or third-party library objects.
 
   * **`Iter[T]`**: For any `Iterable`. This is the most generic and powerful wrapper. Most operations are **lazy**.
-  * **`Seq[T]` / `SeqMut[T]`**: For `Sequence` (immutable) and `MutableSequence` (mutable) objects.
   * **`Dict[KT, VT]`**: For `dict` objects.
   * **`Array[T]`**: For `numpy.ndarray` objects.
 * **Interoperability**: Designed to integrate seamlessly with other data manipulation libraries, like `polars`, using the `pipe_into` and `unwrap` methods.
 """
 
 from ._arrays import Array
-from ._core import CommonBase
+from ._constructors import iter_count, iter_func, iter_range
 from ._dict import Dict
 from ._iter import Iter
-from ._sequence import Seq, SeqMut
 
-__all__ = ["SeqMut", "Dict", "Iter", "CommonBase", "Seq", "Array"]
+__all__ = [
+    "Dict",
+    "Iter",
+    "Array",
+    "iter_count",
+    "iter_func",
+    "iter_range",
+]
