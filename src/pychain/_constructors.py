@@ -1,8 +1,8 @@
 import itertools
+from collections.abc import Callable
 
 import cytoolz as cz
 
-from ._core import Process
 from ._iter import Iter
 
 
@@ -34,7 +34,7 @@ def iter_range(start: int, stop: int, step: int = 1) -> Iter[int]:
     return Iter(range(start, stop, step))
 
 
-def iter_func[U](func: Process[U], n: U) -> "Iter[U]":
+def iter_func[U](func: Callable[[U], U], n: U) -> Iter[U]:
     """
     Create an infinite iterator by repeatedly applying a function.
 
@@ -50,7 +50,7 @@ def iter_func[U](func: Process[U], n: U) -> "Iter[U]":
     return Iter(cz.itertoolz.iterate(func, n))
 
 
-def iter_on[T](*elements: T) -> "Iter[T]":
+def iter_on[T](*elements: T) -> Iter[T]:
     """
     Create an iterator from the given elements.
 

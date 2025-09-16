@@ -1,12 +1,7 @@
 import textwrap
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Final, NamedTuple, TypeGuard
-
-type Check[T] = Callable[[T], bool]
-type Process[T] = Callable[[T], T]
-type Transform[T, T1] = Callable[[T], T1]
-type Agg[V, V1] = Callable[[Iterable[V]], V1]
 
 
 class Signature(NamedTuple):

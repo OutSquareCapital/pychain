@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import itertools
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, Concatenate, Literal, overload
@@ -5,14 +7,7 @@ from typing import TYPE_CHECKING, Any, Concatenate, Literal, overload
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import (
-    Check,
-    Pluckable,
-    Process,
-    SupportsRichComparison,
-    Transform,
-    dict_factory,
-)
+from .._core import Pluckable, SupportsRichComparison, dict_factory
 from ._aggregations import IterAgg
 from ._process import IterProcess
 
@@ -23,41 +18,29 @@ if TYPE_CHECKING:
 class Iter[T](IterAgg[T], IterProcess[T]):
     """
     A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
-    It supports lazy evaluation, allowing for efficient processing of large datasets.
-    It is not a collection itself, but a wrapper that provides additional methods for working with iterables.
-    It can be constructed from any iterable, including lists, tuples, sets, and generators.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).to_list()
-        [1, 2, 3]
+    It supports lazy evaluation, allowing for efficient processing of large datasets.
+
+    It is not a collection itself, but a wrapper that provides additional methods for working with iterables.
+
+    It can be constructed from any iterable, including `lists`, `tuples`, `sets`, and `generators`.
     """
 
     _data: Iterable[T]
     __slots__ = ("_data",)
 
-    def pipe_unwrap[**P, U](
+    def pipe_into[**P, U](
         self,
         func: Callable[Concatenate[Iterable[T], P], Iterable[U]],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> "Iter[U]":
-        """
-        Pipe the entire iterable into a function that takes an iterable as its first argument.
-        Returns a new Iter wrapping the result.
-
-            >>> from pychain import Iter
-            >>> def func(iterable, n):
-            ...     return (x * n for x in iterable)
-            >>>
-            >>> Iter([1, 2, 3]).pipe_unwrap(func, 10).to_list()
-            [10, 20, 30]
-        """
+    ) -> Iter[U]:
         return Iter(func(self._data, *args, **kwargs))
 
     # MAPS------------------------------------------------------------------
     def map[**P, R](
         self, func: Callable[Concatenate[T, P], R], *args: P.args, **kwargs: P.kwargs
-    ) -> "Iter[R]":
+    ) -> Iter[R]:
         """
         Map each element through func and return a Iter of results.
 
@@ -66,9 +49,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(map(func, self._data, *args, **kwargs))
 
-    def map_star[U: Iterable[Any], R](
-        self: "Iter[U]", func: Callable[..., R]
-    ) -> "Iter[R]":
+    def map_star[U: Iterable[Any], R](self: Iter[U], func: Callable[..., R]) -> Iter[R]:
         """
         Applies a function to each element, where each element is an iterable.
 
@@ -90,7 +71,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         func: Callable[Concatenate[T, P], Iterable[R]],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> "Iter[R]":
+    ) -> Iter[R]:
         """
         Maps a function over a sequence and flattens the result by one level.
         It applies a function to each element, where the function must return
@@ -113,9 +94,9 @@ class Iter[T](IterAgg[T], IterProcess[T]):
 
     def map_join[R](
         self,
-        func: Transform[Iterable[T], Iterable[R]],
+        func: Callable[[Iterable[T]], Iterable[R]],
         *others: Iterable[T],
-    ) -> "Iter[R]":
+    ) -> Iter[R]:
         """
         Equivalent to flat_map, but allow to join other iterables.
 
@@ -130,10 +111,10 @@ class Iter[T](IterAgg[T], IterProcess[T]):
 
     def map_if[R](
         self,
-        predicate: Check[T],
-        func: Transform[T, R],
-        func_else: Transform[T, R] | None = None,
-    ) -> "Iter[R]":
+        predicate: Callable[[T], bool],
+        func: Callable[[T], R],
+        func_else: Callable[[T], R] | None = None,
+    ) -> Iter[R]:
         """
         Evaluate each item from iterable using pred. If the result is equivalent to True, transform the item with func and yield it.
 
@@ -157,7 +138,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(mit.map_if(self._data, predicate, func, func_else=func_else))
 
-    def map_filter[R](self, func: Transform[T, R]) -> "Iter[R]":
+    def map_filter[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
         Apply func to every element of iterable, yielding only those which are not None.
 
@@ -170,8 +151,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         return Iter(mit.filter_map(func, self._data))
 
     def map_except[R](
-        self, func: Transform[T, R], *exceptions: type[BaseException]
-    ) -> "Iter[R]":
+        self, func: Callable[[T], R], *exceptions: type[BaseException]
+    ) -> Iter[R]:
         """
         Transform each item from iterable with function and yield the result, unless function raises one of the specified exceptions.
         function is called to transform each item in iterable.
@@ -186,7 +167,32 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(mit.map_except(func, self._data, *exceptions))
 
-    def map_juxt[R](self, *funcs: Transform[T, R]) -> "Iter[tuple[R, ...]]":
+    @overload
+    def map_juxt[R1, R2](
+        self,
+        func1: Callable[[T], R1],
+        func2: Callable[[T], R2],
+        /,
+    ) -> Iter[tuple[R1, R2]]: ...
+    @overload
+    def map_juxt[R, R1, R2, R3](
+        self,
+        func1: Callable[[T], R1],
+        func2: Callable[[T], R2],
+        func3: Callable[[T], R3],
+        /,
+    ) -> Iter[tuple[R1, R2, R3]]: ...
+    @overload
+    def map_juxt[R1, R2, R3, R4](
+        self,
+        func1: Callable[[T], R1],
+        func2: Callable[[T], R2],
+        func3: Callable[[T], R3],
+        func4: Callable[[T], R4],
+        /,
+    ) -> Iter[tuple[R1, R2, R3, R4]]: ...
+
+    def map_juxt(self, *funcs: Callable[[T], object]) -> Iter[tuple[object, ...]]:
         """
         Apply several functions to each item.
         Returns a new Iter where each item is a tuple of the results of applying each function to the original item.
@@ -202,11 +208,11 @@ class Iter[T](IterAgg[T], IterProcess[T]):
     @overload
     def zip[T1](
         self, iter1: Iterable[T1], /, *, strict: bool = ...
-    ) -> "Iter[tuple[T, T1]]": ...
+    ) -> Iter[tuple[T, T1]]: ...
     @overload
     def zip[T1, T2](
         self, iter1: Iterable[T1], iter2: Iterable[T2], /, *, strict: bool = ...
-    ) -> "Iter[tuple[T, T1, T2]]": ...
+    ) -> Iter[tuple[T, T1, T2]]: ...
     @overload
     def zip[T1, T2, T3](
         self,
@@ -216,7 +222,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         /,
         *,
         strict: bool = ...,
-    ) -> "Iter[tuple[T, T1, T2, T3]]": ...
+    ) -> Iter[tuple[T, T1, T2, T3]]: ...
     @overload
     def zip[T1, T2, T3, T4](
         self,
@@ -227,7 +233,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         /,
         *,
         strict: bool = ...,
-    ) -> "Iter[tuple[T, T1, T2, T3, T4]]": ...
+    ) -> Iter[tuple[T, T1, T2, T3, T4]]: ...
     @overload
     def zip[T1, T2, T3, T4, T5](
         self,
@@ -239,10 +245,10 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         /,
         *,
         strict: bool = ...,
-    ) -> "Iter[tuple[T, T1, T2, T3, T4, T5]]": ...
+    ) -> Iter[tuple[T, T1, T2, T3, T4, T5]]: ...
     def zip(
         self, *others: Iterable[Any], strict: bool = False
-    ) -> "Iter[tuple[Any, ...]]":
+    ) -> Iter[tuple[Any, ...]]:
         """
         Zip with other iterables, optionally strict, wrapped in Iter.
 
@@ -257,7 +263,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         offsets: list[int],
         longest: bool = False,
         fillvalue: U = None,
-    ) -> "Iter[tuple[T | U, ...]]":
+    ) -> Iter[tuple[T | U, ...]]:
         """
         Zip the input iterables together, but offset the i-th iterable by the i-th item in offsets.
 
@@ -286,7 +292,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         *others: Iterable[T],
         scalar_types: tuple[type, type] | None = (str, bytes),
         strict: bool = False,
-    ) -> "Iter[tuple[T, ...]]":
+    ) -> Iter[tuple[T, ...]]:
         """
         Version of zip that "broadcasts" any scalar (i.e., non-iterable) items into output tuples.
 
@@ -311,20 +317,20 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         )
 
     @overload
-    def zip_equal(self) -> "Iter[tuple[T]]": ...
+    def zip_equal(self) -> Iter[tuple[T]]: ...
     @overload
-    def zip_equal[T2](self, __iter2: Iterable[T2]) -> "Iter[tuple[T, T2]]": ...
+    def zip_equal[T2](self, __iter2: Iterable[T2]) -> Iter[tuple[T, T2]]: ...
     @overload
     def zip_equal[T2, T3](
         self, __iter2: Iterable[T2], __iter3: Iterable[T3]
-    ) -> "Iter[tuple[T, T2, T3]]": ...
+    ) -> Iter[tuple[T, T2, T3]]: ...
     @overload
     def zip_equal[T2, T3, T4](
         self,
         __iter2: Iterable[T2],
         __iter3: Iterable[T3],
         __iter4: Iterable[T4],
-    ) -> "Iter[tuple[T, T2, T3, T4]]": ...
+    ) -> Iter[tuple[T, T2, T3, T4]]: ...
     @overload
     def zip_equal[T2, T3, T4, T5](
         self,
@@ -332,7 +338,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         __iter3: Iterable[T3],
         __iter4: Iterable[T4],
         __iter5: Iterable[T5],
-    ) -> "Iter[tuple[T, T2, T3, T4, T5]]": ...
+    ) -> Iter[tuple[T, T2, T3, T4, T5]]: ...
     @overload
     def zip_equal(
         __iter1: Iterable[Any],
@@ -346,7 +352,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
     def zip_equal(self, *others: Iterable[Any]):
         return Iter(mit.zip_equal(self._data, *others))
 
-    def enumerate(self) -> "Iter[tuple[int, T]]":
+    def enumerate(self) -> Iter[tuple[int, T]]:
         """
         Return a Iter of (index, value) pairs.
 
@@ -356,15 +362,15 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         return Iter(enumerate(self._data))
 
     @overload
-    def combinations(self, r: Literal[2]) -> "Iter[tuple[T, T]]": ...
+    def combinations(self, r: Literal[2]) -> Iter[tuple[T, T]]: ...
     @overload
-    def combinations(self, r: Literal[3]) -> "Iter[tuple[T, T, T]]": ...
+    def combinations(self, r: Literal[3]) -> Iter[tuple[T, T, T]]: ...
     @overload
-    def combinations(self, r: Literal[4]) -> "Iter[tuple[T, T, T, T]]": ...
+    def combinations(self, r: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
     @overload
-    def combinations(self, r: Literal[5]) -> "Iter[tuple[T, T, T, T, T]]": ...
-    def combinations(self, r: int) -> "Iter[tuple[T, ...]]":
-        """¨
+    def combinations(self, r: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
+    def combinations(self, r: int) -> Iter[tuple[T, ...]]:
+        """
         Return all combinations of length r.
 
             >>> Iter([1, 2, 3]).combinations(2).to_list()
@@ -372,7 +378,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(itertools.combinations(self._data, r))
 
-    def batch(self, n: int) -> "Iter[tuple[T, ...]]":
+    def batch(self, n: int) -> Iter[tuple[T, ...]]:
         """
         Batch elements into tuples of length n and return a new Iter.
 
@@ -383,7 +389,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
 
     def zip_longest[U](
         self, *others: Iterable[T], fill_value: U = None
-    ) -> "Iter[tuple[U | T, ...]]":
+    ) -> Iter[tuple[U | T, ...]]:
         """
         Zip with other iterables, filling missing values.
 
@@ -392,8 +398,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(itertools.zip_longest(self._data, *others, fillvalue=fill_value))
 
-    def permutations(self, r: int | None = None) -> "Iter[tuple[T, ...]]":
-        """¨
+    def permutations(self, r: int | None = None) -> Iter[tuple[T, ...]]:
+        """
         Return all permutations of length r.
 
             >>> Iter([1, 2, 3]).permutations(2).to_list()
@@ -401,7 +407,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(itertools.permutations(self._data, r))
 
-    def product[U](self, other: Iterable[U]) -> "Iter[tuple[T, U]]":
+    def product[U](self, other: Iterable[U]) -> Iter[tuple[T, U]]:
         """
         Computes the Cartesian product with another iterable.
         This is the declarative equivalent of nested for-loops.
@@ -419,7 +425,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(itertools.product(self._data, other))
 
-    def combinations_with_replacement(self, r: int) -> "Iter[tuple[T, ...]]":
+    def combinations_with_replacement(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations with replacement of length r.
 
@@ -428,7 +434,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(itertools.combinations_with_replacement(self._data, r))
 
-    def pairwise(self) -> "Iter[tuple[T, T]]":
+    def pairwise(self) -> Iter[tuple[T, T]]:
         """
         Return an iterator over pairs of consecutive elements.
 
@@ -440,11 +446,11 @@ class Iter[T](IterAgg[T], IterProcess[T]):
     def join[R, K](
         self,
         other: Iterable[R],
-        left_on: Transform[T, K],
-        right_on: Transform[R, K],
+        left_on: Callable[[T], K],
+        right_on: Callable[[R], K],
         left_default: T | None = None,
         right_default: R | None = None,
-    ) -> "Iter[tuple[T, R]]":
+    ) -> Iter[tuple[T, R]]:
         """
         Perform a relational join with another iterable.
 
@@ -464,7 +470,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
             )
         )
 
-    def pluck[K, V](self: "Iter[Pluckable[K, V]]", key: K) -> "Iter[V]":
+    def pluck[K, V](self: Iter[Pluckable[K, V]], key: K) -> Iter[V]:
         """
         Extract a value from each element in the sequence using a key or index.
         This is a shortcut for `.map(lambda x: x[key])`.
@@ -477,7 +483,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(cz.itertoolz.pluck(key, self._data))
 
-    def partition(self, n: int, pad: T | None = None) -> "Iter[tuple[T, ...]]":
+    def partition(self, n: int, pad: T | None = None) -> Iter[tuple[T, ...]]:
         """
         Partition into tuples of length n, optionally padded.
 
@@ -486,7 +492,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(cz.itertoolz.partition(n, self._data, pad))
 
-    def partition_all(self, n: int) -> "Iter[tuple[T, ...]]":
+    def partition_all(self, n: int) -> Iter[tuple[T, ...]]:
         """
         Partition into tuples of length at most n.
 
@@ -495,20 +501,45 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(cz.itertoolz.partition_all(n, self._data))
 
-    def rolling(self, length: int) -> "Iter[tuple[T, ...]]":
-        """
-        Return sliding windows of the given length.
+    @overload
+    def rolling(self, length: Literal[1]) -> Iter[tuple[T]]: ...
+    @overload
+    def rolling(self, length: Literal[2]) -> Iter[tuple[T, T]]: ...
+    @overload
+    def rolling(self, length: Literal[3]) -> Iter[tuple[T, T, T]]: ...
+    @overload
+    def rolling(self, length: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
+    @overload
+    def rolling(self, length: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
+    @overload
+    def rolling(self, length: Literal[6]) -> Iter[tuple[T, T, T, T, T, T]]: ...
+    @overload
+    def rolling(self, length: Literal[7]) -> Iter[tuple[T, T, T, T, T, T, T]]: ...
+    @overload
+    def rolling(self, length: Literal[8]) -> Iter[tuple[T, T, T, T, T, T, T, T]]: ...
+    @overload
+    def rolling(self, length: Literal[9]) -> Iter[tuple[T, T, T, T, T, T, T, T, T]]: ...
 
-            >>> Iter([1, 2, 3]).rolling(2).to_list()
-            [(1, 2), (2, 3)]
+    def rolling(self, length: int) -> Iter[tuple[T, ...]]:
+        """
+        A sequence of overlapping subsequences
+
+            >>> Iter([1, 2, 3, 4]).rolling(2).to_list()
+            [(1, 2), (2, 3), (3, 4)]
+
+        This function creates a sliding window suitable for transformations like sliding means / smoothing
+
+            >>> mean = lambda seq: float(sum(seq)) / len(seq)
+            >>> Iter([1, 2, 3, 4]).rolling(2).map(mean).to_list()
+            [1.5, 2.5, 3.5]
         """
         return Iter(cz.itertoolz.sliding_window(length, self._data))
 
     def diff(
         self,
         *others: Iterable[T],
-        key: Process[T] | None = None,
-    ) -> "Iter[tuple[T, ...]]":
+        key: Callable[[T], T] | None = None,
+    ) -> Iter[tuple[T, ...]]:
         """
         Yield differences between sequences.
 
@@ -518,8 +549,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         return Iter(cz.itertoolz.diff(self._data, *others, ccpdefault=None, key=key))
 
     def reduce_by[K](
-        self, key: Transform[T, K], binop: Callable[[T, T], T]
-    ) -> "Iter[K]":
+        self, key: Callable[[T], K], binop: Callable[[T, T], T]
+    ) -> Iter[K]:
         """
         Perform a simultaneous groupby and reduction
         on the elements of the sequence.
@@ -532,8 +563,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         return Iter(cz.itertoolz.reduceby(key, binop, self._data))
 
     def adjacent(
-        self, predicate: Check[T], distance: int = 1
-    ) -> "Iter[tuple[bool, T]]":
+        self, predicate: Callable[[T], bool], distance: int = 1
+    ) -> Iter[tuple[bool, T]]:
         """
         Return an iterable over (bool, item) tuples.
         The output is a sequence of tuples where the item is drawn from iterable.
@@ -558,7 +589,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(mit.adjacent(predicate, self._data, distance))
 
-    def repeat(self, n: int) -> "Iter[Iterable[T]]":
+    def repeat(self, n: int) -> Iter[Iterable[T]]:
         """
         Repeat the entire iterable n times (as elements) and return Iter.
 
@@ -568,10 +599,10 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         return Iter(itertools.repeat(self._data, n))
 
     @overload
-    def repeat_last(self, default: T) -> "Iter[T]": ...
+    def repeat_last(self, default: T) -> Iter[T]: ...
     @overload
-    def repeat_last[U](self, default: U) -> "Iter[T | U]": ...
-    def repeat_last[U](self, default: U = None) -> "Iter[T | U]":
+    def repeat_last[U](self, default: U) -> Iter[T | U]: ...
+    def repeat_last[U](self, default: U = None) -> Iter[T | U]:
         """
         After the iterable is exhausted, keep yielding its last element.
 
@@ -585,7 +616,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(mit.repeat_last(self._data, default))
 
-    def flatten[U](self: "Iter[Iterable[U]]") -> "Iter[U]":
+    def flatten[U](self: Iter[Iterable[U]]) -> Iter[U]:
         """
         Flatten one level of nesting and return a new Iterable wrapper.
 
@@ -594,7 +625,9 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(itertools.chain.from_iterable(self._data))
 
-    def split_after(self, predicate: Check[T], max_split: int = -1) -> "Iter[list[T]]":
+    def split_after(
+        self, predicate: Callable[[T], bool], max_split: int = -1
+    ) -> Iter[list[T]]:
         """
         Yield lists of items from iterable, where each list ends with an item where callable pred returns True:
         At most maxsplit splits are done.
@@ -611,7 +644,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(mit.split_after(self._data, predicate, max_split))
 
-    def chunked(self, n: int, strict: bool = False) -> "Iter[list[T]]":
+    def chunked(self, n: int, strict: bool = False) -> Iter[list[T]]:
         """
         Break iterable into lists of length n.
 
@@ -630,7 +663,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(mit.chunked(self._data, n, strict))
 
-    def chunked_even(self, n: int) -> "Iter[list[T]]":
+    def chunked_even(self, n: int) -> Iter[list[T]]:
         """
         Break iterable into lists of approximately length n.
         Items are distributed such the lengths of the lists differ by at most 1 item.
@@ -645,10 +678,10 @@ class Iter[T](IterAgg[T], IterProcess[T]):
 
     # PROCESSING------------------------------------------------------------------
     def sort[U: SupportsRichComparison[Any]](
-        self: "Iter[U]",
-        key: Transform[U, Any] | None = None,
+        self: Iter[U],
+        key: Callable[[U], Any] | None = None,
         reverse: bool = False,
-    ) -> "Iter[U]":
+    ) -> Iter[U]:
         """Sort the elements of the sequence.
         Note: This method must consume the entire iterable to perform the sort.
         The result is a new iterable over the sorted sequence.
@@ -661,7 +694,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return self._new(sorted(self._data, key=key, reverse=reverse))
 
-    def group_by[K](self, on: Transform[T, K]) -> "Dict[K, list[T]]":
+    def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
         """
         Group elements by key function and return a Dict result.
 
@@ -671,7 +704,7 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return dict_factory(cz.itertoolz.groupby(on, self._data))
 
-    def frequencies(self) -> "Dict[T, int]":
+    def frequencies(self) -> Dict[T, int]:
         """
         Return a Dict of value frequencies.
 

@@ -6,7 +6,7 @@ from typing import Literal
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase, Transform
+from .._core import CommonBase
 
 
 class IterAgg[T](CommonBase[Iterable[T]]):
@@ -115,7 +115,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return mit.all_equal(self._data, key=key)
 
-    def all_unique[U](self, key: Transform[T, U] | None = None) -> bool:
+    def all_unique[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
         Return True if all items are unique.
 
@@ -125,7 +125,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return mit.all_unique(self._data, key=key)
 
-    def argmax[U](self, key: Transform[T, U] | None = None) -> int:
+    def argmax[U](self, key: Callable[[T], U] | None = None) -> int:
         """
         Return the index of the maximum value in the sequence.
 
@@ -135,7 +135,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return mit.argmax(self._data, key=key)
 
-    def argmin[U](self, key: Transform[T, U] | None = None) -> int:
+    def argmin[U](self, key: Callable[[T], U] | None = None) -> int:
         """
         Return the index of the minimum value in the sequence.
 
@@ -147,7 +147,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
 
     def is_sorted[U](
         self,
-        key: Transform[T, U] | None = None,
+        key: Callable[[T], U] | None = None,
         reverse: bool = False,
         strict: bool = True,
     ) -> bool:
@@ -160,7 +160,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return mit.is_sorted(self._data, key=key, reverse=reverse, strict=strict)
 
-    def sum[U: int | float](self: "CommonBase[Iterable[U]]") -> U | Literal[0]:
+    def sum[U: int | float](self: CommonBase[Iterable[U]]) -> U | Literal[0]:
         """
         Return the sum of the sequence.
 
@@ -170,7 +170,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return sum(self._data)
 
-    def min[U: int | float](self: "CommonBase[Iterable[U]]") -> U:
+    def min[U: int | float](self: CommonBase[Iterable[U]]) -> U:
         """
         Return the minimum value of the sequence.
 
@@ -180,7 +180,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return min(self._data)
 
-    def max[U: int | float](self: "CommonBase[Iterable[U]]") -> U:
+    def max[U: int | float](self: CommonBase[Iterable[U]]) -> U:
         """
         Return the maximum value of the sequence.
 
@@ -190,7 +190,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return max(self._data)
 
-    def mean[U: int | float](self: "CommonBase[Iterable[U]]") -> float:
+    def mean[U: int | float](self: CommonBase[Iterable[U]]) -> float:
         """
         Return the mean of the sequence.
 
@@ -200,7 +200,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return statistics.mean(self._data)
 
-    def median[U: int | float](self: "CommonBase[Iterable[U]]") -> float:
+    def median[U: int | float](self: CommonBase[Iterable[U]]) -> float:
         """
         Return the median of the sequence.
 
@@ -210,7 +210,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return statistics.median(self._data)
 
-    def mode[U: int | float](self: "CommonBase[Iterable[U]]") -> U | Literal[0]:
+    def mode[U: int | float](self: CommonBase[Iterable[U]]) -> U | Literal[0]:
         """
         Return the mode of the sequence.
 

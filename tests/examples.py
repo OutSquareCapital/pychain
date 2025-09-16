@@ -33,8 +33,8 @@ def check_dict() -> None:
 
 
 def check_array() -> None:
-    arr: np.typing.NDArray[np.int_] = pc.iter_range(1, 10).pipe_into(np.array)
-    pc.Array(arr).pipe_chain(lambda x: x + 2, lambda x: x * 3).pipe_unwrap(
+    arr: np.typing.NDArray[np.int_] = pc.iter_range(1, 10).pipe_unwrap(np.array)
+    pc.Array(arr).pipe_chain(lambda x: x + 2, lambda x: x * 3).pipe_into(
         lambda x: x.clip(10, 20)
     )
 
@@ -44,3 +44,4 @@ if __name__ == "__main__":
     check_iter()
     check_dict()
     check_array()
+    print("All checks passed! ✅")

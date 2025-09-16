@@ -7,7 +7,7 @@ from typing import Any, Concatenate, Self
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import Check, CommonBase, Peeked, Transform
+from .._core import CommonBase, Peeked
 
 
 class IterProcess[T](CommonBase[Iterable[T]]):
@@ -68,7 +68,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         return self._new(itertools.filterfalse(func, self._data, *args, **kwargs))
 
     def filter_except(
-        self, func: Transform[T, object], *exceptions: type[BaseException]
+        self, func: Callable[[T], object], *exceptions: type[BaseException]
     ) -> Self:
         """
         Yield the items from iterable for which the validator function does not raise one of the specified exceptions.
@@ -96,7 +96,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         """
         return self._new(itertools.compress(self._data, selectors))
 
-    def take_while(self, predicate: Check[T]) -> Self:
+    def take_while(self, predicate: Callable[[T], bool]) -> Self:
         """
         Take items while predicate holds and return a new Iterable wrapper.
 
@@ -106,7 +106,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         """
         return self._new(itertools.takewhile(predicate, self._data))
 
-    def drop_while(self, predicate: Check[T]) -> Self:
+    def drop_while(self, predicate: Callable[[T], bool]) -> Self:
         """
         Drop items while predicate holds and return the remainder.
 
@@ -142,7 +142,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         """
         return self._new(cz.itertoolz.interpose(element, self._data))
 
-    def top_n(self, n: int, key: Transform[T, Any] | None = None) -> Self:
+    def top_n(self, n: int, key: Callable[[T], Any] | None = None) -> Self:
         """
         Return the top-n items according to key.
 
@@ -269,7 +269,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         return self._new(cz.itertoolz.unique(self._data))
 
     def merge_sorted(
-        self, *others: Iterable[T], sort_on: Transform[T, Any] | None = None
+        self, *others: Iterable[T], sort_on: Callable[[T], Any] | None = None
     ) -> Self:
         """
         Merge already-sorted sequences.
