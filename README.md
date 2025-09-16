@@ -45,6 +45,101 @@ Designed to integrate seamlessly with other data manipulation libraries, like `p
 
 [docs\docs.md](https://github.com/OutSquareCapital/pychain/blob/master/docs/docs.md)
 
+## Real-life simple example
+
+In one of my project, I have to introspect some modules from plotly to get some lists of colors.
+
+I want to check wether the colors are in hex format or not, and I want to get a dictionary of palettes.
+We can see here that pychain allow to keep the same style than polars, with method chaining, but for plain python objects.
+
+Due to the freedom of python, multiple paradigms are implemented across libraries. If you like the fluent, functional, chainable style, pychain can help you to keep it across your codebase, rather than mixing object().method().method() and then another where it's [[... for ... in ...] ... ].
+
+```python
+
+import polars as pl
+import pychain as pc
+from typing import Protocol
+from plotly.express.colors import cyclical, qualitative, sequential
+
+
+class Swatchable(Protocol):
+    def swatches(self) -> go.Figure: ...
+
+
+MODULES: dict[str, Swatchable] = {
+    "sequential": sequential,
+    "cyclical": cyclical,
+    "qualitative": qualitative,
+}
+
+
+
+def get_palettes() -> pc.Dict[str, list[str]]:
+    df: pl.DataFrame = (
+        pc.Iter(MODULES.values())
+        .map(
+            lambda mod: pc.Dict(mod.__dict__)
+            .filter_values(lambda v: isinstance(v, list))
+            .unwrap()
+        )
+        .pipe_into(pl.LazyFrame)
+        .unpivot(value_name="color", variable_name="scale")
+        .drop_nulls()
+        .filter(
+            pl.col("color")
+            .list.eval(pl.element().first().str.starts_with("#").alias("is_hex"))
+            .list.first()
+        )
+        .sort("scale")
+        .collect()
+    )
+    keys: list[str] = df.get_column("scale").to_list()
+    values: list[list[str]] = df.get_column("color").to_list()
+    return pc.Dict.from_zipped(keys, values)
+
+# Ouput excerpt:
+{'mygbm_r': ['#ef55f1',
+            '#c543fa',
+            '#9139fa',
+            '#6324f5',
+            '#2e21ea',
+            '#284ec8',
+            '#3d719a',
+            '#439064',
+            '#31ac28',
+            '#61c10b',
+            '#96d310',
+            '#c6e516',
+            '#f0ed35',
+            '#fcd471',
+            '#fbafa1',
+            '#fb84ce',
+            '#ef55f1']}
+```
+
+However you can still easily go back with for loops when the readability is better this way.
+
+In another place, I use this function to generate a Literal from the keys of the palettes.
+
+```python
+
+from enum import StrEnum
+
+class Text(StrEnum):
+    CONTENT = "Palettes = Literal[\n"
+    END_CONTENT = "]\n"
+    ...# rest of the class
+
+def generate_palettes_literal() -> None:
+    literal_content: str = Text.CONTENT
+    for name in get_palettes().iter_keys().sort().unwrap():
+        literal_content += f'    "{name}",\n'
+    literal_content += Text.END_CONTENT
+    ...# rest of the function
+```
+
+Since I have to reference the literal_content variable in the for loop, This is more reasonnable to use a for loop here rather than a map + reduce approach.
+
 ## Installation
 
 ```bash
