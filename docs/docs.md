@@ -206,17 +206,18 @@ Merge dicts using a function to combine values for duplicate keys.
 
 ### pipe_into(func, \*args, \*\*kwargs)
 
-Apply a function to the wrapped dict and return a new Dict wrapping the result.
+Pipe the underlying data into a function, then wrap the result in the same wrapper type.
+
+Each pychain class implement this method to allow chaining of functions that transform the
+underlying data and return a new wrapped instance of the same subclass.
 
 ```python
->>> def key_to_upper(d: dict[str, int]) -> dict[str, int]:
-...     return {str(k).upper(): v for k, v in d.items()}
->>>
->>> data = {"theo": 20, "alice": 25, "bob": 30}
->>>
->>> Dict(data).pipe_into(key_to_upper).unwrap()
-{'THEO': 20, 'ALICE': 25, 'BOB': 30}
+>>> from pychain import Dict
+>>> Dict({1: 2}).pipe_into(lambda d: {k: v + 1 for k, v in d.items()})
+{1: 3}
 ```
+
+Use this to keep the chainable API after applying a transformation to the data.
 
 * **Parameters:**
   * **func** (*Callable* *[**Concatenate* *[**dict* *[**KT* *,* *VT* *]* *,* *P* *]* *,* *dict* *[**KU* *,* *VU* *]* *]*)

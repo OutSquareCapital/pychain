@@ -37,17 +37,6 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> "Dict[KU, VU]":
-        """
-        Apply a function to the wrapped dict and return a new Dict wrapping the result.
-
-            >>> def key_to_upper(d: dict[str, int]) -> dict[str, int]:
-            ...     return {str(k).upper(): v for k, v in d.items()}
-            >>>
-            >>> data = {"theo": 20, "alice": 25, "bob": 30}
-            >>>
-            >>> Dict(data).pipe_into(key_to_upper).unwrap()
-            {'THEO': 20, 'ALICE': 25, 'BOB': 30}
-        """
         return Dict(func(self._data, *args, **kwargs))
 
     # BUILTINS------------------------------------------------------------------
