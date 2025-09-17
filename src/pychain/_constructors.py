@@ -34,9 +34,9 @@ def iter_range(start: int, stop: int, step: int = 1) -> Iter[int]:
     return Iter(range(start, stop, step))
 
 
-def iter_func[U](func: Callable[[U], U], n: U) -> Iter[U]:
+def iter_func[T](func: Callable[[T], T], x: T) -> Iter[T]:
     """
-    Create an infinite iterator by repeatedly applying a function.
+    Create an infinite iterator by repeatedly applying a function into an original input x.
 
     **Warning** ⚠️
 
@@ -47,7 +47,7 @@ def iter_func[U](func: Callable[[U], U], n: U) -> Iter[U]:
         >>> iter_func(lambda x: x + 1, 0).head(3).to_list()
         [0, 1, 2]
     """
-    return Iter(cz.itertoolz.iterate(func, n))
+    return Iter(cz.itertoolz.iterate(func, x))
 
 
 def iter_on[T](*elements: T) -> Iter[T]:

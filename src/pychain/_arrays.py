@@ -1,35 +1,11 @@
-from collections.abc import Callable, Iterator
-from typing import TYPE_CHECKING, Any, Concatenate, Protocol
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Concatenate
 
 from ._core import CommonBase, iter_factory
+from ._protocols import NDArray
 
 if TYPE_CHECKING:
     from ._iter import Iter
-
-
-class NPTypeLike[T](Protocol): ...
-
-
-class NPArrayLike[S, D: NPTypeLike[Any]](Protocol):
-    """Array protocol to support numpy arrays and similar objects, without needing numpy as an explicit dependency."""
-
-    def __iter__(self) -> Iterator[D]: ...
-    def __array__(self, *args: Any, **kwargs: Any) -> Any: ...
-    def __array_finalize__(self, *args: Any, **kwargs: Any) -> None: ...
-    def __array_wrap__(self, *args: Any, **kwargs: Any) -> Any: ...
-    def __getitem__(self, *args: Any, **kwargs: Any) -> Any: ...
-    def __setitem__(self, *args: Any, **kwargs: Any) -> None: ...
-    @property
-    def shape(self) -> S: ...
-    @property
-    def dtype(self) -> Any: ...
-    @property
-    def ndim(self) -> int: ...
-    @property
-    def size(self) -> int: ...
-
-
-type NDArray[T: NPTypeLike[Any]] = NPArrayLike[tuple[int, ...], T]
 
 
 class Array[T: NDArray[Any]](CommonBase[T]):

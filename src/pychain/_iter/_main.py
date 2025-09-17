@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING, Any, Concatenate, Literal, overload
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import Pluckable, SupportsRichComparison, dict_factory
+from .._core import dict_factory
+from .._protocols import Pluckable, SupportsRichComparison
 from ._aggregations import IterAgg
 from ._process import IterProcess
 

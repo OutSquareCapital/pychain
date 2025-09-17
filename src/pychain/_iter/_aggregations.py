@@ -6,7 +6,8 @@ from typing import Literal
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase, SupportsRichComparison
+from .._core import CommonBase
+from .._protocols import SupportsRichComparison
 
 
 class IterAgg[T](CommonBase[Iterable[T]]):

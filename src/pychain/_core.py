@@ -3,50 +3,13 @@ from __future__ import annotations
 import pprint
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, Concatenate, NamedTuple, Protocol, Self
+from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 import cytoolz as cz
 
 if TYPE_CHECKING:
     from ._dict import Dict
     from ._iter import Iter
-
-
-class Peeked[T](NamedTuple):
-    value: T | tuple[T, ...]
-    sequence: Iterable[T]
-
-
-class Pluckable[KT, VT](Protocol):
-    def __getitem__(self, key: KT) -> VT: ...
-
-
-class SupportsDunderLT[T](Protocol):
-    def __lt__(self, other: T, /) -> bool: ...
-
-
-class SupportsDunderGT[T](Protocol):
-    def __gt__(self, other: T, /) -> bool: ...
-
-
-class SupportsDunderLE[T](Protocol):
-    def __le__(self, other: T, /) -> bool: ...
-
-
-class SupportsDunderGE[T](Protocol):
-    def __ge__(self, other: T, /) -> bool: ...
-
-
-class SupportsAllComparisons(
-    SupportsDunderLT[Any],
-    SupportsDunderGT[Any],
-    SupportsDunderLE[Any],
-    SupportsDunderGE[Any],
-    Protocol,
-): ...
-
-
-type SupportsRichComparison[T] = SupportsDunderLT[T] | SupportsDunderGT[T]
 
 
 class CommonBase[T](ABC):
