@@ -264,6 +264,7 @@ class Dict[K, V](CommonBase[dict[K, V]]):
     def map_keys[T](self, func: Callable[[K], T]) -> Dict[T, V]:
         """
         Return a Dict with keys transformed by func.
+
         >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_keys(str.lower)
         {'alice': [20, 15, 30], 'bob': [10, 35]}
         >>>
