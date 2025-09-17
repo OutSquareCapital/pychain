@@ -2,17 +2,6 @@
 
 pychain is a Python library that provides functional-style chaining operations for data structures.
 
-## Credits
-
-Most of the computations are done with implementations from the cytoolz library and the more-itertools library.
-
-<https://github.com/pytoolz/cytoolz>
-<https://github.com/more-itertools/more-itertools>
-
-The stubs used for the developpement, made by the maintainer of pychain, can be found here:
-
-<https://github.com/py-stubs/cytoolz-stubs>
-
 ## Overview
 
 ### Primary Goal
@@ -23,11 +12,23 @@ To provide a fluent, declarative, and functional method-chaining API for data ma
 
 Eliminate imperative loops (`for`, `while`) in favor of a sequence of high-level operations. Each method transforms the data and returns a new wrapper instance, enabling continuous chaining until a terminal method is called to extract the result.
 
-### Key Dependencies
+### Key Dependencies and credits
 
-`itertools`, `cytoolz`, `more-itertools`
+Most of the computations are done with implementations from the `cytoolz`, `more-itertools`, and `rolling` libraries.
 
-The library acts as a unifying and simplifying API layer over these powerful tools.
+An extensive use of the `itertools` stdlib module is also to be noted.
+
+pychain acts as a unifying API layer over these powerful tools.
+
+<https://github.com/pytoolz/cytoolz>
+
+<https://github.com/more-itertools/more-itertools>
+
+<https://github.com/ajcr/rolling>
+
+The stubs used for the developpement, made by the maintainer of pychain, can be found here:
+
+<https://github.com/py-stubs/cytoolz-stubs>
 
 ### Design
 
@@ -36,6 +37,10 @@ Based on wrapper classes that encapsulate native Python data structures or third
 * **`Iter[T]`**: For any `Iterable`. This is the most generic and powerful wrapper. Most operations are **lazy**.
 * **`Dict[KT, VT]`**: For `dict` objects.
 * **`Array[T]`**: For `numpy.ndarray` objects.
+
+**Note on `Array`**:
+
+An internal protocol implementations allows to avoid any dependency on numpy, keeping pychain lightweight.
 
 ### Interoperability
 

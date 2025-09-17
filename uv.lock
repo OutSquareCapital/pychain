@@ -465,6 +465,7 @@ source = { editable = "." }
 dependencies = [
     { name = "cytoolz" },
     { name = "more-itertools" },
+    { name = "rolling" },
 ]
 
 [package.dev-dependencies]
@@ -480,6 +481,7 @@ dev = [
 requires-dist = [
     { name = "cytoolz", specifier = ">=1.0.1" },
     { name = "more-itertools", specifier = ">=10.8.0" },
+    { name = "rolling", git = "https://github.com/OutSquareCapital/rolling.git?rev=add-type-stubs" },
 ]
 
 [package.metadata.requires-dev]
@@ -565,6 +567,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/c9/74/b3ff8e6c8446842c3
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1e/db/4254e3eabe8020b458f1a747140d32277ec7a271daf1d235b70dc0b4e6e3/requests-2.32.5-py3-none-any.whl", hash = "sha256:2462f94637a34fd532264295e186976db0f5d453d1cdd31473c85a6a161affb6", size = 64738, upload-time = "2025-08-18T20:46:00.542Z" },
 ]
+
+[[package]]
+name = "rolling"
+version = "0.5.0"
+source = { git = "https://github.com/OutSquareCapital/rolling.git?rev=add-type-stubs#70e8e6616fe400eda9739b29dff6d9b34321b550" }
 
 [[package]]
 name = "roman-numerals-py"
