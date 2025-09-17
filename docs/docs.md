@@ -176,11 +176,14 @@ Transform (key, value) pairs using a function that takes a (key, value) tuple.
 ### map_keys(func)
 
 Return a Dict with keys transformed by func.
->>> Dict({“Alice”: [20, 15, 30], “Bob”: [10, 35]}).map_keys(str.lower)
-{‘alice’: [20, 15, 30], ‘bob’: [10, 35]}
+
+```python
+>>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_keys(str.lower)
+{'alice': [20, 15, 30], 'bob': [10, 35]}
 >>>
->>> Dict({1: “a”}).map_keys(str)
-{‘1’: ‘a’}
+>>> Dict({1: "a"}).map_keys(str)
+{'1': 'a'}
+```
 
 * **Parameters:**
   **func** (*Callable* *[* *[**K* *]* *,* *T* *]*)
