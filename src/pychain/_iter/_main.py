@@ -12,6 +12,7 @@ from .._core import dict_factory
 from .._protocols import Pluckable, SupportsRichComparison
 from ._aggregations import IterAgg
 from ._process import IterProcess
+from ._strings import StringNameSpace
 
 if TYPE_CHECKING:
     from .._dict import Dict
@@ -38,6 +39,13 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         **kwargs: P.kwargs,
     ) -> Iter[U]:
         return Iter(func(self._data, *args, **kwargs))
+
+    @property
+    def string(self: Iter[str]) -> StringNameSpace:
+        """
+        A namespace for string-specific methods.
+        """
+        return StringNameSpace(self._data)
 
     # MAPS------------------------------------------------------------------
     def map[**P, R](
