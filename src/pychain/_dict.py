@@ -36,7 +36,7 @@ class Dict[KT, VT](CommonBase[dict[KT, VT]]):
         func: Callable[Concatenate[dict[KT, VT], P], dict[KU, VU]],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> "Dict[KU, VU]":
+    ) -> Dict[KU, VU]:
         return Dict(func(self._data, *args, **kwargs))
 
     # BUILTINS------------------------------------------------------------------

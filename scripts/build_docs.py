@@ -13,8 +13,7 @@ class Files(StrEnum):
 
 
 class Paths(Enum):
-    ROOT = Path(__file__).parents[1]
-    DOCS = ROOT.joinpath("docs")
+    DOCS = Path().joinpath("docs")
     SPHINX = DOCS.joinpath("sphinx")
     OUTPUT = SPHINX.joinpath("_build", "markdown")
     FINAL_DOC = DOCS.joinpath(Files.DOCS)

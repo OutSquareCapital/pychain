@@ -1138,9 +1138,9 @@ Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 * **Return type:**
   [*Iter*](#pychain.Iter)[int]
 
-## pychain.iter_func(func, n)
+## pychain.iter_func(func, x)
 
-Create an infinite iterator by repeatedly applying a function.
+Create an infinite iterator by repeatedly applying a function into an original input x.
 
 **Warning** ⚠️
 
@@ -1154,8 +1154,8 @@ Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 ```
 
 * **Parameters:**
-  * **func** (*Callable* *[* *[**U* *]* *,* *U* *]*)
-  * **n** (*U*)
+  * **func** (*Callable* *[* *[**T* *]* *,* *T* *]*)
+  * **x** (*T*)
 * **Return type:**
   [*Iter*](#pychain.Iter)
 
