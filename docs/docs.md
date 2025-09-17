@@ -20,13 +20,21 @@ Return a shallow copy of the dict.
 
 Return a new Dict with given keys removed.
 
+New dict has d[key] deleted for each supplied key.
+
 ```python
+>>> Dict({"x": 1, "y": 2}).drop("y")
+{'x': 1}
+>>> Dict({"x": 1, "y": 2}).drop("y", "x")
+{}
+>>> Dict({"x": 1}).drop("y")  # Ignores missing keys
+{'x': 1}
 >>> Dict({1: 2, 3: 4}).drop(1)
 {3: 4}
 ```
 
 * **Parameters:**
-  **keys** (*KT*)
+  **keys** (*K*)
 * **Return type:**
   Self
 
@@ -35,12 +43,12 @@ Return a new Dict with given keys removed.
 Filter items by predicate applied to (key, value) tuples.
 
 ```python
->>> Dict({1: 2, 3: 4}).filter_items(lambda k, v: v > 2)
+>>> Dict({1: 2, 3: 4}).filter_items(lambda it: it[1] > 2)
 {3: 4}
 ```
 
 * **Parameters:**
-  **predicate** (*Callable* *[* *[**KT* *,* *VT* *]* *,* *bool* *]*)
+  **predicate** (*Callable* *[* *[**tuple* *[**K* *,* *V* *]* *]* *,* *bool* *]*)
 * **Return type:**
   Self
 
@@ -49,12 +57,27 @@ Filter items by predicate applied to (key, value) tuples.
 Return a new Dict containing keys that satisfy predicate.
 
 ```python
->>> Dict({1: 2, 3: 4}).filter_keys(lambda k: k % 2 == 0)
-{}
+>>> d = {1: 2, 2: 3, 3: 4, 4: 5}
+>>> Dict(d).filter_keys(lambda x: x % 2 == 0)
+{2: 3, 4: 5}
 ```
 
 * **Parameters:**
-  **predicate** (*Callable* *[* *[**KT* *]* *,* *bool* *]*)
+  **predicate** (*Callable* *[* *[**K* *]* *,* *bool* *]*)
+* **Return type:**
+  Self
+
+### filter_kv(predicate)
+
+Filter items by predicate applied to (key, value) tuples.
+
+```python
+>>> Dict({1: 2, 3: 4}).filter_kv(lambda k, v: v > 2)
+{3: 4}
+```
+
+* **Parameters:**
+  **predicate** (*Callable* *[* *[**K* *,* *V* *]* *,* *bool* *]*)
 * **Return type:**
   Self
 
@@ -63,18 +86,21 @@ Return a new Dict containing keys that satisfy predicate.
 Return a new Dict containing items whose values satisfy predicate.
 
 ```python
->>> Dict({1: 2, 3: 4}).filter_values(lambda v: v > 2)
-{3: 4}
+>>> d = {1: 2, 2: 3, 3: 4, 4: 5}
+>>> Dict(d).filter_values(lambda x: x % 2 == 0)
+{1: 2, 3: 4}
 ```
 
 * **Parameters:**
-  **predicate** (*Callable* *[* *[**VT* *]* *,* *bool* *]*)
+  **predicate** (*Callable* *[* *[**V* *]* *,* *bool* *]*)
 * **Return type:**
   Self
 
 ### *classmethod* from_zipped(keys, values)
 
 Create a Dict from two iterables of keys and values.
+
+Syntactic sugar for Dict(dict(zip(keys, values))).
 
 ```python
 >>> Dict.from_zipped([1, 2], ["a", "b"])
@@ -92,10 +118,10 @@ Create a Dict from two iterables of keys and values.
 Get the value for a key, returning default if not found.
 
 * **Parameters:**
-  * **key** (*KT*)
-  * **default** (*VT* *|* *None*)
+  * **key** (*K*)
+  * **default** (*V* *|* *None*)
 * **Return type:**
-  VT | None
+  V | None
 
 ### iter_items()
 
@@ -107,7 +133,7 @@ Return a Iter of the dict’s items.
 ```
 
 * **Return type:**
-  [Iter](#pychain.Iter)[tuple[KT, VT]]
+  [Iter](#pychain.Iter)[tuple[K, V]]
 
 ### iter_keys()
 
@@ -119,7 +145,7 @@ Return a Iter of the dict’s keys.
 ```
 
 * **Return type:**
-  [Iter](#pychain.Iter)[KT]
+  [Iter](#pychain.Iter)[K]
 
 ### iter_values()
 
@@ -131,76 +157,104 @@ Return a Iter of the dict’s values.
 ```
 
 * **Return type:**
-  [Iter](#pychain.Iter)[VT]
+  [Iter](#pychain.Iter)[V]
 
 ### map_items(func)
 
-Transform (key, value) pairs using a function that takes key and value as separate arguments.
+Transform (key, value) pairs using a function that takes a (key, value) tuple.
 
 ```python
->>> Dict({1: 2}).map_items(lambda k, v: (k + 1, v * 10))
-{2: 20}
+>>> Dict({"Alice": 10, "Bob": 20}).map_items(reversed)
+{10: 'Alice', 20: 'Bob'}
 ```
 
 * **Parameters:**
-  **func** (*Callable* *[* *[**KT* *,* *VT* *]* *,* *tuple* *[**KR* *,* *VR* *]* *]*)
+  **func** (*Callable* *[* *[**tuple* *[**K* *,* *V* *]* *]* *,* *tuple* *[**KR* *,* *VR* *]* *]*)
 * **Return type:**
   [Dict](#pychain.Dict)[KR, VR]
 
 ### map_keys(func)
 
-Return a Dict with keys transformed by ffunc.
+Return a Dict with keys transformed by func.
+>>> Dict({“Alice”: [20, 15, 30], “Bob”: [10, 35]}).map_keys(str.lower)
+{‘alice’: [20, 15, 30], ‘bob’: [10, 35]}
+>>>
+>>> Dict({1: “a”}).map_keys(str)
+{‘1’: ‘a’}
+
+* **Parameters:**
+  **func** (*Callable* *[* *[**K* *]* *,* *T* *]*)
+* **Return type:**
+  [Dict](#pychain.Dict)[T, V]
+
+### map_kv(func)
+
+Transform (key, value) pairs using a function that takes key and value as separate arguments.
 
 ```python
->>> Dict({1: "a"}).map_keys(str)
-{'1': 'a'}
+>>> Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10))
+{2: 20}
 ```
 
 * **Parameters:**
-  **func** (*Callable* *[* *[**KT* *]* *,* *T* *]*)
+  **func** (*Callable* *[* *[**K* *,* *V* *]* *,* *tuple* *[**KR* *,* *VR* *]* *]*)
 * **Return type:**
-  [Dict](#pychain.Dict)[T, VT]
+  [Dict](#pychain.Dict)[KR, VR]
 
 ### map_values(func)
 
 Return a Dict with values transformed by func.
 
 ```python
+>>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_values(sum)
+{'Alice': 65, 'Bob': 45}
+>>>
 >>> Dict({1: 1}).map_values(lambda v: v + 1)
 {1: 2}
 ```
 
 * **Parameters:**
-  **func** (*Callable* *[* *[**VT* *]* *,* *T* *]*)
+  **func** (*Callable* *[* *[**V* *]* *,* *T* *]*)
 * **Return type:**
-  [Dict](#pychain.Dict)[KT, T]
+  [Dict](#pychain.Dict)[K, T]
 
 ### merge(\*others)
 
 Merge other dicts into this one and return a new Dict.
 
 ```python
->>> Dict({1: 2}).merge({3: 4})
-{1: 2, 3: 4}
+>>> Dict({1: "one"}).merge({2: "two"})
+{1: 'one', 2: 'two'}
+```
+
+Later dictionaries have precedence
+
+```python
+>>> Dict({1: 2, 3: 4}).merge({3: 3, 4: 4})
+{1: 2, 3: 3, 4: 4}
 ```
 
 * **Parameters:**
-  **others** (*dict* *[**KT* *,* *VT* *]*)
+  **others** (*dict* *[**K* *,* *V* *]*)
 * **Return type:**
   Self
 
-### merge_with(func, \*others)
+### merge_with(\*others, func)
 
 Merge dicts using a function to combine values for duplicate keys.
 
+A key may occur in more than one dict, and all values mapped from the key will be passed to the function as a list, such as func([val1, val2, …]).
+
 ```python
->>> Dict({1: 1}).merge_with(sum, {1: 2})
-{1: 3}
+>>> Dict({1: 1, 2: 2}).merge_with({1: 10, 2: 20}, func=sum)
+{1: 11, 2: 22}
+>>> Dict({1: 1, 2: 2}).merge_with({2: 20, 3: 30}, func=max)
+{1: 1, 2: 20, 3: 30}
 ```
 
 * **Parameters:**
-  * **func** (*Callable* *[* *[**Iterable* *[**VT* *]* *]* *,* *VT* *]*)
-  * **others** (*dict* *[**KT* *,* *VT* *]*)
+  * **others** (*dict* *[**K* *,* *V* *]*)
+  * **func** (*Callable* *[* *[**Iterable* *[**V* *]* *]* *,* *V* *]*)
 * **Return type:**
   Self
 
@@ -220,7 +274,7 @@ underlying data and return a new wrapped instance of the same subclass.
 Use this to keep the chainable API after applying a transformation to the data.
 
 * **Parameters:**
-  * **func** (*Callable* *[**Concatenate* *[**dict* *[**KT* *,* *VT* *]* *,* *P* *]* *,* *dict* *[**KU* *,* *VU* *]* *]*)
+  * **func** (*Callable* *[**Concatenate* *[**dict* *[**K* *,* *V* *]* *,* *P* *]* *,* *dict* *[**KU* *,* *VU* *]* *]*)
   * **args** (*P.args*)
   * **kwargs** (*P.kwargs*)
 * **Return type:**
@@ -240,8 +294,8 @@ This modifies the dict in place.
 ```
 
 * **Parameters:**
-  * **key** (*KT*)
-  * **value** (*VT*)
+  * **key** (*K*)
+  * **value** (*V*)
 * **Return type:**
   Self
 
@@ -259,22 +313,42 @@ This modifies the dict in place.
 ```
 
 * **Parameters:**
-  **others** (*dict* *[**KT* *,* *VT* *]*)
+  **others** (*dict* *[**K* *,* *V* *]*)
 * **Return type:**
   Self
 
-### update_in(\*keys, func)
+### update_in(keys, func, default=None)
 
-Update a nested value via a function, and return a new Dict.
+Update value in a (potentially) nested dictionary
+
+inputs: d - dictionary on which to operate keys - list or tuple giving the location of the value to be changed in d func - function to operate on that value
+
+If keys == [k0,..,kX] and d[k0]..[kX] == v, update_in returns a copy of the original dictionary with v replaced by func(v), but does not mutate the original dictionary.
+
+If k0 is not a key in d, update_in creates nested dictionaries to the depth specified by the keys, with the innermost value set to func(default).
 
 ```python
->>> Dict({"a": {"b": 1}}).update_in("a", "b", func=lambda x: x + 1)
-{'a': {'b': 2}}
+>>> inc = lambda x: x + 1
+>>> Dict({"a": 0}).update_in(["a"], func=inc)
+{'a': 1}
+>>> transaction = {
+...     "name": "Alice",
+...     "purchase": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
+...     "credit card": "5555-1234-1234-1234",
+... }
+>>> Dict(transaction).update_in(["purchase", "costs"], func=sum)
+{'name': 'Alice', 'purchase': {'items': ['Apple', 'Orange'], 'costs': 1.75}, 'credit card': '5555-1234-1234-1234'}
+>>> # updating a value when k0 is not in d
+>>> Dict({}).update_in([1, 2, 3], func=str, default="bar")
+{1: {2: {3: 'bar'}}}
+>>> Dict({1: "foo"}).update_in([2, 3, 4], func=inc, default=0)
+{1: 'foo', 2: {3: {4: 1}}}
 ```
 
 * **Parameters:**
-  * **keys** (*KT*)
-  * **func** (*Callable* *[* *[**VT* *]* *,* *VT* *]*)
+  * **keys** (*Iterable* *[**K* *]*)
+  * **func** (*Callable* *[* *[**V* *]* *,* *V* *]*)
+  * **default** (*V* *|* *None*)
 * **Return type:**
   Self
 
@@ -283,28 +357,37 @@ Update a nested value via a function, and return a new Dict.
 Return a new Dict with key set to value.
 
 ```python
+>>> Dict({"x": 1}).with_key("x", 2)
+{'x': 2}
+>>> Dict({"x": 1}).with_key("y", 3)
+{'x': 1, 'y': 3}
 >>> Dict({}).with_key("x", 1)
 {'x': 1}
 ```
 
 * **Parameters:**
-  * **key** (*KT*)
-  * **value** (*VT*)
+  * **key** (*K*)
+  * **value** (*V*)
 * **Return type:**
   Self
 
 ### with_nested_key(keys, value)
 
-Set a nested key path and return a new Dict.
+Set a nested key path and return a new Dict with new, potentially nested, key value pair
 
 ```python
->>> Dict({}).with_nested_key(["a", "b"], 1)
-{'a': {'b': 1}}
+>>> purchase = {
+...     "name": "Alice",
+...     "order": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
+...     "credit card": "5555-1234-1234-1234",
+... }
+>>> Dict(purchase).with_nested_key(["order", "costs"], [0.25, 1.00])
+{'name': 'Alice', 'order': {'items': ['Apple', 'Orange'], 'costs': [0.25, 1.0]}, 'credit card': '5555-1234-1234-1234'}
 ```
 
 * **Parameters:**
-  * **keys** (*Iterable* *[**KT* *]*  *|* *KT*)
-  * **value** (*VT*)
+  * **keys** (*Iterable* *[**K* *]*  *|* *K*)
+  * **value** (*V*)
 * **Return type:**
   Self
 

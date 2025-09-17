@@ -89,6 +89,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
     def length(self) -> int:
         """
         Return the length of the sequence.
+        Like the builtin len but works on lazy sequences.
 
             >>> from pychain import Iter
             >>> Iter([1, 2]).length()
@@ -100,9 +101,9 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         Return item at index.
 
-            >>> from pychain import Iter
-            >>> Iter([10, 20]).item(1)
-            20
+        >>> from pychain import Iter
+        >>> Iter([10, 20]).item(1)
+        20
         """
         return cz.itertoolz.nth(index, self._data)
 
@@ -118,31 +119,74 @@ class IterAgg[T](CommonBase[Iterable[T]]):
 
     def all_unique[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
-        Return True if all items are unique.
+        Returns True if all the elements of iterable are unique (no two elements are equal).
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).all_unique()
-            True
+        >>> from pychain import Iter
+        >>> Iter("ABCB").all_unique()
+        False
+
+        If a key function is specified, it will be used to make comparisons.
+
+        >>> Iter("ABCb").all_unique()
+        True
+
+        >>> Iter("ABCb").all_unique(str.lower)
+        False
+
+        The function returns as soon as the first non-unique element is encountered.
+        Iterables with a mix of hashable and unhashable items can be used, but the function will be slower for unhashable items
+
         """
         return mit.all_unique(self._data, key=key)
 
     def argmax[U](self, key: Callable[[T], U] | None = None) -> int:
         """
-        Return the index of the maximum value in the sequence.
+        Index of the first occurrence of a maximum value in an iterable.
+        >>> from pychain import Iter
+        >>> Iter("abcdefghabcd").argmax()
+        7
+        >>> Iter([0, 1, 2, 3, 3, 2, 1, 0]).argmax()
+        3
 
-            >>> from pychain import Iter
-            >>> Iter([1, 3, 2]).argmax()
-            1
+        For example, identify the best machine learning model:
+
+        >>> models = Iter(["svm", "random forest", "knn", "naïve bayes"])
+        >>> accuracy = Iter([68, 61, 84, 72])
+        >>> # Most accurate model
+        >>> models.item(accuracy.argmax())
+        'knn'
+
+        >>> # Best accuracy
+        >>> accuracy.max()
+        84
         """
         return mit.argmax(self._data, key=key)
 
     def argmin[U](self, key: Callable[[T], U] | None = None) -> int:
         """
-        Return the index of the minimum value in the sequence.
+        Index of the first occurrence of a minimum value in an iterable.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 3, 2]).argmin()
-            0
+        >>> from pychain import Iter
+        >>> Iter("efghabcdijkl").argmin()
+        4
+        >>> Iter([3, 2, 1, 0, 4, 2, 1, 0]).argmin()
+        3
+
+        For example, look up a label corresponding to the position of a value that minimizes a cost function:
+
+        >>> def cost(x):
+        ...     "Days for a wound to heal given a subject's age."
+        ...     return x**2 - 20 * x + 150
+        >>> labels = Iter(["homer", "marge", "bart", "lisa", "maggie"])
+        >>> ages = Iter([35, 30, 10, 9, 1])
+
+        >>> # Fastest healing family member
+        >>> labels.item(ages.argmin(key=cost))
+        'bart'
+
+        >>> # Age with fastest healing
+        >>> ages.min(key=cost)
+        10
         """
         return mit.argmin(self._data, key=key)
 
@@ -150,14 +194,31 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         self,
         key: Callable[[T], U] | None = None,
         reverse: bool = False,
-        strict: bool = True,
+        strict: bool = False,
     ) -> bool:
         """
-        Return True if the sequence is sorted.
+        Returns True if the items of iterable are in sorted order, and False otherwise.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).is_sorted()
-            True
+        Key and reverse have the same meaning that they do in the built-in sorted function.
+
+        >>> from pychain import Iter
+        >>> Iter(["1", "2", "3", "4", "5"]).is_sorted(key=int)
+        True
+        >>> Iter([5, 4, 3, 1, 2]).is_sorted(reverse=True)
+        False
+
+        If strict, tests for strict sorting, that is, returns False if equal elements are found:
+
+        >>> Iter([1, 2, 2]).is_sorted()
+        True
+        >>> Iter([1, 2, 2]).is_sorted(strict=True)
+        False
+
+        The function returns False after encountering the first out-of-order item.
+
+        This means it may produce results that differ from the built-in sorted function for objects with unusual comparison dynamics (like math.nan).
+
+        If there are no out-of-order items, the iterable is exhausted.
         """
         return mit.is_sorted(self._data, key=key, reverse=reverse, strict=strict)
 
@@ -165,9 +226,9 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         Return the sum of the sequence.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).sum()
-            6
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).sum()
+        6
         """
         return sum(self._data)
 
@@ -178,9 +239,9 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         Return the minimum value of the sequence.
 
-            >>> from pychain import Iter
-            >>> Iter([3, 1, 2]).min()
-            1
+        >>> from pychain import Iter
+        >>> Iter([3, 1, 2]).min()
+        1
         """
         return min(self._data, key=key)
 
@@ -191,9 +252,9 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         Return the maximum value of the sequence.
 
-            >>> from pychain import Iter
-            >>> Iter([3, 1, 2]).max()
-            3
+        >>> from pychain import Iter
+        >>> Iter([3, 1, 2]).max()
+        3
         """
         return max(self._data, key=key)
 
@@ -201,9 +262,9 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         Return the mean of the sequence.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).mean()
-            2
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).mean()
+        2
         """
         return statistics.mean(self._data)
 
@@ -211,9 +272,9 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         Return the median of the sequence.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 3, 2]).median()
-            2
+        >>> from pychain import Iter
+        >>> Iter([1, 3, 2]).median()
+        2
         """
         return statistics.median(self._data)
 
@@ -221,9 +282,9 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         Return the mode of the sequence.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 2, 3]).mode()
-            2
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 2, 3]).mode()
+        2
         """
         return statistics.mode(self._data)
 
@@ -233,9 +294,9 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         Return the standard deviation of the sequence.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).stdev()
-            1.0
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).stdev()
+        1.0
         """
         return statistics.stdev(self._data)
 
@@ -245,8 +306,8 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         Return the variance of the sequence.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 3, 7, 8]).variance()
-            9.7
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3, 7, 8]).variance()
+        9.7
         """
         return statistics.variance(self._data)

@@ -19,10 +19,6 @@ class Paths(Enum):
     FINAL_DOC = DOCS.joinpath(Files.DOCS)
 
 
-def fix_code_blocks(content: str) -> str:
-    return content.replace("```pycon", "```python")
-
-
 def run_sphinx_build():
     return subprocess.run(
         ["sphinx-build", "-b", "markdown", ".", "_build/markdown"],
@@ -30,6 +26,10 @@ def run_sphinx_build():
         capture_output=True,
         text=True,
     )
+
+
+def sorted_md_files() -> list[Path]:
+    return sorted(Paths.OUTPUT.value.glob("*.md"))
 
 
 def build_docs() -> bool:
@@ -43,10 +43,10 @@ def build_docs() -> bool:
 
     print("Création du fichier docs.md final...")
     with open(Paths.FINAL_DOC.value, "w", encoding="utf-8") as outfile:
-        for md_file in sorted(Paths.OUTPUT.value.glob("*.md")):
+        for md_file in sorted_md_files():
             outfile.write(f"\n\n# {md_file.stem}\n\n")
             with open(md_file, "r", encoding="utf-8") as infile:
-                outfile.write(fix_code_blocks(content=infile.read()))
+                outfile.write(infile.read().replace("```pycon", "```python"))
 
     print(f"Documentation générée avec succès: {Paths.FINAL_DOC.value}")
     return True
