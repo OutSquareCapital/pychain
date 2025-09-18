@@ -19,20 +19,6 @@ class Dict[K, V](CommonBase[dict[K, V]]):
     _data: dict[K, V]
     __slots__ = ("_data",)
 
-    @classmethod
-    def from_zipped[KN, VN](
-        cls, keys: Iterable[KN], values: Iterable[VN]
-    ) -> "Dict[KN, VN]":
-        """
-        Create a Dict from two iterables of keys and values.
-
-        Syntactic sugar for `Dict(dict(zip(keys, values)))`.
-
-        >>> Dict.from_zipped([1, 2], ["a", "b"])
-        {1: 'a', 2: 'b'}
-        """
-        return Dict(dict(zip(keys, values)))
-
     def pipe_into[**P, KU, VU](
         self,
         func: Callable[Concatenate[dict[K, V], P], dict[KU, VU]],

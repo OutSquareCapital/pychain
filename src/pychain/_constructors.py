@@ -1,8 +1,9 @@
 import itertools
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 
 import cytoolz as cz
 
+from ._dict import Dict
 from ._iter import Iter
 
 
@@ -58,3 +59,15 @@ def iter_on[T](*elements: T) -> Iter[T]:
         [1, 2, 3]
     """
     return Iter(elements)
+
+
+def dict_zip[KN, VN](keys: Iterable[KN], values: Iterable[VN]) -> "Dict[KN, VN]":
+    """
+    Create a Dict from two iterables of keys and values.
+
+    Syntactic sugar for `Dict(dict(zip(keys, values)))`.
+
+    >>> dict_zip([1, 2], ["a", "b"])
+    {1: 'a', 2: 'b'}
+    """
+    return Dict(dict(zip(keys, values)))
