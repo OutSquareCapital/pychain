@@ -994,20 +994,29 @@ If the iterable is empty, yield default forever:
 * **Return type:**
   [Iter](#pychain.Iter)[T | U]
 
-### rolling(length)
+### rolling(window)
+
+A namespace for rolling window methods.
+
+* **Parameters:**
+  **window** (*int*)
+* **Return type:**
+  RollingNameSpace[T]
+
+### sliding_window(length)
 
 A sequence of overlapping subsequences
 
 ```python
->>> Iter([1, 2, 3, 4]).rolling(2).to_list()
+>>> Iter([1, 2, 3, 4]).sliding_window(2).to_list()
 [(1, 2), (2, 3), (3, 4)]
 ```
 
-This function creates a sliding window suitable for transformations like sliding means / smoothing
+This function allows you to apply custom function not available in the rolling namespace.
 
 ```python
 >>> mean = lambda seq: float(sum(seq)) / len(seq)
->>> Iter([1, 2, 3, 4]).rolling(2).map(mean).to_list()
+>>> Iter([1, 2, 3, 4]).sliding_window(2).map(mean).to_list()
 [1.5, 2.5, 3.5]
 ```
 
@@ -1063,6 +1072,10 @@ If maxsplit is not specified or -1, then there is no limit on the number of spli
   * **max_split** (*int*)
 * **Return type:**
   [Iter](#pychain.Iter)[list[T]]
+
+### *property* string *: StringNameSpace*
+
+A namespace for string-specific methods.
 
 ### zip(\*others, strict=False)
 

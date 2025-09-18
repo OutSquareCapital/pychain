@@ -12,6 +12,7 @@ from .._core import dict_factory
 from .._protocols import Pluckable, SupportsRichComparison
 from ._aggregations import IterAgg
 from ._process import IterProcess
+from ._rolling import RollingNameSpace
 from ._strings import StringNameSpace
 
 if TYPE_CHECKING:
@@ -46,6 +47,12 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         A namespace for string-specific methods.
         """
         return StringNameSpace(self._data)
+
+    def rolling(self, window: int) -> RollingNameSpace[T]:
+        """
+        A namespace for rolling window methods.
+        """
+        return RollingNameSpace(self._data, window)
 
     # MAPS------------------------------------------------------------------
     def map[**P, R](
@@ -512,37 +519,44 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         return Iter(cz.itertoolz.partition_all(n, self._data))
 
     @overload
-    def rolling(self, length: Literal[1]) -> Iter[tuple[T]]: ...
+    def sliding_window(self, length: Literal[1]) -> Iter[tuple[T]]: ...
     @overload
-    def rolling(self, length: Literal[2]) -> Iter[tuple[T, T]]: ...
+    def sliding_window(self, length: Literal[2]) -> Iter[tuple[T, T]]: ...
     @overload
-    def rolling(self, length: Literal[3]) -> Iter[tuple[T, T, T]]: ...
+    def sliding_window(self, length: Literal[3]) -> Iter[tuple[T, T, T]]: ...
     @overload
-    def rolling(self, length: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
+    def sliding_window(self, length: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
     @overload
-    def rolling(self, length: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
+    def sliding_window(self, length: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
     @overload
-    def rolling(self, length: Literal[6]) -> Iter[tuple[T, T, T, T, T, T]]: ...
+    def sliding_window(self, length: Literal[6]) -> Iter[tuple[T, T, T, T, T, T]]: ...
     @overload
-    def rolling(self, length: Literal[7]) -> Iter[tuple[T, T, T, T, T, T, T]]: ...
+    def sliding_window(
+        self, length: Literal[7]
+    ) -> Iter[tuple[T, T, T, T, T, T, T]]: ...
     @overload
-    def rolling(self, length: Literal[8]) -> Iter[tuple[T, T, T, T, T, T, T, T]]: ...
+    def sliding_window(
+        self, length: Literal[8]
+    ) -> Iter[tuple[T, T, T, T, T, T, T, T]]: ...
     @overload
-    def rolling(self, length: Literal[9]) -> Iter[tuple[T, T, T, T, T, T, T, T, T]]: ...
+    def sliding_window(
+        self, length: Literal[9]
+    ) -> Iter[tuple[T, T, T, T, T, T, T, T, T]]: ...
 
-    def rolling(self, length: int) -> Iter[tuple[T, ...]]:
+    def sliding_window(self, length: int) -> Iter[tuple[T, ...]]:
         """
         A sequence of overlapping subsequences
 
-        >>> Iter([1, 2, 3, 4]).rolling(2).to_list()
+        >>> Iter([1, 2, 3, 4]).sliding_window(2).to_list()
         [(1, 2), (2, 3), (3, 4)]
 
-        This function creates a sliding window suitable for transformations like sliding means / smoothing
+        This function allows you to apply custom function not available in the rolling namespace.
 
         >>> mean = lambda seq: float(sum(seq)) / len(seq)
-        >>> Iter([1, 2, 3, 4]).rolling(2).map(mean).to_list()
+        >>> Iter([1, 2, 3, 4]).sliding_window(2).map(mean).to_list()
         [1.5, 2.5, 3.5]
         """
+        # TODO: check si rolling.Apply peut y remplacer, ou en tout cas voir quel use case sliding_window couvre que rolling.Apply ne couvre pas
         return Iter(cz.itertoolz.sliding_window(length, self._data))
 
     def diff(
