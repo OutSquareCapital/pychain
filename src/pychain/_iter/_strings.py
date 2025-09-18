@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True)
 class StringNameSpace:
+    """Namespace for string methods."""
+
     _parent: Iterable[str]
 
     def upper(self) -> Iter[str]:

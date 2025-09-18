@@ -14,6 +14,8 @@ if TYPE_CHECKING:
 
 @dataclass(slots=True)
 class RollingNameSpace[T]:
+    """Namespace for rolling window methods."""
+
     _parent: Iterable[T]
     _window: int
 

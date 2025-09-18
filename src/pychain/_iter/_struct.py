@@ -13,7 +13,9 @@ if TYPE_CHECKING:
 
 
 @dataclass(slots=True)
-class DictNameSpace[K, V]:
+class StructNameSpace[K, V]:
+    """Namespace for struct (dict) methods."""
+
     _parent: Iterable[dict[K, V]]
 
     def iter_values(self) -> Iter[V]:

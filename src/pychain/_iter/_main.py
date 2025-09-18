@@ -14,7 +14,7 @@ from ._aggregations import IterAgg
 from ._process import IterProcess
 from ._rolling import RollingNameSpace
 from ._strings import StringNameSpace
-from ._struct import DictNameSpace
+from ._struct import StructNameSpace
 
 if TYPE_CHECKING:
     from .._dict import Dict
@@ -54,13 +54,13 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         return StringNameSpace(self._data)
 
     @property
-    def struct[K, V](self: Iter[dict[K, V]]) -> DictNameSpace[K, V]:
+    def struct[K, V](self: Iter[dict[K, V]]) -> StructNameSpace[K, V]:
         """
         A namespace for dictionary-specific methods.
 
         Expose the same functionality as Dict, but in a way that works on an iterable of dicts, with generators under the hood.
         """
-        return DictNameSpace(self._data)
+        return StructNameSpace(self._data)
 
     def rolling(self, window: int) -> RollingNameSpace[T]:
         """
