@@ -3,6 +3,7 @@ from enum import Enum, StrEnum
 from pathlib import Path
 
 # TODO: Actuellement je dois supprimer a la main le header `# index`, puis enlever un `#` dans les titres pour avoir une hierarchie correcte
+# TODO: fix le probleme des docs qui ne couvrent pas les methodes namespace
 
 ENCODING = "utf-8"
 
