@@ -46,6 +46,10 @@ class Iter[T](IterAgg[T], IterProcess[T]):
     def string(self: Iter[str]) -> StringNameSpace:
         """
         A namespace for string-specific methods.
+
+        They are all syntactic sugar for using Iter.map(lambda s: s.any_string_method()).
+
+        However, an added bonus is that rather than using map + lambdas under the hood, they are using generators, allowing better efficiency, whilst still keeping the `no for loops` philosophy.
         """
         return StringNameSpace(self._data)
 
@@ -53,6 +57,8 @@ class Iter[T](IterAgg[T], IterProcess[T]):
     def struct[K, V](self: Iter[dict[K, V]]) -> DictNameSpace[K, V]:
         """
         A namespace for dictionary-specific methods.
+
+        Expose the same functionality as Dict, but in a way that works on an iterable of dicts, with generators under the hood.
         """
         return DictNameSpace(self._data)
 

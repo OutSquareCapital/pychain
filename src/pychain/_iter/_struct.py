@@ -16,6 +16,43 @@ if TYPE_CHECKING:
 class DictNameSpace[K, V]:
     _parent: Iterable[dict[K, V]]
 
+    def iter_values(self) -> Iter[V]:
+        """
+        Iterate over the values in the dicts.
+
+        >>> from pychain import Iter
+        >>> data = [{"a": 1, "b": 2}, {"c": 3}]
+        >>> Iter(data).struct.iter_values().to_list()
+        [1, 2, 3]
+        >>> nested_data = [{"a": [1, 2]}, {"b": [3, 4]}]
+        >>> Iter(nested_data).struct.iter_values().to_list()
+        [[1, 2], [3, 4]]
+        """
+        return iter_factory(v for d in self._parent for v in d.values())
+
+    def iter_keys(self) -> Iter[K]:
+        """
+        Iterate over the keys in the dicts.
+
+        >>> from pychain import Iter
+        >>> data = [{"a": 1, "b": 2}, {"c": 3}]
+        >>> Iter(data).struct.iter_keys().to_list()
+        ['a', 'b', 'c']
+        """
+        return iter_factory(k for d in self._parent for k in d.keys())
+
+    def iter_items(self) -> Iter[tuple[K, V]]:
+        """
+        Iterate over the (key, value) pairs in the dicts.
+        Useful for flattening an iterable of dicts into an iterable of key-value pairs.
+
+        >>> from pychain import Iter
+        >>> data = [{"a": 1, "b": 2}, {"c": 3}]
+        >>> Iter(data).struct.iter_items().to_list()
+        [('a', 1), ('b', 2), ('c', 3)]
+        """
+        return iter_factory(it for d in self._parent for it in d.items())
+
     def filter_keys(self, predicate: Callable[[K], bool]) -> Iter[dict[K, V]]:
         """
         Return a new Iter containing dicts with keys that satisfy predicate.

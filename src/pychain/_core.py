@@ -30,6 +30,8 @@ class CommonBase[T](ABC):
     def println(self, pretty: bool = True) -> Self:
         """
         Print the underlying data and return self for chaining.
+
+        Useful for debugging, simply insert `.println()` in the chain, and then removing it will not affect the rest of the chain.
         """
         if pretty:
             pprint.pprint(self._data)
