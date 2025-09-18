@@ -22,7 +22,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             >>> Iter([1, 2, 3]).to_list()
             [1, 2, 3]
         """
-        return self.__class__(list(self._data))
+        return self._new(list(self._data))
 
     def to_deque(self, maxlen: int | None = None) -> Self:
         """
@@ -32,7 +32,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             >>> Iter([1, 2, 3]).to_deque()
             deque([1, 2, 3])
         """
-        return self.__class__(deque(self._data, maxlen))
+        return self._new(deque(self._data, maxlen))
 
     def slice(self, start: int | None = None, stop: int | None = None) -> Self:
         """

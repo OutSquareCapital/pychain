@@ -714,7 +714,6 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(mit.chunked_even(self._data, n))
 
-    # PROCESSING------------------------------------------------------------------
     def sort[U: SupportsRichComparison[Any]](
         self: Iter[U],
         key: Callable[[U], Any] | None = None,

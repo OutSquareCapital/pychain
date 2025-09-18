@@ -289,7 +289,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         return statistics.mode(self._data)
 
     def stdev[U: int | float](
-        self: "CommonBase[Iterable[U]]",
+        self: CommonBase[Iterable[U]],
     ) -> float | Literal[0]:
         """
         Return the standard deviation of the sequence.
@@ -301,7 +301,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         return statistics.stdev(self._data)
 
     def variance[U: int | float](
-        self: "CommonBase[Iterable[U]]",
+        self: CommonBase[Iterable[U]],
     ) -> float | Literal[0]:
         """
         Return the variance of the sequence.
