@@ -14,9 +14,6 @@ dependencies = [
 dev = [
     "cytoolz-stubs",
     "numpy>=2.3.3",
-    "pydoc-markdown>=4.8.2",
-    "sphinx>=8.2.3",
-    "sphinx-markdown-builder>=0.6.8",
 ]
 
 [tool.ruff.format]
