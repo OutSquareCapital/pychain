@@ -13,7 +13,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "cytoolz-stubs"
+    "cytoolz-stubs",
+    "numpy>=2.3.3",
 ]
 
 [tool.ruff.format]
