@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Concatenate, Self, overload
+from typing import TYPE_CHECKING, Concatenate, Self
 
 import cytoolz as cz
 
-from ._core import CommonBase, iter_factory
+from .._core import iter_factory
+from ._process import ProcessDict
 
 if TYPE_CHECKING:
-    from ._core import Iter
+    from .._core import Iter
 
 
-class Dict[K, V](CommonBase[dict[K, V]]):
+class Dict[K, V](ProcessDict[K, V]):
     """
     Wrapper for Python dictionaries with chainable methods.
     """
@@ -27,7 +28,6 @@ class Dict[K, V](CommonBase[dict[K, V]]):
     ) -> Dict[KU, VU]:
         return Dict(func(self._data, *args, **kwargs))
 
-    # BUILTINS------------------------------------------------------------------
     def iter_keys(self) -> Iter[K]:
         """
         Return a Iter of the dict's keys.
@@ -55,119 +55,24 @@ class Dict[K, V](CommonBase[dict[K, V]]):
         """
         return iter_factory(self._data.items())
 
-    def copy(self) -> Self:
-        """Return a shallow copy of the dict."""
-        return self._new(self._data.copy())
-
-    def update(self, *others: dict[K, V]) -> Self:
+    def get_nested[T](
+        self, keys: Iterable[K], default: T | None = None
+    ) -> V | T | None:
         """
-        Update the dict with other(s) dict(s) and return self for convenience.
+        Get a value from a nested dictionary.
 
-        **Warning** ⚠️
-
-        This modifies the dict in place.
-
-            >>> Dict({1: 2}).update({3: 4})
-            {1: 2, 3: 4}
-        """
-        self._data.update(*others)
-        return self
-
-    @overload
-    def get_value(self, key: K, default: None = None) -> V | None: ...
-    @overload
-    def get_value(self, key: K, default: V = ...) -> V: ...
-    def get_value(self, key: K, default: V | None = None) -> V | None:
-        """Get the value for a key, returning default if not found."""
-        return self._data.get(key, default)
-
-    def set_value(self, key: K, value: V) -> Self:
-        """
-        Set the value for a key and return self for convenience.
-
-        **Warning** ⚠️
-
-        This modifies the dict in place.
-
-        >>> Dict({}).set_value("x", 1)
-        {'x': 1}
-        """
-        self._data[key] = value
-        return self
-
-    # CYTOOLZ------------------------------------------------------------------
-    def filter_keys(self, predicate: Callable[[K], bool]) -> Self:
-        """
-        Return a new Dict containing keys that satisfy predicate.
-
-        >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> Dict(d).filter_keys(lambda x: x % 2 == 0)
-        {2: 3, 4: 5}
-        """
-        return self._new(cz.dicttoolz.keyfilter(predicate, self._data))
-
-    def filter_values(self, predicate: Callable[[V], bool]) -> Self:
-        """
-        Return a new Dict containing items whose values satisfy predicate.
-
-        >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> Dict(d).filter_values(lambda x: x % 2 == 0)
-        {1: 2, 3: 4}
-        """
-        return self._new(cz.dicttoolz.valfilter(predicate, self._data))
-
-    def filter_items(
-        self,
-        predicate: Callable[[tuple[K, V]], bool],
-    ) -> Self:
-        """
-        Filter items by predicate applied to (key, value) tuples.
-
-        >>> Dict({1: 2, 3: 4}).filter_items(lambda it: it[1] > 2)
-        {3: 4}
-        """
-        return self._new(cz.dicttoolz.itemfilter(predicate, self._data))
-
-    def filter_kv(
-        self,
-        predicate: Callable[[K, V], bool],
-    ) -> Self:
-        """
-        Filter items by predicate applied to (key, value) tuples.
-
-        >>> Dict({1: 2, 3: 4}).filter_kv(lambda k, v: v > 2)
-        {3: 4}
-        """
-        return self._new(
-            cz.dicttoolz.itemfilter(lambda kv: predicate(kv[0], kv[1]), self._data)
-        )
-
-    def with_key(self, key: K, value: V) -> Self:
-        """
-        Return a new Dict with key set to value.
-
-        >>> Dict({"x": 1}).with_key("x", 2)
-        {'x': 2}
-        >>> Dict({"x": 1}).with_key("y", 3)
-        {'x': 1, 'y': 3}
-        >>> Dict({}).with_key("x", 1)
-        {'x': 1}
-        """
-        return self._new(cz.dicttoolz.assoc(self._data, key=key, value=value))
-
-    def with_nested_key(self, keys: Iterable[K] | K, value: V) -> Self:
-        """
-        Set a nested key path and return a new Dict with new, potentially nested, key value pair
+        Returns the value at the path specified by keys. If the path does not exist, returns the default value. This is a terminal operation.
 
         >>> purchase = {
-        ...     "name": "Alice",
+        ...     "user": {"name": "Alice"},
         ...     "order": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
-        ...     "credit card": "5555-1234-1234-1234",
         ... }
-        >>> Dict(purchase).with_nested_key(["order", "costs"], [0.25, 1.00])
-        {'name': 'Alice', 'order': {'items': ['Apple', 'Orange'], 'costs': [0.25, 1.0]}, 'credit card': '5555-1234-1234-1234'}
+        >>> Dict(purchase).get_nested(["order", "costs"])
+        [0.5, 1.25]
+        >>> Dict(purchase).get_nested(["user", "age"], default=99)
+        99
         """
-        return self._new(cz.dicttoolz.assoc_in(self._data, keys=keys, value=value))
+        return cz.dicttoolz.get_in(keys, self._data, default)
 
     def update_in(
         self, keys: Iterable[K], func: Callable[[V], V], default: V | None = None
@@ -294,3 +199,54 @@ class Dict[K, V](CommonBase[dict[K, V]]):
         {2: 20}
         """
         return Dict(cz.dicttoolz.itemmap(lambda kv: func(kv[0], kv[1]), self._data))
+
+    def flip(self) -> Dict[V, list[K]]:
+        """
+        Return a new Dict with keys and values swapped, grouping original keys in a list if values are not unique.
+
+        Values in the original dict must be hashable.
+
+        >>> Dict({"a": 1, "b": 2, "c": 1}).flip()
+        {1: ['a', 'c'], 2: ['b']}
+        """
+        flipped: dict[V, list[K]] = {}
+        for key, value in self._data.items():
+            if value in flipped:
+                flipped[value].append(key)
+            else:
+                flipped[value] = [key]
+        return Dict(flipped)
+
+    def rename_keys(self, mapping: dict[K, K]) -> Dict[K, V]:
+        """
+        Return a new Dict with keys renamed according to the mapping.
+
+        Keys not in the mapping are kept as is.
+
+        >>> d = {"a": 1, "b": 2, "c": 3}
+        >>> mapping = {"b": "beta", "c": "gamma"}
+        >>> Dict(d).rename_keys(mapping)
+        {'a': 1, 'beta': 2, 'gamma': 3}
+        """
+        return self._new({mapping.get(k, k): v for k, v in self._data.items()})
+
+    def diff(self, other: dict[K, V]) -> Dict[K, tuple[V | None, V | None]]:
+        """
+        Returns a dict of the differences between this dict and another.
+
+        The keys of the returned dict are the keys that are not shared or have different values.
+        The values are tuples containing the value from self and the value from other.
+
+        >>> d1 = {"a": 1, "b": 2, "c": 3}
+        >>> d2 = {"b": 2, "c": 4, "d": 5}
+        >>> Dict(d1).diff(d2).sort()
+        {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
+        """
+        all_keys: set[K] = self._data.keys() | other.keys()
+        diffs: dict[K, tuple[V | None, V | None]] = {}
+        for key in all_keys:
+            self_val = self._data.get(key)
+            other_val = other.get(key)
+            if self_val != other_val:
+                diffs[key] = (self_val, other_val)
+        return Dict(diffs)
