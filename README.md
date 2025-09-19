@@ -46,14 +46,6 @@ An internal protocol implementations allows to avoid any dependency on numpy, ke
 
 Designed to integrate seamlessly with other data manipulation libraries, like `polars`, using the `pipe_into` and `unwrap` methods.
 
-## API Reference
-
-[docs\docs.md](https://github.com/OutSquareCapital/pychain/blob/master/docs/docs.md)
-
-## Known current issues
-
-* Currently the docs API does not show the methods availables in Iter.string and Iter.rolling
-
 ## Real-life simple example
 
 In one of my project, I have to introspect some modules from plotly to get some lists of colors.

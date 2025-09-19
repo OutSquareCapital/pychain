@@ -10,10 +10,10 @@ dependencies = [
     "more-itertools>=10.8.0",
     "rolling @ git+https://github.com/OutSquareCapital/rolling.git@add-type-stubs",
 ]
+
 [dependency-groups]
 dev = [
-    "cytoolz-stubs",
-    "numpy>=2.3.3",
+    "cytoolz-stubs"
 ]
 
 [tool.ruff.format]
