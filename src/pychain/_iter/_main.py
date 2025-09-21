@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import itertools
 from collections import Counter
-from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, Concatenate, Literal, overload
+from collections.abc import Callable, Iterable, Iterator
+from typing import TYPE_CHECKING, Any, Concatenate, overload
 
 import cytoolz as cz
 import more_itertools as mit
@@ -15,12 +15,13 @@ from ._process import IterProcess
 from ._rolling import RollingNameSpace
 from ._strings import StringNameSpace
 from ._struct import StructNameSpace
+from ._tuples import IterTuples
 
 if TYPE_CHECKING:
     from .._dict import Dict
 
 
-class Iter[T](IterAgg[T], IterProcess[T]):
+class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T]):
     """
     A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
 
@@ -198,309 +199,6 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(mit.map_except(func, self._data, *exceptions))
 
-    @overload
-    def map_juxt[R1, R2](
-        self,
-        func1: Callable[[T], R1],
-        func2: Callable[[T], R2],
-        /,
-    ) -> Iter[tuple[R1, R2]]: ...
-    @overload
-    def map_juxt[R, R1, R2, R3](
-        self,
-        func1: Callable[[T], R1],
-        func2: Callable[[T], R2],
-        func3: Callable[[T], R3],
-        /,
-    ) -> Iter[tuple[R1, R2, R3]]: ...
-    @overload
-    def map_juxt[R1, R2, R3, R4](
-        self,
-        func1: Callable[[T], R1],
-        func2: Callable[[T], R2],
-        func3: Callable[[T], R3],
-        func4: Callable[[T], R4],
-        /,
-    ) -> Iter[tuple[R1, R2, R3, R4]]: ...
-
-    def map_juxt(self, *funcs: Callable[[T], object]) -> Iter[tuple[object, ...]]:
-        """
-        Apply several functions to each item.
-        Returns a new Iter where each item is a tuple of the results of applying each function to the original item.
-
-            >>> Iter([1, -2, 3]).map_juxt(
-            ...     lambda n: n % 2 == 0, lambda n: n > 0
-            ... ).to_list()
-            [(False, True), (True, False), (False, True)]
-        """
-        return self.map(cz.functoolz.juxt(*funcs))
-
-    # TRANSFORMATIONS------------------------------------------------------------------
-    @overload
-    def zip[T1](
-        self, iter1: Iterable[T1], /, *, strict: bool = ...
-    ) -> Iter[tuple[T, T1]]: ...
-    @overload
-    def zip[T1, T2](
-        self, iter1: Iterable[T1], iter2: Iterable[T2], /, *, strict: bool = ...
-    ) -> Iter[tuple[T, T1, T2]]: ...
-    @overload
-    def zip[T1, T2, T3](
-        self,
-        iter1: Iterable[T1],
-        iter2: Iterable[T2],
-        iter3: Iterable[T3],
-        /,
-        *,
-        strict: bool = ...,
-    ) -> Iter[tuple[T, T1, T2, T3]]: ...
-    @overload
-    def zip[T1, T2, T3, T4](
-        self,
-        iter1: Iterable[T1],
-        iter2: Iterable[T2],
-        iter3: Iterable[T3],
-        iter4: Iterable[T4],
-        /,
-        *,
-        strict: bool = ...,
-    ) -> Iter[tuple[T, T1, T2, T3, T4]]: ...
-    @overload
-    def zip[T1, T2, T3, T4, T5](
-        self,
-        iter1: Iterable[T1],
-        iter2: Iterable[T2],
-        iter3: Iterable[T3],
-        iter4: Iterable[T4],
-        iter5: Iterable[T5],
-        /,
-        *,
-        strict: bool = ...,
-    ) -> Iter[tuple[T, T1, T2, T3, T4, T5]]: ...
-    def zip(
-        self, *others: Iterable[Any], strict: bool = False
-    ) -> Iter[tuple[Any, ...]]:
-        """
-        Zip with other iterables, optionally strict, wrapped in Iter.
-
-            >>> Iter([1, 2]).zip([10, 20]).to_list()
-            [(1, 10), (2, 20)]
-        """
-        return Iter(zip(self._data, *others, strict=strict))
-
-    def zip_offset[U](
-        self,
-        *others: Iterable[T],
-        offsets: list[int],
-        longest: bool = False,
-        fillvalue: U = None,
-    ) -> Iter[tuple[T | U, ...]]:
-        """
-        Zip the input iterables together, but offset the i-th iterable by the i-th item in offsets.
-
-            >>> Iter("0123").zip_offset("abcdef", offsets=(0, 1)).to_list()
-            [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e')]
-
-        This can be used as a lightweight alternative to SciPy or pandas to analyze data sets in which some series have a lead or lag relationship.
-        By default, the sequence will end when the shortest iterable is exhausted. To continue until the longest iterable is exhausted, set longest to True.
-            >>> Iter("0123").zip_offset(
-            ...     "abcdef", offsets=(0, 1), longest=True
-            ... ).to_list()
-            [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e'), (None, 'f')]
-        """
-        return Iter(
-            mit.zip_offset(
-                self._data,
-                *others,
-                offsets=offsets,
-                longest=longest,
-                fillvalue=fillvalue,
-            )
-        )
-
-    def zip_broadcast(
-        self,
-        *others: Iterable[T],
-        scalar_types: tuple[type, type] | None = (str, bytes),
-        strict: bool = False,
-    ) -> Iter[tuple[T, ...]]:
-        """
-        Version of zip that "broadcasts" any scalar (i.e., non-iterable) items into output tuples.
-
-            >>> iterable_1 = [1, 2, 3]
-            >>> iterable_2 = ["a", "b", "c"]
-            >>> scalar = "_"
-            >>> Iter(iterable_1).zip_broadcast(iterable_2, scalar).to_list()
-            [(1, 'a', '_'), (2, 'b', '_'), (3, 'c', '_')]
-
-        The scalar_types keyword argument determines what types are considered scalar.
-        It is set to (str, bytes) by default. Set it to None to treat strings and byte strings as iterable:
-
-            >>> Iter("abc").zip_broadcast(0, "xyz", scalar_types=None).to_list()
-            [('a', 0, 'x'), ('b', 0, 'y'), ('c', 0, 'z')]
-
-        If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
-        """
-        return Iter(
-            mit.zip_broadcast(
-                self._data, *others, scalar_types=scalar_types, strict=strict
-            )
-        )
-
-    @overload
-    def zip_equal(self) -> Iter[tuple[T]]: ...
-    @overload
-    def zip_equal[T2](self, __iter2: Iterable[T2]) -> Iter[tuple[T, T2]]: ...
-    @overload
-    def zip_equal[T2, T3](
-        self, __iter2: Iterable[T2], __iter3: Iterable[T3]
-    ) -> Iter[tuple[T, T2, T3]]: ...
-    @overload
-    def zip_equal[T2, T3, T4](
-        self,
-        __iter2: Iterable[T2],
-        __iter3: Iterable[T3],
-        __iter4: Iterable[T4],
-    ) -> Iter[tuple[T, T2, T3, T4]]: ...
-    @overload
-    def zip_equal[T2, T3, T4, T5](
-        self,
-        __iter2: Iterable[T2],
-        __iter3: Iterable[T3],
-        __iter4: Iterable[T4],
-        __iter5: Iterable[T5],
-    ) -> Iter[tuple[T, T2, T3, T4, T5]]: ...
-    @overload
-    def zip_equal(
-        __iter1: Iterable[Any],
-        __iter2: Iterable[Any],
-        __iter3: Iterable[Any],
-        __iter4: Iterable[Any],
-        __iter5: Iterable[Any],
-        __iter6: Iterable[Any],
-        *iterables: Iterable[Any],
-    ) -> "Iter[tuple[Any, ...]]": ...
-    def zip_equal(self, *others: Iterable[Any]):
-        return Iter(mit.zip_equal(self._data, *others))
-
-    def enumerate(self) -> Iter[tuple[int, T]]:
-        """
-        Return a Iter of (index, value) pairs.
-
-            >>> Iter(["a", "b"]).enumerate().to_list()
-            [(0, 'a'), (1, 'b')]
-        """
-        return Iter(enumerate(self._data))
-
-    @overload
-    def combinations(self, r: Literal[2]) -> Iter[tuple[T, T]]: ...
-    @overload
-    def combinations(self, r: Literal[3]) -> Iter[tuple[T, T, T]]: ...
-    @overload
-    def combinations(self, r: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
-    @overload
-    def combinations(self, r: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
-    def combinations(self, r: int) -> Iter[tuple[T, ...]]:
-        """
-        Return all combinations of length r.
-
-            >>> Iter([1, 2, 3]).combinations(2).to_list()
-            [(1, 2), (1, 3), (2, 3)]
-        """
-        return Iter(itertools.combinations(self._data, r))
-
-    def batch(self, n: int) -> Iter[tuple[T, ...]]:
-        """
-        Batch elements into tuples of length n and return a new Iter.
-
-            >>> Iter("ABCDEFG").batch(3).to_list()
-            [('A', 'B', 'C'), ('D', 'E', 'F'), ('G',)]
-        """
-        return Iter(itertools.batched(self._data, n))
-
-    def zip_longest[U](
-        self, *others: Iterable[T], fill_value: U = None
-    ) -> Iter[tuple[U | T, ...]]:
-        """
-        Zip with other iterables, filling missing values.
-
-            >>> Iter([1, 2]).zip_longest([10], fill_value=0).to_list()
-            [(1, 10), (2, 0)]
-        """
-        return Iter(itertools.zip_longest(self._data, *others, fillvalue=fill_value))
-
-    def permutations(self, r: int | None = None) -> Iter[tuple[T, ...]]:
-        """
-        Return all permutations of length r.
-
-            >>> Iter([1, 2, 3]).permutations(2).to_list()
-            [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]
-        """
-        return Iter(itertools.permutations(self._data, r))
-
-    def product[U](self, other: Iterable[U]) -> Iter[tuple[T, U]]:
-        """
-        Computes the Cartesian product with another iterable.
-        This is the declarative equivalent of nested for-loops.
-
-        It pairs every element from the source iterable with every element from the
-        other iterable.
-
-        **Tip**: This method is often chained with `.starmap()` to apply a
-        function to each generated pair.
-
-            >>> colors = Iter(["blue", "red"])
-            >>> sizes = ["S", "M"]
-            >>> colors.product(sizes).to_list()
-            [('blue', 'S'), ('blue', 'M'), ('red', 'S'), ('red', 'M')]
-        """
-        return Iter(itertools.product(self._data, other))
-
-    def combinations_with_replacement(self, r: int) -> Iter[tuple[T, ...]]:
-        """
-        Return all combinations with replacement of length r.
-
-            >>> Iter([1, 2, 3]).combinations_with_replacement(2).to_list()
-            [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
-        """
-        return Iter(itertools.combinations_with_replacement(self._data, r))
-
-    def pairwise(self) -> Iter[tuple[T, T]]:
-        """
-        Return an iterator over pairs of consecutive elements.
-
-            >>> Iter([1, 2, 3]).pairwise().to_list()
-            [(1, 2), (2, 3)]
-        """
-        return Iter(itertools.pairwise(self._data))
-
-    def join[R, K](
-        self,
-        other: Iterable[R],
-        left_on: Callable[[T], K],
-        right_on: Callable[[R], K],
-        left_default: T | None = None,
-        right_default: R | None = None,
-    ) -> Iter[tuple[T, R]]:
-        """
-        Perform a relational join with another iterable.
-
-            >>> colors = Iter(["blue", "red"])
-            >>> sizes = ["S", "M"]
-            >>> colors.join(sizes, left_on=lambda c: c, right_on=lambda s: s).to_list()
-            [(None, 'S'), (None, 'M'), ('blue', None), ('red', None)]
-        """
-        return Iter(
-            cz.itertoolz.join(
-                leftkey=left_on,
-                leftseq=self._data,
-                rightkey=right_on,
-                rightseq=other,
-                left_default=left_default,
-                right_default=right_default,
-            )
-        )
-
     def pluck[K, V](self: Iter[Pluckable[K, V]], key: K) -> Iter[V]:
         """
         Extract a value from each element in the sequence using a key or index.
@@ -514,118 +212,63 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(cz.itertoolz.pluck(key, self._data))
 
-    def partition(self, n: int, pad: T | None = None) -> Iter[tuple[T, ...]]:
-        """
-        Partition into tuples of length n, optionally padded.
-
-        >>> Iter([1, 2, 3, 4]).partition(2).to_list()
-        [(1, 2), (3, 4)]
-        """
-        return Iter(cz.itertoolz.partition(n, self._data, pad))
-
-    def partition_all(self, n: int) -> Iter[tuple[T, ...]]:
-        """
-        Partition into tuples of length at most n.
-
-        >>> Iter([1, 2, 3]).partition_all(2).to_list()
-        [(1, 2), (3,)]
-        """
-        return Iter(cz.itertoolz.partition_all(n, self._data))
-
-    @overload
-    def sliding_window(self, length: Literal[1]) -> Iter[tuple[T]]: ...
-    @overload
-    def sliding_window(self, length: Literal[2]) -> Iter[tuple[T, T]]: ...
-    @overload
-    def sliding_window(self, length: Literal[3]) -> Iter[tuple[T, T, T]]: ...
-    @overload
-    def sliding_window(self, length: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
-    @overload
-    def sliding_window(self, length: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
-    @overload
-    def sliding_window(self, length: Literal[6]) -> Iter[tuple[T, T, T, T, T, T]]: ...
-    @overload
-    def sliding_window(
-        self, length: Literal[7]
-    ) -> Iter[tuple[T, T, T, T, T, T, T]]: ...
-    @overload
-    def sliding_window(
-        self, length: Literal[8]
-    ) -> Iter[tuple[T, T, T, T, T, T, T, T]]: ...
-    @overload
-    def sliding_window(
-        self, length: Literal[9]
-    ) -> Iter[tuple[T, T, T, T, T, T, T, T, T]]: ...
-
-    def sliding_window(self, length: int) -> Iter[tuple[T, ...]]:
-        """
-        A sequence of overlapping subsequences
-
-        >>> Iter([1, 2, 3, 4]).sliding_window(2).to_list()
-        [(1, 2), (2, 3), (3, 4)]
-
-        This function allows you to apply custom function not available in the rolling namespace.
-
-        >>> mean = lambda seq: float(sum(seq)) / len(seq)
-        >>> Iter([1, 2, 3, 4]).sliding_window(2).map(mean).to_list()
-        [1.5, 2.5, 3.5]
-        """
-        # TODO: check si rolling.Apply peut y remplacer, ou en tout cas voir quel use case sliding_window couvre que rolling.Apply ne couvre pas
-        return Iter(cz.itertoolz.sliding_window(length, self._data))
-
-    def diff(
-        self,
-        *others: Iterable[T],
-        key: Callable[[T], T] | None = None,
-    ) -> Iter[tuple[T, ...]]:
-        """
-        Yield differences between sequences.
-
-        >>> Iter([1, 2, 3]).diff([1, 2, 10]).to_list()
-        [(3, 10)]
-        """
-        return Iter(cz.itertoolz.diff(self._data, *others, ccpdefault=None, key=key))
-
     def reduce_by[K](
-        self, key: Callable[[T], K], binop: Callable[[T, T], T]
+        self,
+        key: Callable[[T], K],
+        binop: Callable[[T, T], T],
+        init: Any = "__no__default__",
     ) -> Iter[K]:
         """
         Perform a simultaneous groupby and reduction
-        on the elements of the sequence.
 
-        >>> Iter([1, 2, 3, 4]).reduce_by(
-        ...     key=lambda x: x % 2, binop=lambda a, b: a + b
-        ... ).to_list()
-        [1, 0]
+        >>> data = Iter([1, 2, 3, 4, 5])
+        >>> data.reduce_by(lambda x: x % 2 == 0, lambda x, y: x + y, 0)
+        {False: 9, True: 6}
+        >>> data.group_by(lambda x: x % 2 == 0).map_values(
+        ...     lambda group: Iter(group).reduce(lambda x, y: x + y)
+        ... )
+        {False: 9, True: 6}
+
+        But the former does not build the intermediate groups, allowing it to operate in much less space.
+
+        This makes it suitable for larger datasets that do not fit comfortably in memory
+
+        The init keyword argument is the default initialization of the reduction.
+
+        This can be either a constant value like 0 or a callable like lambda : 0 as might be used in defaultdict.
+
+        Simple Examples
+
+        >>> from operator import add, mul
+        >>> Iter([1, 2, 3, 4, 5]).reduce_by(lambda x: x % 2 == 0, add)
+        {False: 9, True: 6}
+        >>> Iter([1, 2, 3, 4, 5]).reduce_by(lambda x: x % 2 == 0, mul)
+        {False: 15, True: 8}
+
+        Complex Example
+
+        >>> projects = [
+        ...     {"name": "build roads", "state": "CA", "cost": 1000000},
+        ...     {"name": "fight crime", "state": "IL", "cost": 100000},
+        ...     {"name": "help farmers", "state": "IL", "cost": 2000000},
+        ...     {"name": "help farmers", "state": "CA", "cost": 200000},
+        ... ]
+        >>> Iter(projects).reduce_by(
+        ...     "state",
+        ...     lambda acc, x: acc + x["cost"],
+        ...     0,
+        ... )
+        {'CA': 1200000, 'IL': 2100000}
+
+        Example Using init
+
+        >>> def set_add(s, i):
+        ...     s.add(i)
+        ...     return s
+        >>> Iter([1, 2, 3, 4, 1, 2, 3]).reduce_by(lambda x: x % 2 == 0, set_add, set)
+        {False: {1, 3}, True: {2, 4}}
         """
-        return Iter(cz.itertoolz.reduceby(key, binop, self._data))
-
-    def adjacent(
-        self, predicate: Callable[[T], bool], distance: int = 1
-    ) -> Iter[tuple[bool, T]]:
-        """
-        Return an iterable over (bool, item) tuples.
-        The output is a sequence of tuples where the item is drawn from iterable.
-
-        The bool indicates whether that item satisfies the predicate or is adjacent to an item that does.
-
-        For example, to find whether items are adjacent to a 3:
-
-        >>> Iter(range(6)).adjacent(lambda x: x == 3).to_list()
-        [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
-
-        Set distance to change what counts as adjacent. For example, to find whether items are two places away from a 3:
-
-        >>> Iter(range(6)).adjacent(lambda x: x == 3, distance=2).to_list()
-        [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
-
-        This is useful for contextualizing the results of a search function.
-        For example, a code comparison tool might want to identify lines that have changed, but also surrounding lines to give the viewer of the diff context.
-        The predicate function will only be called once for each item in the iterable.
-
-        See also groupby_transform, which can be used with this function to group ranges of items with the same bool value.
-        """
-        return Iter(mit.adjacent(predicate, self._data, distance))
+        return Iter(cz.itertoolz.reduceby(key, binop, self._data, init))
 
     def repeat(self, n: int) -> Iter[Iterable[T]]:
         """
@@ -663,6 +306,36 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(itertools.chain.from_iterable(self._data))
 
+    def split_at(
+        self,
+        pred: Callable[[T], bool],
+        maxsplit: int = -1,
+        keep_separator: bool = False,
+    ) -> Iter[list[T]]:
+        """
+        Yield lists of items from iterable, where each list is delimited by an item where callable pred returns True.
+
+        >>> Iter("abcdcba").split_at(lambda x: x == "b").to_list()
+        [['a'], ['c', 'd', 'c'], ['a']]
+        >>> Iter(range(10)).split_at(lambda n: n % 2 == 1).to_list()
+        [[0], [2], [4], [6], [8], []]
+
+        At most *maxsplit* splits are done.
+
+        If *maxsplit* is not specified or -1, then there is no limit on the number of splits:
+
+        >>> Iter(range(10)).split_at(lambda n: n % 2 == 1, maxsplit=2).to_list()
+        [[0], [2], [4, 5, 6, 7, 8, 9]]
+
+        By default, the delimiting items are not included in the output.
+
+        To include them, set *keep_separator* to `True`.
+
+        >>> Iter("abcdcba").split_at(lambda x: x == "b", keep_separator=True).to_list()
+        [['a'], ['b'], ['c', 'd', 'c'], ['b'], ['a']]
+        """
+        return Iter(mit.split_at(self._data, pred, maxsplit, keep_separator))
+
     def split_after(
         self, predicate: Callable[[T], bool], max_split: int = -1
     ) -> Iter[list[T]]:
@@ -682,6 +355,76 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return Iter(mit.split_after(self._data, predicate, max_split))
 
+    def split_before(
+        self, predicate: Callable[[T], bool], max_split: int = -1
+    ) -> Iter[list[T]]:
+        """
+        Yield lists of items from iterable, where each list ends with an item where callable pred returns True.
+
+        >>> Iter("abcdcba").split_before(lambda x: x == "b").to_list()
+        [['a'], ['b', 'c', 'd', 'c'], ['b', 'a']]
+        >>> Iter(range(10)).split_before(lambda n: n % 2 == 1).to_list()
+        [[0], [1, 2], [3, 4], [5, 6], [7, 8], [9]]
+
+        At most *max_split* splits are done.
+
+        If *max_split* is not specified or -1, then there is no limit on the number of splits:
+
+        >>> Iter(range(10)).split_before(lambda n: n % 2 == 1, max_split=2).to_list()
+        [[0], [1, 2], [3, 4, 5, 6, 7, 8, 9]]
+        """
+        return Iter(mit.split_before(self._data, predicate, max_split))
+
+    def split_into(self, sizes: Iterable[int | None]) -> Iter[list[T]]:
+        """
+        Yield a list of sequential items from iterable of length 'n' for each integer 'n' in sizes.
+
+        >>> Iter([1, 2, 3, 4, 5, 6]).split_into([1, 2, 3]).to_list()
+        [[1], [2, 3], [4, 5, 6]]
+
+        If the sum of sizes is smaller than the length of iterable, then the remaining items of iterable will not be returned.
+
+        >>> Iter([1, 2, 3, 4, 5, 6]).split_into([2, 3]).to_list()
+        [[1, 2], [3, 4, 5]]
+
+        If the sum of sizes is larger than the length of iterable, fewer items will be returned in the iteration that overruns the iterable and further lists will be empty:
+
+        >>> Iter([1, 2, 3, 4]).split_into([1, 2, 3, 4]).to_list()
+        [[1], [2, 3], [4], []]
+
+        When a None object is encountered in sizes, the returned list will contain items up to the end of iterable the same way that itertools.slice does:
+
+        >>> Iter([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]).split_into([2, 3, None]).to_list()
+        [[1, 2], [3, 4, 5], [6, 7, 8, 9, 0]]
+
+        split_into can be useful for grouping a series of items where the sizes of the groups are not uniform.
+
+        An example would be where in a row from a table, multiple columns represent elements of the same feature (e.g. a point represented by x,y,z) but, the format is not the same for all columns.
+        """
+        return Iter(mit.split_into(self._data, sizes))
+
+    def split_when(
+        self, predicate: Callable[[T, T], bool], max_split: int = -1
+    ) -> Iter[list[T]]:
+        """
+        Split iterable into pieces based on the output of pred. pred should be a function that takes successive pairs of items and returns True if the iterable should be split in between them.
+
+        For example, to find runs of increasing numbers, split the iterable when element i is larger than element i + 1:
+
+        >>> Iter([1, 2, 3, 3, 2, 5, 2, 4, 2]).split_when(lambda x, y: x > y).to_list()
+        [[1, 2, 3, 3], [2, 5], [2, 4], [2]]
+
+        At most max_split splits are done.
+
+        If max_split is not specified or -1, then there is no limit on the number of splits:
+
+        >>> Iter([1, 2, 3, 3, 2, 5, 2, 4, 2]).split_when(
+        ...     lambda x, y: x > y, max_split=2
+        ... ).to_list()
+        [[1, 2, 3, 3], [2, 5], [2, 4, 2]]
+        """
+        return Iter(mit.split_when(self._data, predicate, max_split))
+
     def chunked(self, n: int, strict: bool = False) -> Iter[list[T]]:
         """
         Break iterable into lists of length n.
@@ -700,6 +443,32 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         [[1, 2, 3], [4, 5, 6], [7, 8]]
         """
         return Iter(mit.chunked(self._data, n, strict))
+
+    def ichunked(self, n: int) -> Iter[Iterator[T]]:
+        """
+
+        Break *iterable* into sub-iterables with *n* elements each.
+
+        :func:`ichunked` is like :func:`chunked`, but it yields iterables
+        instead of lists.
+
+        If the sub-iterables are read in order, the elements of *iterable*
+        won't be stored in memory.
+
+        If they are read out of order, :func:`itertools.tee` is used to cache
+        elements as necessary.
+
+        >>> from pychain import iter_count
+        >>> all_chunks = iter_count().ichunked(4).unwrap()
+        >>> c_1, c_2, c_3 = next(all_chunks), next(all_chunks), next(all_chunks)
+        >>> list(c_2)  # c_1's elements have been cached; c_3's haven't been
+        [4, 5, 6, 7]
+        >>> list(c_1)
+        [0, 1, 2, 3]
+        >>> list(c_3)
+        [8, 9, 10, 11]
+        """
+        return Iter(mit.ichunked(self._data, n))
 
     def chunked_even(self, n: int) -> Iter[list[T]]:
         """
@@ -731,17 +500,6 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         return self._new(sorted(self._data, key=key, reverse=reverse))
 
-    def most_common(self, n: int | None = None) -> Iter[tuple[T, int]]:
-        """
-        Return an iterable over the n most common elements and their counts from the most common to the least.
-        If n is None, then all elements are returned.
-
-        >>> Iter([1, 1, 2, 3, 3, 3]).most_common(2).to_list()
-        [(3, 3), (1, 2)]
-        """
-
-        return Iter(Counter(self._data).most_common(n))
-
     def elements(self) -> Iter[T]:
         """
         Iterator over elements repeating each as many times as its count.
@@ -765,18 +523,66 @@ class Iter[T](IterAgg[T], IterProcess[T]):
         """
         Group elements by key function and return a Dict result.
 
-        >>> from pychain import Iter
-        >>> Iter(["a", "bb"]).group_by(len)
-        {1: ['a'], 2: ['bb']}
+        >>> names = [
+        ...     "Alice",
+        ...     "Bob",
+        ...     "Charlie",
+        ...     "Dan",
+        ...     "Edith",
+        ...     "Frank",
+        ... ]
+        >>> Iter(names).group_by(len).sort()
+        {3: ['Bob', 'Dan'], 5: ['Alice', 'Edith', 'Frank'], 7: ['Charlie']}
+        >>> iseven = lambda x: x % 2 == 0
+        >>> Iter([1, 2, 3, 4, 5, 6, 7, 8]).group_by(iseven)
+        {False: [1, 3, 5, 7], True: [2, 4, 6, 8]}
+
+        Non-callable keys imply grouping on a member.
+
+        >>> data = [
+        ...     {"name": "Alice", "gender": "F"},
+        ...     {"name": "Bob", "gender": "M"},
+        ...     {"name": "Charlie", "gender": "M"},
+        ... ]
+        >>> Iter(data).group_by("gender").sort()
+        ... # doctest: +NORMALIZE_WHITESPACE
+        {'F': [{'name': 'Alice', 'gender': 'F'}], 'M': [{'name': 'Bob', 'gender': 'M'}, {'name': 'Charlie', 'gender': 'M'}]}
         """
         return dict_factory(cz.itertoolz.groupby(on, self._data))
 
     def frequencies(self) -> Dict[T, int]:
         """
-        Return a Dict of value frequencies.
+        Find number of occurrences of each value in the iterable.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 1, 2]).frequencies()
-        {1: 2, 2: 1}
+        >>> Iter(["cat", "cat", "ox", "pig", "pig", "cat"]).frequencies()
+        {'cat': 3, 'ox': 1, 'pig': 2}
         """
         return dict_factory(cz.itertoolz.frequencies(self._data))
+
+    def unique_to_each(self, *others: Iterable[T]) -> Iter[list[T]]:
+        """
+        Return the elements from each of the input iterables that aren't in the other input iterables.
+
+        For example, suppose you have a set of packages, each with a set of dependencies:
+
+        **{'pkg_1': {'A', 'B'}, 'pkg_2': {'B', 'C'}, 'pkg_3': {'B', 'D'}}**
+
+        If you remove one package, which dependencies can also be removed?
+
+        If pkg_1 is removed, then A is no longer necessary - it is not associated with pkg_2 or pkg_3.
+
+        Similarly, C is only needed for pkg_2, and D is only needed for pkg_3:
+
+        >>> Iter({"A", "B"}).unique_to_each({"B", "C"}, {"B", "D"}).to_list()
+        [['A'], ['C'], ['D']]
+
+        If there are duplicates in one input iterable that aren't in the others they will be duplicated in the output.
+
+        Input order is preserved:
+
+        >>> Iter("mississippi").unique_to_each("missouri").to_list()
+        [['p', 'p'], ['o', 'u', 'r']]
+
+        It is assumed that the elements of each iterable are hashable.
+        """
+        return Iter(mit.unique_to_each(self._data, *others))

@@ -259,15 +259,53 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         """
         return self._new(cz.itertoolz.take_nth(index, self._data))
 
-    def unique(self) -> Self:
+    def unique(self, key: Callable[[T], Any] | None = None) -> Self:
         """
-        Return unique items preserving order.
+        Return only unique elements of a sequence
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 1]).unique().to_list()
-            [1, 2]
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).unique().pipe_unwrap(tuple)
+        (1, 2, 3)
+        >>> Iter([1, 2, 1, 3]).unique().pipe_unwrap(tuple)
+        (1, 2, 3)
+
+        Uniqueness can be defined by key keyword
+
+        >>> Iter(["cat", "mouse", "dog", "hen"]).unique(key=len).pipe_unwrap(tuple)
+        ('cat', 'mouse')
         """
-        return self._new(cz.itertoolz.unique(self._data))
+        return self._new(cz.itertoolz.unique(self._data, key=key))
+
+    def unique_in_window(self, n: int, key: Callable[[T], Any] | None = None) -> Self:
+        """
+        Yield the items from iterable that haven't been seen recently. n is the size of the lookback window.
+
+        >>> from pychain import Iter
+        >>> iterable = [0, 1, 0, 2, 3, 0]
+        >>> n = 3
+        >>> Iter(iterable).unique_in_window(n).to_list()
+        [0, 1, 2, 3, 0]
+
+        The key function, if provided, will be used to determine uniqueness:
+
+        >>> Iter("abAcda").unique_in_window(3, key=lambda x: x.lower()).to_list()
+        ['a', 'b', 'c', 'd', 'a']
+
+        The items in iterable must be hashable.
+        """
+        return self._new(mit.unique_in_window(self._data, n, key=key))
+
+    def unique_justseen(self, key: Callable[[T], Any] | None = None) -> Self:
+        """
+        Yields elements in order, ignoring serial duplicates
+
+        >>> from pychain import Iter
+        >>> Iter("AAAABBBCCDAABBB").unique_justseen().to_list()
+        ['A', 'B', 'C', 'D', 'A', 'B']
+        >>> Iter("ABBCcAD").unique_justseen(str.lower).to_list()
+        ['A', 'B', 'C', 'A', 'D']
+        """
+        return self._new(mit.unique_justseen(self._data, key=key))
 
     def merge_sorted(
         self, *others: Iterable[T], sort_on: Callable[[T], Any] | None = None
@@ -302,3 +340,21 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             [1, 2, 3, 4, 5]
         """
         return self._new(itertools.chain.from_iterable((self._data, *others)))
+
+    def extract(self, indices: Iterable[int]) -> Self:
+        """
+        Yield values at the specified indices.
+
+        >>> from pychain import Iter
+        >>> Iter("abcdefghijklmnopqrstuvwxyz").extract([7, 4, 11, 11, 14]).to_list()
+        ['h', 'e', 'l', 'l', 'o']
+
+        The iterable is consumed lazily and can be infinite.
+
+        The indices are consumed immediately and must be finite.
+
+        Raises IndexError if an index lies beyond the iterable.
+
+        Raises ValueError for negative indices.
+        """
+        return self._new(mit.extract(self._data, indices))
