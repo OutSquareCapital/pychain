@@ -12,8 +12,7 @@ from .._core import dict_factory
 from .._protocols import Pluckable, SupportsRichComparison
 from ._aggregations import IterAgg
 from ._process import IterProcess
-from ._rolling import RollingNameSpace
-from ._strings import StringNameSpace
+from ._rolling import IterRolling
 from ._struct import StructNameSpace
 from ._tuples import IterTuples
 
@@ -21,7 +20,7 @@ if TYPE_CHECKING:
     from .._dict import Dict
 
 
-class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T]):
+class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T]):
     """
     A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
 
@@ -44,17 +43,6 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T]):
         return Iter(func(self._data, *args, **kwargs))
 
     @property
-    def string(self: Iter[str]) -> StringNameSpace:
-        """
-        A namespace for string-specific methods.
-
-        They are all syntactic sugar for using Iter.map(lambda s: s.any_string_method()).
-
-        However, an added bonus is that rather than using map + lambdas under the hood, they are using generators, allowing better efficiency, whilst still keeping the `no for loops` philosophy.
-        """
-        return StringNameSpace(self._data)
-
-    @property
     def struct[K, V](self: Iter[dict[K, V]]) -> StructNameSpace[K, V]:
         """
         A namespace for dictionary-specific methods.
@@ -62,12 +50,6 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T]):
         Expose the same functionality as Dict, but in a way that works on an iterable of dicts, with generators under the hood.
         """
         return StructNameSpace(self._data)
-
-    def rolling(self, window: int) -> RollingNameSpace[T]:
-        """
-        A namespace for rolling window methods.
-        """
-        return RollingNameSpace(self._data, window)
 
     # MAPS------------------------------------------------------------------
     def map[**P, R](

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Concatenate
 
@@ -29,7 +31,7 @@ class Array[T: NDArray[Any]](CommonBase[T]):
     ) -> "Array[U]":
         return Array(func(self._data, *args, **kwargs))
 
-    def to_iter(self) -> "Iter[T]":
+    def to_iter(self) -> Iter[T]:
         """
         Convert the wrapped array to an Iter wrapper.
 
