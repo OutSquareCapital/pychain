@@ -155,13 +155,10 @@ def best_author_pychain() -> tuple[str, float] | None:
     """
 
     def _map_author(data: AuthorData) -> tuple[str, float]:
-        return (_ratings(data), _average_rating(data))
-
-    def _ratings(data: AuthorData) -> str:
-        return data["author"]
-
-    def _average_rating(data: AuthorData) -> float:
-        return pc.Iter(data["books"]).map(lambda book: book["rating"]).mean()
+        return (
+            data["author"],
+            pc.Iter(data["books"]).map(lambda book: book["rating"]).mean(),
+        )
 
     return pc.Iter(AUTHORS_DATA).map(_map_author).max(key=lambda item: item[1])  # type: ignore
 

@@ -57,33 +57,30 @@ Due to the freedom of python, multiple paradigms are implemented across librarie
 
 ```python
 
+from types import ModuleType
+
 import polars as pl
 import pychain as pc
-from typing import Protocol
 from plotly.express.colors import cyclical, qualitative, sequential
 
 
-class Swatchable(Protocol):
-    def swatches(self) -> go.Figure: ...
 
-
-MODULES: dict[str, Swatchable] = {
-    "sequential": sequential,
-    "cyclical": cyclical,
-    "qualitative": qualitative,
+MODULES: set[ModuleType] = {
+    sequential,
+    cyclical,
+    qualitative,
 }
-
 
 
 def get_palettes() -> pc.Dict[str, list[str]]:
     df: pl.DataFrame = (
-        pc.Iter(MODULES.values())
+        pc.Iter(MODULES)
         .map(
-            lambda mod: pc.Dict(mod.__dict__)
+            lambda mod: pc.dict_of(mod)
             .filter_values(lambda v: isinstance(v, list))
             .unwrap()
         )
-        .pipe_into(pl.LazyFrame)
+        .pipe_unwrap(pl.LazyFrame)
         .unpivot(value_name="color", variable_name="scale")
         .drop_nulls()
         .filter(
@@ -96,7 +93,7 @@ def get_palettes() -> pc.Dict[str, list[str]]:
     )
     keys: list[str] = df.get_column("scale").to_list()
     values: list[list[str]] = df.get_column("color").to_list()
-    return pc.Dict.from_zipped(keys, values)
+    return pc.dict_zip(keys, values)
 
 # Ouput excerpt:
 {'mygbm_r': ['#ef55f1',
