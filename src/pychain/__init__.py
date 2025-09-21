@@ -1,7 +1,6 @@
 from ._arrays import Array
-from ._constructors import dict_of, dict_zip, iter_count, iter_func, iter_on, iter_range
-from ._dict import Dict
-from ._iter import Iter
+from ._dict import Dict, dict_of, dict_zip
+from ._iter import Iter, iter_count, iter_func, iter_on, iter_range
 
 __all__ = [
     "Dict",
