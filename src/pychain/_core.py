@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import pprint
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, Concatenate, Self
@@ -33,8 +32,10 @@ class CommonBase[T](ABC):
 
         Useful for debugging, simply insert `.println()` in the chain, and then removing it will not affect the rest of the chain.
         """
+        from pprint import pprint
+
         if pretty:
-            pprint.pprint(self._data)
+            pprint(self._data)
         else:
             print(self._data)
         return self

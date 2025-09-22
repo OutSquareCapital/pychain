@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import itertools
-from collections import Counter
 from collections.abc import Callable, Iterable, Iterator
 from typing import TYPE_CHECKING, Any, Concatenate, overload
 
@@ -499,6 +498,8 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T]):
         number, elements() will ignore it.
 
         """
+        from collections import Counter
+
         return Iter(Counter(self._data).elements())
 
     def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:

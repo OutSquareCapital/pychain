@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import itertools
-from collections import Counter
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, Literal, overload
 
@@ -433,6 +432,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 1, 2, 3, 3, 3]).most_common(2).to_list()
         [(3, 3), (1, 2)]
         """
+        from collections import Counter
 
         return iter_factory(Counter(self._data).most_common(n))
 

@@ -28,7 +28,7 @@ class Array[T: NDArray[Any]](CommonBase[T]):
         ],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> "Array[U]":
+    ) -> Array[U]:
         return Array(func(self._data, *args, **kwargs))
 
     def to_iter(self) -> Iter[T]:

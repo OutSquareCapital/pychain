@@ -1,18 +1,24 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
 
-from .._core import CommonBase, dict_factory
-
-if TYPE_CHECKING:
-    from ._main import Dict
+from .._core import CommonBase
 
 
 class IODict[K, V](CommonBase[dict[K, V]]):
-    def read_json(self, filepath: Path | str) -> Dict[Any, Any]:
-        return dict_factory(json.loads(Path(filepath).read_text(encoding="utf-8")))
-
     def write_json(self, filepath: Path | str) -> None:
+        import json
+
         Path(filepath).write_text(json.dumps(self._data), encoding="utf-8")
+
+    def write_csv(self, filepath: Path | str) -> None:
+        import csv
+
+        with open(filepath, "w", newline="", encoding="utf-8") as csvfile:
+            csv.writer(csvfile).writerows(self._data.items())
+        csvfile.close()
+
+    def write_pickle(self, filepath: Path | str) -> None:
+        import pickle
+
+        Path(filepath).write_bytes(pickle.dumps(self._data))
