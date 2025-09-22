@@ -51,7 +51,7 @@ class ProcessDict[K, V](CommonBase[dict[K, V]]):
         self._data[key] = value
         return self
 
-    def select_keys(self, keys: Iterable[K]) -> Self:
+    def select_keys(self, *keys: K) -> Self:
         """
         Return a new Dict containing only the specified keys.
 
@@ -59,11 +59,10 @@ class ProcessDict[K, V](CommonBase[dict[K, V]]):
 
         >>> from pychain import Dict
         >>> d = {"a": 1, "b": 2, "c": 3}
-        >>> Dict(d).select_keys(["a", "c", "d"])
+        >>> Dict(d).select_keys("a", "c", "d")
         {'a': 1, 'c': 3}
         """
-        keys_to_keep = set(keys)
-        return self._new({k: v for k, v in self._data.items() if k in keys_to_keep})
+        return self._new({k: v for k, v in self._data.items() if k in set(keys)})
 
     def filter_keys(self, predicate: Callable[[K], bool]) -> Self:
         """

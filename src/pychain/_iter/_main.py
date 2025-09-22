@@ -62,7 +62,9 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T]):
         """
         return Iter(map(func, self._data, *args, **kwargs))
 
-    def map_star[U: Iterable[Any], R](self: Iter[U], func: Callable[..., R]) -> Iter[R]:
+    def map_star[U: Iterable[Any], R, **P](
+        self: Iter[U], func: Callable[..., R], *args: P.args, **kwargs: P.kwargs
+    ) -> Iter[R]:
         """
         Applies a function to each element, where each element is an iterable.
 
@@ -77,7 +79,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T]):
             >>> Iter(["blue", "red"]).product(["S", "M"]).map_star(make_sku).to_list()
             ['blue-S', 'blue-M', 'red-S', 'red-M']
         """
-        return Iter(itertools.starmap(func, self._data))
+        return Iter(itertools.starmap(func, self._data, *args, **kwargs))
 
     def map_flat[R, **P](
         self,
@@ -107,20 +109,18 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T]):
 
     def map_join[R](
         self,
-        func: Callable[[Iterable[T]], Iterable[R]],
+        func: Callable[[T], R],
         *others: Iterable[T],
     ) -> Iter[R]:
         """
-        Equivalent to flat_map, but allow to join other iterables.
+        Equivalent to map, but allow to join other iterables.
 
         However, it don't take additional arguments for the function.
 
-            >>> Iter(["a", "b"]).map_join(
-            ...     lambda s: [c.upper() for c in s], ["c", "d", "e"]
-            ... ).to_list()
+            >>> Iter(["a", "b"]).map_join(str.upper, ["c", "d", "e"]).to_list()
             ['A', 'B', 'C', 'D', 'E']
         """
-        return Iter(itertools.chain.from_iterable(map(func, (self._data, *others))))
+        return Iter(map(func, itertools.chain.from_iterable((self._data, *others))))
 
     def map_if[R](
         self,
@@ -325,7 +325,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T]):
         At most maxsplit splits are done.
         If maxsplit is not specified or -1, then there is no limit on the number of splits:
 
-        >>> Iter("one1two2").split_after(lambda s: s.isdigit()).to_list()
+        >>> Iter("one1two2").split_after(str.isdigit).to_list()
         [['o', 'n', 'e', '1'], ['t', 'w', 'o', '2']]
 
         >>> Iter(range(10)).split_after(lambda n: n % 3 == 0).to_list()

@@ -288,7 +288,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
 
         The key function, if provided, will be used to determine uniqueness:
 
-        >>> Iter("abAcda").unique_in_window(3, key=lambda x: x.lower()).to_list()
+        >>> Iter("abAcda").unique_in_window(3, key=str.lower).to_list()
         ['a', 'b', 'c', 'd', 'a']
 
         The items in iterable must be hashable.
