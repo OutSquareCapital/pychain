@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Self, overload
+from typing import Self, overload
 
 import cytoolz as cz
 
 from .._core import CommonBase
-
-if TYPE_CHECKING:
-    pass
 
 
 class ProcessDict[K, V](CommonBase[dict[K, V]]):
