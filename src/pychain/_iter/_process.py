@@ -19,7 +19,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Transform the iterable into a list and return self.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).to_list()
+            >>> Iter((1, 2, 3)).to_list()
             [1, 2, 3]
         """
         return self._new(list(self._data))
@@ -29,7 +29,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Return an Iter wrapping the elements of the iterable.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).to_deque()
+            >>> Iter((1, 2, 3)).to_deque()
             deque([1, 2, 3])
         """
         return self._new(deque(self._data, maxlen))
@@ -358,3 +358,25 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Raises ValueError for negative indices.
         """
         return self._new(mit.extract(self._data, indices))
+
+    def elements(self) -> Self:
+        """
+        Iterator over elements repeating each as many times as its count.
+
+        >>> from pychain import Iter
+        >>> Iter("ABCABC").elements().sort()
+        ['A', 'A', 'B', 'B', 'C', 'C']
+
+        Knuth's example for prime factors of 1836:  2**2 * 3**3 * 17**1
+
+        >>> import math
+        >>> Iter({2: 2, 3: 3, 17: 1}).elements().pipe_into(math.prod)
+        1836
+
+        Note, if an element's count has been set to zero or is a negative
+        number, elements() will ignore it.
+
+        """
+        from collections import Counter
+
+        return self._new(Counter(self._data).elements())
