@@ -63,7 +63,10 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T]):
         return Iter(map(func, self._data, *args, **kwargs))
 
     def map_star[U: Iterable[Any], R, **P](
-        self: Iter[U], func: Callable[..., R], *args: P.args, **kwargs: P.kwargs
+        self: Iter[U],
+        func: Callable[Concatenate[U, P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
     ) -> Iter[R]:
         """
         Applies a function to each element, where each element is an iterable.
