@@ -24,12 +24,11 @@ class CommonBase[T](ABC):
         self._data = data
 
     def __repr__(self) -> str:
-        return f"{self._data.__repr__()}"
+        return f"{self.__class__.__name__}(\n{self._data.__repr__()}\n)\n"
 
-    def _repr_html_(self) -> str:
-        if hasattr(self._data, "_repr_html_"):
-            return self._data._repr_html_()  # type: ignore[attr-defined]
-        return f"<pre>{self._data.__repr__()}</pre>"
+    def _display_(self) -> T:
+        """Display method specific for Marimo."""
+        return self._data
 
     def println(self, pretty: bool = True) -> Self:
         """
