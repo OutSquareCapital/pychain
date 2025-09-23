@@ -24,7 +24,7 @@ class CommonBase[T](ABC):
         self._data = data
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(\n{self._data.__repr__()}\n)\n"
+        return f"{self._data.__repr__()}"
 
     def _display_(self) -> T:
         """Display method specific for Marimo."""
