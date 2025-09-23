@@ -26,6 +26,11 @@ class CommonBase[T](ABC):
     def __repr__(self) -> str:
         return f"{self._data.__repr__()}"
 
+    def _repr_html_(self) -> str:
+        if hasattr(self._data, "_repr_html_"):
+            return self._data._repr_html_()  # type: ignore[attr-defined]
+        return f"<pre>{self._data.__repr__()}</pre>"
+
     def println(self, pretty: bool = True) -> Self:
         """
         Print the underlying data and return self for chaining.
