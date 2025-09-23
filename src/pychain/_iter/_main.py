@@ -62,12 +62,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T]):
         """
         return Iter(map(func, self._data, *args, **kwargs))
 
-    def map_star[U: Iterable[Any], R, **P](
-        self: Iter[U],
-        func: Callable[Concatenate[U, P], R],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Iter[R]:
+    def map_star[U: Iterable[Any], R](self: Iter[U], func: Callable[..., R]) -> Iter[R]:
         """
         Applies a function to each element, where each element is an iterable.
 
@@ -82,7 +77,7 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T]):
             >>> Iter(["blue", "red"]).product(["S", "M"]).map_star(make_sku).to_list()
             ['blue-S', 'blue-M', 'red-S', 'red-M']
         """
-        return Iter(itertools.starmap(func, self._data, *args, **kwargs))
+        return Iter(itertools.starmap(func, self._data))
 
     def map_flat[R, **P](
         self,
