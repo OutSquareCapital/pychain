@@ -392,6 +392,19 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T], IterMap
         """
         return dict_factory(cz.itertoolz.frequencies(self._data))
 
+    def count_by[K](self, key: Callable[[T], K]) -> Dict[K, int]:
+        """
+        Count elements of a collection by a key function
+
+        >>> Iter(["cat", "mouse", "dog"]).count_by(len)
+        {3: 2, 5: 1}
+        >>> def iseven(x):
+        ...     return x % 2 == 0
+        >>> Iter([1, 2, 3]).count_by(iseven)
+        {False: 2, True: 1}
+        """
+        return dict_factory(cz.recipes.countby(key, self._data))
+
     def unique_to_each(self, *others: Iterable[T]) -> Iter[list[T]]:
         """
         Return the elements from each of the input iterables that aren't in the other input iterables.
@@ -419,3 +432,20 @@ class Iter[T](IterAgg[T], IterProcess[T], IterTuples[T], IterRolling[T], IterMap
         It is assumed that the elements of each iterable are hashable.
         """
         return Iter(mit.unique_to_each(self._data, *others))
+
+    def partition_by(self, predicate: Callable[[T], bool]) -> Iter[tuple[T, ...]]:
+        """
+        Partition the `iterable` into a sequence of `tuples` according to a predicate function.
+
+        Every time the output of `predicate` changes, a new `tuple` is started,
+        and subsequent items are collected into that `tuple`.
+
+        >>> Iter("I have space").partition_by(lambda c: c == " ").to_list()
+        [('I',), (' ',), ('h', 'a', 'v', 'e'), (' ',), ('s', 'p', 'a', 'c', 'e')]
+
+        >>> data = [1, 2, 1, 99, 88, 33, 99, -1, 5]
+        >>> Iter(data).partition_by(lambda x: x > 10).to_list()
+        [(1, 2, 1), (99, 88, 33, 99), (-1, 5)]
+
+        """
+        return Iter(cz.recipes.partitionby(predicate, self._data))

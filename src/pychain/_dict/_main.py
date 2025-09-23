@@ -6,14 +6,13 @@ from typing import TYPE_CHECKING, Concatenate, Self
 import cytoolz as cz
 
 from .._core import iter_factory
-from ._io import IODict
 from ._process import ProcessDict
 
 if TYPE_CHECKING:
     from .._core import Iter
 
 
-class Dict[K, V](ProcessDict[K, V], IODict[K, V]):
+class Dict[K, V](ProcessDict[K, V]):
     """
     Wrapper for Python dictionaries with chainable methods.
     """
