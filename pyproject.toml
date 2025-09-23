@@ -8,6 +8,7 @@ requires-python = ">=3.12"
 dependencies = [
     "cytoolz>=1.0.1",
     "more-itertools>=10.8.0",
+    "narwhals>=2.5.0",
     "rolling @ git+https://github.com/OutSquareCapital/rolling.git@add-type-stubs",
 ]
 
@@ -15,6 +16,7 @@ dependencies = [
 dev = [
     "cytoolz-stubs",
     "numpy>=2.3.3",
+    "polars>=1.33.1",
 ]
 
 [tool.ruff.format]

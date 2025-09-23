@@ -1,4 +1,4 @@
-from ._constructors import iter_count, iter_func, iter_on, iter_range
+from ._constructors import iter_col, iter_count, iter_func, iter_on, iter_range
 from ._main import Iter
 from ._struct import StructNameSpace
 
@@ -9,4 +9,5 @@ __all__ = [
     "iter_func",
     "iter_on",
     "iter_range",
+    "iter_col",
 ]
