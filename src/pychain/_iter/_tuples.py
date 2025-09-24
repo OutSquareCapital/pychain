@@ -495,3 +495,21 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         [(False, True), (True, False), (False, True)]
         """
         return iter_factory(map(cz.functoolz.juxt(*funcs), self._data))
+
+    def partition_by(self, predicate: Callable[[T], bool]) -> Iter[tuple[T, ...]]:
+        """
+        Partition the `iterable` into a sequence of `tuples` according to a predicate function.
+
+        Every time the output of `predicate` changes, a new `tuple` is started,
+        and subsequent items are collected into that `tuple`.
+
+        >>> from pychain import Iter
+        >>> Iter("I have space").partition_by(lambda c: c == " ").to_list()
+        [('I',), (' ',), ('h', 'a', 'v', 'e'), (' ',), ('s', 'p', 'a', 'c', 'e')]
+
+        >>> data = [1, 2, 1, 99, 88, 33, 99, -1, 5]
+        >>> Iter(data).partition_by(lambda x: x > 10).to_list()
+        [(1, 2, 1), (99, 88, 33, 99), (-1, 5)]
+
+        """
+        return iter_factory(cz.recipes.partitionby(predicate, self._data))
