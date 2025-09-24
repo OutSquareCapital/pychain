@@ -14,6 +14,12 @@ if TYPE_CHECKING:
 class IterList[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
 
+    def implode(self) -> Iter[list[T]]:
+        """
+        Wrap each element in the iterable into a list.
+        """
+        return iter_factory(([x] for x in self._data))
+
     def split_at(
         self,
         pred: Callable[[T], bool],
