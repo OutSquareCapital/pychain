@@ -3,6 +3,8 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from typing import TypedDict
 
+import polars as pl
+
 import pychain as pc
 
 # --- Cookbook: Real-life Examples ---
@@ -16,6 +18,23 @@ This library helps in writing clean, readable, and declarative code.
 Functional programming is a paradigm that pychain embraces.
 """
 STOP_WORDS = {"a", "is", "in", "that", "the", "and"}
+
+
+def dataframe_example():
+    """
+    Example of creating a Polars DataFrame using pychain's Dict wrapper.
+    When passing list of different lengths, polars will throw an error.
+    """
+    data = {
+        "name": ["Alice", "Bob", "Charlie", "David", "Eva"],
+        "age": [25, 30, 35, 40],
+        "city": ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"],
+    }
+    try:
+        pl.DataFrame(data)
+    except Exception as e:
+        print(f"Error creating DataFrame: {e}")
+    return pc.Dict(data).implode().pipe_unwrap(pl.LazyFrame).explode("name").collect()
 
 
 def word_frequency_python() -> list[tuple[str, int]]:
@@ -181,5 +200,6 @@ if __name__ == "__main__":
 
     assert best_author_python() == ("Author A", 4.65)
     assert best_author_pychain() == ("Author A", 4.65)
+    assert dataframe_example().shape == (5, 3)
 
     print("All checks passed! ✅")

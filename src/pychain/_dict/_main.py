@@ -55,6 +55,16 @@ class Dict[K, V](ProcessDict[K, V]):
         """
         return iter_factory(self._data.items())
 
+    def implode(self) -> Dict[K, Iterable[V]]:
+        """
+        Nest all the values in lists.
+        syntactic sugar for map_values(lambda v: [v]).
+
+        >>> Dict({1: 2, 3: 4}).implode()
+        {1: [2], 3: [4]}
+        """
+        return self.map_values(lambda v: [v])
+
     def get_nested[T](
         self, keys: Iterable[K], default: T | None = None
     ) -> V | T | None:
