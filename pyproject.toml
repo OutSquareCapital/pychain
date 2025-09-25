@@ -1,9 +1,9 @@
 [project]
-name = "pychain"
-version = "0.3.99"
-description = "Add your description here"
-readme = "README.md"
+description     = "Add your description here"
+name            = "pychain"
+readme          = "README.md"
 requires-python = ">=3.12"
+version         = "0.4.0"
 
 dependencies = [
     "cytoolz>=1.0.1",
@@ -13,11 +13,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = [
-    "cytoolz-stubs",
-    "numpy>=2.3.3",
-    "polars>=1.33.1",
-]
+dev = ["cytoolz-stubs", "polars>=1.33.1"]
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -26,5 +22,5 @@ docstring-code-format = true
 cytoolz-stubs = { git = "https://github.com/py-stubs/cytoolz-stubs.git" }
 
 [build-system]
-requires = ["uv_build>=0.8.15,<0.9.0"]
 build-backend = "uv_build"
+requires      = ["uv_build>=0.8.15,<0.9.0"]
