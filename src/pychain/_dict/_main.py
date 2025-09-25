@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Concatenate, Self
+from typing import TYPE_CHECKING, Concatenate, Self, overload
 
 import cytoolz as cz
 
@@ -65,9 +65,14 @@ class Dict[K, V](ProcessDict[K, V]):
         """
         return self.map_values(lambda v: [v])
 
-    def get_nested[T](
-        self, keys: Iterable[K], default: T | None = None
-    ) -> V | T | None:
+    @overload
+    def get_nested(self, *keys: K, default: V) -> V: ...
+    @overload
+    def get_nested[T](self, *keys: K, default: T) -> V | T: ...
+    @overload
+    def get_nested(self, *keys: K) -> V | None: ...
+
+    def get_nested[T](self, *keys: K, default: T = None) -> V | T:
         """
         Get a value from a nested dictionary.
 
@@ -77,44 +82,42 @@ class Dict[K, V](ProcessDict[K, V]):
         ...     "user": {"name": "Alice"},
         ...     "order": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
         ... }
-        >>> Dict(purchase).get_nested(["order", "costs"])
+        >>> Dict(purchase).get_nested("order", "costs")
         [0.5, 1.25]
-        >>> Dict(purchase).get_nested(["user", "age"], default=99)
+        >>> Dict(purchase).get_nested("user", "age", default=99)
         99
         """
         return cz.dicttoolz.get_in(keys, self._data, default)
 
     def update_in(
-        self, keys: Iterable[K], func: Callable[[V], V], default: V | None = None
+        self, *keys: K, func: Callable[[V], V], default: V | None = None
     ) -> Self:
         """
-        Update value in a (potentially) nested dictionary
+        Update value in a (potentially) nested dictionary.
 
-        inputs: d - dictionary on which to operate keys - list or tuple giving the location of the value to be changed in d func - function to operate on that value
+        Applies the func to the value at the path specified by keys, returning a new Dict with the updated value.
 
-        If keys == [k0,..,kX] and d[k0]..[kX] == v, update_in returns a copy of the original dictionary with v replaced by func(v), but does not mutate the original dictionary.
-
-        If k0 is not a key in d, update_in creates nested dictionaries to the depth specified by the keys, with the innermost value set to func(default).
+        If the path does not exist, it will be created with the default value (if provided) before applying func.
 
         >>> inc = lambda x: x + 1
-        >>> Dict({"a": 0}).update_in(["a"], func=inc)
+        >>> Dict({"a": 0}).update_in("a", func=inc)
         {'a': 1}
         >>> transaction = {
         ...     "name": "Alice",
         ...     "purchase": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
         ...     "credit card": "5555-1234-1234-1234",
         ... }
-        >>> Dict(transaction).update_in(["purchase", "costs"], func=sum)
+        >>> Dict(transaction).update_in("purchase", "costs", func=sum)
         {'name': 'Alice', 'purchase': {'items': ['Apple', 'Orange'], 'costs': 1.75}, 'credit card': '5555-1234-1234-1234'}
         >>> # updating a value when k0 is not in d
-        >>> Dict({}).update_in([1, 2, 3], func=str, default="bar")
+        >>> Dict({}).update_in(1, 2, 3, func=str, default="bar")
         {1: {2: {3: 'bar'}}}
-        >>> Dict({1: "foo"}).update_in([2, 3, 4], func=inc, default=0)
+        >>> Dict({1: "foo"}).update_in(2, 3, 4, func=inc, default=0)
         {1: 'foo', 2: {3: {4: 1}}}
 
         """
         return self._new(
-            cz.dicttoolz.update_in(self._data, keys=keys, func=func, default=default)
+            cz.dicttoolz.update_in(self._data, keys, func=func, default=default)
         )
 
     def merge(self, *others: dict[K, V]) -> Self:

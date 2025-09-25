@@ -115,15 +115,10 @@ class CommonBase[T](ABC):
 
         Prefer this method over multiple pipe_into calls when the functions don't transform the underlying type.
 
-        I.e. Iter(data).pipe_chain(f, g, h).unwrap() is equivalent to h(g(f(data)))
+        I.e. Wrapper(data).pipe_chain(f, g, h).unwrap() is equivalent to h(g(f(data)))
 
-            >>> import pychain as pc
-            >>> import numpy as np
-            >>> data = np.array([1, 2, 3, 4, 5])
-            >>> pc.Array(data).pipe_chain(lambda x: x + 2, lambda x: x * 3).pipe_into(
-            ...     lambda x: x.clip(10, 20)
-            ... )
-            array([10, 12, 15, 18, 20])
+        >>> Wrapper(5).pipe_chain(lambda x: x + 2, lambda x: x * 3, lambda x: x - 4)
+        17
         """
         return self._new(cz.functoolz.pipe(self._data, *funcs))
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from typing import Self, overload
 
 import cytoolz as cz
@@ -128,9 +128,9 @@ class ProcessDict[K, V](CommonBase[dict[K, V]]):
         """
         return self._new(cz.dicttoolz.assoc(self._data, key=key, value=value))
 
-    def with_nested_key(self, keys: Iterable[K] | K, value: V) -> Self:
+    def with_nested_key(self, *keys: K, value: V) -> Self:
         """
-        Set a nested key path and return a new Dict with new, potentially nested, key value pair
+        Set a nested key path and return a new Dict with new, potentially nested, key value pair.
 
         >>> from pychain import Dict
         >>> purchase = {
@@ -138,10 +138,10 @@ class ProcessDict[K, V](CommonBase[dict[K, V]]):
         ...     "order": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
         ...     "credit card": "5555-1234-1234-1234",
         ... }
-        >>> Dict(purchase).with_nested_key(["order", "costs"], [0.25, 1.00])
+        >>> Dict(purchase).with_nested_key("order", "costs", value=[0.25, 1.00])
         {'name': 'Alice', 'order': {'items': ['Apple', 'Orange'], 'costs': [0.25, 1.0]}, 'credit card': '5555-1234-1234-1234'}
         """
-        return self._new(cz.dicttoolz.assoc_in(self._data, keys=keys, value=value))
+        return self._new(cz.dicttoolz.assoc_in(self._data, keys, value=value))
 
     def sort(self, reverse: bool = False) -> Self:
         """
