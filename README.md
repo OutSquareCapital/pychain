@@ -10,7 +10,9 @@ To provide a fluent, declarative, and functional method-chaining API for data ma
 
 ### Philosophy
 
-Eliminate imperative loops (`for`, `while`) in favor of a sequence of high-level operations. Each method transforms the data and returns a new wrapper instance, enabling continuous chaining until a terminal method is called to extract the result.
+Eliminate imperative loops (`for`, `while`) in favor of a sequence of high-level operations.
+
+Each method transforms the data and returns a new wrapper instance, enabling continuous chaining until a terminal method is called to extract the result.
 
 ### Key Dependencies and credits
 
@@ -36,15 +38,22 @@ Based on wrapper classes that encapsulate native Python data structures or third
 
 * **`Iter[T]`**: For any `Iterable`. This is the most generic and powerful wrapper. Most operations are **lazy**.
 * **`Dict[KT, VT]`**: For `dict` objects.
-* **`Array[T]`**: For `numpy.ndarray` objects.
+* **`Wrapper[T]`**: For Any object.
 
-**Note on `Array`**:
+**Note on `Wrapper`**:
 
-An internal protocol implementations allows to avoid any dependency on numpy, keeping pychain lightweight.
+The primary goal of this class is to allow the user of pychain to keep a consistent method-chaining style across their codebase, even when working with objects that do not support this style (eg. numpy arrays, pure functions, ...).
+It does however not provide any additional functionality beyond the `pipe` methods family, and the convenience `to_iter` and `to_dict` methods.
 
 ### Interoperability
 
 Designed to integrate seamlessly with other data manipulation libraries, like `polars`, using the `pipe_into` and `unwrap` methods.
+
+### Typing
+
+Each method and class make extensive use of generics, type hints, and overloads (when necessary) to ensure type safety and improve developer experience.
+
+Since there's much less need for intermediate variables, the developper don't have to annotate them as much, whilst still keeping a type-safe codebase.
 
 ## Real-life simple example
 
@@ -73,6 +82,8 @@ MODULES: set[ModuleType] = {
 
 
 def get_palettes() -> pc.Dict[str, list[str]]:
+    clr = "color"
+    scl = "scale"
     df: pl.DataFrame = (
         pc.Iter(MODULES)
         .map(
@@ -81,18 +92,18 @@ def get_palettes() -> pc.Dict[str, list[str]]:
             .unwrap()
         )
         .pipe_unwrap(pl.LazyFrame)
-        .unpivot(value_name="color", variable_name="scale")
+        .unpivot(value_name=clr, variable_name=scl)
         .drop_nulls()
         .filter(
-            pl.col("color")
+            pl.col(clr)
             .list.eval(pl.element().first().str.starts_with("#").alias("is_hex"))
             .list.first()
         )
-        .sort("scale")
+        .sort(scl)
         .collect()
     )
-    keys: list[str] = df.get_column("scale").to_list()
-    values: list[list[str]] = df.get_column("color").to_list()
+    keys: list[str] = df.get_column(scl).to_list()
+    values: list[list[str]] = df.get_column(clr).to_list()
     return pc.dict_zip(keys, values)
 
 # Ouput excerpt:
