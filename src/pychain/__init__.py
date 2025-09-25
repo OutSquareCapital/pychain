@@ -1,5 +1,5 @@
 from ._core import Wrapper
-from ._dict import Dict, dict_of, dict_zip
+from ._dict import Dict, dict_map, dict_of, dict_zip
 from ._iter import Iter, iter_col, iter_count, iter_func, iter_on, iter_range
 
 __all__ = [
@@ -12,5 +12,6 @@ __all__ = [
     "iter_on",
     "dict_of",
     "iter_col",
+    "dict_map",
     "Wrapper",
 ]
