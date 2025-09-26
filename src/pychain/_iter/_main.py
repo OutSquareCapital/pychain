@@ -9,6 +9,7 @@ import more_itertools as mit
 
 from .._protocols import Pluckable, SupportsRichComparison
 from ._aggregations import IterAgg
+from ._constructors import IterConstructors
 from ._dicts import IterDicts
 from ._lists import IterList
 from ._maps import IterMap
@@ -26,6 +27,7 @@ class Iter[T](
     IterMap[T],
     IterDicts[T],
     IterList[T],
+    IterConstructors,
 ):
     """
     A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
@@ -178,8 +180,8 @@ class Iter[T](
         If they are read out of order, :func:`itertools.tee` is used to cache
         elements as necessary.
 
-        >>> from pychain import iter_count
-        >>> all_chunks = iter_count().ichunked(4).unwrap()
+        >>> from pychain import Iter
+        >>> all_chunks = Iter.from_count().ichunked(4).unwrap()
         >>> c_1, c_2, c_3 = next(all_chunks), next(all_chunks), next(all_chunks)
         >>> list(c_2)  # c_1's elements have been cached; c_3's haven't been
         [4, 5, 6, 7]
