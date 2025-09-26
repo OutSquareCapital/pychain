@@ -104,7 +104,7 @@ def get_palettes() -> pc.Dict[str, list[str]]:
     )
     keys: list[str] = df.get_column(scl).to_list()
     values: list[list[str]] = df.get_column(clr).to_list()
-    return pc.dict_zip(keys, values)
+    return pc.Dict.from_zip(keys, values)
 
 # Ouput excerpt:
 {'mygbm_r': ['#ef55f1',
