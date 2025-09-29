@@ -157,6 +157,35 @@ uv add git+https://github.com/OutSquareCapital/pychain.git
 
 ## Developpement
 
+### Architecture
+
+The codebase is organized into several modules, each responsible for different aspects of the library:
+
+* **`_core.py`**: Contains the base classes and core functionalities shared across all wrappers, as well as the Wrapper class.
+* **`_iter/`**: Contains the `Iter` class and its associated methods.
+* **`_dict/`**: Contains the `Dict` class and its associated methods.
+* **`_protocols.py`**: Contains typing protocols and type hints used throughout the library.
+
+#### Structure of `_iter` and `_dict` Packages
+
+Each of these packages is further divided into modules based on the type of operations they provide:
+
+* **`_constructors.py`**: Methods for creating new instances from various data sources. These are all static methods, as they do not depend on an existing instance, and a generic class don't interact very well with classmethods for instance creation.
+* **`_*.py`**: Categories of methods. Each module implement it's class that inherit from CommonBase. Iter has `_aggregations.py`, `_rolling.py`, etc...
+* **`_main.py`**: The main public class that take by inheritance the other modules as a mixin, implement the pipe_unwrap abstract method, and provide other methods that don't really fit in a specific category.
+
+the **init**.py file of each package only import the main class from_main.py to expose it at the package level.
+
+This architecture allows for a clear separation of concerns, making the codebase easier to navigate and maintain, whilst still maintaining a public API that is easy to use.
+
+A single monolithic file with thousands of lines of code quickly becomes unmanageable.
+
+##### Note on mixins vs composition
+
+The choice of using mixins (multiple inheritance) over composition (having instances of other classes as attributes) was made to provide a more seamless and intuitive API for users.
+This way, users can access all methods directly from the main class without needing to navigate through multiple layers of objects.
+HOWEVER, Iter.struct property is a namespace composition, as it is in fact the methods of Dict that are exposed on Iter.
+
 ### Setup
 
 After cloning the repo, run:
