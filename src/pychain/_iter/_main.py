@@ -11,6 +11,7 @@ from .._protocols import Pluckable, SupportsRichComparison
 from ._aggregations import IterAgg
 from ._constructors import IterConstructors
 from ._dicts import IterDicts
+from ._filters import IterFilter
 from ._lists import IterList
 from ._maps import IterMap
 from ._process import IterProcess
@@ -27,6 +28,7 @@ class Iter[T](
     IterMap[T],
     IterDicts[T],
     IterList[T],
+    IterFilter[T],
     IterConstructors,
 ):
     """
