@@ -180,3 +180,17 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         from collections import Counter
 
         return self._new(Counter(self._data).elements())
+
+    def reverse(self) -> Self:
+        """
+        Return a new Iterable wrapper with elements in reverse order.
+
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).reverse().to_list()
+        [3, 2, 1]
+
+        Note: This method must consume the entire iterable to perform the reversal.
+
+        The result is a new iterable over the reversed sequence.
+        """
+        return self._new(reversed(list(self._data)))

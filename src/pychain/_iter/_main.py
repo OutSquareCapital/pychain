@@ -9,6 +9,7 @@ import more_itertools as mit
 
 from .._protocols import Pluckable, SupportsRichComparison
 from ._aggregations import IterAgg
+from ._booleans import IterBool
 from ._constructors import IterConstructors
 from ._dicts import IterDicts
 from ._filters import IterFilter
@@ -24,6 +25,7 @@ class Iter[T](
     IterAgg[T],
     IterProcess[T],
     IterTuples[T],
+    IterBool[T],
     IterRolling[T],
     IterMap[T],
     IterDicts[T],
