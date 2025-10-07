@@ -34,7 +34,7 @@ def dataframe_example():
         pl.DataFrame(data)
     except Exception as e:
         print(f"Error creating DataFrame: {e}")
-    return pc.Dict(data).implode().pipe_unwrap(pl.LazyFrame).explode("name").collect()
+    return pc.Dict(data).implode().into(pl.LazyFrame).explode("name").collect()
 
 
 def word_frequency_python() -> list[tuple[str, int]]:

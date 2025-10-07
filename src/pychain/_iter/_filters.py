@@ -148,14 +148,14 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return only unique elements of a sequence
 
         >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).unique().pipe_unwrap(tuple)
+        >>> Iter([1, 2, 3]).unique().into(tuple)
         (1, 2, 3)
-        >>> Iter([1, 2, 1, 3]).unique().pipe_unwrap(tuple)
+        >>> Iter([1, 2, 1, 3]).unique().into(tuple)
         (1, 2, 3)
 
         Uniqueness can be defined by key keyword
 
-        >>> Iter(["cat", "mouse", "dog", "hen"]).unique(key=len).pipe_unwrap(tuple)
+        >>> Iter(["cat", "mouse", "dog", "hen"]).unique(key=len).into(tuple)
         ('cat', 'mouse')
         """
         return self._new(cz.itertoolz.unique(self._data, key=key))

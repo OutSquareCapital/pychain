@@ -64,27 +64,22 @@ class CommonBase[T](ABC):
         """Pipe the instance in the function and return the result."""
         return func(self, *args, **kwargs)
 
-    def pipe_unwrap[**P, R](
+    def into[**P, R](
         self,
         func: Callable[Concatenate[T, P], R],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> R:
         """
-        Pipe the *unwrapped* underlying data into a function.
-
-        This method is used to pass the raw data (e.g., the dict, list, or array) to a function,
-        returning the function's result.
+        Pass the *unwrapped* underlying data into a function.
 
         The result is not wrapped.
 
             >>> from pychain import Dict
-            >>> Dict({"a": 1, "b": 2}).pipe_unwrap(
-            ...     lambda d: {k: v + 1 for k, v in d.items()}
-            ... )
+            >>> Dict({"a": 1, "b": 2}).into(lambda d: {k: v + 1 for k, v in d.items()})
             {'a': 2, 'b': 3}
 
-        This is a terminal operation.
+        This is a core functionality that allows ending the chain whilst keeping the code style consistent.
         """
         return func(self._data, *args, **kwargs)
 
