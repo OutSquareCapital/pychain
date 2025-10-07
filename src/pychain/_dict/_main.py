@@ -31,7 +31,7 @@ class Dict[K, V](ProcessDict[K, V], DictConstructors):
         """
         Return a Iter of the dict's keys.
 
-            >>> Dict({1: 2}).iter_keys().to_list()
+            >>> Dict({1: 2}).iter_keys().into(list)
             [1]
         """
         return iter_factory(self._data.keys())
@@ -40,7 +40,7 @@ class Dict[K, V](ProcessDict[K, V], DictConstructors):
         """
         Return a Iter of the dict's values.
 
-            >>> Dict({1: 2}).iter_values().to_list()
+            >>> Dict({1: 2}).iter_values().into(list)
             [2]
         """
         return iter_factory(self._data.values())
@@ -49,7 +49,7 @@ class Dict[K, V](ProcessDict[K, V], DictConstructors):
         """
         Return a Iter of the dict's items.
 
-            >>> Dict({1: 2}).iter_items().to_list()
+            >>> Dict({1: 2}).iter_items().into(list)
             [(1, 2)]
         """
         return iter_factory(self._data.items())

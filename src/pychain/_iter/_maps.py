@@ -20,7 +20,7 @@ class IterMap[T](CommonBase[Iterable[T]]):
         Map each element through func and return a Iter of results.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2]).map(lambda x: x + 1).to_list()
+        >>> Iter([1, 2]).map(lambda x: x + 1).into(list)
         [2, 3]
         """
         return iter_factory(map(func, self._data, *args, **kwargs))
@@ -40,7 +40,7 @@ class IterMap[T](CommonBase[Iterable[T]]):
         >>> from pychain import Iter
         >>> def make_sku(color, size):
         ...     return f"{color}-{size}"
-        >>> Iter(["blue", "red"]).product(["S", "M"]).map_star(make_sku).to_list()
+        >>> Iter(["blue", "red"]).product(["S", "M"]).map_star(make_sku).into(list)
         ['blue-S', 'blue-M', 'red-S', 'red-M']
         """
         return iter_factory(itertools.starmap(func, self._data))
@@ -65,7 +65,7 @@ class IterMap[T](CommonBase[Iterable[T]]):
         ...     # This could be an API call that returns a list of books
         ...     return [f"{author_id}_book1", f"{author_id}_book2"]
         >>>
-        >>> authors.map_flat(get_books).to_list()
+        >>> authors.map_flat(get_books).into(list)
         ['author_A_book1', 'author_A_book2', 'author_B_book1', 'author_B_book2']
         """
         return iter_factory(
@@ -83,7 +83,7 @@ class IterMap[T](CommonBase[Iterable[T]]):
         However, it don't take additional arguments for the function.
 
         >>> from pychain import Iter
-        >>> Iter(["a", "b"]).map_join(str.upper, ["c", "d", "e"]).to_list()
+        >>> Iter(["a", "b"]).map_join(str.upper, ["c", "d", "e"]).into(list)
         ['A', 'B', 'C', 'D', 'E']
         """
         return iter_factory(
@@ -109,13 +109,13 @@ class IterMap[T](CommonBase[Iterable[T]]):
         >>> iterable = list(range(-5, 5))
         >>> iterable
         [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4]
-        >>> Iter(iterable).map_if(lambda x: x > 3, lambda x: "toobig").to_list()
+        >>> Iter(iterable).map_if(lambda x: x > 3, lambda x: "toobig").into(list)
         [-5, -4, -3, -2, -1, 0, 1, 2, 3, 'toobig']
         >>> Iter(iterable).map_if(
         ...     lambda x: x >= 0,
         ...     lambda x: f"{sqrt(x):.2f}",
         ...     lambda x: None,
-        ... ).to_list()
+        ... ).into(list)
         [None, None, None, None, None, '0.00', '1.00', '1.41', '1.73', '2.00']
         """
         return iter_factory(
@@ -128,9 +128,9 @@ class IterMap[T](CommonBase[Iterable[T]]):
 
         >>> from pychain import Iter
         >>> elems = ["1", "a", "2", "b", "3"]
-        >>> Iter(elems).map_filter(
-        ...     lambda s: int(s) if s.isnumeric() else None
-        ... ).to_list()
+        >>> Iter(elems).map_filter(lambda s: int(s) if s.isnumeric() else None).into(
+        ...     list
+        ... )
         [1, 2, 3]
         """
         return iter_factory(mit.filter_map(func, self._data))
@@ -148,7 +148,7 @@ class IterMap[T](CommonBase[Iterable[T]]):
 
         >>> from pychain import Iter
         >>> iterable = ["1", "2", "three", "4", None]
-        >>> Iter(iterable).map_except(int, ValueError, TypeError).to_list()
+        >>> Iter(iterable).map_except(int, ValueError, TypeError).into(list)
         [1, 2, 4]
         """
         return iter_factory(mit.map_except(func, self._data, *exceptions))

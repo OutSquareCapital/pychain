@@ -62,7 +62,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Zip with other iterables, optionally strict, wrapped in Iter.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2]).zip([10, 20]).to_list()
+        >>> Iter([1, 2]).zip([10, 20]).into(list)
         [(1, 10), (2, 20)]
         """
         return iter_factory(zip(self._data, *others, strict=strict))
@@ -78,7 +78,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Zip the input iterables together, but offset the i-th iterable by the i-th item in offsets.
 
         >>> from pychain import Iter
-        >>> Iter("0123").zip_offset("abcdef", offsets=(0, 1)).to_list()
+        >>> Iter("0123").zip_offset("abcdef", offsets=(0, 1)).into(list)
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e')]
 
         This can be used as a lightweight alternative to SciPy or pandas to analyze data sets in which some series have a lead or lag relationship.
@@ -87,7 +87,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
 
         To continue until the longest iterable is exhausted, set longest to True.
 
-        >>> Iter("0123").zip_offset("abcdef", offsets=(0, 1), longest=True).to_list()
+        >>> Iter("0123").zip_offset("abcdef", offsets=(0, 1), longest=True).into(list)
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e'), (None, 'f')]
         """
         return iter_factory(
@@ -113,13 +113,13 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> iterable_1 = [1, 2, 3]
         >>> iterable_2 = ["a", "b", "c"]
         >>> scalar = "_"
-        >>> Iter(iterable_1).zip_broadcast(iterable_2, scalar).to_list()
+        >>> Iter(iterable_1).zip_broadcast(iterable_2, scalar).into(list)
         [(1, 'a', '_'), (2, 'b', '_'), (3, 'c', '_')]
 
         The scalar_types keyword argument determines what types are considered scalar.
         It is set to (str, bytes) by default. Set it to None to treat strings and byte strings as iterable:
 
-        >>> Iter("abc").zip_broadcast(0, "xyz", scalar_types=None).to_list()
+        >>> Iter("abc").zip_broadcast(0, "xyz", scalar_types=None).into(list)
         [('a', 0, 'x'), ('b', 0, 'y'), ('c', 0, 'z')]
 
         If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
@@ -171,7 +171,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Return a Iter of (index, value) pairs.
 
         >>> from pychain import Iter
-        >>> Iter(["a", "b"]).enumerate().to_list()
+        >>> Iter(["a", "b"]).enumerate().into(list)
         [(0, 'a'), (1, 'b')]
         """
         return iter_factory(enumerate(self._data))
@@ -189,7 +189,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Return all combinations of length r.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).combinations(2).to_list()
+        >>> Iter([1, 2, 3]).combinations(2).into(list)
         [(1, 2), (1, 3), (2, 3)]
         """
         return iter_factory(itertools.combinations(self._data, r))
@@ -199,7 +199,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Batch elements into tuples of length n and return a new Iter.
 
         >>> from pychain import Iter
-        >>> Iter("ABCDEFG").batch(3).to_list()
+        >>> Iter("ABCDEFG").batch(3).into(list)
         [('A', 'B', 'C'), ('D', 'E', 'F'), ('G',)]
         """
         return iter_factory(itertools.batched(self._data, n))
@@ -211,7 +211,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Zip with other iterables, filling missing values.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2]).zip_longest([10], fill_value=0).to_list()
+        >>> Iter([1, 2]).zip_longest([10], fill_value=0).into(list)
         [(1, 10), (2, 0)]
         """
         return iter_factory(
@@ -223,7 +223,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Return all permutations of length r.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).permutations(2).to_list()
+        >>> Iter([1, 2, 3]).permutations(2).into(list)
         [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]
         """
         return iter_factory(itertools.permutations(self._data, r))
@@ -242,7 +242,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> from pychain import Iter
         >>> colors = Iter(["blue", "red"])
         >>> sizes = ["S", "M"]
-        >>> colors.product(sizes).to_list()
+        >>> colors.product(sizes).into(list)
         [('blue', 'S'), ('blue', 'M'), ('red', 'S'), ('red', 'M')]
         """
         return iter_factory(itertools.product(self._data, other))
@@ -252,7 +252,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Return all combinations with replacement of length r.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).combinations_with_replacement(2).to_list()
+        >>> Iter([1, 2, 3]).combinations_with_replacement(2).into(list)
         [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
         """
         return iter_factory(itertools.combinations_with_replacement(self._data, r))
@@ -262,7 +262,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Return an iterator over pairs of consecutive elements.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).pairwise().to_list()
+        >>> Iter([1, 2, 3]).pairwise().into(list)
         [(1, 2), (2, 3)]
         """
         return iter_factory(itertools.pairwise(self._data))
@@ -281,7 +281,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> from pychain import Iter
         >>> colors = Iter(["blue", "red"])
         >>> sizes = ["S", "M"]
-        >>> colors.join(sizes, left_on=lambda c: c, right_on=lambda s: s).to_list()
+        >>> colors.join(sizes, left_on=lambda c: c, right_on=lambda s: s).into(list)
         [(None, 'S'), (None, 'M'), ('blue', None), ('red', None)]
         """
         return iter_factory(
@@ -300,12 +300,12 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Partition sequence into tuples of length n
 
         >>> from pychain import Iter
-        >>> Iter([1, 2, 3, 4]).partition(2).to_list()
+        >>> Iter([1, 2, 3, 4]).partition(2).into(list)
         [(1, 2), (3, 4)]
 
         If the length of seq is not evenly divisible by n, the final tuple is dropped if pad is not specified, or filled to length n by pad:
 
-        >>> Iter([1, 2, 3, 4, 5]).partition(2).to_list()
+        >>> Iter([1, 2, 3, 4, 5]).partition(2).into(list)
         [(1, 2), (3, 4), (5, None)]
         """
         return iter_factory(cz.itertoolz.partition(n, self._data, pad))
@@ -317,9 +317,9 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         The final tuple may be shorter to accommodate extra elements.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2, 3, 4]).partition_all(2).to_list()
+        >>> Iter([1, 2, 3, 4]).partition_all(2).into(list)
         [(1, 2), (3, 4)]
-        >>> Iter([1, 2, 3, 4, 5]).partition_all(2).to_list()
+        >>> Iter([1, 2, 3, 4, 5]).partition_all(2).into(list)
         [(1, 2), (3, 4), (5,)]
         """
         return iter_factory(cz.itertoolz.partition_all(n, self._data))
@@ -354,7 +354,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         A sequence of overlapping subsequences of the given length.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2, 3, 4]).sliding_window(2).to_list()
+        >>> Iter([1, 2, 3, 4]).sliding_window(2).into(list)
         [(1, 2), (2, 3), (3, 4)]
 
         This function allows you to apply custom function not available in the rolling namespace.
@@ -362,7 +362,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
 
         >>> Iter([1, 2, 3, 4]).sliding_window(2).map(
         ...     lambda seq: float(sum(seq)) / len(seq)
-        ... ).to_list()
+        ... ).into(list)
         [1.5, 2.5, 3.5]
         """
         return iter_factory(cz.itertoolz.sliding_window(length, self._data))
@@ -377,16 +377,16 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Return those items that differ between iterables.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).diff([1, 2, 10, 100], default=None).to_list()
+        >>> Iter([1, 2, 3]).diff([1, 2, 10, 100], default=None).into(list)
         [(3, 10), (None, 100)]
 
 
         A key function may also be applied to each item to use during comparisons:
 
         >>> from pychain import Iter
-        >>> Iter(["apples", "bananas"]).diff(
-        ...     ["Apples", "Oranges"], key=str.lower
-        ... ).to_list()
+        >>> Iter(["apples", "bananas"]).diff(["Apples", "Oranges"], key=str.lower).into(
+        ...     list
+        ... )
         [('bananas', 'Oranges')]
         """
         return iter_factory(
@@ -405,12 +405,12 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         For example, to find whether items are adjacent to a 3:
 
         >>> from pychain import Iter
-        >>> Iter(range(6)).adjacent(lambda x: x == 3).to_list()
+        >>> Iter(range(6)).adjacent(lambda x: x == 3).into(list)
         [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
 
         Set distance to change what counts as adjacent. For example, to find whether items are two places away from a 3:
 
-        >>> Iter(range(6)).adjacent(lambda x: x == 3, distance=2).to_list()
+        >>> Iter(range(6)).adjacent(lambda x: x == 3, distance=2).into(list)
         [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
 
         This is useful for contextualizing the results of a search function.
@@ -427,7 +427,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         If n is None, then all elements are returned.
 
         >>> from pychain import Iter
-        >>> Iter([1, 1, 2, 3, 3, 3]).most_common(2).to_list()
+        >>> Iter([1, 1, 2, 3, 3, 3]).most_common(2).into(list)
         [(3, 3), (1, 2)]
         """
         from collections import Counter
@@ -447,7 +447,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         - False if this element has been seen anywhere in the input before, True otherwise (i.e. the equivalent of unique_everseen)
 
         >>> from pychain import Iter
-        >>> Iter("otto").classify_unique().to_list()  # doctest: +NORMALIZE_WHITESPACE
+        >>> Iter("otto").classify_unique().into(list)  # doctest: +NORMALIZE_WHITESPACE
         [('o', True,  True),
         ('t', True,  True),
         ('t', False, False),
@@ -489,7 +489,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         Returns a new Iter where each item is a tuple of the results of applying each function to the original item.
 
         >>> from pychain import Iter
-        >>> Iter([1, -2, 3]).map_juxt(lambda n: n % 2 == 0, lambda n: n > 0).to_list()
+        >>> Iter([1, -2, 3]).map_juxt(lambda n: n % 2 == 0, lambda n: n > 0).into(list)
         [(False, True), (True, False), (False, True)]
         """
         return iter_factory(map(cz.functoolz.juxt(*funcs), self._data))
@@ -502,11 +502,11 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         and subsequent items are collected into that `tuple`.
 
         >>> from pychain import Iter
-        >>> Iter("I have space").partition_by(lambda c: c == " ").to_list()
+        >>> Iter("I have space").partition_by(lambda c: c == " ").into(list)
         [('I',), (' ',), ('h', 'a', 'v', 'e'), (' ',), ('s', 'p', 'a', 'c', 'e')]
 
         >>> data = [1, 2, 1, 99, 88, 33, 99, -1, 5]
-        >>> Iter(data).partition_by(lambda x: x > 10).to_list()
+        >>> Iter(data).partition_by(lambda x: x > 10).into(list)
         [(1, 2, 1), (99, 88, 33, 99), (-1, 5)]
 
         """

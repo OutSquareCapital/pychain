@@ -58,8 +58,7 @@ def word_frequency_pychain():
         pc.Iter(re.findall(r"\w+", TEXT_DATA.lower()))
         .filter(lambda word: word not in STOP_WORDS)
         .most_common(3)
-        .to_list()
-        .unwrap()
+        .into(list)
     )
 
 

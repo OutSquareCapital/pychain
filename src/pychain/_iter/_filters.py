@@ -21,7 +21,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Filter elements according to func and return a new Iterable wrapper.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).filter(lambda x: x > 1).to_list()
+            >>> Iter([1, 2, 3]).filter(lambda x: x > 1).into(list)
             [2, 3]
         """
         return self._new(filter(func, self._data, *args, **kwargs))
@@ -31,7 +31,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return elements that are in the given values iterable.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3, 4]).filter_isin([2, 4, 6]).to_list()
+            >>> Iter([1, 2, 3, 4]).filter_isin([2, 4, 6]).into(list)
             [2, 4]
         """
         value_set: set[T] = set(values)
@@ -42,7 +42,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return elements that are not in the given values iterable.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3, 4]).filter_notin([2, 4, 6]).to_list()
+            >>> Iter([1, 2, 3, 4]).filter_notin([2, 4, 6]).into(list)
             [1, 3]
         """
         value_set: set[T] = set(values)
@@ -53,9 +53,9 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return elements that contain the given text.
 
             >>> from pychain import Iter
-            >>> Iter(["apple", "banana", "cherry", "date"]).filter_contain(
-            ...     "ana"
-            ... ).to_list()
+            >>> Iter(["apple", "banana", "cherry", "date"]).filter_contain("ana").into(
+            ...     list
+            ... )
             ['banana']
         """
         return self._new((x for x in self._data if text in x))
@@ -65,7 +65,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return elements that are instances of the given type.
 
             >>> from pychain import Iter
-            >>> Iter([1, "two", 3.0, "four", 5]).filter_type(int).to_list()
+            >>> Iter([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
             [1, 5]
         """
         return iter_factory((x for x in self._data if isinstance(x, typ)))
@@ -75,7 +75,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return elements that have the given attribute.
 
             >>> from pychain import Iter
-            >>> Iter(["hello", "world", 2, 5]).filter_attr("capitalize").to_list()
+            >>> Iter(["hello", "world", 2, 5]).filter_attr("capitalize").into(list)
             ['hello', 'world']
         """
         return self._new((x for x in self._data if hasattr(x, attr)))
@@ -87,7 +87,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return elements for which func is false.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).filter_false(lambda x: x > 1).to_list()
+            >>> Iter([1, 2, 3]).filter_false(lambda x: x > 1).into(list)
             [1]
         """
         return self._new(itertools.filterfalse(func, self._data, *args, **kwargs))
@@ -106,7 +106,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
 
             >>> from pychain import Iter
             >>> iterable = ["1", "2", "three", "4", None]
-            >>> Iter(iterable).filter_except(int, ValueError, TypeError).to_list()
+            >>> Iter(iterable).filter_except(int, ValueError, TypeError).into(list)
             ['1', '2', '4']
         """
         return self._new(mit.filter_except(func, self._data, *exceptions))
@@ -116,7 +116,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Take items while predicate holds and return a new Iterable wrapper.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 0]).take_while(lambda x: x > 0).to_list()
+            >>> Iter([1, 2, 0]).take_while(lambda x: x > 0).into(list)
             [1, 2]
         """
         return self._new(itertools.takewhile(predicate, self._data))
@@ -126,7 +126,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Drop items while predicate holds and return the remainder.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 0]).drop_while(lambda x: x > 0).to_list()
+            >>> Iter([1, 2, 0]).drop_while(lambda x: x > 0).into(list)
             [0]
         """
         return self._new(itertools.dropwhile(predicate, self._data))
@@ -136,7 +136,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Filter elements using a boolean selector iterable.
 
             >>> from pychain import Iter
-            >>> Iter("ABCDEF").compress(1, 0, 1, 0, 1, 1).to_list()
+            >>> Iter("ABCDEF").compress(1, 0, 1, 0, 1, 1).into(list)
             ['A', 'C', 'E', 'F']
         """
         return self._new(itertools.compress(self._data, selectors))
@@ -163,7 +163,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return first n elements wrapped.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).head(2).to_list()
+            >>> Iter([1, 2, 3]).head(2).into(list)
             [1, 2]
         """
         return self._new(cz.itertoolz.take(n, self._data))
@@ -173,7 +173,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return last n elements wrapped.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).tail(2).to_list()
+            >>> Iter([1, 2, 3]).tail(2).into(list)
             [2, 3]
         """
         return self._new(cz.itertoolz.tail(n, self._data))
@@ -183,7 +183,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Drop first n elements and return the remainder wrapped.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).drop_first(1).to_list()
+            >>> Iter([1, 2, 3]).drop_first(1).into(list)
             [2, 3]
         """
         return self._new(cz.itertoolz.drop(n, self._data))
@@ -193,9 +193,9 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Yields elements in order, ignoring serial duplicates
 
         >>> from pychain import Iter
-        >>> Iter("AAAABBBCCDAABBB").unique_justseen().to_list()
+        >>> Iter("AAAABBBCCDAABBB").unique_justseen().into(list)
         ['A', 'B', 'C', 'D', 'A', 'B']
-        >>> Iter("ABBCcAD").unique_justseen(str.lower).to_list()
+        >>> Iter("ABBCcAD").unique_justseen(str.lower).into(list)
         ['A', 'B', 'C', 'A', 'D']
         """
         return self._new(mit.unique_justseen(self._data, key=key))
@@ -207,12 +207,12 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         >>> from pychain import Iter
         >>> iterable = [0, 1, 0, 2, 3, 0]
         >>> n = 3
-        >>> Iter(iterable).unique_in_window(n).to_list()
+        >>> Iter(iterable).unique_in_window(n).into(list)
         [0, 1, 2, 3, 0]
 
         The key function, if provided, will be used to determine uniqueness:
 
-        >>> Iter("abAcda").unique_in_window(3, key=str.lower).to_list()
+        >>> Iter("abAcda").unique_in_window(3, key=str.lower).into(list)
         ['a', 'b', 'c', 'd', 'a']
 
         The items in iterable must be hashable.
@@ -224,7 +224,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return the top-n items according to key.
 
             >>> from pychain import Iter
-            >>> Iter([1, 3, 2]).top_n(2).to_list()
+            >>> Iter([1, 3, 2]).top_n(2).into(list)
             [3, 2]
         """
         return self._new(cz.itertoolz.topk(n, self._data, key))
@@ -234,7 +234,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Yield values at the specified indices.
 
         >>> from pychain import Iter
-        >>> Iter("abcdefghijklmnopqrstuvwxyz").extract([7, 4, 11, 11, 14]).to_list()
+        >>> Iter("abcdefghijklmnopqrstuvwxyz").extract([7, 4, 11, 11, 14]).into(list)
         ['h', 'e', 'l', 'l', 'o']
 
         The iterable is consumed lazily and can be infinite.
@@ -252,7 +252,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return every nth item starting from first.
 
             >>> from pychain import Iter
-            >>> Iter([10, 20, 30, 40]).every(2).to_list()
+            >>> Iter([10, 20, 30, 40]).every(2).into(list)
             [10, 30]
         """
         return self._new(cz.itertoolz.take_nth(index, self._data))
@@ -262,7 +262,7 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         Return a slice of the iterable.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3, 4, 5]).slice(1, 4).to_list()
+            >>> Iter([1, 2, 3, 4, 5]).slice(1, 4).into(list)
             [2, 3, 4]
         """
         return self._new(itertools.islice(self._data, start, stop))

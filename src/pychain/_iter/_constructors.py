@@ -23,7 +23,7 @@ class IterConstructors:
         Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 
         >>> from pychain import Iter
-        >>> Iter.from_count(10, 2).head(3).to_list()
+        >>> Iter.from_count(10, 2).head(3).into(list)
         [10, 12, 14]
         """
         return iter_factory(itertools.count(start, step))
@@ -36,7 +36,7 @@ class IterConstructors:
         Syntactic sugar for `Iter(range(start, stop, step))`.
 
         >>> from pychain import Iter
-        >>> Iter.from_range(1, 5).to_list()
+        >>> Iter.from_range(1, 5).into(list)
         [1, 2, 3, 4]
         """
         return iter_factory(range(start, stop, step))
@@ -53,7 +53,7 @@ class IterConstructors:
         Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 
         >>> from pychain import Iter
-        >>> Iter.from_func(lambda x: x + 1, 0).head(3).to_list()
+        >>> Iter.from_func(lambda x: x + 1, 0).head(3).into(list)
         [0, 1, 2]
         """
         return iter_factory(cz.itertoolz.iterate(func, x))
@@ -64,7 +64,7 @@ class IterConstructors:
         Create an iterator from the given elements.
 
         >>> from pychain import Iter
-        >>> Iter.from_(1, 2, 3).to_list()
+        >>> Iter.from_(1, 2, 3).into(list)
         [1, 2, 3]
         """
         return iter_factory(elements)

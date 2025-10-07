@@ -22,10 +22,10 @@ class StructNameSpace[K, V]:
 
         >>> from pychain import Iter
         >>> data = [{"a": 1, "b": 2}, {"c": 3}]
-        >>> Iter(data).struct.iter_values().to_list()
+        >>> Iter(data).struct.iter_values().into(list)
         [1, 2, 3]
         >>> nested_data = [{"a": [1, 2]}, {"b": [3, 4]}]
-        >>> Iter(nested_data).struct.iter_values().to_list()
+        >>> Iter(nested_data).struct.iter_values().into(list)
         [[1, 2], [3, 4]]
         """
         return iter_factory(v for d in self._parent for v in d.values())
@@ -36,7 +36,7 @@ class StructNameSpace[K, V]:
 
         >>> from pychain import Iter
         >>> data = [{"a": 1, "b": 2}, {"c": 3}]
-        >>> Iter(data).struct.iter_keys().to_list()
+        >>> Iter(data).struct.iter_keys().into(list)
         ['a', 'b', 'c']
         """
         return iter_factory(k for d in self._parent for k in d.keys())
@@ -48,7 +48,7 @@ class StructNameSpace[K, V]:
 
         >>> from pychain import Iter
         >>> data = [{"a": 1, "b": 2}, {"c": 3}]
-        >>> Iter(data).struct.iter_items().to_list()
+        >>> Iter(data).struct.iter_items().into(list)
         [('a', 1), ('b', 2), ('c', 3)]
         """
         return iter_factory(it for d in self._parent for it in d.items())
@@ -59,7 +59,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"a": 1, "b": 2}, {"c": 3}]
-            >>> Iter(data).struct.filter_keys(lambda k: k == "a").to_list()
+            >>> Iter(data).struct.filter_keys(lambda k: k == "a").into(list)
             [{'a': 1}, {}]
         """
         return iter_factory(cz.dicttoolz.keyfilter(predicate, d) for d in self._parent)
@@ -70,7 +70,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"a": 1, "b": 2}, {"c": 3}]
-            >>> Iter(data).struct.filter_values(lambda v: v > 1).to_list()
+            >>> Iter(data).struct.filter_values(lambda v: v > 1).into(list)
             [{'b': 2}, {'c': 3}]
         """
         return iter_factory(cz.dicttoolz.valfilter(predicate, d) for d in self._parent)
@@ -84,7 +84,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"a": 1, "b": 2}, {"c": 3, "d": 4}]
-            >>> Iter(data).struct.filter_items(lambda it: it[1] > 2).to_list()
+            >>> Iter(data).struct.filter_items(lambda it: it[1] > 2).into(list)
             [{}, {'c': 3, 'd': 4}]
         """
         return iter_factory(cz.dicttoolz.itemfilter(predicate, d) for d in self._parent)
@@ -98,7 +98,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"a": 1, "b": 2}, {"c": 3, "d": 4}]
-            >>> Iter(data).struct.filter_kv(lambda k, v: v > 2).to_list()
+            >>> Iter(data).struct.filter_kv(lambda k, v: v > 2).into(list)
             [{}, {'c': 3, 'd': 4}]
         """
         return iter_factory(
@@ -112,7 +112,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"x": 1}, {"y": 2}]
-            >>> Iter(data).struct.with_key("z", 3).to_list()
+            >>> Iter(data).struct.with_key("z", 3).into(list)
             [{'x': 1, 'z': 3}, {'y': 2, 'z': 3}]
         """
         return iter_factory(
@@ -134,7 +134,7 @@ class StructNameSpace[K, V]:
             ...         "order": {"items": ["Orange"], "costs": [1.25]},
             ...     },
             ... ]
-            >>> Iter(data).struct.with_nested_key(["order", "costs"], [0.25]).to_list()
+            >>> Iter(data).struct.with_nested_key(["order", "costs"], [0.25]).into(list)
             [{'name': 'Alice', 'order': {'items': ['Apple'], 'costs': [0.25]}}, {'name': 'Bob', 'order': {'items': ['Orange'], 'costs': [0.25]}}]
         """
         return iter_factory(
@@ -158,7 +158,7 @@ class StructNameSpace[K, V]:
             ...         "purchase": {"items": ["Orange"], "costs": [1.25]},
             ...     },
             ... ]
-            >>> Iter(data).struct.update_in(["purchase", "costs"], func=sum).to_list()
+            >>> Iter(data).struct.update_in(["purchase", "costs"], func=sum).into(list)
             [{'name': 'Alice', 'purchase': {'items': ['Apple'], 'costs': 0.5}}, {'name': 'Bob', 'purchase': {'items': ['Orange'], 'costs': 1.25}}]
         """
         return iter_factory(
@@ -172,7 +172,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"a": 1}, {"b": 2}]
-            >>> Iter(data).struct.merge({"c": 3}).to_list()
+            >>> Iter(data).struct.merge({"c": 3}).into(list)
             [{'a': 1, 'c': 3}, {'b': 2, 'c': 3}]
         """
         return iter_factory(cz.dicttoolz.merge(d, *others) for d in self._parent)
@@ -185,7 +185,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"a": 1, "b": 2}, {"c": 3, "d": 4}]
-            >>> Iter(data).struct.merge_with({"a": 10, "c": 30}, func=sum).to_list()
+            >>> Iter(data).struct.merge_with({"a": 10, "c": 30}, func=sum).into(list)
             [{'a': 11, 'b': 2, 'c': 30}, {'c': 33, 'd': 4, 'a': 10}]
         """
         return iter_factory(
@@ -198,7 +198,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"a": 1, "b": 2}, {"c": 3, "d": 4}]
-            >>> Iter(data).struct.drop("a", "c").to_list()
+            >>> Iter(data).struct.drop("a", "c").into(list)
             [{'b': 2}, {'d': 4}]
         """
         return iter_factory(cz.dicttoolz.dissoc(d, *keys) for d in self._parent)
@@ -209,7 +209,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"a": 1, "b": 2}, {"c": 3}]
-            >>> Iter(data).struct.map_keys(str.upper).to_list()
+            >>> Iter(data).struct.map_keys(str.upper).into(list)
             [{'A': 1, 'B': 2}, {'C': 3}]
         """
         return iter_factory(cz.dicttoolz.keymap(func, d) for d in self._parent)
@@ -220,7 +220,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"a": 1, "b": 2}, {"c": 3}]
-            >>> Iter(data).struct.map_values(lambda v: v * 10).to_list()
+            >>> Iter(data).struct.map_values(lambda v: v * 10).into(list)
             [{'a': 10, 'b': 20}, {'c': 30}]
         """
         return iter_factory(cz.dicttoolz.valmap(func, d) for d in self._parent)
@@ -236,7 +236,7 @@ class StructNameSpace[K, V]:
             >>> data = [{"a": 1, "b": 2}, {"c": 3}]
             >>> Iter(data).struct.map_items(
             ...     lambda kv: (kv[0].upper(), kv[1] * 10)
-            ... ).to_list()
+            ... ).into(list)
             [{'A': 10, 'B': 20}, {'C': 30}]
         """
         return iter_factory(cz.dicttoolz.itemmap(func, d) for d in self._parent)
@@ -250,7 +250,7 @@ class StructNameSpace[K, V]:
 
             >>> from pychain import Iter
             >>> data = [{"a": 1, "b": 2}, {"c": 3}]
-            >>> Iter(data).struct.map_kv(lambda k, v: (k.upper(), v * 10)).to_list()
+            >>> Iter(data).struct.map_kv(lambda k, v: (k.upper(), v * 10)).into(list)
             [{'A': 10, 'B': 20}, {'C': 30}]
         """
         return iter_factory(

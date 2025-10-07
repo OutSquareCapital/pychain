@@ -1,5 +1,4 @@
 import itertools
-from collections import deque
 from collections.abc import Callable, Iterable
 from random import Random
 from typing import Any, Self
@@ -13,26 +12,6 @@ from .._protocols import Peeked
 class IterProcess[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
 
-    def to_list(self) -> Self:
-        """
-        Transform the iterable into a list and return self.
-
-            >>> from pychain import Iter
-            >>> Iter((1, 2, 3)).to_list()
-            [1, 2, 3]
-        """
-        return self._new(list(self._data))
-
-    def to_deque(self, maxlen: int | None = None) -> Self:
-        """
-        Return an Iter wrapping the elements of the iterable.
-
-            >>> from pychain import Iter
-            >>> Iter((1, 2, 3)).to_deque()
-            deque([1, 2, 3])
-        """
-        return self._new(deque(self._data, maxlen))
-
     def cycle(self) -> Self:
         """
         Repeat the sequence indefinitely.
@@ -44,7 +23,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2]).cycle().head(5).to_list()
+            >>> Iter([1, 2]).cycle().head(5).into(list)
             [1, 2, 1, 2, 1]
         """
         return self._new(itertools.cycle(self._data))
@@ -54,7 +33,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Interpose element between items and return a new Iterable wrapper.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2]).interpose(0).to_list()
+            >>> Iter([1, 2]).interpose(0).into(list)
             [1, 0, 2]
         """
         return self._new(cz.itertoolz.interpose(element, self._data))
@@ -76,7 +55,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Return cumulative application of binary op provided by the function.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).accumulate(lambda a, b: a + b).to_list()
+            >>> Iter([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
             [1, 3, 6]
         """
         return self._new(cz.itertoolz.accumulate(func, self._data))
@@ -86,7 +65,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Prepend value to the sequence and return a new Iterable wrapper.
 
             >>> from pychain import Iter
-            >>> Iter([2, 3]).insert_left(1).to_list()
+            >>> Iter([2, 3]).insert_left(1).into(list)
             [1, 2, 3]
         """
         return self._new(cz.itertoolz.cons(value, self._data))
@@ -96,7 +75,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Print and return sequence after peeking n items.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).peekn(2).to_list()
+            >>> Iter([1, 2, 3]).peekn(2).into(list)
             Peeked 2 values: (1, 2)
             [1, 2, 3]
         """
@@ -113,7 +92,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Print and return sequence after peeking first item.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2]).peek().to_list()
+            >>> Iter([1, 2]).peek().into(list)
             Peeked value: 1
             [1, 2]
         """
@@ -132,7 +111,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Merge already-sorted sequences.
 
             >>> from pychain import Iter
-            >>> Iter([1, 3]).merge_sorted([2, 4]).to_list()
+            >>> Iter([1, 3]).merge_sorted([2, 4]).into(list)
             [1, 2, 3, 4]
         """
         return self._new(cz.itertoolz.merge_sorted(self._data, *others, key=sort_on))
@@ -142,7 +121,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Interleave multiple sequences element-wise.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2]).interleave([3, 4]).to_list()
+            >>> Iter([1, 2]).interleave([3, 4]).into(list)
             [1, 3, 2, 4]
         """
         return self._new(cz.itertoolz.interleave((self._data, *others)))
@@ -154,7 +133,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         We use chain.from_iterable rather than chain(*seqs) so that seqs can be a generator.
 
             >>> from pychain import Iter
-            >>> Iter([1, 2]).concat([3, 4], [5]).to_list()
+            >>> Iter([1, 2]).concat([3, 4], [5]).into(list)
             [1, 2, 3, 4, 5]
         """
         return self._new(itertools.chain.from_iterable((self._data, *others)))
@@ -186,7 +165,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         Return a new Iterable wrapper with elements in reverse order.
 
         >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).reverse().to_list()
+        >>> Iter([1, 2, 3]).reverse().into(list)
         [3, 2, 1]
 
         Note: This method must consume the entire iterable to perform the reversal.

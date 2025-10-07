@@ -67,9 +67,9 @@ class Iter[T](
         This is a shortcut for `.map(lambda x: x[key])`.
 
         >>> data = Iter([{"id": 1, "val": "a"}, {"id": 2, "val": "b"}])
-        >>> data.pluck("val").to_list()
+        >>> data.pluck("val").into(list)
         ['a', 'b']
-        >>> Iter([[10, 20], [30, 40]]).pluck(0).to_list()
+        >>> Iter([[10, 20], [30, 40]]).pluck(0).into(list)
         [10, 30]
         """
         return Iter(cz.itertoolz.pluck(key, self._data))
@@ -136,7 +136,7 @@ class Iter[T](
         """
         Repeat the entire iterable n times (as elements) and return Iter.
 
-        >>> Iter([1, 2]).repeat(2).to_list()
+        >>> Iter([1, 2]).repeat(2).into(list)
         [[1, 2], [1, 2]]
         """
         return Iter(itertools.repeat(self._data, n))
@@ -149,12 +149,12 @@ class Iter[T](
         """
         After the iterable is exhausted, keep yielding its last element.
 
-        >>> Iter(range(3)).repeat_last().head(5).to_list()
+        >>> Iter(range(3)).repeat_last().head(5).into(list)
         [0, 1, 2, 2, 2]
 
         If the iterable is empty, yield default forever:
 
-        >>> Iter(range(0)).repeat_last(42).head(5).to_list()
+        >>> Iter(range(0)).repeat_last(42).head(5).into(list)
         [42, 42, 42, 42, 42]
         """
         return Iter(mit.repeat_last(self._data, default))
@@ -163,7 +163,7 @@ class Iter[T](
         """
         Flatten one level of nesting and return a new Iterable wrapper.
 
-        >>> Iter([[1, 2], [3]]).flatten().to_list()
+        >>> Iter([[1, 2], [3]]).flatten().into(list)
         [1, 2, 3]
         """
         return Iter(itertools.chain.from_iterable(self._data))
@@ -203,10 +203,10 @@ class Iter[T](
         Note: This method must consume the entire iterable to perform the sort.
         The result is a new iterable over the sorted sequence.
 
-        >>> Iter([3, 1, 2]).sort().to_list()
+        >>> Iter([3, 1, 2]).sort().into(list)
         [1, 2, 3]
         >>> data = Iter([{"age": 30}, {"age": 20}])
-        >>> data.sort(key=lambda x: x["age"]).to_list()
+        >>> data.sort(key=lambda x: x["age"]).into(list)
         [{'age': 20}, {'age': 30}]
         """
         return self._new(sorted(self._data, key=key, reverse=reverse))
