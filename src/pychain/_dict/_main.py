@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Concatenate, Self, overload
 
@@ -197,10 +195,23 @@ class Dict[K, V](ProcessDict[K, V], DictConstructors):
         """
         Transform (key, value) pairs using a function that takes a (key, value) tuple.
 
-        >>> Dict({"Alice": 10, "Bob": 20}).map_items(reversed)
-        {10: 'Alice', 20: 'Bob'}
+        >>> Dict({"Alice": 10, "Bob": 20}).map_items(
+        ...     lambda kv: (kv[0].upper(), kv[1] * 2)
+        ... )
+        {'ALICE': 20, 'BOB': 40}
         """
         return Dict(cz.dicttoolz.itemmap(func, self._data))
+
+    def reverse(self) -> Dict[V, K]:
+        """
+        Return a new Dict with keys and values swapped.
+
+        Values in the original dict must be unique and hashable.
+
+        >>> Dict({"a": 1, "b": 2}).reverse()
+        {1: 'a', 2: 'b'}
+        """
+        return Dict(cz.dicttoolz.itemmap(reversed, self._data))
 
     def map_kv[KR, VR](
         self,

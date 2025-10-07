@@ -16,8 +16,11 @@ class IterAgg[T](CommonBase[Iterable[T]]):
     def reduce(self, func: Callable[[T, T], T]) -> T:
         """
         Apply a function of two arguments cumulatively to the items of an iterable, from left to right.
+
         This effectively reduces the iterable to a single value.
+
         If initial is present, it is placed before the items of the iterable in the calculation.
+
         It then serves as a default when the iterable is empty.
 
             >>> from pychain import Iter
@@ -80,6 +83,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
     def argmax[U](self, key: Callable[[T], U] | None = None) -> int:
         """
         Index of the first occurrence of a maximum value in an iterable.
+
         >>> from pychain import Iter
         >>> Iter("abcdefghabcd").argmax()
         7

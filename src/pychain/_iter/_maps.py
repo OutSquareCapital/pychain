@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import itertools
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, Concatenate
