@@ -47,7 +47,7 @@ It does however not provide any additional functionality beyond the `pipe` metho
 
 ### Interoperability
 
-Designed to integrate seamlessly with other data manipulation libraries, like `polars`, using the `pipe_into` and `unwrap` methods.
+Designed to integrate seamlessly with other data manipulation libraries, like `polars`, using the `into` and `unwrap` methods.
 
 ### Typing
 
@@ -91,7 +91,7 @@ def get_palettes() -> pc.Dict[str, list[str]]:
             .filter_values(lambda v: isinstance(v, list))
             .unwrap()
         )
-        .pipe_unwrap(pl.LazyFrame)
+        .into(pl.LazyFrame)
         .unpivot(value_name=clr, variable_name=scl)
         .drop_nulls()
         .filter(

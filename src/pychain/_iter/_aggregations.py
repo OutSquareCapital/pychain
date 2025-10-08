@@ -29,6 +29,22 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return functools.reduce(func, self._data)
 
+    def combination_index(self, r: Iterable[T]) -> int:
+        """
+        Equivalent to list(combinations(iterable, r)).index(element)
+
+        The subsequences of iterable that are of length r can be ordered lexicographically.
+
+        combination_index computes the index of the first element, without computing the previous combinations.
+
+        >>> from pychain import Iter
+        >>> Iter("abcdefg").combination_index("adf")
+        10
+
+        ValueError will be raised if the given element isn't one of the combinations of iterable.
+        """
+        return mit.combination_index(r, self._data)
+
     def first(self) -> T:
         """
         Return the first element.

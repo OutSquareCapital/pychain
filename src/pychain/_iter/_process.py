@@ -1,9 +1,10 @@
 import itertools
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from random import Random
 from typing import Any, Self
 
 import cytoolz as cz
+import more_itertools as mit
 
 from .._core import CommonBase
 from .._protocols import Peeked
@@ -173,3 +174,59 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         The result is a new iterable over the reversed sequence.
         """
         return self._new(reversed(list(self._data)))
+
+    def is_strictly_n(
+        self,
+        n: int,
+        too_short: Callable[..., Iterator[T]] | None = None,
+        too_long: Callable[..., Iterator[T]] | None = None,
+    ) -> Self:
+        """
+        Validate that *iterable* has exactly *n* items and return them if it does.
+
+        If it has fewer than *n* items, call function *too_short* with the actual number of items.
+
+        If it has more than *n* items, call function *too_long* with the number ``n + 1``.
+
+        >>> from pychain import Iter
+        >>> iterable = ["a", "b", "c", "d"]
+        >>> n = 4
+        >>> Iter(iterable).is_strictly_n(n).into(list)
+        ['a', 'b', 'c', 'd']
+
+        Note that the returned iterable must be consumed in order for the check to
+        be made.
+
+        By default, *too_short* and *too_long* are functions that raise
+        ``ValueError``.
+
+        >>> Iter("ab").is_strictly_n(3).into(list)  # doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ValueError: too few items in iterable (got 2)
+
+        >>> Iter("abc").is_strictly_n(2).into(list)  # doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        ValueError: too many items in iterable (got at least 3)
+
+        You can instead supply functions that do something else.
+
+        *too_short* will be called with the number of items in *iterable*.
+
+        *too_long* will be called with `n + 1`.
+
+        >>> def too_short(item_count):
+        ...     raise RuntimeError
+        >>> Iter("abcd").is_strictly_n(6, too_short=too_short).into(list)
+        Traceback (most recent call last):
+        ...
+        RuntimeError
+
+        >>> def too_long(item_count):
+        ...     print("The boss is going to hear about this")
+        >>> Iter("abcdef").is_strictly_n(4, too_long=too_long).into(list)
+        The boss is going to hear about this
+        ['a', 'b', 'c', 'd']
+        """
+        return self._new(mit.strictly_n(self._data, n, too_short, too_long))

@@ -59,7 +59,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         self, *others: Iterable[Any], strict: bool = False
     ) -> Iter[tuple[Any, ...]]:
         """
-        Zip with other iterables, optionally strict, wrapped in Iter.
+        Zip with other iterables, optionally strict.
 
         >>> from pychain import Iter
         >>> Iter([1, 2]).zip([10, 20]).into(list)

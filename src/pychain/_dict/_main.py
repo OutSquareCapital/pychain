@@ -2,6 +2,7 @@ from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Concatenate, Self, overload
 
 import cytoolz as cz
+import more_itertools as mit
 
 from .._core import iter_factory
 from ._constructors import DictConstructors
@@ -275,3 +276,22 @@ class Dict[K, V](ProcessDict[K, V], DictConstructors):
             if self_val != other_val:
                 diffs[key] = (self_val, other_val)
         return Dict(diffs)
+
+    def join_mappings(
+        self,
+        main_name: str = "main",
+        **field_to_map: dict[K, V],
+    ) -> Dict[K, dict[str, V]]:
+        """
+        Join multiple mappings into a single mapping of mappings.
+        Each key in the resulting dict maps to a dict containing values from the original dict and the additional mappings, keyed by their respective names.
+        >>> Dict({"a": 1, "b": 2}).join_mappings(
+        ...     main_name="score", time={"a": 10, "b": 20}
+        ... )
+        {'a': {'score': 1, 'time': 10}, 'b': {'score': 2, 'time': 20}}
+        """
+        all_maps = {
+            main_name: self.unwrap(),
+            **{k: v for k, v in field_to_map.items()},
+        }
+        return Dict(mit.join_mappings(**all_maps))
