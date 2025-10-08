@@ -124,19 +124,6 @@ class IterMap[T](CommonBase[Iterable[T]]):
             mit.map_if(self._data, predicate, func, func_else=func_else)
         )
 
-    def map_filter[R](self, func: Callable[[T], R]) -> Iter[R]:
-        """
-        Apply func to every element of iterable, yielding only those which are not None.
-
-        >>> from pychain import Iter
-        >>> elems = ["1", "a", "2", "b", "3"]
-        >>> Iter(elems).map_filter(lambda s: int(s) if s.isnumeric() else None).into(
-        ...     list
-        ... )
-        [1, 2, 3]
-        """
-        return iter_factory(mit.filter_map(func, self._data))
-
     def map_except[R](
         self, func: Callable[[T], R], *exceptions: type[BaseException]
     ) -> Iter[R]:

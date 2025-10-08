@@ -62,6 +62,24 @@ class IterFilter[T](CommonBase[Iterable[T]]):
         """
         return self._new((x for x in self._data if text in x))
 
+    def filter_subclass[U: Iterable[type], R](
+        self: CommonBase[U], parent: type[R]
+    ) -> Iter[type[R]]:
+        """
+        Return elements that are subclasses of the given class.
+
+            >>> from pychain import Iter
+            >>> class A:
+            ...     pass
+            >>> class B(A):
+            ...     pass
+            >>> class C:
+            ...     pass
+            >>> Iter([A, B, C]).filter_subclass(A).map(lambda c: c.__name__).into(list)
+            ['A', 'B']
+        """
+        return iter_factory((x for x in self._data if issubclass(x, parent)))
+
     def filter_type[R](self, typ: type[R]) -> Iter[R]:
         """
         Return elements that are instances of the given type.
@@ -81,6 +99,16 @@ class IterFilter[T](CommonBase[Iterable[T]]):
             ['hello', 'world']
         """
         return self._new((x for x in self._data if hasattr(x, attr)))
+
+    def filter_callable(self) -> Iter[Callable[..., Any]]:
+        """
+        Return only elements that are callable.
+
+        >>> from pychain import Iter
+        >>> Iter([len, 42, str, None, list]).filter_callable().into(list)
+        [<built-in function len>, <class 'str'>, <class 'list'>]
+        """
+        return iter_factory((x for x in self._data if callable(x)))
 
     def filter_false[**P](
         self, func: Callable[Concatenate[T, P], bool], *args: P.args, **kwargs: P.kwargs
@@ -268,3 +296,16 @@ class IterFilter[T](CommonBase[Iterable[T]]):
             [2, 3, 4]
         """
         return self._new(itertools.islice(self._data, start, stop))
+
+    def filter_map[R](self, func: Callable[[T], R]) -> Iter[R]:
+        """
+        Apply func to every element of iterable, yielding only those which are not None.
+
+        >>> from pychain import Iter
+        >>> elems = ["1", "a", "2", "b", "3"]
+        >>> Iter(elems).filter_map(lambda s: int(s) if s.isnumeric() else None).into(
+        ...     list
+        ... )
+        [1, 2, 3]
+        """
+        return iter_factory(mit.filter_map(func, self._data))
