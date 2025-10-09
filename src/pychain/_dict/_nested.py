@@ -37,36 +37,40 @@ class NestedDict[K, V](CommonBase[dict[K, V]]):
         """
         return Wrapper(cz.dicttoolz.get_in(keys, self._data, default))
 
-    def schema(self) -> Dict[K, Any]:
+    def schema(self, max_depth: int = 2) -> Dict[K, Any]:
         """
-        Return the schema of the (potentially) nested dictionary.
-
-        Values are replaced by their type names.
-
-        For lists, only the first element is inspected to infer the type of the content.
+        Return the schema of the dictionary up to a maximum depth.
+        When the max depth is reached, nested dicts are marked as 'dict'.
+        For lists, only the first element is inspected.
 
         >>> from pychain import Dict
-        >>> data = {"a": 1, "b": {"c": [{"id": 1}, {"id": 2}]}, "d": "text"}
+        >>> # Depth 2: we see up to level2
+        >>> data = {"level1": {"level2": {"level3": {"key": "value"}}}}
         >>> Dict(data).schema()
-        {'a': 'int', 'b': {'c': [{'id': 'int'}]}, 'd': 'str'}
+        {'level1': {'level2': 'dict'}}
+        >>>
+        >>> # Depth 3: we see up to level3
+        >>> Dict(data).schema(max_depth=3)
+        {'level1': {'level2': {'level3': 'dict'}}}
         """
 
-        def _get_dict_structure(node: dict[Any, Any]) -> dict[Any, Any]:
-            return {k: get_structure(v) for k, v in node.items()}
-
-        def _get_list_structure(node: list[Any]) -> list[Any]:
-            return [get_structure(node[0])] if node else []
-
-        def get_structure(node: Any) -> Any:
+        def get_structure(node: Any, current_depth: int) -> Any:
             match node:
                 case dict():
-                    return _get_dict_structure(node)  # type: ignore
+                    if current_depth >= max_depth:
+                        return "dict"
+                    return {
+                        k: get_structure(v, current_depth + 1)
+                        for k, v in node.items()  # type: ignore
+                    }
                 case list():
-                    return _get_list_structure(node)  # type: ignore
+                    if node:
+                        return []
+                    return [get_structure(node[0])]  # type: ignore
                 case _:
                     return type(node).__name__
 
-        return dict_factory(get_structure(self._data))
+        return dict_factory(get_structure(self._data, 0))
 
     def select_nested[KD, VD](
         self, *keys: K, kdtype: KD = Any, vdtype: VD = Any
