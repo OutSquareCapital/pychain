@@ -7,12 +7,19 @@ import cytoolz as cz
 import more_itertools as mit
 
 from ._constructors import DictConstructors
+from ._filters import DictFilters
 from ._iter import IterDict
 from ._nested import NestedDict
 from ._process import ProcessDict
 
 
-class Dict[K, V](ProcessDict[K, V], NestedDict[K, V], IterDict[K, V], DictConstructors):
+class Dict[K, V](
+    ProcessDict[K, V],
+    NestedDict[K, V],
+    IterDict[K, V],
+    DictFilters[K, V],
+    DictConstructors,
+):
     """
     Wrapper for Python dictionaries with chainable methods.
     """
