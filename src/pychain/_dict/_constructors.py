@@ -25,7 +25,7 @@ class DictConstructors:
         return dict_factory(dict(zip(keys, values)))
 
     @staticmethod
-    def from_dict(obj: object) -> Dict[str, Any]:
+    def from_object(obj: object) -> Dict[str, Any]:
         """
         Create a Dict from an object's __dict__ attribute.
         Syntactic sugar for `Dict(obj.__dict__)`.
@@ -35,13 +35,13 @@ class DictConstructors:
         ...     def __init__(self):
         ...         self.x = 1
         ...         self.y = 2
-        >>> Dict.from_dict(A())
+        >>> Dict.from_object(A())
         {'x': 1, 'y': 2}
         """
         return dict_factory(obj.__dict__)
 
     @staticmethod
-    def from_map[K, V](data: SupportsKeysAndGetItem[K, V]) -> Dict[K, V]:
+    def from_[K, V](data: SupportsKeysAndGetItem[K, V]) -> Dict[K, V]:
         """
         Create a Dict from any mapping-like object.
 
@@ -55,7 +55,7 @@ class DictConstructors:
         ...     a: int
         ...     b: str
         >>> td: TD = {"a": 1, "b": "x"}
-        >>> Dict.from_map(td)
+        >>> Dict.from_(td)
         {'a': 1, 'b': 'x'}
         """
         return dict_factory(dict(data))

@@ -1,5 +1,5 @@
 import re
-from collections import Counter, defaultdict
+from collections import defaultdict
 from datetime import datetime
 from typing import TypedDict
 
@@ -41,6 +41,8 @@ def word_frequency_python() -> list[tuple[str, int]]:
     """
     Cleans text, counts word frequencies, and returns the 3 most common words.
     """
+    from collections import Counter
+
     return Counter(
         [
             word
@@ -56,7 +58,7 @@ def word_frequency_pychain():
     """
     return (
         pc.Iter(re.findall(r"\w+", TEXT_DATA.lower()))
-        .filter(lambda word: word not in STOP_WORDS)
+        .filter_notin(STOP_WORDS)
         .most_common(3)
         .into(list)
     )
