@@ -26,6 +26,17 @@ class Dict[K, V](ProcessDict[K, V], NestedDict[K, V], IterDict[K, V], DictConstr
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Dict[KU, VU]:
+        """
+        Apply a function to the underlying dict and return a new Dict.
+
+        >>> from pychain import Dict
+        >>>
+        >>> def mul_by_ten(d: dict[int, int]) -> dict[int, int]:
+        ...     return {k: v * 10 for k, v in d.items()}
+        >>>
+        >>> Dict({1: 20, 2: 30}).pipe_into(mul_by_ten).select_keys(2)
+        {2: 300}
+        """
         return Dict(func(self._data, *args, **kwargs))
 
     def implode(self) -> Dict[K, Iterable[V]]:

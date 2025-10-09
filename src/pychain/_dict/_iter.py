@@ -13,8 +13,9 @@ class IterDict[K, V](CommonBase[dict[K, V]]):
         """
         Return a Iter of the dict's keys.
 
-            >>> Dict({1: 2}).iter_keys().into(list)
-            [1]
+        >>> from pychain import Dict
+        >>> Dict({1: 2}).iter_keys().into(list)
+        [1]
         """
         return iter_factory(self._data.keys())
 
@@ -22,8 +23,9 @@ class IterDict[K, V](CommonBase[dict[K, V]]):
         """
         Return a Iter of the dict's values.
 
-            >>> Dict({1: 2}).iter_values().into(list)
-            [2]
+        >>> from pychain import Dict
+        >>> Dict({1: 2}).iter_values().into(list)
+        [2]
         """
         return iter_factory(self._data.values())
 
@@ -31,7 +33,8 @@ class IterDict[K, V](CommonBase[dict[K, V]]):
         """
         Return a Iter of the dict's items.
 
-            >>> Dict({1: 2}).iter_items().into(list)
-            [(1, 2)]
+        >>> from pychain import Dict
+        >>> Dict({1: 2}).iter_items().into(list)
+        [(1, 2)]
         """
         return iter_factory(self._data.items())

@@ -52,6 +52,18 @@ class Iter[T](
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Iter[R]:
+        """
+        Apply a function to the underlying iterable and return a new Iter.
+
+        >>> from pychain import Iter
+        >>> from collections.abc import Iterable
+        >>>
+        >>> def double_values(iterable: Iterable[int]) -> Iterable[int]:
+        ...     return (i * 2 for i in iterable)
+        >>>
+        >>> Iter(range(5)).pipe_into(double_values).into(list)
+        [0, 2, 4, 6, 8]
+        """
         return Iter(func(self._data, *args, **kwargs))
 
     @property
