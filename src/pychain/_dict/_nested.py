@@ -127,9 +127,15 @@ class NestedDict[K, V](CommonBase[dict[K, V]]):
             cz.dicttoolz.update_in(self._data, keys, func=func, default=default)
         )
 
-    def flatten_keys(self, sep: str = ".") -> Dict[str, Any]:
+    def flatten_keys(
+        self: CommonBase[dict[str, Any]], sep: str = ".", max_depth: int | None = None
+    ) -> Dict[str, Any]:
         """
         Flatten a nested dictionary, concatenating keys with the specified separator.
+
+        Args:
+            sep: Separator to use when concatenating keys
+            max_depth: Maximum depth to flatten. If None, flattens completely.
 
         >>> from pychain import Dict
         >>> data = {
@@ -140,17 +146,23 @@ class NestedDict[K, V](CommonBase[dict[K, V]]):
         {'config.params.retries': 3, 'config.params.timeout': 30, 'config.mode': 'fast', 'version': 1.0}
         >>> Dict(data).flatten_keys(sep="_")
         {'config_params_retries': 3, 'config_params_timeout': 30, 'config_mode': 'fast', 'version': 1.0}
+        >>> Dict(data).flatten_keys(max_depth=1)
+        {'config.params': {'retries': 3, 'timeout': 30}, 'config.mode': 'fast', 'version': 1.0}
 
         """
 
-        def _flatten(d: dict[Any, Any], parent_key: str = "") -> dict[str, Any]:
+        def _flatten(
+            d: dict[Any, Any], parent_key: str = "", current_depth: int = 1
+        ) -> dict[str, Any]:
             items: list[tuple[str, Any]] = []
             for k, v in d.items():
                 new_key = parent_key + sep + k if parent_key else k
-                if isinstance(v, dict):
-                    items.extend(_flatten(v, new_key).items())  # type: ignore
+                if isinstance(v, dict) and (
+                    max_depth is None or current_depth < max_depth + 1
+                ):
+                    items.extend(_flatten(v, new_key, current_depth + 1).items())  # type: ignore
                 else:
-                    items.append((new_key, v))
+                    items.append((new_key, v))  # type: ignore
             return dict(items)
 
         return dict_factory(_flatten(self._data))
