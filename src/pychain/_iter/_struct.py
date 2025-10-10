@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 
 import cytoolz as cz
 
-from .._core import iter_factory
+from .._core import dict_factory, iter_factory
 
 if TYPE_CHECKING:
-    from .._core import Iter
+    from .._core import Dict, Iter
 
 
 @dataclass(slots=True)
@@ -258,3 +258,32 @@ class StructNameSpace[K, V]:
         return iter_factory(
             cz.dicttoolz.itemmap(lambda kv: func(kv[0], kv[1]), d) for d in self._parent
         )
+
+    def merge_all(self) -> Dict[K, V]:
+        """
+        Merge all dictionaries in the iterable into a single dictionary.
+        Keys from later dictionaries will overwrite earlier ones.
+
+        >>> from pychain import Iter
+        >>> data = [{"a": 1, "b": 2}, {"b": 3, "c": 4}]
+        >>> Iter(data).struct.merge_all()
+        {'a': 1, 'b': 3, 'c': 4}
+        """
+        return dict_factory(cz.dicttoolz.merge(*self._parent))
+
+    def into_dict[R](self, on: Callable[[dict[K, V]], R]) -> Dict[R, dict[K, V]]:
+        """
+        Convert the iterable of dicts into a single dict, keyed by the result of the `on` function.
+
+        >>> from pychain import Iter
+        >>> data = [
+        ...     {"id": 1, "name": "Alice"},
+        ...     {"id": 2, "name": "Bob"},
+        ... ]
+        >>> Iter(data).struct.into_dict(on=lambda d: d["id"])
+        {1: {'id': 1, 'name': 'Alice'}, 2: {'id': 2, 'name': 'Bob'}}
+        """
+        data: dict[R, dict[K, V]] = (
+            iter_factory(self._parent).map(lambda d: (on(d), d)).into(dict)
+        )
+        return dict_factory(data)

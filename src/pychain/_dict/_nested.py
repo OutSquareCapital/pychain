@@ -87,13 +87,14 @@ class NestedDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict(data).select_nested("config", "params").get_value("retries")
         3
         """
-        nested_val: Wrapper[KD, VD] = cz.dicttoolz.get_in(keys, self._data)  # type: ignore
+        nested_val = cz.dicttoolz.get_in(keys, self._data)  # type: ignore
         if not isinstance(nested_val, dict):
             raise TypeError(
                 f"La valeur à la clé '{keys[-1]}' n'est pas un dictionnaire, "
                 f"mais de type '{type(nested_val).__name__}'."
             )
-        return dict_factory(nested_val)
+
+        return dict_factory(nested_val)  # type: ignore
 
     def update_in(
         self, *keys: K, func: Callable[[V], V], default: V | None = None

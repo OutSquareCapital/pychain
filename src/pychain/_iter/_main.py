@@ -173,7 +173,15 @@ class Iter[T](
         """
         return Iter(mit.repeat_last(self._data, default))
 
-    def flatten[U](self: Iter[Iterable[U]]) -> Iter[U]:
+    @overload
+    def flatten[U](
+        self: Iter[Iterable[Iterable[Iterable[U]]]],
+    ) -> Iter[Iterable[Iterable[U]]]: ...
+    @overload
+    def flatten[U](self: Iter[Iterable[Iterable[U]]]) -> Iter[Iterable[U]]: ...
+    @overload
+    def flatten[U](self: Iter[Iterable[U]]) -> Iter[U]: ...
+    def flatten(self: Iter[Iterable[Any]]) -> Iter[Any]:
         """
         Flatten one level of nesting and return a new Iterable wrapper.
 
