@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import operator
 from collections.abc import Callable
-from typing import Any, Concatenate, Self, TypeGuard
+from typing import Any, Self, TypeGuard
 
+from .._core import Pipeable
 from .._dict import Dict
 from .._iter import Iter
 
@@ -14,7 +15,7 @@ def _identity(x: Any) -> Any:
     return x
 
 
-class Expr:
+class Expr(Pipeable):
     _operation: ExprOp
     _is_pychain_expr = True
     _output_name: str
@@ -110,9 +111,6 @@ class Expr:
         """Casts the result of the expression to a specified type."""
         return self.__class__(lambda data: to_type(self.__evaluate__(data)))
 
-    # --- Opérations sur les listes/iterables ---
-
-    # --- Transformations ---
     def apply(self, func: Callable[[Any], Any]) -> Self:
         """Applique une fonction personnalisée au résultat de l'expression."""
         return self.__class__(lambda data: func(self.__evaluate__(data)))
@@ -124,12 +122,3 @@ class Expr:
     def struct_apply(self, func: Callable[[Dict[str, Any]], Any]) -> Self:
         """Applique une fonction personnalisée au résultat de l'expression, en supposant que c'est un dict."""
         return self.__class__(lambda data: func(Dict(self.__evaluate__(data))))
-
-    def pipe[**P, R](
-        self,
-        func: Callable[Concatenate[Self, P], R],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> R:
-        """Pipe the instance in the function and return the result."""
-        return func(self, *args, **kwargs)

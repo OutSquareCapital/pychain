@@ -11,7 +11,20 @@ if TYPE_CHECKING:
     from .._iter import Iter
 
 
-class CommonBase[T](ABC):
+class Pipeable:
+    """Mixin class for pipe method."""
+
+    def pipe[**P, R](
+        self,
+        func: Callable[Concatenate[Self, P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> R:
+        """Pipe the instance in the function and return the result."""
+        return func(self, *args, **kwargs)
+
+
+class CommonBase[T](Pipeable, ABC):
     """
     Base class for all wrappers.
     You can subclass this to create your own wrapper types.
@@ -56,15 +69,6 @@ class CommonBase[T](ABC):
         This is a terminal operation.
         """
         return self._data
-
-    def pipe[**P, R](
-        self,
-        func: Callable[Concatenate[Self, P], R],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> R:
-        """Pipe the instance in the function and return the result."""
-        return func(self, *args, **kwargs)
 
     def into[**P, R](
         self,
