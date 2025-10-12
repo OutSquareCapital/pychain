@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any, Concatenate, Self
 
+from .._core import CommonBase
 from ._expr import Expr
 
 
@@ -17,12 +18,9 @@ class KeySelector:
 key = KeySelector()
 
 
-class Record:
+class Record(CommonBase[dict[str, Any]]):
     _is_selection: bool
     _plan: list[Expr]
-
-    def __init__(self, data: dict[str, Any]) -> None:
-        self._data: dict[str, Any] = data
 
     def __repr__(self) -> str:
         data_formatted: str = "\n".join(
@@ -68,21 +66,24 @@ class Record:
             value = expr.__evaluate__(self._data)
             result_dict[expr.__expr_name__()] = value
 
-        return self.__class__(result_dict)
+        return self._new(result_dict)
 
-    def unwrap(self) -> dict[str, Any]:
-        """
-        Return the underlying data.
-
-        This is a terminal operation.
-        """
-        return self._data
-
-    def pipe[**P, R](
+    def pipe_into[**P](
         self,
-        func: Callable[Concatenate[Self, P], R],
+        func: Callable[Concatenate[dict[str, Any], P], dict[str, Any]],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> R:
-        """Pipe the instance in the function and return the result."""
-        return func(self, *args, **kwargs)
+    ) -> Record:
+        """
+        Apply a function to the underlying dict and return a new Record.
+
+        >>> from pychain import Dict
+        >>>
+        >>> def mul_by_ten(d: dict[int, int]) -> dict[int, int]:
+        ...     return {k: v * 10 for k, v in d.items()}
+        >>>
+        >>> data = {"a": 20, "b": 30}
+        >>> Record(data).pipe_into(mul_by_ten).select(key("b")).collect().unwrap()
+        {'b': 300}
+        """
+        return Record(func(self._data, *args, **kwargs))
