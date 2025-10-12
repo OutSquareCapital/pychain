@@ -17,7 +17,6 @@ from ._lists import IterList
 from ._maps import IterMap
 from ._process import IterProcess
 from ._rolling import IterRolling
-from ._struct import StructNameSpace
 from ._tuples import IterTuples
 
 
@@ -66,15 +65,6 @@ class Iter[T](
         """
         return Iter(func(self._data, *args, **kwargs))
 
-    @property
-    def struct[K, V](self: Iter[dict[K, V]]) -> StructNameSpace[K, V]:
-        """
-        A namespace for dictionary-specific methods.
-
-        Expose the same functionality as Dict, but in a way that works on an iterable of dicts, with generators under the hood.
-        """
-        return StructNameSpace(self._data)
-
     def pluck[K, V](self: Iter[Pluckable[K, V]], key: K) -> Iter[V]:
         """
         Extract a value from each element in the sequence using a key or index.
@@ -98,11 +88,11 @@ class Iter[T](
         Perform a simultaneous groupby and reduction
 
         >>> data = Iter([1, 2, 3, 4, 5])
-        >>> data.reduce_by(lambda x: x % 2 == 0, lambda x, y: x + y, 0)
+        >>> data.reduce_by(lambda x: x % 2 == 0, lambda x, y: x + y, 0).unwrap()
         {False: 9, True: 6}
         >>> data.group_by(lambda x: x % 2 == 0).map_values(
         ...     lambda group: Iter(group).reduce(lambda x, y: x + y)
-        ... )
+        ... ).unwrap()
         {False: 9, True: 6}
 
         But the former does not build the intermediate groups, allowing it to operate in much less space.
@@ -116,9 +106,9 @@ class Iter[T](
         Simple Examples
 
         >>> from operator import add, mul
-        >>> Iter([1, 2, 3, 4, 5]).reduce_by(lambda x: x % 2 == 0, add)
+        >>> Iter([1, 2, 3, 4, 5]).reduce_by(lambda x: x % 2 == 0, add).unwrap()
         {False: 9, True: 6}
-        >>> Iter([1, 2, 3, 4, 5]).reduce_by(lambda x: x % 2 == 0, mul)
+        >>> Iter([1, 2, 3, 4, 5]).reduce_by(lambda x: x % 2 == 0, mul).unwrap()
         {False: 15, True: 8}
 
         Complex Example
@@ -133,7 +123,7 @@ class Iter[T](
         ...     "state",
         ...     lambda acc, x: acc + x["cost"],
         ...     0,
-        ... )
+        ... ).unwrap()
         {'CA': 1200000, 'IL': 2100000}
 
         Example Using init
