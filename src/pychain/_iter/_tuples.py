@@ -408,12 +408,12 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         For example, to find whether items are adjacent to a 3:
 
         >>> from pychain import Iter
-        >>> Iter(range(6)).adjacent(lambda x: x == 3).into(list)
+        >>> Iter.from_range(0, 6).adjacent(lambda x: x == 3).into(list)
         [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
 
         Set distance to change what counts as adjacent. For example, to find whether items are two places away from a 3:
 
-        >>> Iter(range(6)).adjacent(lambda x: x == 3, distance=2).into(list)
+        >>> Iter.from_range(0, 6).adjacent(lambda x: x == 3, distance=2).into(list)
         [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
 
         This is useful for contextualizing the results of a search function.

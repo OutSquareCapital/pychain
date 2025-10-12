@@ -61,7 +61,7 @@ class Iter[T](
         >>> def double_values(iterable: Iterable[int]) -> Iterable[int]:
         ...     return (i * 2 for i in iterable)
         >>>
-        >>> Iter(range(5)).pipe_into(double_values).into(list)
+        >>> Iter.from_range(0, 5).pipe_into(double_values).into(list)
         [0, 2, 4, 6, 8]
         """
         return Iter(func(self._data, *args, **kwargs))
@@ -163,12 +163,12 @@ class Iter[T](
         """
         After the iterable is exhausted, keep yielding its last element.
 
-        >>> Iter(range(3)).repeat_last().head(5).into(list)
+        >>> Iter.from_range(0, 3).repeat_last().head(5).into(list)
         [0, 1, 2, 2, 2]
 
         If the iterable is empty, yield default forever:
 
-        >>> Iter(range(0)).repeat_last(42).head(5).into(list)
+        >>> Iter.from_range(0, 0).repeat_last(42).head(5).into(list)
         [42, 42, 42, 42, 42]
         """
         return Iter(mit.repeat_last(self._data, default))

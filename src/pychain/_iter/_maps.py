@@ -108,12 +108,12 @@ class IterMap[T](CommonBase[Iterable[T]]):
 
         >>> from pychain import Iter
         >>> from math import sqrt
-        >>> iterable = list(range(-5, 5))
-        >>> iterable
+        >>> iterable = Iter.from_range(-5, 5)
+        >>> iterable.into(list)
         [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4]
-        >>> Iter(iterable).map_if(lambda x: x > 3, lambda x: "toobig").into(list)
+        >>> iterable.map_if(lambda x: x > 3, lambda x: "toobig").into(list)
         [-5, -4, -3, -2, -1, 0, 1, 2, 3, 'toobig']
-        >>> Iter(iterable).map_if(
+        >>> iterable.map_if(
         ...     lambda x: x >= 0,
         ...     lambda x: f"{sqrt(x):.2f}",
         ...     lambda x: None,

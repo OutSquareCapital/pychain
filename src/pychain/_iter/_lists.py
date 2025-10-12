@@ -32,14 +32,14 @@ class IterList[T](CommonBase[Iterable[T]]):
         >>> from pychain import Iter
         >>> Iter("abcdcba").split_at(lambda x: x == "b").into(list)
         [['a'], ['c', 'd', 'c'], ['a']]
-        >>> Iter(range(10)).split_at(lambda n: n % 2 == 1).into(list)
+        >>> Iter.from_range(0, 10).split_at(lambda n: n % 2 == 1).into(list)
         [[0], [2], [4], [6], [8], []]
 
         At most *maxsplit* splits are done.
 
         If *maxsplit* is not specified or -1, then there is no limit on the number of splits:
 
-        >>> Iter(range(10)).split_at(lambda n: n % 2 == 1, maxsplit=2).into(list)
+        >>> Iter.from_range(0, 10).split_at(lambda n: n % 2 == 1, maxsplit=2).into(list)
         [[0], [2], [4, 5, 6, 7, 8, 9]]
 
         By default, the delimiting items are not included in the output.
@@ -63,10 +63,13 @@ class IterList[T](CommonBase[Iterable[T]]):
         >>> Iter("one1two2").split_after(str.isdigit).into(list)
         [['o', 'n', 'e', '1'], ['t', 'w', 'o', '2']]
 
-        >>> Iter(range(10)).split_after(lambda n: n % 3 == 0).into(list)
+        >>> def cond(n: int) -> bool:
+        ...     return n % 3 == 0
+
+        >>> Iter.from_range(0, 10).split_after(cond).into(list)
         [[0], [1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
-        >>> Iter(range(10)).split_after(lambda n: n % 3 == 0, max_split=2).into(list)
+        >>> Iter.from_range(0, 10).split_after(cond, max_split=2).into(list)
         [[0], [1, 2, 3], [4, 5, 6, 7, 8, 9]]
         """
         return iter_factory(mit.split_after(self._data, predicate, max_split))
@@ -80,14 +83,18 @@ class IterList[T](CommonBase[Iterable[T]]):
         >>> from pychain import Iter
         >>> Iter("abcdcba").split_before(lambda x: x == "b").into(list)
         [['a'], ['b', 'c', 'd', 'c'], ['b', 'a']]
-        >>> Iter(range(10)).split_before(lambda n: n % 2 == 1).into(list)
+        >>>
+        >>> def cond(n: int) -> bool:
+        ...     return n % 2 == 1
+        >>>
+        >>> Iter.from_range(0, 10).split_before(cond).into(list)
         [[0], [1, 2], [3, 4], [5, 6], [7, 8], [9]]
 
         At most *max_split* splits are done.
 
         If *max_split* is not specified or -1, then there is no limit on the number of splits:
 
-        >>> Iter(range(10)).split_before(lambda n: n % 2 == 1, max_split=2).into(list)
+        >>> Iter.from_range(0, 10).split_before(cond, max_split=2).into(list)
         [[0], [1, 2], [3, 4, 5, 6, 7, 8, 9]]
         """
         return iter_factory(mit.split_before(self._data, predicate, max_split))

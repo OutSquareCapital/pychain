@@ -18,6 +18,8 @@ class CommonBase[T](ABC):
     The pipe unwrap method must be implemented to allow piping functions that transform the underlying data type, whilst retaining the wrapper.
     """
 
+    _data: T
+
     __slots__ = ("_data",)
 
     def __init__(self, data: T) -> None:
@@ -75,9 +77,9 @@ class CommonBase[T](ABC):
 
         The result is not wrapped.
 
-            >>> from pychain import Dict
-            >>> Dict({"a": 1, "b": 2}).into(lambda d: {k: v + 1 for k, v in d.items()})
-            {'a': 2, 'b': 3}
+            >>> from pychain import Iter
+            >>> Iter.from_range(0, 5).into(tuple)
+            (0, 1, 2, 3, 4)
 
         This is a core functionality that allows ending the chain whilst keeping the code style consistent.
         """
@@ -96,9 +98,9 @@ class CommonBase[T](ABC):
         Each pychain class implement this method to allow chaining of functions that transform the
         underlying data and return a new wrapped instance of the same subclass.
 
-            >>> from pychain import Dict
-            >>> Dict({1: 2}).pipe_into(lambda d: {k: v + 1 for k, v in d.items()})
-            {1: 3}
+            >>> from pychain import Iter
+            >>> Iter.from_range(0, 5).pipe_into(tuple).unwrap()
+            (0, 1, 2, 3, 4)
 
         Use this to keep the chainable API after applying a transformation to the data.
         """
