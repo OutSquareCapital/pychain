@@ -17,6 +17,7 @@ class IterDicts[T](CommonBase[Iterable[T]]):
         Group elements by key function and return a Dict result.
 
         >>> from pychain import Iter
+
         >>> names = [
         ...     "Alice",
         ...     "Bob",
@@ -26,10 +27,20 @@ class IterDicts[T](CommonBase[Iterable[T]]):
         ...     "Frank",
         ... ]
         >>> Iter(names).group_by(len).sort()
-        {3: ['Bob', 'Dan'], 5: ['Alice', 'Edith', 'Frank'], 7: ['Charlie']}
+        ... # doctest: +NORMALIZE_WHITESPACE
+        Dict(
+            3, list: ['Bob', 'Dan'],
+            5, list: ['Alice', 'Edith', 'Frank'],
+            7, list: ['Charlie'],
+        )
+        >>>
         >>> iseven = lambda x: x % 2 == 0
         >>> Iter([1, 2, 3, 4, 5, 6, 7, 8]).group_by(iseven)
-        {False: [1, 3, 5, 7], True: [2, 4, 6, 8]}
+        ... # doctest: +NORMALIZE_WHITESPACE
+        Dict(
+            False, list: [1, 3, 5, 7],
+            True, list: [2, 4, 6, 8],
+        )
 
         Non-callable keys imply grouping on a member.
 
@@ -40,7 +51,10 @@ class IterDicts[T](CommonBase[Iterable[T]]):
         ... ]
         >>> Iter(data).group_by("gender").sort()
         ... # doctest: +NORMALIZE_WHITESPACE
-        {'F': [{'name': 'Alice', 'gender': 'F'}], 'M': [{'name': 'Bob', 'gender': 'M'}, {'name': 'Charlie', 'gender': 'M'}]}
+        Dict(
+            'F', list: [{'name': 'Alice', 'gender': 'F'}],
+            'M', list: [{'name': 'Bob', 'gender': 'M'}, {'name': 'Charlie', 'gender': 'M'}],
+        )
         """
         return dict_factory(cz.itertoolz.groupby(on, self._data))
 
@@ -49,7 +63,7 @@ class IterDicts[T](CommonBase[Iterable[T]]):
         Find number of occurrences of each value in the iterable.
 
         >>> from pychain import Iter
-        >>> Iter(["cat", "cat", "ox", "pig", "pig", "cat"]).frequencies()
+        >>> Iter(["cat", "cat", "ox", "pig", "pig", "cat"]).frequencies().unwrap()
         {'cat': 3, 'ox': 1, 'pig': 2}
         """
         return dict_factory(cz.itertoolz.frequencies(self._data))
@@ -59,11 +73,11 @@ class IterDicts[T](CommonBase[Iterable[T]]):
         Count elements of a collection by a key function
 
         >>> from pychain import Iter
-        >>> Iter(["cat", "mouse", "dog"]).count_by(len)
+        >>> Iter(["cat", "mouse", "dog"]).count_by(len).unwrap()
         {3: 2, 5: 1}
         >>> def iseven(x):
         ...     return x % 2 == 0
-        >>> Iter([1, 2, 3]).count_by(iseven)
+        >>> Iter([1, 2, 3]).count_by(iseven).unwrap()
         {False: 2, True: 1}
         """
         return dict_factory(cz.recipes.countby(key, self._data))

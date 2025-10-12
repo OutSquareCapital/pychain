@@ -164,7 +164,7 @@ class Wrapper[T](CommonBase[T]):
             >>>
             >>> data = {1: "a", 2: "b"}
             >>>
-            >>> pc.Wrapper(data).to_dict()
+            >>> pc.Wrapper(data).to_dict().unwrap()
             {1: 'a', 2: 'b'}
         """
         return dict_factory(self._data)

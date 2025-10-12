@@ -37,16 +37,15 @@ def _user_summary(record: pc.Record) -> pc.Record:
         pc.key("user").field("name").alias("customer_name"),
         order.pipe(_total_cost).alias("total_cost"),
         order.field("currency").alias("currency"),
-    ).collect()
+    )
 
 
 def _item_count(key: pc.Expr) -> pc.Expr:
-    return key.itr_apply(lambda x: x.length()).alias("item_count")
+    return key.apply(len).alias("item_count")
 
 
-def _is_active(key: pc.Expr) -> pc.Expr:
-    is_active: pc.Expr = pc.key("user").field("status").eq("active")
-    return key.and_(is_active)
+def _is_active() -> pc.Expr:
+    return pc.key("user").field("status").eq("active")
 
 
 def _enriched_record(record: pc.Record) -> pc.Record:
@@ -61,16 +60,28 @@ def _enriched_record(record: pc.Record) -> pc.Record:
         .field("roles")
         .apply(lambda roles: roles[0])
         .alias("primary_role"),
-        pc.key("is_vip").pipe(_is_active).alias("is_active_vip"),
-    ).collect()
+        pc.key("is_vip").and_(_is_active()).alias("is_active_vip"),
+    ).drop("user", "order")
 
 
 def main():
     record = pc.Record(_dummy_data())
-    print("--- User Summary ---")
-    record.pipe(_user_summary).pipe(print)
-    print("\n--- Enriched Record ---")
-    record.pipe(_enriched_record).pipe(print)
+
+    assert record.pipe(_user_summary).equals_to(
+        {
+            "customer_name": "Alice",
+            "total_cost": 4.5,
+            "currency": "USD",
+        }
+    )
+    assert record.pipe(_enriched_record).equals_to(
+        {
+            "is_vip": False,
+            "item_count": 2,
+            "primary_role": "customer",
+            "is_active_vip": False,
+        }
+    )
 
 
 if __name__ == "__main__":

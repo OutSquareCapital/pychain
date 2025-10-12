@@ -1,25 +1,17 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import Concatenate, Self
+from typing import Any, Concatenate
 
 import cytoolz as cz
 import more_itertools as mit
 
 from ._constructors import DictConstructors
+from ._core import CoreDict
 from ._filters import DictFilters
-from ._iter import IterDict
-from ._nested import NestedDict
-from ._process import ProcessDict
 
 
-class Dict[K, V](
-    ProcessDict[K, V],
-    NestedDict[K, V],
-    IterDict[K, V],
-    DictFilters[K, V],
-    DictConstructors,
-):
+class Dict[K, V](CoreDict[K, V], DictFilters[K, V], DictConstructors):
     """
     Wrapper for Python dictionaries with chainable methods.
     """
@@ -41,74 +33,29 @@ class Dict[K, V](
         >>> def mul_by_ten(d: dict[int, int]) -> dict[int, int]:
         ...     return {k: v * 10 for k, v in d.items()}
         >>>
-        >>> Dict({1: 20, 2: 30}).pipe_into(mul_by_ten).select_keys(2)
-        {2: 300}
+        >>> Dict({1: 20, 2: 30}).pipe_into(mul_by_ten).unwrap()
+        {1: 200, 2: 300}
         """
         return Dict(func(self._data, *args, **kwargs))
 
     def implode(self) -> Dict[K, Iterable[V]]:
         """
         Nest all the values in lists.
-        syntactic sugar for map_values(lambda v: [v]).
+        syntactic sugar for map_values(lambda v: [v])
 
-        >>> Dict({1: 2, 3: 4}).implode()
+        >>> Dict({1: 2, 3: 4}).implode().unwrap()
         {1: [2], 3: [4]}
         """
         return self.map_values(lambda v: [v])
-
-    def merge(self, *others: dict[K, V]) -> Self:
-        """
-        Merge other dicts into this one and return a new Dict.
-
-        >>> Dict({1: "one"}).merge({2: "two"})
-        {1: 'one', 2: 'two'}
-
-        Later dictionaries have precedence
-
-        >>> Dict({1: 2, 3: 4}).merge({3: 3, 4: 4})
-        {1: 2, 3: 3, 4: 4}
-        """
-        return self._new(cz.dicttoolz.merge(self._data, *others))
-
-    def merge_with(self, *others: dict[K, V], func: Callable[[Iterable[V]], V]) -> Self:
-        """
-        Merge dicts using a function to combine values for duplicate keys.
-
-        A key may occur in more than one dict, and all values mapped from the key will be passed to the function as a list, such as func([val1, val2, ...]).
-
-        >>> Dict({1: 1, 2: 2}).merge_with({1: 10, 2: 20}, func=sum)
-        {1: 11, 2: 22}
-        >>> Dict({1: 1, 2: 2}).merge_with({2: 20, 3: 30}, func=max)
-        {1: 1, 2: 20, 3: 30}
-
-        """
-        return self._new(cz.dicttoolz.merge_with(func, self._data, *others))
-
-    def drop(self, *keys: K) -> Self:
-        """
-        Return a new Dict with given keys removed.
-
-        New dict has d[key] deleted for each supplied key.
-
-        >>> Dict({"x": 1, "y": 2}).drop("y")
-        {'x': 1}
-        >>> Dict({"x": 1, "y": 2}).drop("y", "x")
-        {}
-        >>> Dict({"x": 1}).drop("y")  # Ignores missing keys
-        {'x': 1}
-        >>> Dict({1: 2, 3: 4}).drop(1)
-        {3: 4}
-        """
-        return self._new(cz.dicttoolz.dissoc(self._data, *keys))
 
     def map_keys[T](self, func: Callable[[K], T]) -> Dict[T, V]:
         """
         Return a Dict with keys transformed by func.
 
-        >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_keys(str.lower)
+        >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_keys(str.lower).unwrap()
         {'alice': [20, 15, 30], 'bob': [10, 35]}
         >>>
-        >>> Dict({1: "a"}).map_keys(str)
+        >>> Dict({1: "a"}).map_keys(str).unwrap()
         {'1': 'a'}
         """
         return Dict(cz.dicttoolz.keymap(func, self._data))
@@ -117,10 +64,10 @@ class Dict[K, V](
         """
         Return a Dict with values transformed by func.
 
-        >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_values(sum)
+        >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_values(sum).unwrap()
         {'Alice': 65, 'Bob': 45}
         >>>
-        >>> Dict({1: 1}).map_values(lambda v: v + 1)
+        >>> Dict({1: 1}).map_values(lambda v: v + 1).unwrap()
         {1: 2}
         """
         return Dict(cz.dicttoolz.valmap(func, self._data))
@@ -134,7 +81,7 @@ class Dict[K, V](
 
         >>> Dict({"Alice": 10, "Bob": 20}).map_items(
         ...     lambda kv: (kv[0].upper(), kv[1] * 2)
-        ... )
+        ... ).unwrap()
         {'ALICE': 20, 'BOB': 40}
         """
         return Dict(cz.dicttoolz.itemmap(func, self._data))
@@ -145,7 +92,7 @@ class Dict[K, V](
 
         Values in the original dict must be unique and hashable.
 
-        >>> Dict({"a": 1, "b": 2}).reverse()
+        >>> Dict({"a": 1, "b": 2}).reverse().unwrap()
         {1: 'a', 2: 'b'}
         """
         return Dict(cz.dicttoolz.itemmap(reversed, self._data))
@@ -156,7 +103,7 @@ class Dict[K, V](
 
         Values in the original dict must be hashable.
 
-        >>> Dict({"a": 1, "b": 2, "c": 1}).flip()
+        >>> Dict({"a": 1, "b": 2, "c": 1}).flip().unwrap()
         {1: ['a', 'c'], 2: ['b']}
         """
         flipped: dict[V, list[K]] = {}
@@ -174,23 +121,10 @@ class Dict[K, V](
         """
         Transform (key, value) pairs using a function that takes key and value as separate arguments.
 
-        >>> Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10))
+        >>> Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).unwrap()
         {2: 20}
         """
         return Dict(cz.dicttoolz.itemmap(lambda kv: func(kv[0], kv[1]), self._data))
-
-    def rename_keys(self, mapping: dict[K, K]) -> Dict[K, V]:
-        """
-        Return a new Dict with keys renamed according to the mapping.
-
-        Keys not in the mapping are kept as is.
-
-        >>> d = {"a": 1, "b": 2, "c": 3}
-        >>> mapping = {"b": "beta", "c": "gamma"}
-        >>> Dict(d).rename_keys(mapping)
-        {'a': 1, 'beta': 2, 'gamma': 3}
-        """
-        return self._new({mapping.get(k, k): v for k, v in self._data.items()})
 
     def diff(self, other: dict[K, V]) -> Dict[K, tuple[V | None, V | None]]:
         """
@@ -201,7 +135,7 @@ class Dict[K, V](
 
         >>> d1 = {"a": 1, "b": 2, "c": 3}
         >>> d2 = {"b": 2, "c": 4, "d": 5}
-        >>> Dict(d1).diff(d2).sort()
+        >>> Dict(d1).diff(d2).sort().unwrap()
         {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
         """
         all_keys: set[K] = self._data.keys() | other.keys()
@@ -223,7 +157,7 @@ class Dict[K, V](
         Each key in the resulting dict maps to a dict containing values from the original dict and the additional mappings, keyed by their respective names.
         >>> Dict({"a": 1, "b": 2}).join_mappings(
         ...     main_name="score", time={"a": 10, "b": 20}
-        ... )
+        ... ).unwrap()
         {'a': {'score': 1, 'time': 10}, 'b': {'score': 2, 'time': 20}}
         """
         all_maps = {
@@ -231,3 +165,79 @@ class Dict[K, V](
             **{k: v for k, v in field_to_map.items()},
         }
         return Dict(mit.join_mappings(**all_maps))
+
+    def flatten(
+        self: Dict[str, Any], sep: str = ".", max_depth: int | None = None
+    ) -> Dict[str, Any]:
+        """
+        Flatten a nested dictionary, concatenating keys with the specified separator.
+
+        Args:
+            sep: Separator to use when concatenating keys
+            max_depth: Maximum depth to flatten. If None, flattens completely.
+
+        >>> import pychain as pc
+        >>> data = {
+        ...     "config": {"params": {"retries": 3, "timeout": 30}, "mode": "fast"},
+        ...     "version": 1.0,
+        ... }
+        >>> pc.Dict(data).flatten().unwrap()
+        {'config.params.retries': 3, 'config.params.timeout': 30, 'config.mode': 'fast', 'version': 1.0}
+        >>> pc.Dict(data).flatten(sep="_").unwrap()
+        {'config_params_retries': 3, 'config_params_timeout': 30, 'config_mode': 'fast', 'version': 1.0}
+        >>> pc.Dict(data).flatten(max_depth=1).unwrap()
+        {'config.params': {'retries': 3, 'timeout': 30}, 'config.mode': 'fast', 'version': 1.0}
+
+        """
+
+        def _recurse_flatten(
+            d: dict[Any, Any], parent_key: str = "", current_depth: int = 1
+        ) -> dict[str, Any]:
+            items: list[tuple[str, Any]] = []
+            for k, v in d.items():
+                new_key = parent_key + sep + k if parent_key else k
+                if isinstance(v, dict) and (
+                    max_depth is None or current_depth < max_depth + 1
+                ):
+                    items.extend(
+                        _recurse_flatten(v, new_key, current_depth + 1).items()  # type: ignore
+                    )
+                else:
+                    items.append((new_key, v))  # type: ignore
+            return dict(items)
+
+        return self._new(_recurse_flatten(self._data))
+
+    def schema(self, max_depth: int = 2) -> Dict[str, Any]:
+        """
+        Return the schema of the dictionary up to a maximum depth.
+        When the max depth is reached, nested dicts are marked as 'dict'.
+        For lists, only the first element is inspected.
+
+        >>> import pychain as pc
+        >>> # Depth 2: we see up to level2
+        >>> data = {"level1": {"level2": {"level3": {"key": "value"}}}}
+        >>> pc.Dict(data).schema().unwrap()
+        {'level1': {'level2': 'dict'}}
+        >>>
+        >>> # Depth 3: we see up to level3
+        >>> pc.Dict(data).schema(max_depth=3).unwrap()
+        {'level1': {'level2': {'level3': 'dict'}}}
+        """
+
+        def get_structure(node: Any, current_depth: int) -> Any:
+            if isinstance(node, dict):
+                if current_depth >= max_depth:
+                    return "dict"
+                return {
+                    k: get_structure(v, current_depth + 1)
+                    for k, v in node.items()  # type: ignore
+                }
+            elif cz.itertoolz.isiterable(node):
+                if current_depth >= max_depth:
+                    return type(node).__name__
+                return get_structure(cz.itertoolz.first(node), current_depth + 1)
+            else:
+                return type(node).__name__
+
+        return Dict(get_structure(self._data, 0))

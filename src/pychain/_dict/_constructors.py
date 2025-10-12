@@ -18,7 +18,7 @@ class DictConstructors:
         Syntactic sugar for `Dict(dict(zip(keys, values)))`.
 
         >>> from pychain import Dict
-        >>> Dict.from_zip([1, 2], ["a", "b"])
+        >>> Dict.from_zip([1, 2], ["a", "b"]).unwrap()
         {1: 'a', 2: 'b'}
         """
         return dict_factory(dict(zip(keys, values)))
@@ -34,7 +34,7 @@ class DictConstructors:
         ...     def __init__(self):
         ...         self.x = 1
         ...         self.y = 2
-        >>> Dict.from_object(A())
+        >>> Dict.from_object(A()).unwrap()
         {'x': 1, 'y': 2}
         """
         return dict_factory(obj.__dict__)
@@ -54,7 +54,7 @@ class DictConstructors:
         ...     a: int
         ...     b: str
         >>> td: TD = {"a": 1, "b": "x"}
-        >>> Dict.from_(td)
+        >>> Dict.from_(td).unwrap()
         {'a': 1, 'b': 'x'}
         """
         return dict_factory(dict(data))

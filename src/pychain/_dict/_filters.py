@@ -7,26 +7,13 @@ from .._core import CommonBase
 
 
 class DictFilters[K, V](CommonBase[dict[K, V]]):
-    def select_keys(self, *keys: K) -> Self:
-        """
-        Return a new Dict containing only the specified keys.
-
-        Keys that are not in the original dict are ignored.
-
-        >>> from pychain import Dict
-        >>> d = {"a": 1, "b": 2, "c": 3}
-        >>> Dict(d).select_keys("a", "c", "d")
-        {'a': 1, 'c': 3}
-        """
-        return self._new({k: v for k, v in self._data.items() if k in set(keys)})
-
     def filter_keys(self, predicate: Callable[[K], bool]) -> Self:
         """
         Return a new Dict containing keys that satisfy predicate.
 
         >>> from pychain import Dict
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> Dict(d).filter_keys(lambda x: x % 2 == 0)
+        >>> Dict(d).filter_keys(lambda x: x % 2 == 0).unwrap()
         {2: 3, 4: 5}
         """
         return self._new(cz.dicttoolz.keyfilter(predicate, self._data))
@@ -37,7 +24,7 @@ class DictFilters[K, V](CommonBase[dict[K, V]]):
 
         >>> from pychain import Dict
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> Dict(d).filter_keys_not(lambda x: x % 2 == 0)
+        >>> Dict(d).filter_keys_not(lambda x: x % 2 == 0).unwrap()
         {1: 2, 3: 4}
         """
         return self._new(cz.dicttoolz.keyfilter(lambda k: not predicate(k), self._data))
@@ -48,7 +35,7 @@ class DictFilters[K, V](CommonBase[dict[K, V]]):
 
         >>> from pychain import Dict
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> Dict(d).filter_values(lambda x: x % 2 == 0)
+        >>> Dict(d).filter_values(lambda x: x % 2 == 0).unwrap()
         {1: 2, 3: 4}
         """
         return self._new(cz.dicttoolz.valfilter(predicate, self._data))
@@ -59,7 +46,7 @@ class DictFilters[K, V](CommonBase[dict[K, V]]):
 
         >>> from pychain import Dict
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> Dict(d).filter_values_not(lambda x: x % 2 == 0)
+        >>> Dict(d).filter_values_not(lambda x: x % 2 == 0).unwrap()
         {2: 3, 4: 5}
         """
         return self._new(cz.dicttoolz.valfilter(lambda v: not predicate(v), self._data))
@@ -72,7 +59,7 @@ class DictFilters[K, V](CommonBase[dict[K, V]]):
         Filter items by predicate applied to (key, value) tuples.
 
         >>> from pychain import Dict
-        >>> Dict({1: 2, 3: 4}).filter_items(lambda it: it[1] > 2)
+        >>> Dict({1: 2, 3: 4}).filter_items(lambda it: it[1] > 2).unwrap()
         {3: 4}
         """
         return self._new(cz.dicttoolz.itemfilter(predicate, self._data))
@@ -85,7 +72,7 @@ class DictFilters[K, V](CommonBase[dict[K, V]]):
         Filter items by negated predicate applied to (key, value) tuples.
 
         >>> from pychain import Dict
-        >>> Dict({1: 2, 3: 4}).filter_items_not(lambda it: it[1] > 2)
+        >>> Dict({1: 2, 3: 4}).filter_items_not(lambda it: it[1] > 2).unwrap()
         {1: 2}
         """
         return self._new(
@@ -100,7 +87,7 @@ class DictFilters[K, V](CommonBase[dict[K, V]]):
         Filter items by predicate applied to (key, value) tuples.
 
         >>> from pychain import Dict
-        >>> Dict({1: 2, 3: 4}).filter_kv(lambda k, v: v > 2)
+        >>> Dict({1: 2, 3: 4}).filter_kv(lambda k, v: v > 2).unwrap()
         {3: 4}
         """
         return self._new(
@@ -115,7 +102,7 @@ class DictFilters[K, V](CommonBase[dict[K, V]]):
         Filter items by negated predicate applied to (key, value) tuples.
 
         >>> from pychain import Dict
-        >>> Dict({1: 2, 3: 4}).filter_kv_not(lambda k, v: v > 2)
+        >>> Dict({1: 2, 3: 4}).filter_kv_not(lambda k, v: v > 2).unwrap()
         {1: 2}
         """
         return self._new(

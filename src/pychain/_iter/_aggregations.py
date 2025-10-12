@@ -1,7 +1,7 @@
 import functools
 import statistics
 from collections.abc import Callable, Iterable
-from typing import Literal, overload
+from typing import overload
 
 import cytoolz as cz
 import more_itertools as mit
@@ -208,7 +208,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return statistics.median(self._data)
 
-    def mode[U: int | float](self: CommonBase[Iterable[U]]) -> U | Literal[0]:
+    def mode[U: int | float](self: CommonBase[Iterable[U]]) -> U:
         """
         Return the mode of the sequence.
 
@@ -220,7 +220,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
 
     def stdev[U: int | float](
         self: CommonBase[Iterable[U]],
-    ) -> float | Literal[0]:
+    ) -> float:
         """
         Return the standard deviation of the sequence.
 
@@ -232,7 +232,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
 
     def variance[U: int | float](
         self: CommonBase[Iterable[U]],
-    ) -> float | Literal[0]:
+    ) -> float:
         """
         Return the variance of the sequence.
 
