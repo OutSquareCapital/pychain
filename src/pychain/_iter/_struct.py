@@ -9,7 +9,8 @@ import cytoolz as cz
 from .._core import dict_factory, iter_factory
 
 if TYPE_CHECKING:
-    from .._core import Dict, Iter
+    from .._dict import Dict
+    from .._iter import Iter
 
 
 @dataclass(slots=True)

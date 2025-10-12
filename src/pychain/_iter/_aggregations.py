@@ -1,13 +1,12 @@
 import functools
 import statistics
 from collections.abc import Callable, Iterable
-from typing import Literal
+from typing import Literal, overload
 
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase
-from .._protocols import SupportsRichComparison
+from .._core import CommonBase, SupportsRichComparison
 
 
 class IterAgg[T](CommonBase[Iterable[T]]):
@@ -148,7 +147,12 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return mit.argmin(self._data, key=key)
 
-    def sum[U: int | float](self: CommonBase[Iterable[U]]) -> U | Literal[0]:
+    @overload
+    def sum(self: CommonBase[Iterable[int]]) -> int: ...
+    @overload
+    def sum(self: CommonBase[Iterable[float]]) -> float: ...
+
+    def sum[U: int | float](self: CommonBase[Iterable[U]]) -> int | float:
         """
         Return the sum of the sequence.
 

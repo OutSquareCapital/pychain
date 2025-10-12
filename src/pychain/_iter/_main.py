@@ -7,7 +7,7 @@ from typing import Any, Concatenate, overload
 import cytoolz as cz
 import more_itertools as mit
 
-from .._protocols import Pluckable, SupportsRichComparison
+from .._core import Pluckable, SupportsRichComparison
 from ._aggregations import IterAgg
 from ._booleans import IterBool
 from ._constructors import IterConstructors

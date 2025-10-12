@@ -17,7 +17,7 @@ def _identity(x: Any) -> Any:
 class Expr:
     _operation: ExprOp
     _is_pychain_expr = True
-    _output_name: str = "<unnamed>"
+    _output_name: str
 
     def __init__(self, operation: ExprOp) -> None:
         self._operation = operation

@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Any, Concatenate, Self
 import cytoolz as cz
 
 if TYPE_CHECKING:
-    from ._dict import Dict
-    from ._iter import Iter
+    from .._dict import Dict
+    from .._iter import Iter
 
 
 class CommonBase[T](ABC):
@@ -167,12 +167,12 @@ class Wrapper[T](CommonBase[T]):
 
 
 def iter_factory[T](data: Iterable[T]) -> Iter[T]:
-    from ._iter import Iter
+    from .._iter import Iter
 
     return Iter(data)
 
 
 def dict_factory[K, V](data: dict[K, V]) -> Dict[K, V]:
-    from ._dict import Dict
+    from .._dict import Dict
 
     return Dict(data)

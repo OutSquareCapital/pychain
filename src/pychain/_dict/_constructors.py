@@ -3,8 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
-from .._core import dict_factory
-from .._protocols import SupportsKeysAndGetItem
+from .._core import SupportsKeysAndGetItem, dict_factory
 
 if TYPE_CHECKING:
     from ._main import Dict

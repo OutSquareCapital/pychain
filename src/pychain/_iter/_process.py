@@ -6,8 +6,7 @@ from typing import Any, Self
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase
-from .._protocols import Peeked
+from .._core import CommonBase, Peeked
 
 
 class IterProcess[T](CommonBase[Iterable[T]]):
