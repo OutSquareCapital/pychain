@@ -20,8 +20,8 @@ def _dummy_data():
     }
 
 
-def _total_cost(key: pc.Expr) -> pc.Expr:
-    return key.field("items").apply(
+def _total_cost(expr: pc.Expr) -> pc.Expr:
+    return expr.field("items").apply(
         lambda items: sum(item["price"] * item["quantity"] for item in items)
     )
 
@@ -40,12 +40,12 @@ def _user_summary(record: pc.Record) -> pc.Record:
     )
 
 
-def _item_count(key: pc.Expr) -> pc.Expr:
-    return key.apply(len).alias("item_count")
+def _item_count(expr: pc.Expr) -> pc.Expr:
+    return expr.apply(len).alias("item_count")
 
 
-def _is_active() -> pc.Expr:
-    return pc.key("user").field("status").eq("active")
+def _is_active(expr: pc.Expr) -> pc.Expr:
+    return expr.field("status").apply(lambda status: status == "active")
 
 
 def _enriched_record(record: pc.Record) -> pc.Record:
@@ -54,13 +54,13 @@ def _enriched_record(record: pc.Record) -> pc.Record:
 
     On garde le dict original et on ajoute des infos.
     """
+    user = pc.key("user")
     return record.with_fields(
         pc.key("order").field("items").pipe(_item_count),
-        pc.key("user")
-        .field("roles")
-        .apply(lambda roles: roles[0])
-        .alias("primary_role"),
-        pc.key("is_vip").and_(_is_active()).alias("is_active_vip"),
+        user.field("roles").apply(lambda roles: roles[0]).alias("primary_role"),
+        pc.key("is_vip")
+        .apply(lambda x: x is True and user.pipe(_is_active))
+        .alias("is_active_vip"),
     ).drop("user", "order")
 
 

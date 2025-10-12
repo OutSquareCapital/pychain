@@ -7,8 +7,6 @@ from .._core import CommonBase
 
 
 class IterBool[T](CommonBase[Iterable[T]]):
-    _data: Iterable[T]
-
     def is_not_empty(self) -> bool:
         """
         Return True if the iterable is not empty.
