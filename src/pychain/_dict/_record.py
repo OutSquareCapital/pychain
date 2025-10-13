@@ -7,20 +7,6 @@ from .._expressions import Expr
 from ._core import CoreDict
 
 
-def _from_context(
-    data: dict[str, Any], plan: Iterable[Expr], is_selection: bool
-) -> dict[str, Any]:
-    if is_selection:
-        result_dict: dict[str, Any] = {}
-    else:
-        result_dict = data.copy()
-
-    for expr in plan:
-        expr.__compute__(data, result_dict)
-
-    return result_dict
-
-
 class Record(CoreDict[str, Any]):
     def pipe_into[**P](
         self,
@@ -42,7 +28,18 @@ class Record(CoreDict[str, Any]):
         return super().pipe_into(func, *args, **kwargs)
 
     def _from_context(self, plan: Iterable[Expr], is_selection: bool) -> Self:
-        return self._new(_from_context, plan, is_selection)
+        def _(data: dict[str, Any]) -> dict[str, Any]:
+            if is_selection:
+                result_dict: dict[str, Any] = {}
+            else:
+                result_dict = data.copy()
+
+            for expr in plan:
+                expr.__compute__(data, result_dict)
+
+            return result_dict
+
+        return self._new(_)
 
     def select(self, *exprs: Expr) -> Self:
         """

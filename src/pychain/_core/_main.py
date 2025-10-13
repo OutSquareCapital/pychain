@@ -39,11 +39,11 @@ class CommonBase[T](Pipeable, ABC):
         self._data = data
 
     def __repr__(self) -> str:
-        return f"{self._data.__repr__()}"
+        return f"{self.unwrap().__repr__()}"
 
     def _display_(self) -> T:
         """Display method specific for Marimo."""
-        return self._data
+        return self.unwrap()
 
     def println(self, pretty: bool = True) -> Self:
         """
@@ -54,15 +54,15 @@ class CommonBase[T](Pipeable, ABC):
         from pprint import pprint
 
         if pretty:
-            pprint(self._data)
+            pprint(self.unwrap())
         else:
-            print(self._data)
+            print(self.unwrap())
         return self
 
     def _new[**P](
         self, func: Callable[Concatenate[T, P], T], *args: P.args, **kwargs: P.kwargs
     ) -> Self:
-        return self.__class__(func(self._data, *args, **kwargs))
+        return self.__class__(func(self.unwrap(), *args, **kwargs))
 
     def unwrap(self) -> T:
         """
@@ -89,7 +89,7 @@ class CommonBase[T](Pipeable, ABC):
 
         This is a core functionality that allows ending the chain whilst keeping the code style consistent.
         """
-        return func(self._data, *args, **kwargs)
+        return func(self.unwrap(), *args, **kwargs)
 
     def pipe_into[**P](
         self,
@@ -109,7 +109,7 @@ class CommonBase[T](Pipeable, ABC):
 
         Use this to keep the chainable API after applying a transformation to the data.
         """
-        return self.__class__.__call__(func(self._data, *args, **kwargs))
+        return self.__class__.__call__(func(self.unwrap(), *args, **kwargs))
 
     def pipe_chain(self, *funcs: Callable[[T], T]) -> Self:
         """
@@ -156,7 +156,7 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
         """
         from .._iter import Iter
 
-        return Iter(func(self._data, *args, **kwargs))
+        return Iter(func(self.unwrap(), *args, **kwargs))
 
 
 class Wrapper[T](CommonBase[T]):
@@ -183,7 +183,7 @@ class Wrapper[T](CommonBase[T]):
 
         This is also why pipe into is an abstract method in `CommonBase`, altough `Dict` and `Iter` have the exact same implementation.
         """
-        return Wrapper(func(self._data, *args, **kwargs))
+        return Wrapper(func(self.unwrap(), *args, **kwargs))
 
     def to_iter[U: Iterable[Any]](self: Wrapper[U]) -> Iter[U]:
         """
@@ -191,7 +191,7 @@ class Wrapper[T](CommonBase[T]):
         """
         from .._iter import Iter
 
-        return Iter(self._data)
+        return self.into(Iter)
 
     def to_dict[KU, VU](self: Wrapper[dict[KU, VU]]) -> Dict[KU, VU]:
         """
@@ -206,4 +206,4 @@ class Wrapper[T](CommonBase[T]):
         """
         from .._dict import Dict
 
-        return Dict(self._data)
+        return self.into(Dict)
