@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable
 from typing import Any, Concatenate, Self
 
-from .._expressions import Expr
+from .._expressions import IntoExpr, parse_expr
 from ._core import CoreDict
 
 
@@ -27,7 +27,7 @@ class Record(CoreDict[str, Any]):
         """
         return super().pipe_into(func, *args, **kwargs)
 
-    def _from_context(self, plan: Iterable[Expr], is_selection: bool) -> Self:
+    def _from_context(self, plan: Iterable[IntoExpr], is_selection: bool) -> Self:
         def _(data: dict[str, Any]) -> dict[str, Any]:
             if is_selection:
                 result_dict: dict[str, Any] = {}
@@ -35,19 +35,19 @@ class Record(CoreDict[str, Any]):
                 result_dict = data.copy()
 
             for expr in plan:
-                expr.__compute__(data, result_dict)
+                parse_expr(expr).__compute__(data, result_dict)
 
             return result_dict
 
         return self._new(_)
 
-    def select(self, *exprs: Expr) -> Self:
+    def select(self, *exprs: IntoExpr) -> Self:
         """
         Select only the specified fields, creating a new dictionary with just those fields.
         """
         return self._from_context(exprs, True)
 
-    def with_fields(self, *exprs: Expr) -> Self:
+    def with_fields(self, *exprs: IntoExpr) -> Self:
         """
         Adds or replaces fields in the existing dictionary.
         """

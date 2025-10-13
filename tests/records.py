@@ -1,7 +1,33 @@
+from typing import TypedDict
+
 import pychain as pc
 
 
-def _dummy_data():
+class User(TypedDict):
+    id: int
+    name: str
+    roles: list[str]
+    status: str
+
+
+class OrderItem(TypedDict):
+    name: str
+    price: float
+    quantity: int
+
+
+class Order(TypedDict):
+    items: list[OrderItem]
+    currency: str
+
+
+class DataSchema(TypedDict):
+    user: User
+    order: Order
+    is_vip: bool
+
+
+def _dummy_data() -> DataSchema:
     return {
         "user": {
             "id": 101,
@@ -21,17 +47,12 @@ def _dummy_data():
 
 
 def _total_cost(expr: pc.Expr) -> pc.Expr:
-    return expr.field("items").apply(
-        lambda items: sum(item["price"] * item["quantity"] for item in items)
+    return expr.field("items").itr(
+        lambda items: items.map(lambda item: item["price"] * item["quantity"]).sum()
     )
 
 
 def _user_summary(record: pc.Record) -> pc.Record:
-    """
-    --- EXEMPLE 1: Sélection simple et transformation ---
-
-    On veut le nom de l'utilisateur et le coût total de la commande.
-    """
     order = pc.key("order")
     return record.select(
         pc.key("user").field("name").alias("customer_name"),
@@ -40,32 +61,23 @@ def _user_summary(record: pc.Record) -> pc.Record:
     )
 
 
-def _item_count(expr: pc.Expr) -> pc.Expr:
-    return expr.apply(len).alias("item_count")
-
-
-def _is_active(expr: pc.Expr) -> pc.Expr:
-    return expr.field("status").apply(lambda status: status == "active")
-
-
 def _enriched_record(record: pc.Record) -> pc.Record:
-    """
-    --- EXEMPLE 2: Ajout de champs calculés (with_fields) ---
-
-    On garde le dict original et on ajoute des infos.
-    """
     user = pc.key("user")
     return record.with_fields(
-        pc.key("order").field("items").pipe(_item_count),
-        user.field("roles").apply(lambda roles: roles[0]).alias("primary_role"),
+        pc.key("order")
+        .field("items")
+        .itr(lambda items: items.length())
+        .alias("item_count"),
+        user.field("roles").itr(lambda roles: roles.first()).alias("primary_role"),
         pc.key("is_vip")
-        .apply(lambda x: x is True and user.pipe(_is_active))
+        .eq(True)
+        .and_(user.field("status").eq("active"))
         .alias("is_active_vip"),
     ).drop("user", "order")
 
 
 def main():
-    record = pc.Record(_dummy_data())
+    record = pc.Record(dict(_dummy_data()))
 
     assert record.pipe(_user_summary).equals_to(
         {

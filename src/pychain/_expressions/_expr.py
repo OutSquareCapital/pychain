@@ -2,11 +2,21 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self, TypeGuard
 
 import cytoolz as cz
 
 from .._core import Pipeable
+
+if TYPE_CHECKING:
+    from .._dict import Dict
+    from .._iter import Iter
+
+type IntoExpr = str | Expr
+
+
+def is_expr(obj: Any) -> TypeGuard[Expr]:
+    return getattr(obj, "_is_pychain_expr", False)
 
 
 @dataclass(slots=True)
@@ -41,8 +51,87 @@ class Expr(Pipeable):
 
         return self._new(operation)
 
+    def str(self, func: Callable[[str], Any]) -> Self:
+        return self._new(func)
+
+    def itr(self, func: Callable[[Iter[Any]], Any]) -> Self:
+        from .._iter import Iter
+
+        return self._new(lambda x: func(Iter(x)))
+
+    def struct(self, func: Callable[[Dict[Any, Any]], Any]) -> Self:
+        from .._dict import Dict
+
+        return self._new(lambda x: func(Dict(x)))
+
     def apply(self, func: Callable[[Any], Any]) -> Self:
         return self._new(func)
+
+    def add(self, value: Any) -> Self:
+        return self._new(lambda x: x + value)
+
+    def mul(self, value: Any) -> Self:
+        return self._new(lambda x: x * value)
+
+    def sub(self, value: Any) -> Self:
+        return self._new(lambda x: x - value)
+
+    def rsub(self, value: Any) -> Self:
+        return self._new(lambda x: value - x)
+
+    def truediv(self, value: Any) -> Self:
+        return self._new(lambda x: x / value)
+
+    def rtruediv(self, value: Any) -> Self:
+        return self._new(lambda x: value / x)
+
+    def floordiv(self, value: Any) -> Self:
+        return self._new(lambda x: x // value)
+
+    def rfloordiv(self, value: Any) -> Self:
+        return self._new(lambda x: value // x)
+
+    def mod(self, value: Any) -> Self:
+        return self._new(lambda x: x % value)
+
+    def pow(self, value: Any) -> Self:
+        return self._new(lambda x: x**value)
+
+    def neg(self) -> Self:
+        return self._new(lambda x: -x)
+
+    def pos(self) -> Self:
+        return self._new(lambda x: +x)
+
+    def abs(self) -> Self:
+        return self._new(abs)
+
+    def not_(self) -> Self:
+        return self._new(lambda x: not x)
+
+    def and_(self, value: Any) -> Self:
+        return self._new(lambda x: x and value)
+
+    def or_(self, value: Any) -> Self:
+        return self._new(lambda x: x or value)
+
+    def eq(self, value: Any) -> Self:
+        return self._new(lambda x: x == value)
+
+    def ne(self, value: Any) -> Self:
+        return self._new(lambda x: x != value)
+
+    def lt(self, value: Any) -> Self:
+        return self._new(lambda x: x < value)
+
+    def le(self, value: Any) -> Self:
+        return self._new(lambda x: x <= value)
+
+    def gt(self, value: Any) -> Self:
+        return self._new(lambda x: x > value)
+
+    def ge(self, value: Any) -> Self:
+        return self._new(lambda x: x >= value)
 
 
 class KeySelector:
@@ -54,3 +143,13 @@ class KeySelector:
 
 
 key = KeySelector()
+
+
+def parse_expr(expr: IntoExpr) -> Expr:
+    match expr:
+        case Expr():
+            return expr
+        case str():
+            return key(expr)
+        case _:
+            raise TypeError(f"Expression must be of type str or Expr, not {type(expr)}")

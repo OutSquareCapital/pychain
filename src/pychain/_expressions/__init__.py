@@ -1,3 +1,3 @@
-from ._expr import Expr, key
+from ._expr import Expr, IntoExpr, key, parse_expr
 
-__all__ = ["Expr", "key"]
+__all__ = ["Expr", "key", "parse_expr", "IntoExpr"]
