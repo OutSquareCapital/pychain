@@ -17,13 +17,13 @@ class Expr(Pipeable):
     _operations: list[Callable[[Any], Any]]
 
     @property
-    def func(self) -> Callable[[Any], Any]:
+    def _func(self) -> Callable[[Any], Any]:
         return cz.functoolz.compose_left(*self._operations)
 
     def __compute__(self, input: dict[str, Any], output: dict[str, Any]) -> None:
-        output[self._output_name] = self.func(input[self._input_name])
+        output[self._output_name] = self._func(input[self._input_name])
 
-    def _new[**P](self, operation: Callable[[Any], Any]) -> Self:
+    def _new(self, operation: Callable[[Any], Any]) -> Self:
         return self.__class__(
             self._input_name, self._output_name, self._operations + [operation]
         )
@@ -35,7 +35,7 @@ class Expr(Pipeable):
     def field(self, name: str | int) -> Self:
         def operation(data: dict[Any, Any]) -> Any:
             try:
-                return self.func(data).get(name)
+                return self._func(data).get(name)
             except (KeyError, IndexError, TypeError) as e:
                 raise e.__class__(f"Clé ou index '{name}' invalide.") from e
 
