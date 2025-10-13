@@ -9,6 +9,7 @@ import cytoolz as cz
 import more_itertools as mit
 
 from .._core import Pluckable, SupportsRichComparison
+from .._executors import BaseProcess
 from ._aggregations import IterAgg
 from ._booleans import IterBool
 from ._constructors import IterConstructors
@@ -16,14 +17,12 @@ from ._dicts import IterDicts
 from ._filters import IterFilter
 from ._lists import IterList
 from ._maps import IterMap
-from ._process import IterProcess
 from ._rolling import IterRolling
 from ._tuples import IterTuples
 
 
 class Iter[T](
     IterAgg[T],
-    IterProcess[T],
     IterTuples[T],
     IterBool[T],
     IterRolling[T],
@@ -31,6 +30,7 @@ class Iter[T](
     IterDicts[T],
     IterList[T],
     IterFilter[T],
+    BaseProcess[T],
     IterConstructors,
 ):
     """

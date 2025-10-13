@@ -10,7 +10,7 @@ import more_itertools as mit
 from .._core import IterWrapper, Peeked
 
 
-class IterProcess[T](IterWrapper[T]):
+class BaseProcess[T](IterWrapper[T]):
     def cycle(self) -> Self:
         """
         Repeat the sequence indefinitely.

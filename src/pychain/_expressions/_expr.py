@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Self, TypeGuard
 
 import cytoolz as cz
 
-from .._core import Pipeable
+from .._executors import BaseFilter, BaseProcess
 
 if TYPE_CHECKING:
     from .._dict import Dict
@@ -20,7 +20,7 @@ def is_expr(obj: Any) -> TypeGuard[Expr]:
 
 
 @dataclass(slots=True)
-class Expr(Pipeable):
+class Expr(BaseFilter[Any], BaseProcess[Any]):
     _input_name: str
     _output_name: str
     _is_pychain_expr = True
@@ -33,9 +33,9 @@ class Expr(Pipeable):
     def __compute__(self, input: dict[str, Any], output: dict[str, Any]) -> None:
         output[self._output_name] = self._func(input[self._input_name])
 
-    def _new(self, operation: Callable[[Any], Any]) -> Self:
+    def _new(self, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Self:
         return self.__class__(
-            self._input_name, self._output_name, self._operations + [operation]
+            self._input_name, self._output_name, self._operations + [func]
         )
 
     def alias(self, name: str) -> Expr:
