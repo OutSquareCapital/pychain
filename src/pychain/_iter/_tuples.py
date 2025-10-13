@@ -7,15 +7,14 @@ from typing import TYPE_CHECKING, Any, Literal, overload
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase, iter_factory
+from .._core import IterWrapper
+from . import funcs as fn
 
 if TYPE_CHECKING:
     from ._main import Iter
 
 
-class IterTuples[T](CommonBase[Iterable[T]]):
-    _data: Iterable[T]
-
+class IterTuples[T](IterWrapper[T]):
     @overload
     def zip[T1](
         self, iter1: Iterable[T1], /, *, strict: bool = ...
@@ -67,7 +66,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2]).zip([10, 20]).into(list)
         [(1, 10), (2, 20)]
         """
-        return iter_factory(zip(self._data, *others, strict=strict))
+        return self.pipe_into(zip, *others, strict=strict)
 
     def zip_offset[U](
         self,
@@ -92,14 +91,12 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter("0123").zip_offset("abcdef", offsets=(0, 1), longest=True).into(list)
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e'), (None, 'f')]
         """
-        return iter_factory(
-            mit.zip_offset(
-                self._data,
-                *others,
-                offsets=offsets,
-                longest=longest,
-                fillvalue=fillvalue,
-            )
+        return self.pipe_into(
+            fn.zip_offset,
+            *others,
+            offsets=offsets,
+            longest=longest,
+            fillvalue=fillvalue,
         )
 
     def zip_broadcast(
@@ -126,10 +123,8 @@ class IterTuples[T](CommonBase[Iterable[T]]):
 
         If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
         """
-        return iter_factory(
-            mit.zip_broadcast(
-                self._data, *others, scalar_types=scalar_types, strict=strict
-            )
+        return self.pipe_into(
+            fn.zip_broadcast, *others, scalar_types=scalar_types, strict=strict
         )
 
     @overload
@@ -164,9 +159,9 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         __iter5: Iterable[Any],
         __iter6: Iterable[Any],
         *iterables: Iterable[Any],
-    ) -> "Iter[tuple[Any, ...]]": ...
-    def zip_equal(self, *others: Iterable[Any]):
-        return iter_factory(mit.zip_equal(self._data, *others))
+    ) -> Iter[tuple[Any, ...]]: ...
+    def zip_equal(self, *others: Iterable[Any]) -> Iter[tuple[Any, ...]]:
+        return self.pipe_into(fn.zip_equal, *others)
 
     def enumerate(self) -> Iter[tuple[int, T]]:
         """
@@ -176,7 +171,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter(["a", "b"]).enumerate().into(list)
         [(0, 'a'), (1, 'b')]
         """
-        return iter_factory(enumerate(self._data))
+        return self.pipe_into(enumerate)
 
     @overload
     def combinations(self, r: Literal[2]) -> Iter[tuple[T, T]]: ...
@@ -194,7 +189,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2, 3]).combinations(2).into(list)
         [(1, 2), (1, 3), (2, 3)]
         """
-        return iter_factory(itertools.combinations(self._data, r))
+        return self.pipe_into(itertools.combinations, r)
 
     def batch(self, n: int) -> Iter[tuple[T, ...]]:
         """
@@ -204,7 +199,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter("ABCDEFG").batch(3).into(list)
         [('A', 'B', 'C'), ('D', 'E', 'F'), ('G',)]
         """
-        return iter_factory(itertools.batched(self._data, n))
+        return self.pipe_into(itertools.batched, n)
 
     def zip_longest[U](
         self, *others: Iterable[T], fill_value: U = None
@@ -216,9 +211,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2]).zip_longest([10], fill_value=0).into(list)
         [(1, 10), (2, 0)]
         """
-        return iter_factory(
-            itertools.zip_longest(self._data, *others, fillvalue=fill_value)
-        )
+        return self.pipe_into(itertools.zip_longest, *others, fillvalue=fill_value)
 
     def permutations(self, r: int | None = None) -> Iter[tuple[T, ...]]:
         """
@@ -228,7 +221,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2, 3]).permutations(2).into(list)
         [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]
         """
-        return iter_factory(itertools.permutations(self._data, r))
+        return self.pipe_into(itertools.permutations, r)
 
     def product[U](self, other: Iterable[U]) -> Iter[tuple[T, U]]:
         """
@@ -247,7 +240,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> colors.product(sizes).into(list)
         [('blue', 'S'), ('blue', 'M'), ('red', 'S'), ('red', 'M')]
         """
-        return iter_factory(itertools.product(self._data, other))
+        return self.pipe_into(fn.product, other)
 
     def combinations_with_replacement(self, r: int) -> Iter[tuple[T, ...]]:
         """
@@ -257,7 +250,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2, 3]).combinations_with_replacement(2).into(list)
         [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
         """
-        return iter_factory(itertools.combinations_with_replacement(self._data, r))
+        return self.pipe_into(itertools.combinations_with_replacement, r)
 
     def pairwise(self) -> Iter[tuple[T, T]]:
         """
@@ -267,7 +260,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2, 3]).pairwise().into(list)
         [(1, 2), (2, 3)]
         """
-        return iter_factory(itertools.pairwise(self._data))
+        return self.pipe_into(itertools.pairwise)
 
     def join[R, K](
         self,
@@ -286,15 +279,8 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> colors.join(sizes, left_on=lambda c: c, right_on=lambda s: s).into(list)
         [(None, 'S'), (None, 'M'), ('blue', None), ('red', None)]
         """
-        return iter_factory(
-            cz.itertoolz.join(
-                leftkey=left_on,
-                leftseq=self._data,
-                rightkey=right_on,
-                rightseq=other,
-                left_default=left_default,
-                right_default=right_default,
-            )
+        return self.pipe_into(
+            fn.join, other, left_on, right_on, left_default, right_default
         )
 
     def partition(self, n: int, pad: T | None = None) -> Iter[tuple[T, ...]]:
@@ -310,7 +296,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2, 3, 4, 5]).partition(2).into(list)
         [(1, 2), (3, 4), (5, None)]
         """
-        return iter_factory(cz.itertoolz.partition(n, self._data, pad))
+        return self.pipe_into(fn.partition, n, pad)
 
     def partition_all(self, n: int) -> Iter[tuple[T, ...]]:
         """
@@ -324,7 +310,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2, 3, 4, 5]).partition_all(2).into(list)
         [(1, 2), (3, 4), (5,)]
         """
-        return iter_factory(cz.itertoolz.partition_all(n, self._data))
+        return self.pipe_into(fn.partition_all, n)
 
     @overload
     def sliding_window(self, length: Literal[1]) -> Iter[tuple[T]]: ...
@@ -367,7 +353,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         ... ).into(list)
         [1.5, 2.5, 3.5]
         """
-        return iter_factory(cz.itertoolz.sliding_window(length, self._data))
+        return self.pipe_into(fn.sliding_window, length)
 
     def diff(
         self,
@@ -391,9 +377,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         ... )
         [('bananas', 'Oranges')]
         """
-        return iter_factory(
-            cz.itertoolz.diff(self._data, *others, default=default, key=key)
-        )
+        return self.pipe_into(cz.itertoolz.diff, *others, default=default, key=key)
 
     def adjacent(
         self, predicate: Callable[[T], bool], distance: int = 1
@@ -424,7 +408,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
 
         See also groupby_transform, which can be used with this function to group ranges of items with the same bool value.
         """
-        return iter_factory(mit.adjacent(predicate, self._data, distance))
+        return self.pipe_into(fn.adjacent, predicate, distance)
 
     def most_common(self, n: int | None = None) -> Iter[tuple[T, int]]:
         """
@@ -436,9 +420,8 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 1, 2, 3, 3, 3]).most_common(2).into(list)
         [(3, 3), (1, 2)]
         """
-        from collections import Counter
 
-        return iter_factory(Counter(self._data).most_common(n))
+        return self.pipe_into(fn.most_common, n)
 
     def classify_unique(self) -> Iter[tuple[T, bool, bool]]:
         """
@@ -459,7 +442,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
 
         This function is analogous to unique_everseen and is subject to the same performance considerations.
         """
-        return iter_factory(mit.classify_unique(self._data))
+        return self.pipe_into(mit.classify_unique)
 
     @overload
     def map_juxt[R1, R2](
@@ -496,7 +479,7 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         >>> Iter([1, -2, 3]).map_juxt(lambda n: n % 2 == 0, lambda n: n > 0).into(list)
         [(False, True), (True, False), (False, True)]
         """
-        return iter_factory(map(cz.functoolz.juxt(*funcs), self._data))
+        return self.pipe_into(fn.map_juxt, *funcs)
 
     def partition_by(self, predicate: Callable[[T], bool]) -> Iter[tuple[T, ...]]:
         """
@@ -514,4 +497,4 @@ class IterTuples[T](CommonBase[Iterable[T]]):
         [(1, 2, 1), (99, 88, 33, 99), (-1, 5)]
 
         """
-        return iter_factory(cz.recipes.partitionby(predicate, self._data))
+        return self.pipe_into(fn.partition_by, predicate)

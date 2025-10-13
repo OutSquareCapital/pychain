@@ -1,20 +1,18 @@
 from __future__ import annotations
 
-import itertools
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, Concatenate
 
 import more_itertools as mit
 
-from .._core import CommonBase, iter_factory
+from .._core import IterWrapper
+from . import funcs as fn
 
 if TYPE_CHECKING:
     from ._main import Iter
 
 
-class IterMap[T](CommonBase[Iterable[T]]):
-    _data: Iterable[T]
-
+class IterMap[T](IterWrapper[T]):
     def map[**P, R](
         self, func: Callable[Concatenate[T, P], R], *args: P.args, **kwargs: P.kwargs
     ) -> Iter[R]:
@@ -25,7 +23,7 @@ class IterMap[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2]).map(lambda x: x + 1).into(list)
         [2, 3]
         """
-        return iter_factory(map(func, self._data, *args, **kwargs))
+        return self.pipe_into(fn.map_, func, *args, **kwargs)
 
     def map_star[U: Iterable[Any], R](
         self: IterMap[U], func: Callable[..., R]
@@ -45,7 +43,7 @@ class IterMap[T](CommonBase[Iterable[T]]):
         >>> Iter(["blue", "red"]).product(["S", "M"]).map_star(make_sku).into(list)
         ['blue-S', 'blue-M', 'red-S', 'red-M']
         """
-        return iter_factory(itertools.starmap(func, self._data))
+        return self.pipe_into(fn.starmap_, func)
 
     def map_flat[R, **P](
         self,
@@ -70,14 +68,12 @@ class IterMap[T](CommonBase[Iterable[T]]):
         >>> authors.map_flat(get_books).into(list)
         ['author_A_book1', 'author_A_book2', 'author_B_book1', 'author_B_book2']
         """
-        return iter_factory(
-            itertools.chain.from_iterable(map(func, self._data, *args, **kwargs))
-        )
+        return self.pipe_into(fn.map_flat, func, *args, **kwargs)
 
     def map_join[R](
         self,
-        func: Callable[[T], R],
         *others: Iterable[T],
+        func: Callable[[T], R],
     ) -> Iter[R]:
         """
         Equivalent to map, but allow to join other iterables.
@@ -85,12 +81,10 @@ class IterMap[T](CommonBase[Iterable[T]]):
         However, it don't take additional arguments for the function.
 
         >>> from pychain import Iter
-        >>> Iter(["a", "b"]).map_join(str.upper, ["c", "d", "e"]).into(list)
+        >>> Iter(["a", "b"]).map_join(["c", "d", "e"], func=str.upper).into(list)
         ['A', 'B', 'C', 'D', 'E']
         """
-        return iter_factory(
-            map(func, itertools.chain.from_iterable((self._data, *others)))
-        )
+        return self.pipe_into(fn.map_join, others, func)
 
     def map_if[R](
         self,
@@ -120,9 +114,7 @@ class IterMap[T](CommonBase[Iterable[T]]):
         ... ).into(list)
         [None, None, None, None, None, '0.00', '1.00', '1.41', '1.73', '2.00']
         """
-        return iter_factory(
-            mit.map_if(self._data, predicate, func, func_else=func_else)
-        )
+        return self.pipe_into(mit.map_if, predicate, func, func_else=func_else)
 
     def map_except[R](
         self, func: Callable[[T], R], *exceptions: type[BaseException]
@@ -140,4 +132,4 @@ class IterMap[T](CommonBase[Iterable[T]]):
         >>> Iter(iterable).map_except(int, ValueError, TypeError).into(list)
         [1, 2, 4]
         """
-        return iter_factory(mit.map_except(func, self._data, *exceptions))
+        return self.pipe_into(fn.map_except, func, *exceptions)

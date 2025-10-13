@@ -1,12 +1,12 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase
+from .._core import IterWrapper
 
 
-class IterBool[T](CommonBase[Iterable[T]]):
+class IterBool[T](IterWrapper[T]):
     def is_not_empty(self) -> bool:
         """
         Return True if the iterable is not empty.

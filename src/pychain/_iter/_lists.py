@@ -5,20 +5,19 @@ from typing import TYPE_CHECKING
 
 import more_itertools as mit
 
-from .._core import CommonBase, iter_factory
+from .._core import IterWrapper
+from . import funcs as fn
 
 if TYPE_CHECKING:
     from ._main import Iter
 
 
-class IterList[T](CommonBase[Iterable[T]]):
-    _data: Iterable[T]
-
+class IterList[T](IterWrapper[T]):
     def implode(self) -> Iter[list[T]]:
         """
         Wrap each element in the iterable into a list.
         """
-        return iter_factory(([x] for x in self._data))
+        return self.pipe_into(fn.map_, lambda x: [x])
 
     def split_at(
         self,
@@ -49,7 +48,7 @@ class IterList[T](CommonBase[Iterable[T]]):
         >>> Iter("abcdcba").split_at(lambda x: x == "b", keep_separator=True).into(list)
         [['a'], ['b'], ['c', 'd', 'c'], ['b'], ['a']]
         """
-        return iter_factory(mit.split_at(self._data, pred, maxsplit, keep_separator))
+        return self.pipe_into(mit.split_at, pred, maxsplit, keep_separator)
 
     def split_after(
         self, predicate: Callable[[T], bool], max_split: int = -1
@@ -72,7 +71,7 @@ class IterList[T](CommonBase[Iterable[T]]):
         >>> Iter.from_range(0, 10).split_after(cond, max_split=2).into(list)
         [[0], [1, 2, 3], [4, 5, 6, 7, 8, 9]]
         """
-        return iter_factory(mit.split_after(self._data, predicate, max_split))
+        return self.pipe_into(mit.split_after, predicate, max_split)
 
     def split_before(
         self, predicate: Callable[[T], bool], max_split: int = -1
@@ -97,7 +96,7 @@ class IterList[T](CommonBase[Iterable[T]]):
         >>> Iter.from_range(0, 10).split_before(cond, max_split=2).into(list)
         [[0], [1, 2], [3, 4, 5, 6, 7, 8, 9]]
         """
-        return iter_factory(mit.split_before(self._data, predicate, max_split))
+        return self.pipe_into(mit.split_before, predicate, max_split)
 
     def split_into(self, sizes: Iterable[int | None]) -> Iter[list[T]]:
         """
@@ -126,7 +125,7 @@ class IterList[T](CommonBase[Iterable[T]]):
 
         An example would be where in a row from a table, multiple columns represent elements of the same feature (e.g. a point represented by x,y,z) but, the format is not the same for all columns.
         """
-        return iter_factory(mit.split_into(self._data, sizes))
+        return self.pipe_into(mit.split_into, sizes)
 
     def split_when(
         self, predicate: Callable[[T, T], bool], max_split: int = -1
@@ -149,7 +148,7 @@ class IterList[T](CommonBase[Iterable[T]]):
         ... ).into(list)
         [[1, 2, 3, 3], [2, 5], [2, 4, 2]]
         """
-        return iter_factory(mit.split_when(self._data, predicate, max_split))
+        return self.pipe_into(mit.split_when, predicate, max_split)
 
     def chunked(self, n: int, strict: bool = False) -> Iter[list[T]]:
         """
@@ -169,7 +168,7 @@ class IterList[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2, 3, 4, 5, 6, 7, 8]).chunked(3).into(list)
         [[1, 2, 3], [4, 5, 6], [7, 8]]
         """
-        return iter_factory(mit.chunked(self._data, n, strict))
+        return self.pipe_into(mit.chunked, n, strict)
 
     def chunked_even(self, n: int) -> Iter[list[T]]:
         """
@@ -183,7 +182,7 @@ class IterList[T](CommonBase[Iterable[T]]):
         >>> Iter(iterable).chunked(3).into(list)  # List lengths: 3, 3, 1
         [[1, 2, 3], [4, 5, 6], [7]]
         """
-        return iter_factory(mit.chunked_even(self._data, n))
+        return self.pipe_into(mit.chunked_even, n)
 
     def unique_to_each(self, *others: Iterable[T]) -> Iter[list[T]]:
         """
@@ -212,4 +211,4 @@ class IterList[T](CommonBase[Iterable[T]]):
 
         It is assumed that the elements of each iterable are hashable.
         """
-        return iter_factory(mit.unique_to_each(self._data, *others))
+        return self.pipe_into(mit.unique_to_each, *others)

@@ -6,10 +6,10 @@ from typing import overload
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase, SupportsRichComparison
+from .._core import IterWrapper, SupportsRichComparison
 
 
-class IterAgg[T](CommonBase[Iterable[T]]):
+class IterAgg[T](IterWrapper[T]):
     _data: Iterable[T]
 
     def reduce(self, func: Callable[[T, T], T]) -> T:
@@ -148,11 +148,11 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         return mit.argmin(self._data, key=key)
 
     @overload
-    def sum(self: CommonBase[Iterable[int]]) -> int: ...
+    def sum(self: IterWrapper[int]) -> int: ...
     @overload
-    def sum(self: CommonBase[Iterable[float]]) -> float: ...
+    def sum(self: IterWrapper[float]) -> float: ...
 
-    def sum[U: int | float](self: CommonBase[Iterable[U]]) -> int | float:
+    def sum[U: int | float](self: IterWrapper[U]) -> int | float:
         """
         Return the sum of the sequence.
 
@@ -163,7 +163,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         return sum(self._data)
 
     def min[U: int | float](
-        self: CommonBase[Iterable[U]],
+        self: IterWrapper[U],
         key: Callable[[U], SupportsRichComparison[U]] | None = None,
     ) -> U:
         """
@@ -176,7 +176,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         return min(self._data, key=key)
 
     def max[U: int | float](
-        self: CommonBase[Iterable[U]],
+        self: IterWrapper[U],
         key: Callable[[U], SupportsRichComparison[U]] | None = None,
     ) -> U:
         """
@@ -188,7 +188,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return max(self._data, key=key)
 
-    def mean[U: int | float](self: CommonBase[Iterable[U]]) -> float:
+    def mean[U: int | float](self: IterWrapper[U]) -> float:
         """
         Return the mean of the sequence.
 
@@ -198,7 +198,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return statistics.mean(self._data)
 
-    def median[U: int | float](self: CommonBase[Iterable[U]]) -> float:
+    def median[U: int | float](self: IterWrapper[U]) -> float:
         """
         Return the median of the sequence.
 
@@ -208,7 +208,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         """
         return statistics.median(self._data)
 
-    def mode[U: int | float](self: CommonBase[Iterable[U]]) -> U:
+    def mode[U: int | float](self: IterWrapper[U]) -> U:
         """
         Return the mode of the sequence.
 
@@ -219,7 +219,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         return statistics.mode(self._data)
 
     def stdev[U: int | float](
-        self: CommonBase[Iterable[U]],
+        self: IterWrapper[U],
     ) -> float:
         """
         Return the standard deviation of the sequence.
@@ -231,7 +231,7 @@ class IterAgg[T](CommonBase[Iterable[T]]):
         return statistics.stdev(self._data)
 
     def variance[U: int | float](
-        self: CommonBase[Iterable[U]],
+        self: IterWrapper[U],
     ) -> float:
         """
         Return the variance of the sequence.

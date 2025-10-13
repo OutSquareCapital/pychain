@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, Concatenate, Self
 
@@ -59,8 +59,10 @@ class CommonBase[T](Pipeable, ABC):
             print(self._data)
         return self
 
-    def _new(self, data: T) -> Self:
-        return self.__class__(data)
+    def _new[**P](
+        self, func: Callable[Concatenate[T, P], T], *args: P.args, **kwargs: P.kwargs
+    ) -> Self:
+        return self.__class__(func(self._data, *args, **kwargs))
 
     def unwrap(self) -> T:
         """
@@ -89,10 +91,9 @@ class CommonBase[T](Pipeable, ABC):
         """
         return func(self._data, *args, **kwargs)
 
-    @abstractmethod
     def pipe_into[**P](
         self,
-        func: Callable[Concatenate[Self, P], Any],
+        func: Callable[Concatenate[T, P], Any],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Any:
@@ -108,7 +109,7 @@ class CommonBase[T](Pipeable, ABC):
 
         Use this to keep the chainable API after applying a transformation to the data.
         """
-        raise NotImplementedError
+        return self.__class__.__call__(func(self._data, *args, **kwargs))
 
     def pipe_chain(self, *funcs: Callable[[T], T]) -> Self:
         """
@@ -121,7 +122,41 @@ class CommonBase[T](Pipeable, ABC):
         >>> Wrapper(5).pipe_chain(lambda x: x + 2, lambda x: x * 3, lambda x: x - 4)
         17
         """
-        return self._new(cz.functoolz.pipe(self._data, *funcs))
+        return self._new(cz.functoolz.pipe, *funcs)
+
+
+class IterWrapper[T](CommonBase[Iterable[T]]):
+    """
+    A generic Wrapper for iterable types.
+    The pipe into method is implemented to return an IterWrapper of the result type.
+
+    This class is intended for use with other types/implementations that do not support the fluent/functional style.
+    This allow the use of a consistent code style across the code base.
+    """
+
+    _data: Iterable[T]
+
+    def pipe_into[**P, R](
+        self,
+        func: Callable[Concatenate[Iterable[T], P], Iterable[R]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Iter[R]:
+        """
+        Apply a function to the underlying iterable and return a new Iter.
+
+        >>> from pychain import Iter
+        >>> from collections.abc import Iterable
+        >>>
+        >>> def double_values(iterable: Iterable[int]) -> Iterable[int]:
+        ...     return (i * 2 for i in iterable)
+        >>>
+        >>> Iter.from_range(0, 5).pipe_into(double_values).into(list)
+        [0, 2, 4, 6, 8]
+        """
+        from .._iter import Iter
+
+        return Iter(func(self._data, *args, **kwargs))
 
 
 class Wrapper[T](CommonBase[T]):
@@ -154,7 +189,9 @@ class Wrapper[T](CommonBase[T]):
         """
         Convert the wrapped data to an Iter wrapper.
         """
-        return iter_factory(self._data)
+        from .._iter import Iter
+
+        return Iter(self._data)
 
     def to_dict[KU, VU](self: Wrapper[dict[KU, VU]]) -> Dict[KU, VU]:
         """
@@ -167,16 +204,6 @@ class Wrapper[T](CommonBase[T]):
             >>> pc.Wrapper(data).to_dict().unwrap()
             {1: 'a', 2: 'b'}
         """
-        return dict_factory(self._data)
+        from .._dict import Dict
 
-
-def iter_factory[T](data: Iterable[T]) -> Iter[T]:
-    from .._iter import Iter
-
-    return Iter(data)
-
-
-def dict_factory[K, V](data: dict[K, V]) -> Dict[K, V]:
-    from .._dict import Dict
-
-    return Dict(data)
+        return Dict(self._data)

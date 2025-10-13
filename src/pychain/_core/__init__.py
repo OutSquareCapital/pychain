@@ -1,4 +1,4 @@
-from ._main import CommonBase, Pipeable, Wrapper, dict_factory, iter_factory
+from ._main import CommonBase, IterWrapper, Pipeable, Wrapper
 from ._protocols import (
     Peeked,
     Pluckable,
@@ -9,8 +9,7 @@ from ._protocols import (
 
 __all__ = [
     "CommonBase",
-    "dict_factory",
-    "iter_factory",
+    "IterWrapper",
     "Pipeable",
     "Wrapper",
     "SupportsAllComparisons",

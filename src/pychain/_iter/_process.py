@@ -6,12 +6,11 @@ from typing import Any, Self
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase, Peeked
+from .._core import IterWrapper
+from . import funcs as fn
 
 
-class IterProcess[T](CommonBase[Iterable[T]]):
-    _data: Iterable[T]
-
+class IterProcess[T](IterWrapper[T]):
     def cycle(self) -> Self:
         """
         Repeat the sequence indefinitely.
@@ -26,7 +25,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             >>> Iter([1, 2]).cycle().head(5).into(list)
             [1, 2, 1, 2, 1]
         """
-        return self._new(itertools.cycle(self._data))
+        return self._new(itertools.cycle)
 
     def interpose(self, element: T) -> Self:
         """
@@ -36,7 +35,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             >>> Iter([1, 2]).interpose(0).into(list)
             [1, 0, 2]
         """
-        return self._new(cz.itertoolz.interpose(element, self._data))
+        return self._new(fn.interpose, element)
 
     def random_sample(
         self, probability: float, state: Random | int | None = None
@@ -48,7 +47,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             >>> len(Iterable(Iter([1, 2, 3]).random_sample(0.5)))  # doctest: +SKIP
             1
         """
-        return self._new(cz.itertoolz.random_sample(probability, self._data, state))
+        return self._new(fn.random_sample, probability, state)
 
     def accumulate(self, func: Callable[[T, T], T]) -> Self:
         """
@@ -58,7 +57,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             >>> Iter([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
             [1, 3, 6]
         """
-        return self._new(cz.itertoolz.accumulate(func, self._data))
+        return self._new(fn.accumulate, func)
 
     def insert_left(self, value: T) -> Self:
         """
@@ -68,7 +67,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             >>> Iter([2, 3]).insert_left(1).into(list)
             [1, 2, 3]
         """
-        return self._new(cz.itertoolz.cons(value, self._data))
+        return self._new(fn.insert_left, value)
 
     def peekn(self, n: int) -> Self:
         """¨
@@ -80,12 +79,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             [1, 2, 3]
         """
 
-        def _():
-            peeked = Peeked(*cz.itertoolz.peekn(n, self._data))
-            print(f"Peeked {n} values: {peeked.value}")
-            return peeked.sequence
-
-        return self._new(_())
+        return self._new(fn.peekn, n)
 
     def peek(self) -> Self:
         """
@@ -96,13 +90,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             Peeked value: 1
             [1, 2]
         """
-
-        def _():
-            peeked = Peeked(*cz.itertoolz.peek(self._data))
-            print(f"Peeked value: {peeked.value}")
-            return peeked.sequence
-
-        return self._new(_())
+        return self._new(fn.peek)
 
     def merge_sorted(
         self, *others: Iterable[T], sort_on: Callable[[T], Any] | None = None
@@ -114,7 +102,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             >>> Iter([1, 3]).merge_sorted([2, 4]).into(list)
             [1, 2, 3, 4]
         """
-        return self._new(cz.itertoolz.merge_sorted(self._data, *others, key=sort_on))
+        return self._new(cz.itertoolz.merge_sorted, *others, key=sort_on)
 
     def interleave(self, *others: Iterable[T]) -> Self:
         """
@@ -124,7 +112,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             >>> Iter([1, 2]).interleave([3, 4]).into(list)
             [1, 3, 2, 4]
         """
-        return self._new(cz.itertoolz.interleave((self._data, *others)))
+        return self._new(fn.interleave, *others)
 
     def concat(self, *others: Iterable[T]) -> Self:
         """
@@ -136,7 +124,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
             >>> Iter([1, 2]).concat([3, 4], [5]).into(list)
             [1, 2, 3, 4, 5]
         """
-        return self._new(itertools.chain.from_iterable((self._data, *others)))
+        return self._new(fn.concat, *others)
 
     def elements(self) -> Self:
         """
@@ -156,9 +144,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         number, elements() will ignore it.
 
         """
-        from collections import Counter
-
-        return self._new(Counter(self._data).elements())
+        return self._new(fn.elements)
 
     def reverse(self) -> Self:
         """
@@ -172,7 +158,7 @@ class IterProcess[T](CommonBase[Iterable[T]]):
 
         The result is a new iterable over the reversed sequence.
         """
-        return self._new(reversed(list(self._data)))
+        return self._new(fn.reverse)
 
     def is_strictly_n(
         self,
@@ -228,4 +214,4 @@ class IterProcess[T](CommonBase[Iterable[T]]):
         The boss is going to hear about this
         ['a', 'b', 'c', 'd']
         """
-        return self._new(mit.strictly_n(self._data, n, too_short, too_long))
+        return self._new(mit.strictly_n, n, too_short, too_long)

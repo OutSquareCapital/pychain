@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import itertools
 from collections.abc import Callable, Iterable, Iterator
-from typing import Any, Concatenate, overload
+from typing import Any, overload
 
 import cytoolz as cz
 import more_itertools as mit
 
 from .._core import Pluckable, SupportsRichComparison
+from . import funcs as fn
 from ._aggregations import IterAgg
 from ._booleans import IterBool
 from ._constructors import IterConstructors
@@ -42,28 +43,7 @@ class Iter[T](
     It can be constructed from any iterable, including `lists`, `tuples`, `sets`, and `generators`.
     """
 
-    _data: Iterable[T]
     __slots__ = ("_data",)
-
-    def pipe_into[**P, R](
-        self,
-        func: Callable[Concatenate[Iterable[T], P], Iterable[R]],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Iter[R]:
-        """
-        Apply a function to the underlying iterable and return a new Iter.
-
-        >>> from pychain import Iter
-        >>> from collections.abc import Iterable
-        >>>
-        >>> def double_values(iterable: Iterable[int]) -> Iterable[int]:
-        ...     return (i * 2 for i in iterable)
-        >>>
-        >>> Iter.from_range(0, 5).pipe_into(double_values).into(list)
-        [0, 2, 4, 6, 8]
-        """
-        return Iter(func(self._data, *args, **kwargs))
 
     def pluck[K, V](self: Iter[Pluckable[K, V]], key: K) -> Iter[V]:
         """
@@ -143,7 +123,7 @@ class Iter[T](
         >>> Iter([1, 2]).repeat(2).into(list)
         [[1, 2], [1, 2]]
         """
-        return Iter(itertools.repeat(self._data, n))
+        return self.pipe_into(itertools.repeat, n)
 
     @overload
     def repeat_last(self, default: T) -> Iter[T]: ...
@@ -161,7 +141,7 @@ class Iter[T](
         >>> Iter.from_range(0, 0).repeat_last(42).head(5).into(list)
         [42, 42, 42, 42, 42]
         """
-        return Iter(mit.repeat_last(self._data, default))
+        return self.pipe_into(mit.repeat_last, default)
 
     @overload
     def flatten[U](
@@ -178,7 +158,7 @@ class Iter[T](
         >>> Iter([[1, 2], [3]]).flatten().into(list)
         [1, 2, 3]
         """
-        return Iter(itertools.chain.from_iterable(self._data))
+        return self.pipe_into(itertools.chain.from_iterable)
 
     def ichunked(self, n: int) -> Iter[Iterator[T]]:
         """
@@ -204,7 +184,7 @@ class Iter[T](
         >>> list(c_3)
         [8, 9, 10, 11]
         """
-        return Iter(mit.ichunked(self._data, n))
+        return self.pipe_into(mit.ichunked, n)
 
     def sort[U: SupportsRichComparison[Any]](
         self: Iter[U],
@@ -218,7 +198,7 @@ class Iter[T](
         >>> Iter([3, 1, 2]).sort().into(list)
         [1, 2, 3]
         >>> data = Iter([{"age": 30}, {"age": 20}])
-        >>> data.sort(key=lambda x: x["age"]).into(list)
+        >>> data.sort(key=lambda x: x["age"])
         [{'age': 20}, {'age': 30}]
         """
-        return self._new(sorted(self._data, key=key, reverse=reverse))
+        return self._new(fn.sorted_, key, reverse)

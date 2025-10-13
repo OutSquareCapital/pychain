@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 import cytoolz as cz
 
-from .._core import CommonBase, dict_factory
+from .._core import IterWrapper
 
 if TYPE_CHECKING:
     from .._dict import Dict
 
 
-class IterDicts[T](CommonBase[Iterable[T]]):
+class IterDicts[T](IterWrapper[T]):
     def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
         """
         Group elements by key function and return a Dict result.
@@ -56,7 +56,9 @@ class IterDicts[T](CommonBase[Iterable[T]]):
             'M', list: [{'name': 'Bob', 'gender': 'M'}, {'name': 'Charlie', 'gender': 'M'}],
         )
         """
-        return dict_factory(cz.itertoolz.groupby(on, self._data))
+        from .._dict import Dict
+
+        return Dict(cz.itertoolz.groupby(on, self._data))
 
     def frequencies(self) -> Dict[T, int]:
         """
@@ -66,7 +68,9 @@ class IterDicts[T](CommonBase[Iterable[T]]):
         >>> Iter(["cat", "cat", "ox", "pig", "pig", "cat"]).frequencies().unwrap()
         {'cat': 3, 'ox': 1, 'pig': 2}
         """
-        return dict_factory(cz.itertoolz.frequencies(self._data))
+        from .._dict import Dict
+
+        return Dict(cz.itertoolz.frequencies(self._data))
 
     def count_by[K](self, key: Callable[[T], K]) -> Dict[K, int]:
         """
@@ -80,4 +84,6 @@ class IterDicts[T](CommonBase[Iterable[T]]):
         >>> Iter([1, 2, 3]).count_by(iseven).unwrap()
         {False: 2, True: 1}
         """
-        return dict_factory(cz.recipes.countby(key, self._data))
+        from .._dict import Dict
+
+        return Dict(cz.recipes.countby(key, self._data))

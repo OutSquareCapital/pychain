@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
-from .._core import SupportsKeysAndGetItem, dict_factory
+from .._core import SupportsKeysAndGetItem
 
 if TYPE_CHECKING:
     from ._main import Dict
@@ -21,7 +21,9 @@ class DictConstructors:
         >>> Dict.from_zip([1, 2], ["a", "b"]).unwrap()
         {1: 'a', 2: 'b'}
         """
-        return dict_factory(dict(zip(keys, values)))
+        from ._main import Dict
+
+        return Dict(dict(zip(keys, values)))
 
     @staticmethod
     def from_object(obj: object) -> Dict[str, Any]:
@@ -37,7 +39,9 @@ class DictConstructors:
         >>> Dict.from_object(A()).unwrap()
         {'x': 1, 'y': 2}
         """
-        return dict_factory(obj.__dict__)
+        from ._main import Dict
+
+        return Dict(obj.__dict__)
 
     @staticmethod
     def from_[K, V](data: SupportsKeysAndGetItem[K, V]) -> Dict[K, V]:
@@ -57,4 +61,6 @@ class DictConstructors:
         >>> Dict.from_(td).unwrap()
         {'a': 1, 'b': 'x'}
         """
-        return dict_factory(dict(data))
+        from ._main import Dict
+
+        return Dict(dict(data))
