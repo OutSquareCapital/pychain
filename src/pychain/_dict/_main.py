@@ -6,10 +6,9 @@ from typing import Concatenate
 from . import funcs as fn
 from ._constructors import DictConstructors
 from ._core import CoreDict
-from ._filters import DictFilters
 
 
-class Dict[K, V](CoreDict[K, V], DictFilters[K, V], DictConstructors):
+class Dict[K, V](CoreDict[K, V], DictConstructors):
     """
     Wrapper for Python dictionaries with chainable methods.
     """
