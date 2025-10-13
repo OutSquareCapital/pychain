@@ -212,7 +212,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
             else:
                 return type(node).__name__
 
-        return self.pipe_into(lambda data: _recurse_schema(data, 0))
+        return self.apply(lambda data: _recurse_schema(data, 0))
 
     def filter_keys(self, predicate: Callable[[K], bool]) -> Self:
         """

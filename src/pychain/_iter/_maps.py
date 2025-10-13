@@ -22,7 +22,7 @@ class IterMap[T](IterWrapper[T]):
         >>> Iter([1, 2]).map(lambda x: x + 1).into(list)
         [2, 3]
         """
-        return self.pipe_into(partial(map, func))
+        return self.apply(partial(map, func))
 
     def map_star[U: Iterable[Any], R](
         self: IterMap[U], func: Callable[[Iterable[Any]], R]
@@ -42,7 +42,7 @@ class IterMap[T](IterWrapper[T]):
         >>> Iter(["blue", "red"]).product(["S", "M"]).map_star(make_sku).into(list)
         ['blue-S', 'blue-M', 'red-S', 'red-M']
         """
-        return self.pipe_into(partial(itertools.starmap, func))
+        return self.apply(partial(itertools.starmap, func))
 
     def map_if[R](
         self,
@@ -72,7 +72,7 @@ class IterMap[T](IterWrapper[T]):
         ... ).into(list)
         [None, None, None, None, None, '0.00', '1.00', '1.41', '1.73', '2.00']
         """
-        return self.pipe_into(mit.map_if, predicate, func, func_else=func_else)
+        return self.apply(mit.map_if, predicate, func, func_else=func_else)
 
     def map_except[R](
         self, func: Callable[[T], R], *exceptions: type[BaseException]
@@ -90,4 +90,4 @@ class IterMap[T](IterWrapper[T]):
         >>> Iter(iterable).map_except(int, ValueError, TypeError).into(list)
         [1, 2, 4]
         """
-        return self.pipe_into(lambda data: mit.map_except(func, data, *exceptions))
+        return self.apply(lambda data: mit.map_except(func, data, *exceptions))

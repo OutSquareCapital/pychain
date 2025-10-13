@@ -54,7 +54,7 @@ class Iter[T](
         >>> Iter([[10, 20], [30, 40]]).pluck(0).into(list)
         [10, 30]
         """
-        return self.pipe_into(partial(cz.itertoolz.pluck, key))
+        return self.apply(partial(cz.itertoolz.pluck, key))
 
     def reduce_by[K](
         self,
@@ -113,9 +113,7 @@ class Iter[T](
         {False: {1, 3}, True: {2, 4}}
         """
 
-        return self.pipe_into(
-            lambda data: cz.itertoolz.reduceby(key, binop, data, init)
-        )
+        return self.apply(lambda data: cz.itertoolz.reduceby(key, binop, data, init))
 
     def repeat(self, n: int) -> Iter[Iterable[T]]:
         """
@@ -124,7 +122,7 @@ class Iter[T](
         >>> Iter([1, 2]).repeat(2).into(list)
         [[1, 2], [1, 2]]
         """
-        return self.pipe_into(itertools.repeat, n)
+        return self.apply(itertools.repeat, n)
 
     @overload
     def repeat_last(self, default: T) -> Iter[T]: ...
@@ -142,7 +140,7 @@ class Iter[T](
         >>> Iter.from_range(0, 0).repeat_last(42).head(5).into(list)
         [42, 42, 42, 42, 42]
         """
-        return self.pipe_into(mit.repeat_last, default)
+        return self.apply(mit.repeat_last, default)
 
     @overload
     def explode[U](
@@ -159,7 +157,7 @@ class Iter[T](
         >>> Iter([[1, 2], [3]]).explode().into(list)
         [1, 2, 3]
         """
-        return self.pipe_into(itertools.chain.from_iterable)
+        return self.apply(itertools.chain.from_iterable)
 
     def ichunked(self, n: int) -> Iter[Iterator[T]]:
         """
@@ -185,7 +183,7 @@ class Iter[T](
         >>> list(c_3)
         [8, 9, 10, 11]
         """
-        return self.pipe_into(mit.ichunked, n)
+        return self.apply(mit.ichunked, n)
 
     def sort[U: SupportsRichComparison[Any]](
         self: Iter[U], reverse: bool = False

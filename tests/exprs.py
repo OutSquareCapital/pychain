@@ -1,0 +1,116 @@
+import unittest
+
+import pychain as pc
+
+
+class TestIterExprIntegration(unittest.TestCase):
+    """Tests for integration between Iter and Expr classes."""
+
+    def test_record_with_expr_transformations(self):
+        """Test using Expr to transform data in a Record."""
+        # Create test data
+        data = pc.Record(
+            {
+                "values": [1, 2, 3, 4, 5],
+                "names": ["Alice", "Bob", "Charlie", "Dave", "Eva"],
+                "active": [True, False, True, True, False],
+            }
+        )
+
+        # Use with_fields with expressions that use BaseProcess/BaseFilter methods
+        result = data.with_fields(
+            pc.key("values")
+            .filter(lambda x: x > 2)
+            .apply(list)
+            .alias("filtered_values"),
+            # Issue: filter_contain should look for 'a' or 'A', not case sensitive match
+            # Fix: We'll add a .apply method to ensure case-insensitive comparison
+            pc.key("names")
+            .filter(lambda name: "a" in name.lower())  # Fix: case-insensitive check
+            .apply(list)
+            .alias("names_with_a"),
+            pc.key("values").reverse().apply(list).alias("reversed_values"),
+            pc.key("values").slice(1, 4).apply(list).alias("sliced_values"),
+        ).unwrap()
+
+        # Verify results
+        self.assertEqual(result["filtered_values"], [3, 4, 5])
+        self.assertEqual(result["names_with_a"], ["Alice", "Charlie", "Dave", "Eva"])
+        self.assertEqual(result["reversed_values"], [5, 4, 3, 2, 1])
+        self.assertEqual(result["sliced_values"], [2, 3, 4])
+
+        # Original fields should still be present
+        self.assertEqual(result["values"], [1, 2, 3, 4, 5])
+        self.assertEqual(result["names"], ["Alice", "Bob", "Charlie", "Dave", "Eva"])
+        self.assertEqual(result["active"], [True, False, True, True, False])
+
+    def test_iter_and_expr_comparable_results(self):
+        """Test that Iter and Expr produce the same results for complex operations."""
+        test_data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+        # Using Iter
+        iter_result = (
+            pc.Iter(test_data)
+            .filter(lambda x: x % 2 == 0)  # Even numbers
+            .map(lambda x: x * 2)  # Double them
+            .accumulate(lambda a, b: a + b)  # Running sum
+            .into(list)
+        )
+
+        # Using Expr in a Record
+        record = pc.Record({"numbers": test_data})
+
+        expr_result = record.with_fields(
+            pc.key("numbers")
+            .filter(lambda x: x % 2 == 0)  # Even numbers
+            .apply(lambda x: [i * 2 for i in x])  # Double them
+            .accumulate(lambda a, b: a + b)  # Running sum
+            .apply(list)
+            .alias("result")
+        ).unwrap()["result"]
+
+        # Both should produce the same result
+        self.assertEqual(iter_result, expr_result)
+
+    def test_processing_nested_data(self):
+        """Test processing nested data with both Iter and Expr."""
+        data = {
+            "users": [
+                {"name": "Alice", "scores": [85, 90, 78]},
+                {"name": "Bob", "scores": [92, 88, 95]},
+                {"name": "Charlie", "scores": [75, 80, 65]},
+            ]
+        }
+
+        iter_result = (
+            pc.Iter(data["users"])
+            .filter(lambda user: sum(user["scores"]) / len(user["scores"]) >= 85)  # type: ignore
+            .map(lambda user: user["name"])
+            .into(list)
+        )
+        # Using Expr with the same logic
+        expr_result = (
+            pc.Record(data)
+            .with_fields(
+                pc.key("users")
+                # Make sure we're using the exact same calculation
+                .filter(lambda user: sum(user["scores"]) / len(user["scores"]) >= 85)
+                .apply(lambda users: [user["name"] for user in users])
+                .alias("high_scorers")
+            )
+            .unwrap()["high_scorers"]
+        )
+
+        # Both should produce the same result
+        self.assertEqual(iter_result, expr_result)
+        # Check if our expected result is correct based on the actual calculation
+        expected_result = [
+            user["name"]
+            for user in data["users"]
+            if sum(user["scores"]) / len(user["scores"]) >= 85  # type: ignore
+        ]
+        self.assertEqual(iter_result, expected_result)
+
+
+if __name__ == "__main__":
+    unittest.main()

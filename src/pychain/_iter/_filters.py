@@ -42,7 +42,7 @@ class IterFilter[T](BaseFilter[T]):
             >>> Iter([A, B, C]).filter_subclass(A).map(lambda c: c.__name__).into(list)
             ['A', 'B']
         """
-        return self.pipe_into(lambda data: (x for x in data if issubclass(x, parent)))
+        return self.apply(lambda data: (x for x in data if issubclass(x, parent)))
 
     def filter_type[R](self, typ: type[R]) -> Iter[R]:
         """
@@ -52,7 +52,7 @@ class IterFilter[T](BaseFilter[T]):
             >>> Iter([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
             [1, 5]
         """
-        return self.pipe_into(lambda data: (x for x in data if isinstance(x, typ)))
+        return self.apply(lambda data: (x for x in data if isinstance(x, typ)))
 
     def filter_callable(self) -> Iter[Callable[..., Any]]:
         """
@@ -62,7 +62,7 @@ class IterFilter[T](BaseFilter[T]):
         >>> Iter([len, 42, str, None, list]).filter_callable().into(list)
         [<built-in function len>, <class 'str'>, <class 'list'>]
         """
-        return self.pipe_into(lambda data: (x for x in data if callable(x)))
+        return self.apply(lambda data: (x for x in data if callable(x)))
 
     def filter_map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
@@ -75,4 +75,4 @@ class IterFilter[T](BaseFilter[T]):
         ... )
         [1, 2, 3]
         """
-        return self.pipe_into(partial(mit.filter_map, func))
+        return self.apply(partial(mit.filter_map, func))

@@ -64,7 +64,7 @@ class Expr(BaseFilter[Any], BaseProcess[Any]):
 
         return self._new(lambda x: func(Dict(x)))
 
-    def apply(self, func: Callable[[Any], Any]) -> Self:
+    def apply(self, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Self:
         return self._new(func)
 
     def add(self, value: Any) -> Self:

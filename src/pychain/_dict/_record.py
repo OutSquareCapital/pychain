@@ -8,7 +8,7 @@ from ._core import CoreDict
 
 
 class Record(CoreDict[str, Any]):
-    def pipe_into[**P](
+    def apply[**P](
         self,
         func: Callable[Concatenate[dict[str, Any], P], dict[str, Any]],
         *args: P.args,
@@ -22,10 +22,10 @@ class Record(CoreDict[str, Any]):
         >>> def mul_by_ten(d: dict[int, int]) -> dict[int, int]:
         ...     return {k: v * 10 for k, v in d.items()}
         >>>
-        >>> Record({1: 20, 2: 30}).pipe_into(mul_by_ten).unwrap()
+        >>> Record({1: 20, 2: 30}).apply(mul_by_ten).unwrap()
         {1: 200, 2: 300}
         """
-        return super().pipe_into(func, *args, **kwargs)
+        return super().apply(func, *args, **kwargs)
 
     def _from_context(self, plan: Iterable[IntoExpr], is_selection: bool) -> Self:
         def _(data: dict[str, Any]) -> dict[str, Any]:

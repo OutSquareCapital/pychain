@@ -87,7 +87,7 @@ class CommonBase[T](ABC):
         """
         return func(self.unwrap(), *args, **kwargs)
 
-    def pipe_into[**P](
+    def apply[**P](
         self,
         func: Callable[Concatenate[T, P], Any],
         *args: P.args,
@@ -100,7 +100,7 @@ class CommonBase[T](ABC):
         underlying data and return a new wrapped instance of the same subclass.
 
             >>> from pychain import Iter
-            >>> Iter.from_range(0, 5).pipe_into(tuple).unwrap()
+            >>> Iter.from_range(0, 5).apply(tuple).unwrap()
             (0, 1, 2, 3, 4)
 
         Use this to keep the chainable API after applying a transformation to the data.
@@ -111,7 +111,7 @@ class CommonBase[T](ABC):
         """
         Pipe a value through a sequence of functions.
 
-        Prefer this method over multiple pipe_into calls when the functions don't transform the underlying type.
+        Prefer this method over multiple apply calls when the functions don't transform the underlying type.
 
         I.e. Wrapper(data).pipe_chain(f, g, h).unwrap() is equivalent to h(g(f(data)))
 
@@ -122,37 +122,7 @@ class CommonBase[T](ABC):
 
 
 class IterWrapper[T](CommonBase[Iterable[T]]):
-    """
-    A generic Wrapper for iterable types.
-    The pipe into method is implemented to return an IterWrapper of the result type.
-
-    This class is intended for use with other types/implementations that do not support the fluent/functional style.
-    This allow the use of a consistent code style across the code base.
-    """
-
     _data: Iterable[T]
-
-    def pipe_into[**P, R](
-        self,
-        func: Callable[Concatenate[Iterable[T], P], Iterable[R]],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Iter[R]:
-        """
-        Apply a function to the underlying iterable and return a new Iter.
-
-        >>> from pychain import Iter
-        >>> from collections.abc import Iterable
-        >>>
-        >>> def double_values(iterable: Iterable[int]) -> Iterable[int]:
-        ...     return (i * 2 for i in iterable)
-        >>>
-        >>> Iter.from_range(0, 5).pipe_into(double_values).into(list)
-        [0, 2, 4, 6, 8]
-        """
-        from .._iter import Iter
-
-        return Iter(func(self.unwrap(), *args, **kwargs))
 
 
 class Wrapper[T](CommonBase[T]):
@@ -164,7 +134,7 @@ class Wrapper[T](CommonBase[T]):
     This allow the use of a consistent code style across the code base.
     """
 
-    def pipe_into[**P, R](
+    def apply[**P, R](
         self,
         func: Callable[Concatenate[T, P], R],
         *args: P.args,

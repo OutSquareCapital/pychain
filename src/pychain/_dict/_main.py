@@ -15,7 +15,7 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
     Wrapper for Python dictionaries with chainable methods.
     """
 
-    def pipe_into[**P, KU, VU](
+    def apply[**P, KU, VU](
         self,
         func: Callable[Concatenate[dict[K, V], P], dict[KU, VU]],
         *args: P.args,
@@ -29,10 +29,10 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         >>> def mul_by_ten(d: dict[int, int]) -> dict[int, int]:
         ...     return {k: v * 10 for k, v in d.items()}
         >>>
-        >>> Dict({1: 20, 2: 30}).pipe_into(mul_by_ten).unwrap()
+        >>> Dict({1: 20, 2: 30}).apply(mul_by_ten).unwrap()
         {1: 200, 2: 300}
         """
-        return super().pipe_into(func, *args, **kwargs)
+        return super().apply(func, *args, **kwargs)
 
     def implode(self) -> Dict[K, Iterable[V]]:
         """
@@ -54,7 +54,7 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         >>> Dict({1: "a"}).map_keys(str).unwrap()
         {'1': 'a'}
         """
-        return self.pipe_into(partial(cz.dicttoolz.keymap, func))
+        return self.apply(partial(cz.dicttoolz.keymap, func))
 
     def map_values[T](self, func: Callable[[V], T]) -> Dict[K, T]:
         """
@@ -66,7 +66,7 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         >>> Dict({1: 1}).map_values(lambda v: v + 1).unwrap()
         {1: 2}
         """
-        return self.pipe_into(partial(cz.dicttoolz.valmap, func))
+        return self.apply(partial(cz.dicttoolz.valmap, func))
 
     def map_items[KR, VR](
         self,
@@ -80,7 +80,7 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         ... ).unwrap()
         {'ALICE': 20, 'BOB': 40}
         """
-        return self.pipe_into(partial(cz.dicttoolz.itemmap, func))
+        return self.apply(partial(cz.dicttoolz.itemmap, func))
 
     def reverse(self) -> Dict[V, K]:
         """
@@ -91,7 +91,7 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         >>> Dict({"a": 1, "b": 2}).reverse().unwrap()
         {1: 'a', 2: 'b'}
         """
-        return self.pipe_into(partial(cz.dicttoolz.itemmap, reversed))
+        return self.apply(partial(cz.dicttoolz.itemmap, reversed))
 
     def map_kv[KR, VR](
         self,
@@ -103,7 +103,7 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         >>> Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).unwrap()
         {2: 20}
         """
-        return self.pipe_into(
+        return self.apply(
             lambda data: cz.dicttoolz.itemmap(lambda kv: func(kv[0], kv[1]), data)
         )
 
@@ -130,4 +130,4 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
                     diffs[key] = (self_val, other_val)
             return diffs
 
-        return self.pipe_into(_)
+        return self.apply(_)
