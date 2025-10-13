@@ -15,7 +15,7 @@ class IterBool[T](IterWrapper[T]):
             >>> Iter([1]).is_not_empty()
             True
         """
-        return True if self._data else False
+        return self.into(lambda data: True if data else False)
 
     def is_empty(self) -> bool:
         """
@@ -25,7 +25,7 @@ class IterBool[T](IterWrapper[T]):
             >>> Iter([]).is_empty()
             True
         """
-        return False if self._data else True
+        return self.into(lambda data: False if data else True)
 
     def is_distinct(self) -> bool:
         """
@@ -35,7 +35,7 @@ class IterBool[T](IterWrapper[T]):
             >>> Iter([1, 2]).is_distinct()
             True
         """
-        return cz.itertoolz.isdistinct(self._data)
+        return self.into(cz.itertoolz.isdistinct)
 
     def all(self) -> bool:
         """
@@ -45,7 +45,7 @@ class IterBool[T](IterWrapper[T]):
             >>> Iter([1, True]).all()
             True
         """
-        return all(self._data)
+        return self.into(all)
 
     def any(self) -> bool:
         """
@@ -55,7 +55,7 @@ class IterBool[T](IterWrapper[T]):
             >>> Iter([0, 1]).any()
             True
         """
-        return any(self._data)
+        return self.into(any)
 
     def all_equal[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
@@ -65,7 +65,7 @@ class IterBool[T](IterWrapper[T]):
             >>> Iter([1, 1, 1]).all_equal()
             True
         """
-        return mit.all_equal(self._data, key=key)
+        return self.into(mit.all_equal, key=key)
 
     def all_unique[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
@@ -87,7 +87,7 @@ class IterBool[T](IterWrapper[T]):
         Iterables with a mix of hashable and unhashable items can be used, but the function will be slower for unhashable items
 
         """
-        return mit.all_unique(self._data, key=key)
+        return self.into(mit.all_unique, key=key)
 
     def is_sorted[U](
         self,
@@ -119,4 +119,4 @@ class IterBool[T](IterWrapper[T]):
 
         If there are no out-of-order items, the iterable is exhausted.
         """
-        return mit.is_sorted(self._data, key=key, reverse=reverse, strict=strict)
+        return self.into(mit.is_sorted, key=key, reverse=reverse, strict=strict)

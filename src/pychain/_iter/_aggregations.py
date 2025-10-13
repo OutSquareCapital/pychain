@@ -24,7 +24,7 @@ class IterAgg[T](IterWrapper[T]):
             >>> Iter([1, 2, 3]).reduce(lambda a, b: a + b)
             6
         """
-        return functools.reduce(func, self._data)
+        return self.into(functools.partial(functools.reduce, func))
 
     def combination_index(self, r: Iterable[T]) -> int:
         """
@@ -40,7 +40,7 @@ class IterAgg[T](IterWrapper[T]):
 
         ValueError will be raised if the given element isn't one of the combinations of iterable.
         """
-        return mit.combination_index(r, self._data)
+        return self.into(functools.partial(mit.combination_index, r))
 
     def first(self) -> T:
         """
@@ -50,7 +50,7 @@ class IterAgg[T](IterWrapper[T]):
             >>> Iter([9]).first()
             9
         """
-        return cz.itertoolz.first(self._data)
+        return self.into(cz.itertoolz.first)
 
     def second(self) -> T:
         """
@@ -60,7 +60,7 @@ class IterAgg[T](IterWrapper[T]):
             >>> Iter([9, 8]).second()
             8
         """
-        return cz.itertoolz.second(self._data)
+        return self.into(cz.itertoolz.second)
 
     def last(self) -> T:
         """
@@ -70,7 +70,7 @@ class IterAgg[T](IterWrapper[T]):
             >>> Iter([7, 8, 9]).last()
             9
         """
-        return cz.itertoolz.last(self._data)
+        return self.into(cz.itertoolz.last)
 
     def length(self) -> int:
         """
@@ -81,7 +81,7 @@ class IterAgg[T](IterWrapper[T]):
             >>> Iter([1, 2]).length()
             2
         """
-        return cz.itertoolz.count(self._data)
+        return self.into(cz.itertoolz.count)
 
     def item(self, index: int) -> T:
         """
@@ -91,7 +91,7 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([10, 20]).item(1)
         20
         """
-        return cz.itertoolz.nth(index, self._data)
+        return self.into(functools.partial(cz.itertoolz.nth, index))
 
     def argmax[U](self, key: Callable[[T], U] | None = None) -> int:
         """
@@ -115,7 +115,7 @@ class IterAgg[T](IterWrapper[T]):
         >>> accuracy.max()
         84
         """
-        return mit.argmax(self._data, key=key)
+        return self.into(mit.argmax, key=key)
 
     def argmin[U](self, key: Callable[[T], U] | None = None) -> int:
         """
@@ -143,7 +143,7 @@ class IterAgg[T](IterWrapper[T]):
         >>> ages.min(key=cost)
         10
         """
-        return mit.argmin(self._data, key=key)
+        return self.into(mit.argmin, key=key)
 
     @overload
     def sum(self: IterWrapper[int]) -> int: ...
@@ -158,7 +158,7 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([1, 2, 3]).sum()
         6
         """
-        return sum(self._data)
+        return self.into(sum)
 
     def min[U: int | float](
         self: IterWrapper[U],
@@ -194,7 +194,7 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([1, 2, 3]).mean()
         2
         """
-        return statistics.mean(self._data)
+        return self.into(statistics.mean)
 
     def median[U: int | float](self: IterWrapper[U]) -> float:
         """
@@ -204,7 +204,7 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([1, 3, 2]).median()
         2
         """
-        return statistics.median(self._data)
+        return self.into(statistics.median)
 
     def mode[U: int | float](self: IterWrapper[U]) -> U:
         """
@@ -214,7 +214,7 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([1, 2, 2, 3]).mode()
         2
         """
-        return statistics.mode(self._data)
+        return self.into(statistics.mode)
 
     def stdev[U: int | float](
         self: IterWrapper[U],
@@ -226,7 +226,7 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([1, 2, 3]).stdev()
         1.0
         """
-        return statistics.stdev(self._data)
+        return self.into(statistics.stdev)
 
     def variance[U: int | float](
         self: IterWrapper[U],
@@ -238,4 +238,4 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([1, 2, 3, 7, 8]).variance()
         9.7
         """
-        return statistics.variance(self._data)
+        return self.into(statistics.variance)
