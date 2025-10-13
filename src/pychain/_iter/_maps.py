@@ -1,21 +1,20 @@
 from __future__ import annotations
 
+import itertools
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, Concatenate
+from functools import partial
+from typing import TYPE_CHECKING, Any
 
 import more_itertools as mit
 
 from .._core import IterWrapper
-from . import funcs as fn
 
 if TYPE_CHECKING:
     from ._main import Iter
 
 
 class IterMap[T](IterWrapper[T]):
-    def map[**P, R](
-        self, func: Callable[Concatenate[T, P], R], *args: P.args, **kwargs: P.kwargs
-    ) -> Iter[R]:
+    def map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
         Map each element through func and return a Iter of results.
 
@@ -23,10 +22,10 @@ class IterMap[T](IterWrapper[T]):
         >>> Iter([1, 2]).map(lambda x: x + 1).into(list)
         [2, 3]
         """
-        return self.pipe_into(fn.map_, func, *args, **kwargs)
+        return self.pipe_into(partial(map, func))
 
     def map_star[U: Iterable[Any], R](
-        self: IterMap[U], func: Callable[..., R]
+        self: IterMap[U], func: Callable[[Iterable[Any]], R]
     ) -> Iter[R]:
         """
         Applies a function to each element, where each element is an iterable.
@@ -43,48 +42,7 @@ class IterMap[T](IterWrapper[T]):
         >>> Iter(["blue", "red"]).product(["S", "M"]).map_star(make_sku).into(list)
         ['blue-S', 'blue-M', 'red-S', 'red-M']
         """
-        return self.pipe_into(fn.starmap_, func)
-
-    def map_flat[R, **P](
-        self,
-        func: Callable[Concatenate[T, P], Iterable[R]],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Iter[R]:
-        """
-        Maps a function over a sequence and flattens the result by one level.
-        It applies a function to each element, where the function must return
-        an iterable. The resulting iterables are then chained together into a
-        single, "flat" sequence.
-        It's an efficient shortcut for `.map(func).flatten()`.
-
-        >>> from pychain import Iter
-        >>> # For each author, get a list of their books.
-        >>> authors = Iter(["author_A", "author_B"])
-        >>> def get_books(author_id):
-        ...     # This could be an API call that returns a list of books
-        ...     return [f"{author_id}_book1", f"{author_id}_book2"]
-        >>>
-        >>> authors.map_flat(get_books).into(list)
-        ['author_A_book1', 'author_A_book2', 'author_B_book1', 'author_B_book2']
-        """
-        return self.pipe_into(fn.map_flat, func, *args, **kwargs)
-
-    def map_join[R](
-        self,
-        *others: Iterable[T],
-        func: Callable[[T], R],
-    ) -> Iter[R]:
-        """
-        Equivalent to map, but allow to join other iterables.
-
-        However, it don't take additional arguments for the function.
-
-        >>> from pychain import Iter
-        >>> Iter(["a", "b"]).map_join(["c", "d", "e"], func=str.upper).into(list)
-        ['A', 'B', 'C', 'D', 'E']
-        """
-        return self.pipe_into(fn.map_join, others, func)
+        return self.pipe_into(partial(itertools.starmap, func))
 
     def map_if[R](
         self,
@@ -132,4 +90,4 @@ class IterMap[T](IterWrapper[T]):
         >>> Iter(iterable).map_except(int, ValueError, TypeError).into(list)
         [1, 2, 4]
         """
-        return self.pipe_into(fn.map_except, func, *exceptions)
+        return self.pipe_into(lambda data: mit.map_except(func, data, *exceptions))

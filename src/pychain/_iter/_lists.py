@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import more_itertools as mit
 
 from .._core import IterWrapper
-from . import funcs as fn
 
 if TYPE_CHECKING:
     from ._main import Iter
@@ -16,8 +15,14 @@ class IterList[T](IterWrapper[T]):
     def implode(self) -> Iter[list[T]]:
         """
         Wrap each element in the iterable into a list.
+
+        Syntactic sugar for `Iter.map(lambda x: [x])`.
+
+        >>> from pychain import Iter
+        >>> Iter.from_range(0, 5).implode().into(list)
+        [[0], [1], [2], [3], [4]]
         """
-        return self.pipe_into(fn.map_, lambda x: [x])
+        return self.pipe_into(lambda data: ([x] for x in data))
 
     def split_at(
         self,

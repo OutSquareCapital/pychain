@@ -10,8 +10,6 @@ from .._core import IterWrapper, SupportsRichComparison
 
 
 class IterAgg[T](IterWrapper[T]):
-    _data: Iterable[T]
-
     def reduce(self, func: Callable[[T, T], T]) -> T:
         """
         Apply a function of two arguments cumulatively to the items of an iterable, from left to right.

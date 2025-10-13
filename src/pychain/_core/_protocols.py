@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Sized
 from typing import Any, NamedTuple, Protocol
 
 
@@ -42,3 +42,6 @@ class SupportsAllComparisons(
 
 
 type SupportsRichComparison[T] = SupportsDunderLT[T] | SupportsDunderGT[T]
+
+
+class SizedIterable[T](Sized, Iterable[T]): ...

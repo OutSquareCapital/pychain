@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
+from functools import partial
 from typing import Concatenate
 
-from . import funcs as fn
+import cytoolz as cz
+
 from ._constructors import DictConstructors
 from ._core import CoreDict
 
@@ -54,7 +56,7 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         >>> Dict({1: "a"}).map_keys(str).unwrap()
         {'1': 'a'}
         """
-        return self.pipe_into(fn.map_keys, func)
+        return self.pipe_into(partial(cz.dicttoolz.keymap, func))
 
     def map_values[T](self, func: Callable[[V], T]) -> Dict[K, T]:
         """
@@ -66,7 +68,7 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         >>> Dict({1: 1}).map_values(lambda v: v + 1).unwrap()
         {1: 2}
         """
-        return self.pipe_into(fn.map_values, func)
+        return self.pipe_into(partial(cz.dicttoolz.valmap, func))
 
     def map_items[KR, VR](
         self,
@@ -80,7 +82,7 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         ... ).unwrap()
         {'ALICE': 20, 'BOB': 40}
         """
-        return self.pipe_into(fn.map_items, func)
+        return self.pipe_into(partial(cz.dicttoolz.itemmap, func))
 
     def reverse(self) -> Dict[V, K]:
         """
@@ -91,18 +93,7 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         >>> Dict({"a": 1, "b": 2}).reverse().unwrap()
         {1: 'a', 2: 'b'}
         """
-        return self.pipe_into(fn.reverse)
-
-    def flip(self) -> Dict[V, list[K]]:
-        """
-        Return a new Dict with keys and values swapped, grouping original keys in a list if values are not unique.
-
-        Values in the original dict must be hashable.
-
-        >>> Dict({"a": 1, "b": 2, "c": 1}).flip().unwrap()
-        {1: ['a', 'c'], 2: ['b']}
-        """
-        return self.pipe_into(fn.flip_item)
+        return self.pipe_into(partial(cz.dicttoolz.itemmap, reversed))
 
     def map_kv[KR, VR](
         self,
@@ -114,7 +105,9 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         >>> Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).unwrap()
         {2: 20}
         """
-        return self.pipe_into(fn.map_kv, func)
+        return self.pipe_into(
+            lambda data: cz.dicttoolz.itemmap(lambda kv: func(kv[0], kv[1]), data)
+        )
 
     def diff(self, other: dict[K, V]) -> Dict[K, tuple[V | None, V | None]]:
         """
@@ -128,19 +121,15 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
         >>> Dict(d1).diff(d2).sort().unwrap()
         {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
         """
-        return self.pipe_into(fn.diff, other)
 
-    def join_mappings(
-        self,
-        main_name: str = "main",
-        **field_to_map: dict[K, V],
-    ) -> Dict[K, dict[str, V]]:
-        """
-        Join multiple mappings into a single mapping of mappings.
-        Each key in the resulting dict maps to a dict containing values from the original dict and the additional mappings, keyed by their respective names.
-        >>> Dict({"a": 1, "b": 2}).join_mappings(
-        ...     main_name="score", time={"a": 10, "b": 20}
-        ... ).unwrap()
-        {'a': {'score': 1, 'time': 10}, 'b': {'score': 2, 'time': 20}}
-        """
-        return self.pipe_into(fn.join_mapping, main_name, **field_to_map)
+        def _(data: dict[K, V]) -> dict[K, tuple[V | None, V | None]]:
+            all_keys: set[K] = data.keys() | other.keys()
+            diffs: dict[K, tuple[V | None, V | None]] = {}
+            for key in all_keys:
+                self_val = data.get(key)
+                other_val = other.get(key)
+                if self_val != other_val:
+                    diffs[key] = (self_val, other_val)
+            return diffs
+
+        return self.pipe_into(_)

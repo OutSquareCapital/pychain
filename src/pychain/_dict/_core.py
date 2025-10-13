@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
+from functools import partial
 from typing import TYPE_CHECKING, Any, Self
 
 import cytoolz as cz
 
 from .._core import CommonBase
-from . import funcs as fn
 
 if TYPE_CHECKING:
     from .._iter import Iter
@@ -86,7 +86,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict(d).rename(mapping).unwrap()
         {'a': 1, 'beta': 2, 'gamma': 3}
         """
-        return self._new(fn.rename, mapping)
+        return self._new(lambda data: {mapping.get(k, k): v for k, v in data.items()})
 
     def equals_to(self, other: Self | dict[Any, Any]) -> bool:
         """
@@ -106,7 +106,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict({"b": 2, "a": 1}).sort().unwrap()
         {'a': 1, 'b': 2}
         """
-        return self._new(fn.sort_keys, reverse)
+        return self._new(lambda data: dict(sorted(data.items(), reverse=reverse)))
 
     def merge(self, *others: dict[K, V]) -> Self:
         """
@@ -136,7 +136,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         {1: 1, 2: 20, 3: 30}
 
         """
-        return self._new(fn.merge_with, others, func)
+        return self._new(lambda data: cz.dicttoolz.merge_with(func, data, *others))
 
     def flatten[U: CoreDict[str, Any]](
         self: U, sep: str = ".", max_depth: int | None = None
@@ -161,7 +161,24 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         {'config.params': {'retries': 3, 'timeout': 30}, 'config.mode': 'fast', 'version': 1.0}
 
         """
-        return self._new(fn.flatten, sep, max_depth)
+
+        def _recurse_flatten(
+            d: dict[Any, Any], parent_key: str = "", current_depth: int = 1
+        ) -> dict[str, Any]:
+            items: list[tuple[str, Any]] = []
+            for k, v in d.items():
+                new_key = parent_key + sep + k if parent_key else k
+                if isinstance(v, dict) and (
+                    max_depth is None or current_depth < max_depth + 1
+                ):
+                    items.extend(
+                        _recurse_flatten(v, new_key, current_depth + 1).items()  # type: ignore
+                    )
+                else:
+                    items.append((new_key, v))  # type: ignore
+            return dict(items)
+
+        return self._new(lambda data: _recurse_flatten(data))
 
     def schema[U: CoreDict[str, Any]](self: U, max_depth: int = 2) -> U:
         """
@@ -180,7 +197,22 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         {'level1': {'level2': {'level3': 'dict'}}}
         """
 
-        return self.pipe_into(fn.schema, max_depth)
+        def _recurse_schema(node: Any, current_depth: int) -> Any:
+            if isinstance(node, dict):
+                if current_depth >= max_depth:
+                    return "dict"
+                return {
+                    k: _recurse_schema(v, current_depth + 1)
+                    for k, v in node.items()  # type: ignore
+                }
+            elif cz.itertoolz.isiterable(node):
+                if current_depth >= max_depth:
+                    return type(node).__name__
+                return _recurse_schema(cz.itertoolz.first(node), current_depth + 1)
+            else:
+                return type(node).__name__
+
+        return self.pipe_into(lambda data: _recurse_schema(data, 0))
 
     def filter_keys(self, predicate: Callable[[K], bool]) -> Self:
         """
@@ -191,7 +223,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict(d).filter_keys(lambda x: x % 2 == 0).unwrap()
         {2: 3, 4: 5}
         """
-        return self._new(fn.filter_keys, predicate)
+        return self._new(partial(cz.dicttoolz.keyfilter, predicate))
 
     def filter_keys_not(self, predicate: Callable[[K], bool]) -> Self:
         """
@@ -202,7 +234,11 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict(d).filter_keys_not(lambda x: x % 2 == 0).unwrap()
         {1: 2, 3: 4}
         """
-        return self._new(fn.filter_keys, lambda k: not predicate(k))
+
+        def negate(k: K) -> bool:
+            return not predicate(k)
+
+        return self._new(partial(cz.dicttoolz.keyfilter, negate))
 
     def filter_values(self, predicate: Callable[[V], bool]) -> Self:
         """
@@ -213,7 +249,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict(d).filter_values(lambda x: x % 2 == 0).unwrap()
         {1: 2, 3: 4}
         """
-        return self._new(fn.filter_values, predicate)
+        return self._new(partial(cz.dicttoolz.valfilter, predicate))
 
     def filter_values_not(self, predicate: Callable[[V], bool]) -> Self:
         """
@@ -224,7 +260,11 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict(d).filter_values_not(lambda x: x % 2 == 0).unwrap()
         {2: 3, 4: 5}
         """
-        return self._new(fn.filter_values, lambda v: not predicate(v))
+
+        def negate(v: V) -> bool:
+            return not predicate(v)
+
+        return self._new(partial(cz.dicttoolz.valfilter, negate))
 
     def filter_items(
         self,
@@ -237,7 +277,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict({1: 2, 3: 4}).filter_items(lambda it: it[1] > 2).unwrap()
         {3: 4}
         """
-        return self._new(fn.filter_items, predicate)
+        return self._new(partial(cz.dicttoolz.itemfilter, predicate))
 
     def filter_items_not(
         self,
@@ -250,7 +290,11 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict({1: 2, 3: 4}).filter_items_not(lambda it: it[1] > 2).unwrap()
         {1: 2}
         """
-        return self._new(fn.filter_items, lambda kv: not predicate(kv))
+
+        def negate(kv: tuple[K, V]) -> bool:
+            return not predicate(kv)
+
+        return self._new(partial(cz.dicttoolz.itemfilter, negate))
 
     def filter_kv(
         self,
@@ -263,7 +307,12 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict({1: 2, 3: 4}).filter_kv(lambda k, v: v > 2).unwrap()
         {3: 4}
         """
-        return self._new(fn.filter_items, lambda kv: predicate(kv[0], kv[1]))
+
+        return self._new(
+            lambda data: cz.dicttoolz.itemfilter(
+                lambda kv: predicate(kv[0], kv[1]), data
+            )
+        )
 
     def filter_kv_not(
         self,
@@ -276,4 +325,9 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict({1: 2, 3: 4}).filter_kv_not(lambda k, v: v > 2).unwrap()
         {1: 2}
         """
-        return self._new(fn.filter_items, lambda kv: not predicate(kv[0], kv[1]))
+
+        return self._new(
+            lambda data: cz.dicttoolz.itemfilter(
+                lambda kv: not predicate(kv[0], kv[1]), data
+            )
+        )

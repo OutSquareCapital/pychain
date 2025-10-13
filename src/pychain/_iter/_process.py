@@ -1,13 +1,13 @@
 import itertools
 from collections.abc import Callable, Iterable, Iterator
+from functools import partial
 from random import Random
 from typing import Any, Self
 
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import IterWrapper
-from . import funcs as fn
+from .._core import IterWrapper, Peeked
 
 
 class IterProcess[T](IterWrapper[T]):
@@ -35,7 +35,7 @@ class IterProcess[T](IterWrapper[T]):
             >>> Iter([1, 2]).interpose(0).into(list)
             [1, 0, 2]
         """
-        return self._new(fn.interpose, element)
+        return self._new(partial(cz.itertoolz.interpose, element))
 
     def random_sample(
         self, probability: float, state: Random | int | None = None
@@ -47,7 +47,10 @@ class IterProcess[T](IterWrapper[T]):
             >>> len(Iterable(Iter([1, 2, 3]).random_sample(0.5)))  # doctest: +SKIP
             1
         """
-        return self._new(fn.random_sample, probability, state)
+
+        return self._new(
+            partial(cz.itertoolz.random_sample, probability, random_state=state)
+        )
 
     def accumulate(self, func: Callable[[T, T], T]) -> Self:
         """
@@ -57,7 +60,7 @@ class IterProcess[T](IterWrapper[T]):
             >>> Iter([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
             [1, 3, 6]
         """
-        return self._new(fn.accumulate, func)
+        return self._new(partial(cz.itertoolz.accumulate, func))
 
     def insert_left(self, value: T) -> Self:
         """
@@ -67,7 +70,7 @@ class IterProcess[T](IterWrapper[T]):
             >>> Iter([2, 3]).insert_left(1).into(list)
             [1, 2, 3]
         """
-        return self._new(fn.insert_left, value)
+        return self._new(partial(cz.itertoolz.cons, value))
 
     def peekn(self, n: int) -> Self:
         """¨
@@ -79,7 +82,12 @@ class IterProcess[T](IterWrapper[T]):
             [1, 2, 3]
         """
 
-        return self._new(fn.peekn, n)
+        def _(data: Iterable[T]) -> Iterable[T]:
+            peeked = Peeked(*cz.itertoolz.peekn(n, data))
+            print(f"Peeked {n} values: {peeked.value}")
+            return peeked.sequence
+
+        return self._new(_)
 
     def peek(self) -> Self:
         """
@@ -90,7 +98,13 @@ class IterProcess[T](IterWrapper[T]):
             Peeked value: 1
             [1, 2]
         """
-        return self._new(fn.peek)
+
+        def _(data: Iterable[T]) -> Iterable[T]:
+            peeked = Peeked(*cz.itertoolz.peek(data))
+            print(f"Peeked value: {peeked.value}")
+            return peeked.sequence
+
+        return self._new(_)
 
     def merge_sorted(
         self, *others: Iterable[T], sort_on: Callable[[T], Any] | None = None
@@ -112,19 +126,22 @@ class IterProcess[T](IterWrapper[T]):
             >>> Iter([1, 2]).interleave([3, 4]).into(list)
             [1, 3, 2, 4]
         """
-        return self._new(fn.interleave, *others)
+        return self._new(lambda data: cz.itertoolz.interleave((data, *others)))
 
     def concat(self, *others: Iterable[T]) -> Self:
         """
         Concatenate zero or more iterables, any of which may be infinite.
+
         An infinite sequence will prevent the rest of the arguments from being included.
+
         We use chain.from_iterable rather than chain(*seqs) so that seqs can be a generator.
 
             >>> from pychain import Iter
             >>> Iter([1, 2]).concat([3, 4], [5]).into(list)
             [1, 2, 3, 4, 5]
         """
-        return self._new(fn.concat, *others)
+
+        return self._new(lambda data: itertools.chain.from_iterable((data, *others)))
 
     def elements(self) -> Self:
         """
@@ -144,7 +161,9 @@ class IterProcess[T](IterWrapper[T]):
         number, elements() will ignore it.
 
         """
-        return self._new(fn.elements)
+        from collections import Counter
+
+        return self._new(lambda x: Counter(x).elements())
 
     def reverse(self) -> Self:
         """
@@ -158,7 +177,7 @@ class IterProcess[T](IterWrapper[T]):
 
         The result is a new iterable over the reversed sequence.
         """
-        return self._new(fn.reverse)
+        return self._new(lambda x: reversed(list(x)))
 
     def is_strictly_n(
         self,

@@ -2,22 +2,20 @@ from __future__ import annotations
 
 import itertools
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, Concatenate, Self
+from functools import partial
+from typing import TYPE_CHECKING, Any, Self
 
 import cytoolz as cz
 import more_itertools as mit
 
 from .._core import CommonBase, IterWrapper
-from . import funcs as fn
 
 if TYPE_CHECKING:
     from ._main import Iter
 
 
 class IterFilter[T](IterWrapper[T]):
-    def filter[**P](
-        self, func: Callable[Concatenate[T, P], bool], *args: P.args, **kwargs: P.kwargs
-    ) -> Self:
+    def filter[**P](self, func: Callable[[T], bool]) -> Self:
         """
         Filter elements according to func and return a new Iterable wrapper.
 
@@ -25,7 +23,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 2, 3]).filter(lambda x: x > 1).into(list)
             [2, 3]
         """
-        return self._new(fn.filter_, func, *args, **kwargs)
+        return self._new(partial(filter, func))
 
     def filter_isin(self, values: Iterable[T]) -> Self:
         """
@@ -35,7 +33,8 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 2, 3, 4]).filter_isin([2, 4, 6]).into(list)
             [2, 4]
         """
-        return self._new(fn.filter_isin, values)
+        value_set: set[T] = set(values)
+        return self._new(lambda data: (x for x in data if x in value_set))
 
     def filter_notin(self, values: Iterable[T]) -> Self:
         """
@@ -45,7 +44,8 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 2, 3, 4]).filter_notin([2, 4, 6]).into(list)
             [1, 3]
         """
-        return self._new(fn.filter_notin, values)
+        value_set: set[T] = set(values)
+        return self._new(lambda data: (x for x in data if x not in value_set))
 
     def filter_contain[U: CommonBase[Iterable[str]]](self: U, text: str) -> U:
         """
@@ -57,7 +57,7 @@ class IterFilter[T](IterWrapper[T]):
             ... )
             ['banana']
         """
-        return self._new(fn.filter_contain, text)
+        return self._new(lambda data: (x for x in data if text in x))
 
     def filter_subclass[U: Iterable[type], R](
         self: CommonBase[U], parent: type[R]
@@ -75,7 +75,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([A, B, C]).filter_subclass(A).map(lambda c: c.__name__).into(list)
             ['A', 'B']
         """
-        return self.pipe_into(fn.filter_subclass, parent)
+        return self.pipe_into(lambda data: (x for x in data if issubclass(x, parent)))
 
     def filter_type[R](self, typ: type[R]) -> Iter[R]:
         """
@@ -85,7 +85,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
             [1, 5]
         """
-        return self.pipe_into(fn.filter_type, typ)
+        return self.pipe_into(lambda data: (x for x in data if isinstance(x, typ)))
 
     def filter_attr(self, attr: str) -> Self:
         """
@@ -95,7 +95,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter(["hello", "world", 2, 5]).filter_attr("capitalize").into(list)
             ['hello', 'world']
         """
-        return self._new(fn.filter_attr, attr)
+        return self._new(lambda data: (x for x in data if hasattr(x, attr)))
 
     def filter_callable(self) -> Iter[Callable[..., Any]]:
         """
@@ -105,11 +105,9 @@ class IterFilter[T](IterWrapper[T]):
         >>> Iter([len, 42, str, None, list]).filter_callable().into(list)
         [<built-in function len>, <class 'str'>, <class 'list'>]
         """
-        return self.pipe_into(fn.filter_callable)
+        return self.pipe_into(lambda data: (x for x in data if callable(x)))
 
-    def filter_false[**P](
-        self, func: Callable[Concatenate[T, P], bool], *args: P.args, **kwargs: P.kwargs
-    ) -> Self:
+    def filter_false(self, func: Callable[[T], bool]) -> Self:
         """
         Return elements for which func is false.
 
@@ -117,7 +115,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 2, 3]).filter_false(lambda x: x > 1).into(list)
             [1]
         """
-        return self._new(fn.filter_false, func, *args, **kwargs)
+        return self._new(partial(itertools.filterfalse, func))
 
     def filter_except(
         self, func: Callable[[T], object], *exceptions: type[BaseException]
@@ -136,7 +134,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter(iterable).filter_except(int, ValueError, TypeError).into(list)
             ['1', '2', '4']
         """
-        return self._new(fn.filter_except, func, *exceptions)
+        return self._new(lambda data: mit.filter_except(func, data, *exceptions))
 
     def take_while(self, predicate: Callable[[T], bool]) -> Self:
         """
@@ -146,7 +144,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 2, 0]).take_while(lambda x: x > 0).into(list)
             [1, 2]
         """
-        return self._new(fn.take_while, predicate)
+        return self._new(partial(itertools.takewhile, predicate))
 
     def drop_while(self, predicate: Callable[[T], bool]) -> Self:
         """
@@ -156,7 +154,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 2, 0]).drop_while(lambda x: x > 0).into(list)
             [0]
         """
-        return self._new(fn.drop_while, predicate)
+        return self._new(partial(itertools.dropwhile, predicate))
 
     def compress(self, *selectors: bool) -> Self:
         """
@@ -193,7 +191,8 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 2, 3]).head(2).into(list)
             [1, 2]
         """
-        return self._new(fn.head, n)
+
+        return self._new(partial(cz.itertoolz.take, n))
 
     def tail(self, n: int) -> Self:
         """
@@ -203,7 +202,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 2, 3]).tail(2).into(list)
             [2, 3]
         """
-        return self._new(fn.tail, n)
+        return self._new(partial(cz.itertoolz.tail, n))
 
     def drop_first(self, n: int) -> Self:
         """
@@ -213,7 +212,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 2, 3]).drop_first(1).into(list)
             [2, 3]
         """
-        return self._new(fn.drop_first, n)
+        return self._new(partial(cz.itertoolz.drop, n))
 
     def unique_justseen(self, key: Callable[[T], Any] | None = None) -> Self:
         """
@@ -254,7 +253,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 3, 2]).top_n(2).into(list)
             [3, 2]
         """
-        return self._new(fn.top_n, n, key)
+        return self._new(partial(cz.itertoolz.topk, n, key=key))
 
     def extract(self, indices: Iterable[int]) -> Self:
         """
@@ -282,7 +281,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([10, 20, 30, 40]).every(2).into(list)
             [10, 30]
         """
-        return self._new(fn.every, index)
+        return self._new(partial(cz.itertoolz.take_nth, index))
 
     def slice(self, start: int | None = None, stop: int | None = None) -> Self:
         """
@@ -292,7 +291,7 @@ class IterFilter[T](IterWrapper[T]):
             >>> Iter([1, 2, 3, 4, 5]).slice(1, 4).into(list)
             [2, 3, 4]
         """
-        return self._new(fn.slice, start, stop)
+        return self._new(lambda data: itertools.islice(data, start, stop))
 
     def filter_map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
@@ -305,4 +304,4 @@ class IterFilter[T](IterWrapper[T]):
         ... )
         [1, 2, 3]
         """
-        return self.pipe_into(fn.filter_map, func)
+        return self.pipe_into(partial(mit.filter_map, func))

@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import itertools
 from collections.abc import Callable, Iterable, Iterator
+from functools import partial
 from typing import Any, overload
 
 import cytoolz as cz
 import more_itertools as mit
 
 from .._core import Pluckable, SupportsRichComparison
-from . import funcs as fn
 from ._aggregations import IterAgg
 from ._booleans import IterBool
 from ._constructors import IterConstructors
@@ -144,18 +144,18 @@ class Iter[T](
         return self.pipe_into(mit.repeat_last, default)
 
     @overload
-    def flatten[U](
+    def explode[U](
         self: Iter[Iterable[Iterable[Iterable[U]]]],
     ) -> Iter[Iterable[Iterable[U]]]: ...
     @overload
-    def flatten[U](self: Iter[Iterable[Iterable[U]]]) -> Iter[Iterable[U]]: ...
+    def explode[U](self: Iter[Iterable[Iterable[U]]]) -> Iter[Iterable[U]]: ...
     @overload
-    def flatten[U](self: Iter[Iterable[U]]) -> Iter[U]: ...
-    def flatten(self: Iter[Iterable[Any]]) -> Iter[Any]:
+    def explode[U](self: Iter[Iterable[U]]) -> Iter[U]: ...
+    def explode(self: Iter[Iterable[Any]]) -> Iter[Any]:
         """
         Flatten one level of nesting and return a new Iterable wrapper.
 
-        >>> Iter([[1, 2], [3]]).flatten().into(list)
+        >>> Iter([[1, 2], [3]]).explode().into(list)
         [1, 2, 3]
         """
         return self.pipe_into(itertools.chain.from_iterable)
@@ -187,18 +187,15 @@ class Iter[T](
         return self.pipe_into(mit.ichunked, n)
 
     def sort[U: SupportsRichComparison[Any]](
-        self: Iter[U],
-        key: Callable[[U], Any] | None = None,
-        reverse: bool = False,
+        self: Iter[U], reverse: bool = False
     ) -> Iter[U]:
-        """Sort the elements of the sequence.
+        """
+        Sort the elements of the sequence.
         Note: This method must consume the entire iterable to perform the sort.
+
         The result is a new iterable over the sorted sequence.
 
         >>> Iter([3, 1, 2]).sort().into(list)
         [1, 2, 3]
-        >>> data = Iter([{"age": 30}, {"age": 20}])
-        >>> data.sort(key=lambda x: x["age"])
-        [{'age': 20}, {'age': 30}]
         """
-        return self._new(fn.sorted_, key, reverse)
+        return self._new(partial(sorted, reverse=reverse))
