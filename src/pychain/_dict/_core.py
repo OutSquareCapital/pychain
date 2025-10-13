@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Any, Self
 
 import cytoolz as cz
 
-from .._core import CommonBase, iter_factory
+from .._core import CommonBase
+from . import funcs as fn
 
 if TYPE_CHECKING:
     from .._iter import Iter
@@ -27,7 +28,9 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict({1: 2}).iter_keys().into(list)
         [1]
         """
-        return iter_factory(self._data.keys())
+        from .._iter import Iter
+
+        return Iter(self._data.keys())
 
     def iter_values(self) -> Iter[V]:
         """
@@ -37,7 +40,9 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict({1: 2}).iter_values().into(list)
         [2]
         """
-        return iter_factory(self._data.values())
+        from .._iter import Iter
+
+        return Iter(self._data.values())
 
     def iter_items(self) -> Iter[tuple[K, V]]:
         """
@@ -47,7 +52,9 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict({1: 2}).iter_items().into(list)
         [(1, 2)]
         """
-        return iter_factory(self._data.items())
+        from .._iter import Iter
+
+        return Iter(self._data.items())
 
     def drop(self, *keys: K) -> Self:
         """
@@ -65,7 +72,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> pc.Dict({1: 2, 3: 4}).drop(1).unwrap()
         {3: 4}
         """
-        return self._new(cz.dicttoolz.dissoc(self._data, *keys))
+        return self._new(cz.dicttoolz.dissoc, *keys)
 
     def rename(self, mapping: dict[K, K]) -> Self:
         """
@@ -79,7 +86,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict(d).rename(mapping).unwrap()
         {'a': 1, 'beta': 2, 'gamma': 3}
         """
-        return self._new({mapping.get(k, k): v for k, v in self._data.items()})
+        return self._new(fn.rename, mapping)
 
     def equals_to(self, other: Self | dict[Any, Any]) -> bool:
         """
@@ -99,7 +106,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict({"b": 2, "a": 1}).sort().unwrap()
         {'a': 1, 'b': 2}
         """
-        return self._new(dict(sorted(self._data.items(), reverse=reverse)))
+        return self._new(fn.sort_keys, reverse)
 
     def merge(self, *others: dict[K, V]) -> Self:
         """
@@ -114,7 +121,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         >>> Dict({1: 2, 3: 4}).merge({3: 3, 4: 4}).unwrap()
         {1: 2, 3: 3, 4: 4}
         """
-        return self._new(cz.dicttoolz.merge(self._data, *others))
+        return self._new(cz.dicttoolz.merge, *others)
 
     def merge_with(self, *others: dict[K, V], func: Callable[[Iterable[V]], V]) -> Self:
         """
@@ -129,4 +136,48 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         {1: 1, 2: 20, 3: 30}
 
         """
-        return self._new(cz.dicttoolz.merge_with(func, self._data, *others))
+        return self._new(fn.merge_with, others, func)
+
+    def flatten[U: CoreDict[str, Any]](
+        self: U, sep: str = ".", max_depth: int | None = None
+    ) -> U:
+        """
+        Flatten a nested dictionary, concatenating keys with the specified separator.
+
+        Args:
+            sep: Separator to use when concatenating keys
+            max_depth: Maximum depth to flatten. If None, flattens completely.
+
+        >>> import pychain as pc
+        >>> data = {
+        ...     "config": {"params": {"retries": 3, "timeout": 30}, "mode": "fast"},
+        ...     "version": 1.0,
+        ... }
+        >>> pc.Dict(data).flatten().unwrap()
+        {'config.params.retries': 3, 'config.params.timeout': 30, 'config.mode': 'fast', 'version': 1.0}
+        >>> pc.Dict(data).flatten(sep="_").unwrap()
+        {'config_params_retries': 3, 'config_params_timeout': 30, 'config_mode': 'fast', 'version': 1.0}
+        >>> pc.Dict(data).flatten(max_depth=1).unwrap()
+        {'config.params': {'retries': 3, 'timeout': 30}, 'config.mode': 'fast', 'version': 1.0}
+
+        """
+        return self._new(fn.flatten, sep, max_depth)
+
+    def schema[U: CoreDict[str, Any]](self: U, max_depth: int = 2) -> U:
+        """
+        Return the schema of the dictionary up to a maximum depth.
+        When the max depth is reached, nested dicts are marked as 'dict'.
+        For lists, only the first element is inspected.
+
+        >>> import pychain as pc
+        >>> # Depth 2: we see up to level2
+        >>> data = {"level1": {"level2": {"level3": {"key": "value"}}}}
+        >>> pc.Dict(data).schema().unwrap()
+        {'level1': {'level2': 'dict'}}
+        >>>
+        >>> # Depth 3: we see up to level3
+        >>> pc.Dict(data).schema(max_depth=3).unwrap()
+        {'level1': {'level2': {'level3': 'dict'}}}
+        """
+
+        return self.pipe_into(fn.schema, max_depth)
