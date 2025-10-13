@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from functools import partial
 from typing import TYPE_CHECKING
 
@@ -88,3 +88,27 @@ class IterDicts[T](IterWrapper[T]):
         from .._dict import Dict
 
         return Dict(self.into(partial(cz.recipes.countby, key)))
+
+    def with_keys[K](self, keys: Iterable[K]) -> Dict[K, T]:
+        """
+        Create a Dict by zipping the iterable with keys.
+
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).with_keys(["a", "b", "c"]).unwrap()
+        {'a': 1, 'b': 2, 'c': 3}
+        """
+        from .._dict import Dict
+
+        return Dict(dict(zip(keys, self.unwrap())))
+
+    def with_values[V](self, values: Iterable[V]) -> Dict[T, V]:
+        """
+        Create a Dict by zipping the iterable with values.
+
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).with_values(["a", "b", "c"]).unwrap()
+        {1: 'a', 2: 'b', 3: 'c'}
+        """
+        from .._dict import Dict
+
+        return Dict(dict(zip(self.unwrap(), values)))

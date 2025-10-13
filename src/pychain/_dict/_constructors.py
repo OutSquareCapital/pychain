@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 from .._core import SupportsKeysAndGetItem
@@ -10,21 +9,6 @@ if TYPE_CHECKING:
 
 
 class DictConstructors:
-    @staticmethod
-    def from_zip[K, V](keys: Iterable[K], values: Iterable[V]) -> Dict[K, V]:
-        """
-        Create a Dict from two iterables of keys and values.
-
-        Syntactic sugar for `Dict(dict(zip(keys, values)))`.
-
-        >>> from pychain import Dict
-        >>> Dict.from_zip([1, 2], ["a", "b"]).unwrap()
-        {1: 'a', 2: 'b'}
-        """
-        from ._main import Dict
-
-        return Dict(dict(zip(keys, values)))
-
     @staticmethod
     def from_object(obj: object) -> Dict[str, Any]:
         """

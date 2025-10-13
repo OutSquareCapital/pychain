@@ -54,7 +54,6 @@ class Iter[T](
         >>> Iter([[10, 20], [30, 40]]).pluck(0).into(list)
         [10, 30]
         """
-
         return self.pipe_into(partial(cz.itertoolz.pluck, key))
 
     def reduce_by[K](

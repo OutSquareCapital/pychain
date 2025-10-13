@@ -166,6 +166,21 @@ class IterTuples[T](IterWrapper[T]):
         *iterables: Iterable[Any],
     ) -> Iter[tuple[Any, ...]]: ...
     def zip_equal(self, *others: Iterable[Any]) -> Iter[tuple[Any, ...]]:
+        """
+
+        ``zip`` the input *iterables* together but raise ``UnequalIterablesError`` if they aren't all the same length.
+
+        >>> from pychain import Iter
+        >>> Iter.from_range(0, 3).zip_equal("abc").into(list)
+        [(0, 'a'), (1, 'b'), (2, 'c')]
+        >>> Iter.from_range(0, 3).zip_equal("abcd").into(list)
+        ... # doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+        ...
+        more_itertools.more.UnequalIterablesError: Iterables have different
+        lengths
+
+        """
         return self.pipe_into(lambda x: mit.zip_equal(x, *others))
 
     def enumerate(self) -> Iter[tuple[int, T]]:
