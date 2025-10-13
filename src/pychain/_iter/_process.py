@@ -154,7 +154,7 @@ class IterProcess[T](IterWrapper[T]):
         Knuth's example for prime factors of 1836:  2**2 * 3**3 * 17**1
 
         >>> import math
-        >>> Iter({2: 2, 3: 3, 17: 1}).elements().pipe_into(math.prod)
+        >>> Iter({2: 2, 3: 3, 17: 1}).elements().into(math.prod)
         1836
 
         Note, if an element's count has been set to zero or is a negative

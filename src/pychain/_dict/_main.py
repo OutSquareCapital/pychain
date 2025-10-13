@@ -15,8 +15,6 @@ class Dict[K, V](CoreDict[K, V], DictConstructors):
     Wrapper for Python dictionaries with chainable methods.
     """
 
-    __slots__ = ("_data",)
-
     def pipe_into[**P, KU, VU](
         self,
         func: Callable[Concatenate[dict[K, V], P], dict[KU, VU]],

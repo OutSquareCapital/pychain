@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from functools import partial
 from typing import TYPE_CHECKING
 
 import cytoolz as cz
@@ -58,7 +59,7 @@ class IterDicts[T](IterWrapper[T]):
         """
         from .._dict import Dict
 
-        return Dict(cz.itertoolz.groupby(on, self._data))
+        return Dict(self.into(partial(cz.itertoolz.groupby, on)))
 
     def frequencies(self) -> Dict[T, int]:
         """
@@ -70,7 +71,7 @@ class IterDicts[T](IterWrapper[T]):
         """
         from .._dict import Dict
 
-        return Dict(cz.itertoolz.frequencies(self._data))
+        return Dict(self.into(cz.itertoolz.frequencies))
 
     def count_by[K](self, key: Callable[[T], K]) -> Dict[K, int]:
         """
@@ -86,4 +87,4 @@ class IterDicts[T](IterWrapper[T]):
         """
         from .._dict import Dict
 
-        return Dict(cz.recipes.countby(key, self._data))
+        return Dict(self.into(partial(cz.recipes.countby, key)))

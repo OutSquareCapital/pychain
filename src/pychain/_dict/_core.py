@@ -16,7 +16,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
     def __repr__(self) -> str:
         data_formatted: str = "\n".join(
             f"  {key!r}, {type(value).__name__}: {value!r},"
-            for key, value in self._data.items()
+            for key, value in self.unwrap().items()
         )
         return f"{self.__class__.__name__}(\n{data_formatted}\n)"
 
@@ -30,7 +30,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         """
         from .._iter import Iter
 
-        return Iter(self._data.keys())
+        return Iter(self.unwrap().keys())
 
     def iter_values(self) -> Iter[V]:
         """
@@ -42,7 +42,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         """
         from .._iter import Iter
 
-        return Iter(self._data.values())
+        return Iter(self.unwrap().values())
 
     def iter_items(self) -> Iter[tuple[K, V]]:
         """
@@ -54,7 +54,7 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         """
         from .._iter import Iter
 
-        return Iter(self._data.items())
+        return Iter(self.unwrap().items())
 
     def drop(self, *keys: K) -> Self:
         """
@@ -93,9 +93,9 @@ class CoreDict[K, V](CommonBase[dict[K, V]]):
         Check if two records are equal based on their data.
         """
         return (
-            self._data == other._data
+            self.unwrap() == other.unwrap()
             if isinstance(other, CoreDict)
-            else self._data == other
+            else self.unwrap() == other
         )
 
     def sort(self, reverse: bool = False) -> Self:

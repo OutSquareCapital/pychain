@@ -171,7 +171,7 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([3, 1, 2]).min()
         1
         """
-        return min(self._data, key=key)
+        return self.into(lambda data: min(data, key=key))
 
     def max[U: int | float](
         self: IterWrapper[U],
@@ -184,7 +184,7 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([3, 1, 2]).max()
         3
         """
-        return max(self._data, key=key)
+        return self.into(lambda data: max(data, key=key))
 
     def mean[U: int | float](self: IterWrapper[U]) -> float:
         """

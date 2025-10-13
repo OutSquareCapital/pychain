@@ -43,8 +43,6 @@ class Iter[T](
     It can be constructed from any iterable, including `lists`, `tuples`, `sets`, and `generators`.
     """
 
-    __slots__ = ("_data",)
-
     def pluck[K, V](self: Iter[Pluckable[K, V]], key: K) -> Iter[V]:
         """
         Extract a value from each element in the sequence using a key or index.
@@ -56,7 +54,8 @@ class Iter[T](
         >>> Iter([[10, 20], [30, 40]]).pluck(0).into(list)
         [10, 30]
         """
-        return Iter(cz.itertoolz.pluck(key, self._data))
+
+        return self.pipe_into(partial(cz.itertoolz.pluck, key))
 
     def reduce_by[K](
         self,
@@ -114,7 +113,10 @@ class Iter[T](
         >>> Iter([1, 2, 3, 4, 1, 2, 3]).reduce_by(lambda x: x % 2 == 0, set_add, set)
         {False: {1, 3}, True: {2, 4}}
         """
-        return Iter(cz.itertoolz.reduceby(key, binop, self._data, init))
+
+        return self.pipe_into(
+            lambda data: cz.itertoolz.reduceby(key, binop, data, init)
+        )
 
     def repeat(self, n: int) -> Iter[Iterable[T]]:
         """
