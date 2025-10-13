@@ -6,11 +6,10 @@ from typing import Concatenate
 
 import cytoolz as cz
 
-from ._constructors import DictConstructors
 from ._core import CoreDict
 
 
-class Dict[K, V](CoreDict[K, V], DictConstructors):
+class Dict[K, V](CoreDict[K, V]):
     """
     Wrapper for Python dictionaries with chainable methods.
     """

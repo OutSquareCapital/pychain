@@ -6,13 +6,18 @@ from typing import TYPE_CHECKING, Any, Self
 
 import cytoolz as cz
 
-from .._core import CommonBase
+from .._core import CommonBase, SupportsKeysAndGetItem
 
 if TYPE_CHECKING:
     from .._iter import Iter
 
 
 class CoreDict[K, V](CommonBase[dict[K, V]]):
+    def __init__(self, data: SupportsKeysAndGetItem[K, V] | dict[K, V]) -> None:
+        if not isinstance(data, dict):
+            data = dict(data)
+        super().__init__(data)
+
     def __repr__(self) -> str:
         data_formatted: str = "\n".join(
             f"  {key!r}, {type(value).__name__}: {value!r},"
