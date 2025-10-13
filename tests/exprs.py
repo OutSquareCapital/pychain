@@ -23,10 +23,8 @@ class TestIterExprIntegration(unittest.TestCase):
             .filter(lambda x: x > 2)
             .apply(list)
             .alias("filtered_values"),
-            # Issue: filter_contain should look for 'a' or 'A', not case sensitive match
-            # Fix: We'll add a .apply method to ensure case-insensitive comparison
             pc.key("names")
-            .filter(lambda name: "a" in name.lower())  # Fix: case-insensitive check
+            .filter(lambda name: "a" in name.lower())
             .apply(list)
             .alias("names_with_a"),
             pc.key("values").reverse().apply(list).alias("reversed_values"),
@@ -93,7 +91,6 @@ class TestIterExprIntegration(unittest.TestCase):
             pc.Record(data)
             .with_fields(
                 pc.key("users")
-                # Make sure we're using the exact same calculation
                 .filter(lambda user: sum(user["scores"]) / len(user["scores"]) >= 85)
                 .apply(lambda users: [user["name"] for user in users])
                 .alias("high_scorers")
@@ -101,9 +98,7 @@ class TestIterExprIntegration(unittest.TestCase):
             .unwrap()["high_scorers"]
         )
 
-        # Both should produce the same result
         self.assertEqual(iter_result, expr_result)
-        # Check if our expected result is correct based on the actual calculation
         expected_result = [
             user["name"]
             for user in data["users"]

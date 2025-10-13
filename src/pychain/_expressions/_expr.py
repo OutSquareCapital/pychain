@@ -51,9 +51,6 @@ class Expr(BaseFilter[Any], BaseProcess[Any]):
 
         return self._new(operation)
 
-    def str(self, func: Callable[[str], Any]) -> Self:
-        return self._new(func)
-
     def itr(self, func: Callable[[Iter[Any]], Any]) -> Self:
         from .._iter import Iter
 
