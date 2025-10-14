@@ -1,16 +1,26 @@
+from __future__ import annotations
+
 import functools
 import statistics
 from collections.abc import Callable, Iterable
-from typing import overload
+from typing import TYPE_CHECKING, Any, overload
 
 import cytoolz as cz
 import more_itertools as mit
 
 from .._core import IterWrapper, SupportsRichComparison
 
+if TYPE_CHECKING:
+    from .._expressions import Expr
+    from .._iter import Iter
 
-class IterAgg[T](IterWrapper[T]):
-    def reduce(self, func: Callable[[T, T], T]) -> T:
+
+class BaseAgg[T](IterWrapper[T]):
+    @overload
+    def reduce(self: Iter[T], func: Callable[[T, T], T]) -> T: ...
+    @overload
+    def reduce(self: Expr, func: Callable[[Any, Any], Any]) -> Expr: ...
+    def reduce(self, func: Callable[[T, T], T]):
         """
         Apply a function of two arguments cumulatively to the items of an iterable, from left to right.
 
@@ -26,7 +36,11 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(functools.partial(functools.reduce, func))
 
-    def combination_index(self, r: Iterable[T]) -> int:
+    @overload
+    def combination_index(self: Iter[T], r: Iterable[T]) -> int: ...
+    @overload
+    def combination_index(self: Expr, r: Iterable[Any]) -> Expr: ...
+    def combination_index(self, r: Iterable[T]):
         """
         Equivalent to list(combinations(iterable, r)).index(element)
 
@@ -42,7 +56,12 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(functools.partial(mit.combination_index, r))
 
-    def first(self) -> T:
+    @overload
+    def first(self: Iter[T]) -> T: ...
+    @overload
+    def first(self: Expr) -> Expr: ...
+
+    def first(self):
         """
         Return the first element.
 
@@ -52,7 +71,11 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(cz.itertoolz.first)
 
-    def second(self) -> T:
+    @overload
+    def second(self: Iter[T]) -> T: ...
+    @overload
+    def second(self: Expr) -> Expr: ...
+    def second(self):
         """
         Return the second element.
 
@@ -62,7 +85,11 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(cz.itertoolz.second)
 
-    def last(self) -> T:
+    @overload
+    def last(self: Iter[T]) -> T: ...
+    @overload
+    def last(self: Expr) -> Expr: ...
+    def last(self):
         """
         Return the last element.
 
@@ -72,7 +99,11 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(cz.itertoolz.last)
 
-    def length(self) -> int:
+    @overload
+    def length(self: Iter[T]) -> int: ...
+    @overload
+    def length(self: Expr) -> Expr: ...
+    def length(self):
         """
         Return the length of the sequence.
         Like the builtin len but works on lazy sequences.
@@ -83,7 +114,11 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(cz.itertoolz.count)
 
-    def item(self, index: int) -> T:
+    @overload
+    def item(self: Iter[T], index: int) -> T: ...
+    @overload
+    def item(self: Expr, index: int) -> Expr: ...
+    def item(self, index: int):
         """
         Return item at index.
 
@@ -93,7 +128,11 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(functools.partial(cz.itertoolz.nth, index))
 
-    def argmax[U](self, key: Callable[[T], U] | None = None) -> int:
+    @overload
+    def argmax[U](self: Iter[T], key: Callable[[T], U] | None = None) -> int: ...
+    @overload
+    def argmax[U](self: Expr, key: Callable[[T], U] | None = None) -> Expr: ...
+    def argmax[U](self, key: Callable[[T], U] | None = None):
         """
         Index of the first occurrence of a maximum value in an iterable.
 
@@ -117,7 +156,11 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(mit.argmax, key=key)
 
-    def argmin[U](self, key: Callable[[T], U] | None = None) -> int:
+    @overload
+    def argmin[U](self: Iter[T], key: Callable[[T], U] | None = None) -> int: ...
+    @overload
+    def argmin[U](self: Expr, key: Callable[[T], U] | None = None) -> Expr: ...
+    def argmin[U](self, key: Callable[[T], U] | None = None):
         """
         Index of the first occurrence of a minimum value in an iterable.
 
@@ -146,11 +189,13 @@ class IterAgg[T](IterWrapper[T]):
         return self.into(mit.argmin, key=key)
 
     @overload
-    def sum(self: IterWrapper[int]) -> int: ...
+    def sum(self: Iter[int]) -> int: ...
     @overload
-    def sum(self: IterWrapper[float]) -> float: ...
+    def sum(self: Iter[float]) -> float: ...
+    @overload
+    def sum(self: Expr) -> Expr: ...
 
-    def sum[U: int | float](self: IterWrapper[U]) -> int | float:
+    def sum(self):
         """
         Return the sum of the sequence.
 
@@ -160,10 +205,18 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(sum)
 
+    @overload
     def min[U: int | float](
-        self: IterWrapper[U],
-        key: Callable[[U], SupportsRichComparison[U]] | None = None,
-    ) -> U:
+        self: Iter[U], key: Callable[[U], SupportsRichComparison[U]] | None = None
+    ) -> U: ...
+    @overload
+    def min(
+        self: Expr, key: Callable[[Any], SupportsRichComparison[Any]] | None = None
+    ) -> Expr: ...
+    def min(
+        self,
+        key: Callable[[Any], SupportsRichComparison[Any]] | None = None,
+    ):
         """
         Return the minimum value of the sequence.
 
@@ -171,12 +224,21 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([3, 1, 2]).min()
         1
         """
-        return self.into(lambda data: min(data, key=key))
+        return self.into(min, key=key)
 
+    @overload
     def max[U: int | float](
-        self: IterWrapper[U],
-        key: Callable[[U], SupportsRichComparison[U]] | None = None,
-    ) -> U:
+        self: Iter[U], key: Callable[[U], SupportsRichComparison[U]] | None = None
+    ) -> U: ...
+    @overload
+    def max(
+        self: Expr, key: Callable[[Any], SupportsRichComparison[Any]] | None = None
+    ) -> Expr: ...
+
+    def max(
+        self,
+        key: Callable[[Any], SupportsRichComparison[Any]] | None = None,
+    ):
         """
         Return the maximum value of the sequence.
 
@@ -184,9 +246,13 @@ class IterAgg[T](IterWrapper[T]):
         >>> Iter([3, 1, 2]).max()
         3
         """
-        return self.into(lambda data: max(data, key=key))
+        return self.into(max, key=key)
 
-    def mean[U: int | float](self: IterWrapper[U]) -> float:
+    @overload
+    def mean[U: int | float](self: Iter[U]) -> float: ...
+    @overload
+    def mean(self: Expr) -> Expr: ...
+    def mean(self):
         """
         Return the mean of the sequence.
 
@@ -196,7 +262,11 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(statistics.mean)
 
-    def median[U: int | float](self: IterWrapper[U]) -> float:
+    @overload
+    def median[U: int | float](self: Iter[U]) -> float: ...
+    @overload
+    def median(self: Expr) -> Expr: ...
+    def median(self):
         """
         Return the median of the sequence.
 
@@ -206,7 +276,11 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(statistics.median)
 
-    def mode[U: int | float](self: IterWrapper[U]) -> U:
+    @overload
+    def mode[U: int | float](self: Iter[U]) -> U: ...
+    @overload
+    def mode(self: Expr) -> Expr: ...
+    def mode(self):
         """
         Return the mode of the sequence.
 
@@ -216,9 +290,13 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(statistics.mode)
 
+    @overload
     def stdev[U: int | float](
-        self: IterWrapper[U],
-    ) -> float:
+        self: Iter[U],
+    ) -> float: ...
+    @overload
+    def stdev(self: Expr) -> Expr: ...
+    def stdev(self):
         """
         Return the standard deviation of the sequence.
 
@@ -228,9 +306,13 @@ class IterAgg[T](IterWrapper[T]):
         """
         return self.into(statistics.stdev)
 
+    @overload
     def variance[U: int | float](
-        self: IterWrapper[U],
-    ) -> float:
+        self: Iter[U],
+    ) -> float: ...
+    @overload
+    def variance(self: Expr) -> Expr: ...
+    def variance(self):
         """
         Return the variance of the sequence.
 

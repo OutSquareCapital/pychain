@@ -3,26 +3,19 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Iterable, Iterator
 from functools import partial
-from typing import Any, Concatenate, overload
+from typing import Any, Concatenate, final, overload
 
 import cytoolz as cz
 import more_itertools as mit
 
 from .._core import Pluckable
-from .._executors import BaseExecutor
-from ._aggregations import IterAgg
-from ._booleans import IterBool
+from .._executors import Executor
 from ._constructors import IterConstructors
 from ._dicts import IterDicts
 
 
-class Iter[T](
-    IterAgg[T],
-    IterBool[T],
-    IterDicts[T],
-    BaseExecutor[T],
-    IterConstructors,
-):
+@final
+class Iter[T](IterDicts[T], Executor[T], IterConstructors):
     """
     A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
 
@@ -33,13 +26,32 @@ class Iter[T](
     It can be constructed from any iterable, including `lists`, `tuples`, `sets`, and `generators`.
     """
 
+    def into[**P, R](
+        self,
+        func: Callable[Concatenate[Iterable[T], P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> R:
+        """
+        Pass the *unwrapped* underlying data into a function.
+
+        The result is not wrapped.
+
+            >>> from pychain import Iter
+            >>> Iter.from_range(0, 5).into(tuple)
+            (0, 1, 2, 3, 4)
+
+        This is a core functionality that allows ending the chain whilst keeping the code style consistent.
+        """
+        return func(self.unwrap(), *args, **kwargs)
+
     def apply[**P, R](
         self,
         func: Callable[Concatenate[Iterable[T], P], Iterable[R]],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Iter[R]:
-        return super().apply(func, *args, **kwargs)
+        return Iter(self.into(func, *args, **kwargs))
 
     def pluck[K, V](self: Iter[Pluckable[K, V]], key: K) -> Iter[V]:
         """
