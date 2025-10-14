@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from functools import partial
 from typing import TYPE_CHECKING, Any, overload
 
@@ -129,3 +129,92 @@ class BaseMap[T](IterWrapper[T]):
         [1, 2, 4]
         """
         return self.apply(lambda data: mit.map_except(func, data, *exceptions))
+
+    @overload
+    def repeat(self: Expr, n: int) -> Expr: ...
+    @overload
+    def repeat(self: Iter[T], n: int) -> Iter[Iterable[T]]: ...
+
+    def repeat(self, n: int):
+        """
+        Repeat the entire iterable n times (as elements) and return Iter.
+
+        >>> from pychain import Iter
+        >>> Iter([1, 2]).repeat(2).into(list)
+        [[1, 2], [1, 2]]
+        """
+        return self.apply(itertools.repeat, n)
+
+    @overload
+    def repeat_last(self, default: T) -> Iter[T]: ...
+    @overload
+    def repeat_last[U](self, default: U) -> Iter[T | U]: ...
+    @overload
+    def repeat_last[U](self, default: U = None) -> Iter[T | U]: ...
+    @overload
+    def repeat_last(self: Expr, default: Any = None) -> Expr: ...
+    def repeat_last(self, default: Any = None):
+        """
+        After the iterable is exhausted, keep yielding its last element.
+
+        >>> from pychain import Iter
+        >>> Iter.from_range(0, 3).repeat_last().head(5).into(list)
+        [0, 1, 2, 2, 2]
+
+        If the iterable is empty, yield default forever:
+
+        >>> Iter.from_range(0, 0).repeat_last(42).head(5).into(list)
+        [42, 42, 42, 42, 42]
+        """
+        return self.apply(mit.repeat_last, default)
+
+    @overload
+    def ichunked(self: Iter[T], n: int) -> Iter[Iterator[T]]: ...
+    @overload
+    def ichunked(self: Expr, n: int) -> Expr: ...
+    def ichunked(self, n: int):
+        """
+
+        Break *iterable* into sub-iterables with *n* elements each.
+
+        If the sub-iterables are read in order, the elements of *iterable*
+        won't be stored in memory.
+
+        If they are read out of order, :func:`itertools.tee` is used to cache
+        elements as necessary.
+
+        >>> from pychain import Iter
+        >>> all_chunks = Iter.from_count().ichunked(4).unwrap()
+        >>> c_1, c_2, c_3 = next(all_chunks), next(all_chunks), next(all_chunks)
+        >>> list(c_2)  # c_1's elements have been cached; c_3's haven't been
+        [4, 5, 6, 7]
+        >>> list(c_1)
+        [0, 1, 2, 3]
+        >>> list(c_3)
+        [8, 9, 10, 11]
+        """
+        return self.apply(mit.ichunked, n)
+
+    @overload
+    def explode[U](
+        self: Iter[Iterable[Iterable[Iterable[U]]]],
+    ) -> Iter[Iterable[Iterable[U]]]: ...
+    @overload
+    def explode[U](self: Iter[Iterable[Iterable[U]]]) -> Iter[Iterable[U]]: ...
+    @overload
+    def explode[U](self: Iter[Iterable[U]]) -> Iter[U]: ...
+    @overload
+    def explode(self: Iter[Iterable[Any]]) -> Iter[Any]: ...
+    @overload
+    def explode(self: Expr) -> Expr: ...
+    def explode(self: BaseMap[Iterable[Any]]):
+        """
+        Flatten one level of nesting and return a new Iterable wrapper.
+
+        This is a shortcut for `.apply(itertools.chain.from_iterable)`.
+
+        >>> from pychain import Iter
+        >>> Iter([[1, 2], [3]]).explode().into(list)
+        [1, 2, 3]
+        """
+        return self.apply(itertools.chain.from_iterable)

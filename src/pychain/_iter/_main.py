@@ -1,21 +1,21 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable
 from functools import partial
-from typing import Any, Concatenate, final, overload
+from typing import TYPE_CHECKING, Any, Concatenate, final
 
 import cytoolz as cz
-import more_itertools as mit
 
 from .._core import Pluckable
 from .._executors import Executor
-from ._constructors import IterConstructors
-from ._dicts import IterDicts
+
+if TYPE_CHECKING:
+    from .._dict import Dict
 
 
 @final
-class Iter[T](IterDicts[T], Executor[T], IterConstructors):
+class Iter[T](Executor[T]):
     """
     A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
 
@@ -25,6 +25,72 @@ class Iter[T](IterDicts[T], Executor[T], IterConstructors):
 
     It can be constructed from any iterable, including `lists`, `tuples`, `sets`, and `generators`.
     """
+
+    @staticmethod
+    def from_count(start: int = 0, step: int = 1) -> Iter[int]:
+        """
+        Create an infinite iterator of evenly spaced values.
+
+        **Warning** ⚠️
+
+        This creates an infinite iterator.
+
+        Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
+
+        >>> from pychain import Iter
+        >>> Iter.from_count(10, 2).head(3).into(list)
+        [10, 12, 14]
+        """
+        from .._iter import Iter
+
+        return Iter(itertools.count(start, step))
+
+    @staticmethod
+    def from_range(start: int, stop: int, step: int = 1) -> Iter[int]:
+        """
+        Create an iterator from a range.
+
+        Syntactic sugar for `Iter(range(start, stop, step))`.
+
+        >>> from pychain import Iter
+        >>> Iter.from_range(1, 5).into(list)
+        [1, 2, 3, 4]
+        """
+        from .._iter import Iter
+
+        return Iter(range(start, stop, step))
+
+    @staticmethod
+    def from_func[U](func: Callable[[U], U], x: U) -> Iter[U]:
+        """
+        Create an infinite iterator by repeatedly applying a function into an original input x.
+
+        **Warning** ⚠️
+
+        This creates an infinite iterator.
+
+        Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
+
+        >>> from pychain import Iter
+        >>> Iter.from_func(lambda x: x + 1, 0).head(3).into(list)
+        [0, 1, 2]
+        """
+        from .._iter import Iter
+
+        return Iter(cz.itertoolz.iterate(func, x))
+
+    @staticmethod
+    def from_[U](*elements: U) -> Iter[U]:
+        """
+        Create an iterator from the given elements.
+
+        >>> from pychain import Iter
+        >>> Iter.from_(1, 2, 3).into(list)
+        [1, 2, 3]
+        """
+        from .._iter import Iter
+
+        return Iter(elements)
 
     def into[**P, R](
         self,
@@ -125,72 +191,102 @@ class Iter[T](IterDicts[T], Executor[T], IterConstructors):
 
         return self.apply(lambda data: cz.itertoolz.reduceby(key, binop, data, init))
 
-    def repeat(self, n: int) -> Iter[Iterable[T]]:
+    def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
         """
-        Repeat the entire iterable n times (as elements) and return Iter.
-
-        >>> Iter([1, 2]).repeat(2).into(list)
-        [[1, 2], [1, 2]]
-        """
-        return self.apply(itertools.repeat, n)
-
-    @overload
-    def repeat_last(self, default: T) -> Iter[T]: ...
-    @overload
-    def repeat_last[U](self, default: U) -> Iter[T | U]: ...
-    def repeat_last[U](self, default: U = None) -> Iter[T | U]:
-        """
-        After the iterable is exhausted, keep yielding its last element.
-
-        >>> Iter.from_range(0, 3).repeat_last().head(5).into(list)
-        [0, 1, 2, 2, 2]
-
-        If the iterable is empty, yield default forever:
-
-        >>> Iter.from_range(0, 0).repeat_last(42).head(5).into(list)
-        [42, 42, 42, 42, 42]
-        """
-        return self.apply(mit.repeat_last, default)
-
-    @overload
-    def explode[U](
-        self: Iter[Iterable[Iterable[Iterable[U]]]],
-    ) -> Iter[Iterable[Iterable[U]]]: ...
-    @overload
-    def explode[U](self: Iter[Iterable[Iterable[U]]]) -> Iter[Iterable[U]]: ...
-    @overload
-    def explode[U](self: Iter[Iterable[U]]) -> Iter[U]: ...
-    def explode(self: Iter[Iterable[Any]]) -> Iter[Any]:
-        """
-        Flatten one level of nesting and return a new Iterable wrapper.
-
-        >>> Iter([[1, 2], [3]]).explode().into(list)
-        [1, 2, 3]
-        """
-        return self.apply(itertools.chain.from_iterable)
-
-    def ichunked(self, n: int) -> Iter[Iterator[T]]:
-        """
-
-        Break *iterable* into sub-iterables with *n* elements each.
-
-        :func:`ichunked` is like :func:`chunked`, but it yields iterables
-        instead of lists.
-
-        If the sub-iterables are read in order, the elements of *iterable*
-        won't be stored in memory.
-
-        If they are read out of order, :func:`itertools.tee` is used to cache
-        elements as necessary.
+        Group elements by key function and return a Dict result.
 
         >>> from pychain import Iter
-        >>> all_chunks = Iter.from_count().ichunked(4).unwrap()
-        >>> c_1, c_2, c_3 = next(all_chunks), next(all_chunks), next(all_chunks)
-        >>> list(c_2)  # c_1's elements have been cached; c_3's haven't been
-        [4, 5, 6, 7]
-        >>> list(c_1)
-        [0, 1, 2, 3]
-        >>> list(c_3)
-        [8, 9, 10, 11]
+
+        >>> names = [
+        ...     "Alice",
+        ...     "Bob",
+        ...     "Charlie",
+        ...     "Dan",
+        ...     "Edith",
+        ...     "Frank",
+        ... ]
+        >>> Iter(names).group_by(len).sort()
+        ... # doctest: +NORMALIZE_WHITESPACE
+        Dict(
+            3, list: ['Bob', 'Dan'],
+            5, list: ['Alice', 'Edith', 'Frank'],
+            7, list: ['Charlie'],
+        )
+        >>>
+        >>> iseven = lambda x: x % 2 == 0
+        >>> Iter([1, 2, 3, 4, 5, 6, 7, 8]).group_by(iseven)
+        ... # doctest: +NORMALIZE_WHITESPACE
+        Dict(
+            False, list: [1, 3, 5, 7],
+            True, list: [2, 4, 6, 8],
+        )
+
+        Non-callable keys imply grouping on a member.
+
+        >>> data = [
+        ...     {"name": "Alice", "gender": "F"},
+        ...     {"name": "Bob", "gender": "M"},
+        ...     {"name": "Charlie", "gender": "M"},
+        ... ]
+        >>> Iter(data).group_by("gender").sort()
+        ... # doctest: +NORMALIZE_WHITESPACE
+        Dict(
+            'F', list: [{'name': 'Alice', 'gender': 'F'}],
+            'M', list: [{'name': 'Bob', 'gender': 'M'}, {'name': 'Charlie', 'gender': 'M'}],
+        )
         """
-        return self.apply(mit.ichunked, n)
+        from .._dict import Dict
+
+        return Dict(self.into(partial(cz.itertoolz.groupby, on)))
+
+    def frequencies(self) -> Dict[T, int]:
+        """
+        Find number of occurrences of each value in the iterable.
+
+        >>> from pychain import Iter
+        >>> Iter(["cat", "cat", "ox", "pig", "pig", "cat"]).frequencies().unwrap()
+        {'cat': 3, 'ox': 1, 'pig': 2}
+        """
+        from .._dict import Dict
+
+        return Dict(self.into(cz.itertoolz.frequencies))
+
+    def count_by[K](self, key: Callable[[T], K]) -> Dict[K, int]:
+        """
+        Count elements of a collection by a key function
+
+        >>> from pychain import Iter
+        >>> Iter(["cat", "mouse", "dog"]).count_by(len).unwrap()
+        {3: 2, 5: 1}
+        >>> def iseven(x):
+        ...     return x % 2 == 0
+        >>> Iter([1, 2, 3]).count_by(iseven).unwrap()
+        {False: 2, True: 1}
+        """
+        from .._dict import Dict
+
+        return Dict(self.into(partial(cz.recipes.countby, key)))
+
+    def with_keys[K](self, keys: Iterable[K]) -> Dict[K, T]:
+        """
+        Create a Dict by zipping the iterable with keys.
+
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).with_keys(["a", "b", "c"]).unwrap()
+        {'a': 1, 'b': 2, 'c': 3}
+        """
+        from .._dict import Dict
+
+        return Dict(dict(zip(keys, self.unwrap())))
+
+    def with_values[V](self, values: Iterable[V]) -> Dict[T, V]:
+        """
+        Create a Dict by zipping the iterable with values.
+
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).with_values(["a", "b", "c"]).unwrap()
+        {1: 'a', 2: 'b', 3: 'c'}
+        """
+        from .._dict import Dict
+
+        return Dict(dict(zip(self.unwrap(), values)))
