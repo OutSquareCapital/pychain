@@ -1,6 +1,3 @@
-from ._core import Wrapper
-from ._dict import Dict, Record
-from ._expressions import Expr, key
-from ._iter import Iter
+from ._implementations import Dict, Expr, Iter, Wrapper, key
 
-__all__ = ["Dict", "Iter", "Wrapper", "Expr", "Record", "key"]
+__all__ = ["Dict", "Iter", "Wrapper", "Expr", "key"]

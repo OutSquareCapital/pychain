@@ -2,17 +2,67 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from functools import partial
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 import cytoolz as cz
 
 from .._core import EagerWrapper, SupportsKeysAndGetItem
+from ._expr import IntoExpr, parse_expr
 
 if TYPE_CHECKING:
-    from .._iter import Iter
+    from ._iter import Iter
 
 
-class CoreDict[K, V](EagerWrapper[dict[K, V]]):
+class Dict[K, V](EagerWrapper[dict[K, V]]):
+    """
+    Wrapper for Python dictionaries with chainable methods.
+    """
+
+    def _from_context(self, plan: Iterable[IntoExpr], is_selection: bool) -> Self:
+        def _(data: dict[K, V]) -> dict[K, V]:
+            if is_selection:
+                result_dict: dict[K, V] = {}
+            else:
+                result_dict = data.copy()
+
+            for expr in plan:
+                parse_expr(expr).__compute__(data, result_dict)
+
+            return result_dict
+
+        return self._new(_)
+
+    def select(self, *exprs: IntoExpr) -> Self:
+        """
+        Select only the specified fields, creating a new dictionary with just those fields.
+        """
+        return self._from_context(exprs, True)
+
+    def with_fields(self, *exprs: IntoExpr) -> Self:
+        """
+        Adds or replaces fields in the existing dictionary.
+        """
+        return self._from_context(exprs, False)
+
+    def apply[**P, KU, VU](
+        self,
+        func: Callable[Concatenate[dict[K, V], P], dict[KU, VU]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Dict[KU, VU]:
+        """
+        Apply a function to the underlying dict and return a new Dict.
+
+        >>> from pychain import Dict
+        >>>
+        >>> def mul_by_ten(d: dict[int, int]) -> dict[int, int]:
+        ...     return {k: v * 10 for k, v in d.items()}
+        >>>
+        >>> Dict({1: 20, 2: 30}).apply(mul_by_ten).unwrap()
+        {1: 200, 2: 300}
+        """
+        return Dict(self.into(func, *args, **kwargs))
+
     def __init__(self, data: SupportsKeysAndGetItem[K, V] | dict[K, V]) -> None:
         if not isinstance(data, dict):
             data = dict(data)
@@ -33,7 +83,7 @@ class CoreDict[K, V](EagerWrapper[dict[K, V]]):
         >>> Dict({1: 2}).iter_keys().into(list)
         [1]
         """
-        from .._iter import Iter
+        from ._iter import Iter
 
         return Iter(self.unwrap().keys())
 
@@ -45,7 +95,7 @@ class CoreDict[K, V](EagerWrapper[dict[K, V]]):
         >>> Dict({1: 2}).iter_values().into(list)
         [2]
         """
-        from .._iter import Iter
+        from ._iter import Iter
 
         return Iter(self.unwrap().values())
 
@@ -57,7 +107,7 @@ class CoreDict[K, V](EagerWrapper[dict[K, V]]):
         >>> Dict({1: 2}).iter_items().into(list)
         [(1, 2)]
         """
-        from .._iter import Iter
+        from ._iter import Iter
 
         return Iter(self.unwrap().items())
 
@@ -99,7 +149,7 @@ class CoreDict[K, V](EagerWrapper[dict[K, V]]):
         """
         return (
             self.unwrap() == other.unwrap()
-            if isinstance(other, CoreDict)
+            if isinstance(other, Dict)
             else self.unwrap() == other
         )
 
@@ -143,7 +193,7 @@ class CoreDict[K, V](EagerWrapper[dict[K, V]]):
         """
         return self._new(lambda data: cz.dicttoolz.merge_with(func, data, *others))
 
-    def flatten[U: CoreDict[str, Any]](
+    def flatten[U: Dict[str, Any]](
         self: U, sep: str = ".", max_depth: int | None = None
     ) -> U:
         """
@@ -185,7 +235,7 @@ class CoreDict[K, V](EagerWrapper[dict[K, V]]):
 
         return self._new(lambda data: _recurse_flatten(data))
 
-    def schema[U: CoreDict[str, Any]](self: U, max_depth: int = 2) -> U:
+    def schema(self, max_depth: int = 2) -> Dict[str, Any]:
         """
         Return the schema of the dictionary up to a maximum depth.
         When the max depth is reached, nested dicts are marked as 'dict'.
@@ -336,3 +386,101 @@ class CoreDict[K, V](EagerWrapper[dict[K, V]]):
                 lambda kv: not predicate(kv[0], kv[1]), data
             )
         )
+
+    def implode(self) -> Dict[K, Iterable[V]]:
+        """
+        Nest all the values in lists.
+        syntactic sugar for map_values(lambda v: [v])
+
+        >>> Dict({1: 2, 3: 4}).implode().unwrap()
+        {1: [2], 3: [4]}
+        """
+        return self.map_values(lambda v: [v])
+
+    def map_keys[T](self, func: Callable[[K], T]) -> Dict[T, V]:
+        """
+        Return a Dict with keys transformed by func.
+
+        >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_keys(str.lower).unwrap()
+        {'alice': [20, 15, 30], 'bob': [10, 35]}
+        >>>
+        >>> Dict({1: "a"}).map_keys(str).unwrap()
+        {'1': 'a'}
+        """
+        return self.apply(partial(cz.dicttoolz.keymap, func))
+
+    def map_values[T](self, func: Callable[[V], T]) -> Dict[K, T]:
+        """
+        Return a Dict with values transformed by func.
+
+        >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_values(sum).unwrap()
+        {'Alice': 65, 'Bob': 45}
+        >>>
+        >>> Dict({1: 1}).map_values(lambda v: v + 1).unwrap()
+        {1: 2}
+        """
+        return self.apply(partial(cz.dicttoolz.valmap, func))
+
+    def map_items[KR, VR](
+        self,
+        func: Callable[[tuple[K, V]], tuple[KR, VR]],
+    ) -> Dict[KR, VR]:
+        """
+        Transform (key, value) pairs using a function that takes a (key, value) tuple.
+
+        >>> Dict({"Alice": 10, "Bob": 20}).map_items(
+        ...     lambda kv: (kv[0].upper(), kv[1] * 2)
+        ... ).unwrap()
+        {'ALICE': 20, 'BOB': 40}
+        """
+        return self.apply(partial(cz.dicttoolz.itemmap, func))
+
+    def reverse(self) -> Dict[V, K]:
+        """
+        Return a new Dict with keys and values swapped.
+
+        Values in the original dict must be unique and hashable.
+
+        >>> Dict({"a": 1, "b": 2}).reverse().unwrap()
+        {1: 'a', 2: 'b'}
+        """
+        return self.apply(partial(cz.dicttoolz.itemmap, reversed))
+
+    def map_kv[KR, VR](
+        self,
+        func: Callable[[K, V], tuple[KR, VR]],
+    ) -> Dict[KR, VR]:
+        """
+        Transform (key, value) pairs using a function that takes key and value as separate arguments.
+
+        >>> Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).unwrap()
+        {2: 20}
+        """
+        return self.apply(
+            lambda data: cz.dicttoolz.itemmap(lambda kv: func(kv[0], kv[1]), data)
+        )
+
+    def diff(self, other: dict[K, V]) -> Dict[K, tuple[V | None, V | None]]:
+        """
+        Returns a dict of the differences between this dict and another.
+
+        The keys of the returned dict are the keys that are not shared or have different values.
+        The values are tuples containing the value from self and the value from other.
+
+        >>> d1 = {"a": 1, "b": 2, "c": 3}
+        >>> d2 = {"b": 2, "c": 4, "d": 5}
+        >>> Dict(d1).diff(d2).sort().unwrap()
+        {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
+        """
+
+        def _(data: dict[K, V]) -> dict[K, tuple[V | None, V | None]]:
+            all_keys: set[K] = data.keys() | other.keys()
+            diffs: dict[K, tuple[V | None, V | None]] = {}
+            for key in all_keys:
+                self_val = data.get(key)
+                other_val = other.get(key)
+                if self_val != other_val:
+                    diffs[key] = (self_val, other_val)
+            return diffs
+
+        return self.apply(_)

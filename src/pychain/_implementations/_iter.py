@@ -11,7 +11,7 @@ from .._core import Pluckable
 from .._executors import Executor
 
 if TYPE_CHECKING:
-    from .._dict import Dict
+    from ._dict import Dict
 
 
 @final
@@ -41,7 +41,6 @@ class Iter[T](Executor[T]):
         >>> Iter.from_count(10, 2).head(3).into(list)
         [10, 12, 14]
         """
-        from .._iter import Iter
 
         return Iter(itertools.count(start, step))
 
@@ -56,7 +55,6 @@ class Iter[T](Executor[T]):
         >>> Iter.from_range(1, 5).into(list)
         [1, 2, 3, 4]
         """
-        from .._iter import Iter
 
         return Iter(range(start, stop, step))
 
@@ -75,7 +73,6 @@ class Iter[T](Executor[T]):
         >>> Iter.from_func(lambda x: x + 1, 0).head(3).into(list)
         [0, 1, 2]
         """
-        from .._iter import Iter
 
         return Iter(cz.itertoolz.iterate(func, x))
 
@@ -88,7 +85,6 @@ class Iter[T](Executor[T]):
         >>> Iter.from_(1, 2, 3).into(list)
         [1, 2, 3]
         """
-        from .._iter import Iter
 
         return Iter(elements)
 
@@ -235,7 +231,7 @@ class Iter[T](Executor[T]):
             'M', list: [{'name': 'Bob', 'gender': 'M'}, {'name': 'Charlie', 'gender': 'M'}],
         )
         """
-        from .._dict import Dict
+        from ._dict import Dict
 
         return Dict(self.into(partial(cz.itertoolz.groupby, on)))
 
@@ -247,7 +243,7 @@ class Iter[T](Executor[T]):
         >>> Iter(["cat", "cat", "ox", "pig", "pig", "cat"]).frequencies().unwrap()
         {'cat': 3, 'ox': 1, 'pig': 2}
         """
-        from .._dict import Dict
+        from ._dict import Dict
 
         return Dict(self.into(cz.itertoolz.frequencies))
 
@@ -263,7 +259,7 @@ class Iter[T](Executor[T]):
         >>> Iter([1, 2, 3]).count_by(iseven).unwrap()
         {False: 2, True: 1}
         """
-        from .._dict import Dict
+        from ._dict import Dict
 
         return Dict(self.into(partial(cz.recipes.countby, key)))
 
@@ -275,7 +271,7 @@ class Iter[T](Executor[T]):
         >>> Iter([1, 2, 3]).with_keys(["a", "b", "c"]).unwrap()
         {'a': 1, 'b': 2, 'c': 3}
         """
-        from .._dict import Dict
+        from ._dict import Dict
 
         return Dict(dict(zip(keys, self.unwrap())))
 
@@ -287,6 +283,6 @@ class Iter[T](Executor[T]):
         >>> Iter([1, 2, 3]).with_values(["a", "b", "c"]).unwrap()
         {1: 'a', 2: 'b', 3: 'c'}
         """
-        from .._dict import Dict
+        from ._dict import Dict
 
         return Dict(dict(zip(self.unwrap(), values)))
