@@ -1,6 +1,22 @@
 import unittest
+from dataclasses import dataclass
 
 import pychain as pc
+
+
+@dataclass(slots=True)
+class TestData:
+    values: list[int]
+    names: list[str]
+    active: list[bool]
+
+
+@dataclass(slots=True)
+class ResultData(TestData):
+    filtered_values: list[int]
+    names_with_a: list[str]
+    reversed_values: list[int]
+    sliced_values: list[int]
 
 
 class TestIterExprIntegration(unittest.TestCase):
@@ -18,29 +34,31 @@ class TestIterExprIntegration(unittest.TestCase):
         )
 
         # Use with_fields with expressions that use BaseProcess/BaseFilter methods
-        result = data.with_fields(
-            pc.key("values")
-            .filter(lambda x: x > 2)
-            .apply(list)
-            .alias("filtered_values"),
-            pc.key("names")
-            .filter(lambda name: "a" in name.lower())
-            .apply(list)
-            .alias("names_with_a"),
-            pc.key("values").reverse().apply(list).alias("reversed_values"),
-            pc.key("values").slice(1, 4).apply(list).alias("sliced_values"),
-        ).unwrap()
+        result = ResultData(
+            **data.with_fields(
+                pc.key("values")
+                .filter(lambda x: x > 2)
+                .apply(list)
+                .alias("filtered_values"),
+                pc.key("names")
+                .filter(lambda name: "a" in name.lower())
+                .apply(list)
+                .alias("names_with_a"),
+                pc.key("values").reverse().apply(list).alias("reversed_values"),
+                pc.key("values").slice(1, 4).apply(list).alias("sliced_values"),
+            ).unwrap()
+        )
 
         # Verify results
-        self.assertEqual(result["filtered_values"], [3, 4, 5])
-        self.assertEqual(result["names_with_a"], ["Alice", "Charlie", "Dave", "Eva"])
-        self.assertEqual(result["reversed_values"], [5, 4, 3, 2, 1])
-        self.assertEqual(result["sliced_values"], [2, 3, 4])
+        self.assertEqual(result.filtered_values, [3, 4, 5])
+        self.assertEqual(result.names_with_a, ["Alice", "Charlie", "Dave", "Eva"])
+        self.assertEqual(result.reversed_values, [5, 4, 3, 2, 1])
+        self.assertEqual(result.sliced_values, [2, 3, 4])
 
         # Original fields should still be present
-        self.assertEqual(result["values"], [1, 2, 3, 4, 5])
-        self.assertEqual(result["names"], ["Alice", "Bob", "Charlie", "Dave", "Eva"])
-        self.assertEqual(result["active"], [True, False, True, True, False])
+        self.assertEqual(result.values, [1, 2, 3, 4, 5])
+        self.assertEqual(result.names, ["Alice", "Bob", "Charlie", "Dave", "Eva"])
+        self.assertEqual(result.active, [True, False, True, True, False])
 
     def test_iter_and_expr_comparable_results(self):
         """Test that Iter and Expr produce the same results for complex operations."""
