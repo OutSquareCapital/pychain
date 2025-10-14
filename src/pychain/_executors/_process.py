@@ -12,8 +12,7 @@ import more_itertools as mit
 from .._core import IterWrapper, Peeked, SupportsRichComparison
 
 if TYPE_CHECKING:
-    from .._expressions import Expr
-    from .._iter import Iter
+    from .._implementations import Expr, Iter
 
 
 class BaseProcess[T](IterWrapper[T]):

@@ -11,8 +11,7 @@ import more_itertools as mit
 from .._core import IterWrapper, SupportsRichComparison
 
 if TYPE_CHECKING:
-    from .._expressions import Expr
-    from .._iter import Iter
+    from .._implementations import Expr, Iter
 
 
 class BaseAgg[T](IterWrapper[T]):

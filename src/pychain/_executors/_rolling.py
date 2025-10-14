@@ -8,8 +8,7 @@ import rolling
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from .._expressions import Expr
-    from .._iter import Iter
+    from .._implementations import Expr, Iter
 
 
 class BaseRolling[T](IterWrapper[T]):
