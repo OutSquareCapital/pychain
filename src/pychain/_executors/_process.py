@@ -1,13 +1,19 @@
+from __future__ import annotations
+
 import itertools
 from collections.abc import Callable, Iterable, Iterator
 from functools import partial
 from random import Random
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self, overload
 
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import IterWrapper, Peeked
+from .._core import IterWrapper, Peeked, SupportsRichComparison
+
+if TYPE_CHECKING:
+    from .._expressions import Expr
+    from .._iter import Iter
 
 
 class BaseProcess[T](IterWrapper[T]):
@@ -234,3 +240,25 @@ class BaseProcess[T](IterWrapper[T]):
         ['a', 'b', 'c', 'd']
         """
         return self._new(mit.strictly_n, n, too_short, too_long)
+
+    @overload
+    def sort[U: SupportsRichComparison[Any]](
+        self: Iter[U], reverse: bool = False
+    ) -> Iter[U]: ...
+    @overload
+    def sort[U: Expr](self: U, reverse: bool = False) -> U: ...
+
+    def sort[U: SupportsRichComparison[Any]](
+        self: IterWrapper[U], reverse: bool = False
+    ) -> IterWrapper[U]:
+        """
+        Sort the elements of the sequence.
+        Note: This method must consume the entire iterable to perform the sort.
+
+        The result is a new iterable over the sorted sequence.
+
+        >>> from pychain import Iter
+        >>> Iter([3, 1, 2]).sort().into(list)
+        [1, 2, 3]
+        """
+        return self._new(lambda data: sorted(data, reverse=reverse))
