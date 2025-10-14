@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import inspect
 from collections.abc import Callable
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Any, Self, TypeGuard, final
 
 import cytoolz as cz
@@ -11,8 +13,16 @@ from .._executors import Executor
 type IntoExpr = str | Expr
 
 
+class OpType(StrEnum):
+    NAME = "__name__"
+    LAMBDA = "lambda"
+    CLASS = "__class__"
+    EXPR = "Expr"
+    IS_EXPR = "_is_pychain_expr"
+
+
 def is_expr(obj: Any) -> TypeGuard[Expr]:
-    return getattr(obj, "_is_pychain_expr", False)
+    return getattr(obj, OpType.IS_EXPR, False)
 
 
 def parse_expr(expr: IntoExpr) -> Expr:
@@ -25,6 +35,20 @@ def parse_expr(expr: IntoExpr) -> Expr:
             raise TypeError(f"Expression must be of type str or Expr, not {type(expr)}")
 
 
+def _parse_lambda(name: str, op: Callable[..., Any]) -> str:
+    try:
+        source = inspect.getsource(op).strip()
+        if OpType.LAMBDA in source:
+            lambda_part = source[source.find(OpType.LAMBDA) :].split(",")[0]
+            if len(lambda_part) > 30:  # Truncate if too long
+                lambda_part = lambda_part[:27] + "..."
+            name = lambda_part
+    except (OSError, TypeError):
+        name = f"<{OpType.LAMBDA}>"
+    finally:
+        return name
+
+
 @final
 @dataclass(slots=True)
 class Expr(Executor[Any]):
@@ -32,6 +56,25 @@ class Expr(Executor[Any]):
     _output_name: str
     _is_pychain_expr = True
     _operations: list[Callable[[Any], Any]]
+
+    def __repr__(self) -> str:
+        """Return a string representation of the expression showing the execution plan."""
+        ops_repr: list[str] = []
+        for op in self._operations:
+            if hasattr(op, OpType.NAME):
+                name = op.__name__
+                if name == f"<{OpType.LAMBDA}>":
+                    name = _parse_lambda(name, op)
+            elif hasattr(op, OpType.CLASS):
+                name = f"{op.__class__.__name__}"
+            else:
+                name = str(op)
+            ops_repr.append(name)
+        if ops_repr:
+            pipeline = " -> ".join(ops_repr)
+            return f"{OpType.EXPR}('{self._input_name}' -> {pipeline} -> '{self._output_name}')"
+        else:
+            return f"{OpType.EXPR}('{self._input_name}' -> '{self._output_name}')"
 
     @property
     def _func(self) -> Callable[[Any], Any]:
