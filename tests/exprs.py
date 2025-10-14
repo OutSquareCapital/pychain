@@ -1,5 +1,6 @@
 import unittest
 from dataclasses import dataclass
+from typing import Any
 
 import pychain as pc
 
@@ -25,7 +26,7 @@ class TestIterExprIntegration(unittest.TestCase):
     def test_record_with_expr_transformations(self):
         """Test using Expr to transform data in a Record."""
         # Create test data
-        data = pc.Record(
+        data = pc.Dict[str, Any](
             {
                 "values": [1, 2, 3, 4, 5],
                 "names": ["Alice", "Bob", "Charlie", "Dave", "Eva"],
@@ -74,7 +75,7 @@ class TestIterExprIntegration(unittest.TestCase):
         )
 
         # Using Expr in a Record
-        record = pc.Record({"numbers": test_data})
+        record = pc.Dict({"numbers": test_data})
 
         expr_result = record.with_fields(
             pc.key("numbers")
@@ -106,7 +107,7 @@ class TestIterExprIntegration(unittest.TestCase):
         )
         # Using Expr with the same logic
         expr_result = (
-            pc.Record(data)
+            pc.Dict(data)
             .with_fields(
                 pc.key("users")
                 .filter(lambda user: sum(user["scores"]) / len(user["scores"]) >= 85)

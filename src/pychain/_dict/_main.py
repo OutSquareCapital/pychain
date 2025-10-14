@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 from functools import partial
-from typing import Concatenate
+from typing import Concatenate, Self
 
 import cytoolz as cz
 
+from .._expressions import IntoExpr, parse_expr
 from ._core import CoreDict
 
 
@@ -13,6 +14,32 @@ class Dict[K, V](CoreDict[K, V]):
     """
     Wrapper for Python dictionaries with chainable methods.
     """
+
+    def _from_context(self, plan: Iterable[IntoExpr], is_selection: bool) -> Self:
+        def _(data: dict[K, V]) -> dict[K, V]:
+            if is_selection:
+                result_dict: dict[K, V] = {}
+            else:
+                result_dict = data.copy()
+
+            for expr in plan:
+                parse_expr(expr).__compute__(data, result_dict)
+
+            return result_dict
+
+        return self._new(_)
+
+    def select(self, *exprs: IntoExpr) -> Self:
+        """
+        Select only the specified fields, creating a new dictionary with just those fields.
+        """
+        return self._from_context(exprs, True)
+
+    def with_fields(self, *exprs: IntoExpr) -> Self:
+        """
+        Adds or replaces fields in the existing dictionary.
+        """
+        return self._from_context(exprs, False)
 
     def apply[**P, KU, VU](
         self,

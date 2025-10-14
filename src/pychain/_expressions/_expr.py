@@ -37,7 +37,7 @@ class Expr(Executor[Any]):
     def _func(self) -> Callable[[Any], Any]:
         return cz.functoolz.compose_left(*self._operations)
 
-    def __compute__(self, input: dict[str, Any], output: dict[str, Any]) -> None:
+    def __compute__(self, input: dict[Any, Any], output: dict[Any, Any]) -> None:
         output[self._output_name] = self._func(input[self._input_name])
 
     def _new(self, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Self:

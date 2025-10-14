@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Any, TypedDict
 
 import pychain as pc
 
@@ -63,7 +63,7 @@ def _total_cost(expr: pc.Expr) -> pc.Expr:
     return expr.field("items").map(lambda item: item["price"] * item["quantity"]).sum()
 
 
-def _user_summary(record: pc.Record) -> pc.Record:
+def _user_summary(record: pc.Dict[str, Any]) -> pc.Dict[str, Any]:
     order = pc.key("order")
     return record.select(
         pc.key("user").field("name").alias("customer_name"),
@@ -72,7 +72,7 @@ def _user_summary(record: pc.Record) -> pc.Record:
     )
 
 
-def _enriched_record(record: pc.Record) -> pc.Record:
+def _enriched_record(record: pc.Dict[str, Any]) -> pc.Dict[str, Any]:
     user = pc.key("user")
     return record.with_fields(
         pc.key("order").field("items").length().alias("item_count"),
@@ -85,7 +85,7 @@ def _enriched_record(record: pc.Record) -> pc.Record:
 
 
 def main():
-    record = pc.Record(dict(_dummy_data()))
+    record = pc.Dict(dict(_dummy_data()))
 
     assert record.pipe(_user_summary).equals_to(
         SummarySchema(
