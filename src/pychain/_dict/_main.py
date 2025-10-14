@@ -31,7 +31,7 @@ class Dict[K, V](CoreDict[K, V]):
         >>> Dict({1: 20, 2: 30}).apply(mul_by_ten).unwrap()
         {1: 200, 2: 300}
         """
-        return super().apply(func, *args, **kwargs)
+        return Dict(self.into(func, *args, **kwargs))
 
     def implode(self) -> Dict[K, Iterable[V]]:
         """

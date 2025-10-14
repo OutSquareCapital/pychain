@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import Any, Concatenate, Self
+from typing import Any, Concatenate, Self, final
 
 from .._expressions import IntoExpr, parse_expr
 from ._core import CoreDict
 
 
+@final
 class Record(CoreDict[str, Any]):
     def apply[**P](
         self,
@@ -25,7 +26,7 @@ class Record(CoreDict[str, Any]):
         >>> Record({1: 20, 2: 30}).apply(mul_by_ten).unwrap()
         {1: 200, 2: 300}
         """
-        return super().apply(func, *args, **kwargs)
+        return self.__class__(self.into(func, *args, **kwargs))
 
     def _from_context(self, plan: Iterable[IntoExpr], is_selection: bool) -> Self:
         def _(data: dict[str, Any]) -> dict[str, Any]:

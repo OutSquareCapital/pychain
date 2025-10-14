@@ -1,3 +1,3 @@
-from ._main import BaseExecutor
+from ._main import Executor
 
-__all__ = ["BaseExecutor"]
+__all__ = ["Executor"]

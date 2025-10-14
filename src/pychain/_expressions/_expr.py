@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Self, TypeGuard
+from typing import Any, Self, TypeGuard, final
 
 import cytoolz as cz
 
-from .._executors import BaseExecutor
+from .._executors import Executor
 
 type IntoExpr = str | Expr
 
@@ -15,8 +15,19 @@ def is_expr(obj: Any) -> TypeGuard[Expr]:
     return getattr(obj, "_is_pychain_expr", False)
 
 
+def parse_expr(expr: IntoExpr) -> Expr:
+    match expr:
+        case Expr():
+            return expr
+        case str():
+            return key(expr)
+        case _:
+            raise TypeError(f"Expression must be of type str or Expr, not {type(expr)}")
+
+
+@final
 @dataclass(slots=True)
-class Expr(BaseExecutor[Any]):
+class Expr(Executor[Any]):
     _input_name: str
     _output_name: str
     _is_pychain_expr = True
@@ -33,6 +44,9 @@ class Expr(BaseExecutor[Any]):
         return self.__class__(
             self._input_name, self._output_name, self._operations + [func]
         )
+
+    def into(self, func: Callable[[Any], Any]) -> Self:
+        return self._new(func)
 
     def alias(self, name: str) -> Expr:
         self._output_name = name
@@ -126,13 +140,3 @@ class KeySelector:
 
 
 key = KeySelector()
-
-
-def parse_expr(expr: IntoExpr) -> Expr:
-    match expr:
-        case Expr():
-            return expr
-        case str():
-            return key(expr)
-        case _:
-            raise TypeError(f"Expression must be of type str or Expr, not {type(expr)}")

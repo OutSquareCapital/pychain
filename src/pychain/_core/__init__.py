@@ -1,4 +1,4 @@
-from ._main import CommonBase, IterWrapper, Wrapper
+from ._main import CommonBase, EagerWrapper, IterWrapper, Wrapper
 from ._protocols import (
     Peeked,
     Pluckable,
@@ -9,6 +9,7 @@ from ._protocols import (
 )
 
 __all__ = [
+    "EagerWrapper",
     "CommonBase",
     "IterWrapper",
     "Wrapper",

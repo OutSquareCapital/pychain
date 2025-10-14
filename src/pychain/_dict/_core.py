@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING, Any, Self
 
 import cytoolz as cz
 
-from .._core import CommonBase, SupportsKeysAndGetItem
+from .._core import EagerWrapper, SupportsKeysAndGetItem
 
 if TYPE_CHECKING:
     from .._iter import Iter
 
 
-class CoreDict[K, V](CommonBase[dict[K, V]]):
+class CoreDict[K, V](EagerWrapper[dict[K, V]]):
     def __init__(self, data: SupportsKeysAndGetItem[K, V] | dict[K, V]) -> None:
         if not isinstance(data, dict):
             data = dict(data)
