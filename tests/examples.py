@@ -7,9 +7,6 @@ import polars as pl
 
 import pychain as pc
 
-# --- Cookbook: Real-life Examples ---
-
-
 # --- Example 1: Word Frequency Analysis ---
 
 TEXT_DATA = """
@@ -32,8 +29,8 @@ def dataframe_example():
     }
     try:
         pl.DataFrame(data)
-    except Exception as e:
-        print(f"Error creating DataFrame: {e}")
+    except Exception:
+        pass  # Will raise an error due to different lengths
     return pc.Dict(data).implode().into(pl.LazyFrame).explode("name").collect()
 
 

@@ -41,7 +41,7 @@ class TestIterExprIntegration(unittest.TestCase):
                 .apply(list)
                 .alias("filtered_values"),
                 pc.key("names")
-                .filter(lambda name: "a" in name.lower())
+                .filter_contain("a", str.lower)
                 .apply(list)
                 .alias("names_with_a"),
                 pc.key("values").reverse().apply(list).alias("reversed_values"),
@@ -79,7 +79,7 @@ class TestIterExprIntegration(unittest.TestCase):
         expr_result = record.with_fields(
             pc.key("numbers")
             .filter(lambda x: x % 2 == 0)  # Even numbers
-            .apply(lambda x: [i * 2 for i in x])  # Double them
+            .map(lambda x: x * 2)  # Double them
             .accumulate(lambda a, b: a + b)  # Running sum
             .apply(list)
             .alias("result")
@@ -110,7 +110,8 @@ class TestIterExprIntegration(unittest.TestCase):
             .with_fields(
                 pc.key("users")
                 .filter(lambda user: sum(user["scores"]) / len(user["scores"]) >= 85)
-                .apply(lambda users: [user["name"] for user in users])
+                .map(lambda user: user["name"])
+                .apply(list)
                 .alias("high_scorers")
             )
             .unwrap()["high_scorers"]

@@ -3,19 +3,18 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Iterable, Iterator
 from functools import partial
-from typing import Any, overload
+from typing import Any, Concatenate, overload
 
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase, Pluckable
+from .._core import Pluckable
 from .._executors import BaseExecutor
 from ._aggregations import IterAgg
 from ._booleans import IterBool
 from ._constructors import IterConstructors
 from ._dicts import IterDicts
 from ._lists import IterList
-from ._maps import IterMap
 from ._rolling import IterRolling
 from ._tuples import IterTuples
 
@@ -25,7 +24,6 @@ class Iter[T](
     IterTuples[T],
     IterBool[T],
     IterRolling[T],
-    IterMap[T],
     IterDicts[T],
     IterList[T],
     BaseExecutor[T],
@@ -41,56 +39,13 @@ class Iter[T](
     It can be constructed from any iterable, including `lists`, `tuples`, `sets`, and `generators`.
     """
 
-    def filter_subclass[U: Iterable[type], R](
-        self: CommonBase[U], parent: type[R]
-    ) -> Iter[type[R]]:
-        """
-        Return elements that are subclasses of the given class.
-
-            >>> from pychain import Iter
-            >>> class A:
-            ...     pass
-            >>> class B(A):
-            ...     pass
-            >>> class C:
-            ...     pass
-            >>> Iter([A, B, C]).filter_subclass(A).map(lambda c: c.__name__).into(list)
-            ['A', 'B']
-        """
-        return self.apply(lambda data: (x for x in data if issubclass(x, parent)))
-
-    def filter_type[R](self, typ: type[R]) -> Iter[R]:
-        """
-        Return elements that are instances of the given type.
-
-            >>> from pychain import Iter
-            >>> Iter([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
-            [1, 5]
-        """
-        return self.apply(lambda data: (x for x in data if isinstance(x, typ)))
-
-    def filter_callable(self) -> Iter[Callable[..., Any]]:
-        """
-        Return only elements that are callable.
-
-        >>> from pychain import Iter
-        >>> Iter([len, 42, str, None, list]).filter_callable().into(list)
-        [<built-in function len>, <class 'str'>, <class 'list'>]
-        """
-        return self.apply(lambda data: (x for x in data if callable(x)))
-
-    def filter_map[R](self, func: Callable[[T], R]) -> Iter[R]:
-        """
-        Apply func to every element of iterable, yielding only those which are not None.
-
-        >>> from pychain import Iter
-        >>> elems = ["1", "a", "2", "b", "3"]
-        >>> Iter(elems).filter_map(lambda s: int(s) if s.isnumeric() else None).into(
-        ...     list
-        ... )
-        [1, 2, 3]
-        """
-        return self.apply(partial(mit.filter_map, func))
+    def apply[**P, R](
+        self,
+        func: Callable[Concatenate[Iterable[T], P], Iterable[R]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Iter[R]:
+        return super().apply(func, *args, **kwargs)
 
     def pluck[K, V](self: Iter[Pluckable[K, V]], key: K) -> Iter[V]:
         """

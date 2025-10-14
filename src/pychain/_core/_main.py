@@ -92,7 +92,7 @@ class CommonBase[T](ABC):
         func: Callable[Concatenate[T, P], Any],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Any:
+    ):
         """
         Pipe the underlying data into a function, then wrap the result in the same wrapper type.
 

@@ -3,18 +3,23 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Iterable
 from functools import partial
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 import more_itertools as mit
 
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import Iter
+    from .._expressions import Expr
+    from .._iter import Iter
 
 
-class IterMap[T](IterWrapper[T]):
-    def map[R](self, func: Callable[[T], R]) -> Iter[R]:
+class BaseMap[T](IterWrapper[T]):
+    @overload
+    def map(self: Expr, func: Callable[[Any], Any]) -> Expr: ...
+    @overload
+    def map[R](self: Iter[T], func: Callable[[T], R]) -> Iter[R]: ...
+    def map[R](self, func: Callable[[T], R]):
         """
         Map each element through func and return a Iter of results.
 
@@ -24,9 +29,14 @@ class IterMap[T](IterWrapper[T]):
         """
         return self.apply(partial(map, func))
 
+    @overload
+    def map_star(self: Expr, func: Callable[..., Any]) -> Expr: ...
+    @overload
     def map_star[U: Iterable[Any], R](
-        self: IterMap[U], func: Callable[[Iterable[Any]], R]
-    ) -> Iter[R]:
+        self: Iter[U], func: Callable[..., R]
+    ) -> Iter[R]: ...
+
+    def map_star[U: Iterable[Any], R](self: IterWrapper[U], func: Callable[..., R]):
         """
         Applies a function to each element, where each element is an iterable.
 
@@ -39,17 +49,39 @@ class IterMap[T](IterWrapper[T]):
         >>> from pychain import Iter
         >>> def make_sku(color, size):
         ...     return f"{color}-{size}"
-        >>> Iter(["blue", "red"]).product(["S", "M"]).map_star(make_sku).into(list)
+        >>> data = Iter(["blue", "red"]).product(["S", "M"]).apply(list)
+        >>> data.map_star(make_sku).into(list)
         ['blue-S', 'blue-M', 'red-S', 'red-M']
+
+        This is equivalent to:
+        >>> data.map(lambda x: make_sku(*x)).into(list)
+        ['blue-S', 'blue-M', 'red-S', 'red-M']
+
+        - Use map_star when the performance matters (it is faster).
+        - Use map with unpacking when readability matters (the types can be inferred).
         """
         return self.apply(partial(itertools.starmap, func))
 
+    @overload
+    def map_if[R](
+        self: Expr,
+        predicate: Callable[[Any], bool],
+        func: Callable[[Any], R],
+        func_else: Callable[[Any], R] | None = None,
+    ) -> Expr: ...
+    @overload
+    def map_if[R](
+        self: Iter[T],
+        predicate: Callable[[T], bool],
+        func: Callable[[T], R],
+        func_else: Callable[[T], R] | None = None,
+    ) -> Iter[R]: ...
     def map_if[R](
         self,
         predicate: Callable[[T], bool],
         func: Callable[[T], R],
         func_else: Callable[[T], R] | None = None,
-    ) -> Iter[R]:
+    ):
         """
         Evaluate each item from iterable using pred. If the result is equivalent to True, transform the item with func and yield it.
 
@@ -74,9 +106,15 @@ class IterMap[T](IterWrapper[T]):
         """
         return self.apply(mit.map_if, predicate, func, func_else=func_else)
 
+    @overload
+    def map_except(
+        self: Expr, func: Callable[[Any], Any], *exceptions: type[BaseException]
+    ) -> Expr: ...
+    @overload
     def map_except[R](
-        self, func: Callable[[T], R], *exceptions: type[BaseException]
-    ) -> Iter[R]:
+        self: Iter[T], func: Callable[[T], R], *exceptions: type[BaseException]
+    ) -> Iter[R]: ...
+    def map_except[R](self, func: Callable[[T], R], *exceptions: type[BaseException]):
         """
         Transform each item from iterable with function and yield the result, unless function raises one of the specified exceptions.
         function is called to transform each item in iterable.

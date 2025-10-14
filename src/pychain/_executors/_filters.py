@@ -3,12 +3,16 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Iterable
 from functools import partial
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self, overload
 
 import cytoolz as cz
 import more_itertools as mit
 
 from .._core import IterWrapper
+
+if TYPE_CHECKING:
+    from .._expressions import Expr
+    from .._iter import Iter
 
 
 class BaseFilter[T](IterWrapper[T]):
@@ -44,25 +48,39 @@ class BaseFilter[T](IterWrapper[T]):
         value_set: set[T] = set(values)
         return self._new(lambda data: (x for x in data if x not in value_set))
 
-    def filter_contain[U: IterWrapper[str]](self: U, text: str) -> U:
+    def filter_contain[U: IterWrapper[str]](
+        self: U, text: str, format: Callable[[str], str] | None = None
+    ) -> U:
         """
         Return elements that contain the given text.
 
-            >>> from pychain import Iter
-            >>> Iter(["apple", "banana", "cherry", "date"]).filter_contain("ana").into(
-            ...     list
-            ... )
-            ['banana']
+        Optionally, a format function can be provided to preprocess each element before checking for the substring.
+
+        >>> from pychain import Iter
+        >>>
+        >>> data = Iter(["apple", "banana", "cherry", "date"])
+        >>> data.filter_contain("ana").into(list)
+        ['banana']
+        >>> upper_data = data.map(str.upper).apply(list)
+        >>> upper_data.filter_contain("an").into(list)
+        []
+        >>> upper_data.filter_contain("ana", str.lower).into(list)
+        ['BANANA']
         """
-        return self._new(lambda data: (x for x in data if text in x))
+
+        def _(x: str) -> bool:
+            formatted = format(x) if format else x
+            return text in formatted
+
+        return self._new(lambda data: (x for x in data if _(x)))
 
     def filter_attr(self, attr: str) -> Self:
         """
         Return elements that have the given attribute.
 
-            >>> from pychain import Iter
-            >>> Iter(["hello", "world", 2, 5]).filter_attr("capitalize").into(list)
-            ['hello', 'world']
+        >>> from pychain import Iter
+        >>> Iter(["hello", "world", 2, 5]).filter_attr("capitalize").into(list)
+        ['hello', 'world']
         """
         return self._new(lambda data: (x for x in data if hasattr(x, attr)))
 
@@ -70,9 +88,9 @@ class BaseFilter[T](IterWrapper[T]):
         """
         Return elements for which func is false.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).filter_false(lambda x: x > 1).into(list)
-            [1]
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).filter_false(lambda x: x > 1).into(list)
+        [1]
         """
         return self._new(partial(itertools.filterfalse, func))
 
@@ -88,10 +106,10 @@ class BaseFilter[T](IterWrapper[T]):
 
         If an exception other than one given by exceptions is raised by validator, it is raised like normal.
 
-            >>> from pychain import Iter
-            >>> iterable = ["1", "2", "three", "4", None]
-            >>> Iter(iterable).filter_except(int, ValueError, TypeError).into(list)
-            ['1', '2', '4']
+        >>> from pychain import Iter
+        >>> iterable = ["1", "2", "three", "4", None]
+        >>> Iter(iterable).filter_except(int, ValueError, TypeError).into(list)
+        ['1', '2', '4']
         """
         return self._new(lambda data: mit.filter_except(func, data, *exceptions))
 
@@ -251,3 +269,73 @@ class BaseFilter[T](IterWrapper[T]):
             [2, 3, 4]
         """
         return self._new(lambda data: itertools.islice(data, start, stop))
+
+    @overload
+    def filter_subclass[R](self: Expr, parent: type[R]) -> Expr: ...
+    @overload
+    def filter_subclass[U: type[Any], R](
+        self: Iter[U], parent: type[R]
+    ) -> Iter[type[R]]: ...
+    def filter_subclass[U: type[Any], R](self: IterWrapper[U], parent: type[R]):
+        """
+        Return elements that are subclasses of the given class.
+
+            >>> from pychain import Iter
+            >>> class A:
+            ...     pass
+            >>> class B(A):
+            ...     pass
+            >>> class C:
+            ...     pass
+            >>> Iter([A, B, C]).filter_subclass(A).map(lambda c: c.__name__).into(list)
+            ['A', 'B']
+        """
+        return self.apply(lambda data: (x for x in data if issubclass(x, parent)))
+
+    @overload
+    def filter_type[R](self: Expr, typ: type[R]) -> Expr: ...
+    @overload
+    def filter_type[R](self: Iter[T], typ: type[R]) -> Iter[R]: ...
+
+    def filter_type[R](self, typ: type[R]):
+        """
+        Return elements that are instances of the given type.
+
+            >>> from pychain import Iter
+            >>> Iter([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
+            [1, 5]
+        """
+        return self.apply(lambda data: (x for x in data if isinstance(x, typ)))
+
+    @overload
+    def filter_callable(self: Expr) -> Expr: ...
+    @overload
+    def filter_callable(self: Iter[T]) -> Iter[Callable[..., Any]]: ...
+
+    def filter_callable(self):
+        """
+        Return only elements that are callable.
+
+        >>> from pychain import Iter
+        >>> Iter([len, 42, str, None, list]).filter_callable().into(list)
+        [<built-in function len>, <class 'str'>, <class 'list'>]
+        """
+        return self.apply(lambda data: (x for x in data if callable(x)))
+
+    @overload
+    def filter_map[R](self: Expr, func: Callable[[Any], R]) -> Expr: ...
+    @overload
+    def filter_map[R](self: Iter[T], func: Callable[[T], R]) -> Iter[R]: ...
+
+    def filter_map[R](self, func: Callable[[T], R]):
+        """
+        Apply func to every element of iterable, yielding only those which are not None.
+
+        >>> from pychain import Iter
+        >>> elems = ["1", "a", "2", "b", "3"]
+        >>> Iter(elems).filter_map(lambda s: int(s) if s.isnumeric() else None).into(
+        ...     list
+        ... )
+        [1, 2, 3]
+        """
+        return self.apply(partial(mit.filter_map, func))
