@@ -8,7 +8,7 @@ from typing import Any, Self
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import CommonBase, IterWrapper
+from .._core import IterWrapper
 
 
 class BaseFilter[T](IterWrapper[T]):
@@ -44,7 +44,7 @@ class BaseFilter[T](IterWrapper[T]):
         value_set: set[T] = set(values)
         return self._new(lambda data: (x for x in data if x not in value_set))
 
-    def filter_contain[U: CommonBase[Iterable[str]]](self: U, text: str) -> U:
+    def filter_contain[U: IterWrapper[str]](self: U, text: str) -> U:
         """
         Return elements that contain the given text.
 

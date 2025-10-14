@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Self, TypeGuard
 
 import cytoolz as cz
 
-from .._executors import BaseFilter, BaseProcess
+from .._executors import BaseExecutor
 
 if TYPE_CHECKING:
     from .._dict import Dict
@@ -20,7 +20,7 @@ def is_expr(obj: Any) -> TypeGuard[Expr]:
 
 
 @dataclass(slots=True)
-class Expr(BaseFilter[Any], BaseProcess[Any]):
+class Expr(BaseExecutor[Any]):
     _input_name: str
     _output_name: str
     _is_pychain_expr = True

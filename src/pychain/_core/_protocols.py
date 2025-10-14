@@ -1,5 +1,5 @@
 from collections.abc import Iterable, Sized
-from typing import Any, NamedTuple, Protocol
+from typing import NamedTuple, Protocol
 
 
 class Peeked[T](NamedTuple):
@@ -32,11 +32,11 @@ class SupportsKeysAndGetItem[K, V](Protocol):
     def __getitem__(self, key: K, /) -> V: ...
 
 
-class SupportsAllComparisons(
-    SupportsDunderLT[Any],
-    SupportsDunderGT[Any],
-    SupportsDunderLE[Any],
-    SupportsDunderGE[Any],
+class SupportsAllComparisons[T](
+    SupportsDunderLT[T],
+    SupportsDunderGT[T],
+    SupportsDunderLE[T],
+    SupportsDunderGE[T],
     Protocol,
 ): ...
 
