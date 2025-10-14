@@ -605,7 +605,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         See also groupby_transform, which can be used with this function to group ranges of items with the same bool value.
         """
-        return self.apply(lambda data: mit.adjacent(predicate, data, distance))
+        return self.apply(partial(mit.adjacent, predicate, distance=distance))
 
     @overload
     def most_common(self: Expr, n: int | None = None) -> Expr: ...

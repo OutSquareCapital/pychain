@@ -260,4 +260,4 @@ class BaseProcess[T](IterWrapper[T]):
         >>> Iter([3, 1, 2]).sort().into(list)
         [1, 2, 3]
         """
-        return self._new(lambda data: sorted(data, reverse=reverse))
+        return self._new(partial(sorted, reverse=reverse))

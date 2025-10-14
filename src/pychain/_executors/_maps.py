@@ -142,7 +142,7 @@ class BaseMap[T](IterWrapper[T]):
         >>> Iter([1, 2]).repeat(2).into(list)
         [[1, 2], [1, 2]]
         """
-        return self.apply(itertools.repeat, n)
+        return self.apply(partial(itertools.repeat, times=n))
 
     @overload
     def repeat_last(self, default: T) -> Iter[T]: ...

@@ -185,7 +185,7 @@ class Iter[T](Executor[T]):
         {False: {1, 3}, True: {2, 4}}
         """
 
-        return self.apply(lambda data: cz.itertoolz.reduceby(key, binop, data, init))
+        return self.apply(partial(cz.itertoolz.reduceby, key, binop, init=init))
 
     def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
         """
