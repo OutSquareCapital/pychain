@@ -14,7 +14,6 @@ from ._aggregations import IterAgg
 from ._booleans import IterBool
 from ._constructors import IterConstructors
 from ._dicts import IterDicts
-from ._lists import IterList
 from ._tuples import IterTuples
 
 
@@ -23,7 +22,6 @@ class Iter[T](
     IterTuples[T],
     IterBool[T],
     IterDicts[T],
-    IterList[T],
     BaseExecutor[T],
     IterConstructors,
 ):

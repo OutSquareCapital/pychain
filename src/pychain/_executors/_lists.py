@@ -1,18 +1,23 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, overload
 
 import more_itertools as mit
 
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import Iter
+    from .._expressions import Expr
+    from .._iter import Iter
 
 
-class IterList[T](IterWrapper[T]):
-    def implode(self) -> Iter[list[T]]:
+class BaseList[T](IterWrapper[T]):
+    @overload
+    def implode(self: Expr) -> Expr: ...
+    @overload
+    def implode(self: Iter[T]) -> Iter[list[T]]: ...
+    def implode(self):
         """
         Wrap each element in the iterable into a list.
 
@@ -24,12 +29,28 @@ class IterList[T](IterWrapper[T]):
         """
         return self.apply(lambda data: ([x] for x in data))
 
+    @overload
+    def split_at(
+        self: Expr,
+        pred: Callable[[Any], bool],
+        maxsplit: int = -1,
+        keep_separator: bool = False,
+    ) -> Expr: ...
+
+    @overload
     def split_at(
         self,
         pred: Callable[[T], bool],
         maxsplit: int = -1,
         keep_separator: bool = False,
-    ) -> Iter[list[T]]:
+    ) -> Iter[list[T]]: ...
+
+    def split_at(
+        self,
+        pred: Callable[[T], bool],
+        maxsplit: int = -1,
+        keep_separator: bool = False,
+    ):
         """
         Yield lists of items from iterable, where each list is delimited by an item where callable pred returns True.
 
@@ -55,9 +76,16 @@ class IterList[T](IterWrapper[T]):
         """
         return self.apply(mit.split_at, pred, maxsplit, keep_separator)
 
+    @overload
     def split_after(
-        self, predicate: Callable[[T], bool], max_split: int = -1
-    ) -> Iter[list[T]]:
+        self: Expr, predicate: Callable[[Any], bool], max_split: int = -1
+    ) -> Expr: ...
+    @overload
+    def split_after(
+        self: Iter[T], predicate: Callable[[T], bool], max_split: int = -1
+    ) -> Iter[list[T]]: ...
+
+    def split_after(self, predicate: Callable[[T], bool], max_split: int = -1):
         """
         Yield lists of items from iterable, where each list ends with an item where callable pred returns True:
         At most maxsplit splits are done.
@@ -78,9 +106,17 @@ class IterList[T](IterWrapper[T]):
         """
         return self.apply(mit.split_after, predicate, max_split)
 
+    @overload
     def split_before(
-        self, predicate: Callable[[T], bool], max_split: int = -1
-    ) -> Iter[list[T]]:
+        self: Expr, predicate: Callable[[Any], bool], max_split: int = -1
+    ) -> Expr: ...
+
+    @overload
+    def split_before(
+        self: Iter[T], predicate: Callable[[T], bool], max_split: int = -1
+    ) -> Iter[list[T]]: ...
+
+    def split_before(self, predicate: Callable[[T], bool], max_split: int = -1):
         """
         Yield lists of items from iterable, where each list ends with an item where callable pred returns True.
 
@@ -103,7 +139,12 @@ class IterList[T](IterWrapper[T]):
         """
         return self.apply(mit.split_before, predicate, max_split)
 
-    def split_into(self, sizes: Iterable[int | None]) -> Iter[list[T]]:
+    @overload
+    def split_into(self: Expr, sizes: Iterable[int | None]) -> Expr: ...
+    @overload
+    def split_into(self: Iter[T], sizes: Iterable[int | None]) -> Iter[list[T]]: ...
+
+    def split_into(self, sizes: Iterable[int | None]):
         """
         Yield a list of sequential items from iterable of length 'n' for each integer 'n' in sizes.
 
@@ -132,9 +173,17 @@ class IterList[T](IterWrapper[T]):
         """
         return self.apply(mit.split_into, sizes)
 
+    @overload
     def split_when(
-        self, predicate: Callable[[T, T], bool], max_split: int = -1
-    ) -> Iter[list[T]]:
+        self: Expr, predicate: Callable[[Any, Any], bool], max_split: int = -1
+    ) -> Expr: ...
+
+    @overload
+    def split_when(
+        self: Iter[T], predicate: Callable[[T, T], bool], max_split: int = -1
+    ) -> Iter[list[T]]: ...
+
+    def split_when(self, predicate: Callable[[T, T], bool], max_split: int = -1):
         """
         Split iterable into pieces based on the output of pred. pred should be a function that takes successive pairs of items and returns True if the iterable should be split in between them.
 
@@ -155,7 +204,12 @@ class IterList[T](IterWrapper[T]):
         """
         return self.apply(mit.split_when, predicate, max_split)
 
-    def chunked(self, n: int, strict: bool = False) -> Iter[list[T]]:
+    @overload
+    def chunked(self: Expr, n: int, strict: bool = False) -> Expr: ...
+    @overload
+    def chunked(self: Iter[T], n: int, strict: bool = False) -> Iter[list[T]]: ...
+
+    def chunked(self, n: int, strict: bool = False):
         """
         Break iterable into lists of length n.
 
@@ -175,7 +229,12 @@ class IterList[T](IterWrapper[T]):
         """
         return self.apply(mit.chunked, n, strict)
 
-    def chunked_even(self, n: int) -> Iter[list[T]]:
+    @overload
+    def chunked_even(self: Expr, n: int) -> Expr: ...
+    @overload
+    def chunked_even(self: Iter[T], n: int) -> Iter[list[T]]: ...
+
+    def chunked_even(self, n: int):
         """
         Break iterable into lists of approximately length n.
         Items are distributed such the lengths of the lists differ by at most 1 item.
@@ -189,7 +248,12 @@ class IterList[T](IterWrapper[T]):
         """
         return self.apply(mit.chunked_even, n)
 
-    def unique_to_each(self, *others: Iterable[T]) -> Iter[list[T]]:
+    @overload
+    def unique_to_each(self: Expr, *others: Iterable[Any]) -> Expr: ...
+    @overload
+    def unique_to_each(self: Iter[T], *others: Iterable[T]) -> Iter[list[T]]: ...
+
+    def unique_to_each(self, *others: Iterable[T]):
         """
         Return the elements from each of the input iterables that aren't in the other input iterables.
 
