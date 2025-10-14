@@ -1,13 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, Concatenate
+from collections.abc import Callable
+from typing import Concatenate
 
 from .._core import EagerWrapper
-
-if TYPE_CHECKING:
-    from ._dict import Dict
-    from ._iter import Iter
 
 
 class Wrapper[T](EagerWrapper[T]):
@@ -35,26 +31,3 @@ class Wrapper[T](EagerWrapper[T]):
         This is also why pipe into is an abstract method in `CommonBase`, altough `Dict` and `Iter` have the exact same implementation.
         """
         return Wrapper(self.into(func, *args, **kwargs))
-
-    def to_iter[U: Iterable[Any]](self: Wrapper[U]) -> Iter[U]:
-        """
-        Convert the wrapped data to an Iter wrapper.
-        """
-        from ._iter import Iter
-
-        return self.into(Iter)
-
-    def to_dict[KU, VU](self: Wrapper[dict[KU, VU]]) -> Dict[KU, VU]:
-        """
-        Convert the wrapped dict to a Dict wrapper.
-
-            >>> import pychain as pc
-            >>>
-            >>> data = {1: "a", 2: "b"}
-            >>>
-            >>> pc.Wrapper(data).to_dict().unwrap()
-            {1: 'a', 2: 'b'}
-        """
-        from ._dict import Dict
-
-        return self.into(Dict)
