@@ -2,15 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Self, TypeGuard
+from typing import Any, Self, TypeGuard
 
 import cytoolz as cz
 
 from .._executors import BaseExecutor
-
-if TYPE_CHECKING:
-    from .._dict import Dict
-    from .._iter import Iter
 
 type IntoExpr = str | Expr
 
@@ -50,16 +46,6 @@ class Expr(BaseExecutor[Any]):
                 raise e.__class__(f"Clé ou index '{name}' invalide.") from e
 
         return self._new(operation)
-
-    def itr(self, func: Callable[[Iter[Any]], Any]) -> Self:
-        from .._iter import Iter
-
-        return self._new(lambda x: func(Iter(x)))
-
-    def struct(self, func: Callable[[Dict[Any, Any]], Any]) -> Self:
-        from .._dict import Dict
-
-        return self._new(lambda x: func(Dict(x)))
 
     def apply(self, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Self:
         return self._new(func)

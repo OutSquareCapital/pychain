@@ -5,9 +5,15 @@ from ._lists import BaseList
 from ._maps import BaseMap
 from ._process import BaseProcess
 from ._rolling import BaseRolling
+from ._tuples import BaseTuples
 
 
 class BaseExecutor[T](
-    BaseFilter[T], BaseProcess[T], BaseMap[T], BaseRolling[T], BaseList[T]
+    BaseFilter[T],
+    BaseProcess[T],
+    BaseMap[T],
+    BaseRolling[T],
+    BaseList[T],
+    BaseTuples[T],
 ):
     pass

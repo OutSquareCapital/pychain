@@ -11,21 +11,27 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import Iter
+    from .._expressions import Expr
+    from .._iter import Iter
 
 
-class IterTuples[T](IterWrapper[T]):
+class BaseTuples[T](IterWrapper[T]):
     @overload
     def zip[T1](
-        self, iter1: Iterable[T1], /, *, strict: bool = ...
+        self: Iter[T], iter1: Iterable[T1], /, *, strict: bool = ...
     ) -> Iter[tuple[T, T1]]: ...
     @overload
     def zip[T1, T2](
-        self, iter1: Iterable[T1], iter2: Iterable[T2], /, *, strict: bool = ...
+        self: Iter[T],
+        iter1: Iterable[T1],
+        iter2: Iterable[T2],
+        /,
+        *,
+        strict: bool = ...,
     ) -> Iter[tuple[T, T1, T2]]: ...
     @overload
     def zip[T1, T2, T3](
-        self,
+        self: Iter[T],
         iter1: Iterable[T1],
         iter2: Iterable[T2],
         iter3: Iterable[T3],
@@ -35,7 +41,7 @@ class IterTuples[T](IterWrapper[T]):
     ) -> Iter[tuple[T, T1, T2, T3]]: ...
     @overload
     def zip[T1, T2, T3, T4](
-        self,
+        self: Iter[T],
         iter1: Iterable[T1],
         iter2: Iterable[T2],
         iter3: Iterable[T3],
@@ -46,7 +52,7 @@ class IterTuples[T](IterWrapper[T]):
     ) -> Iter[tuple[T, T1, T2, T3, T4]]: ...
     @overload
     def zip[T1, T2, T3, T4, T5](
-        self,
+        self: Iter[T],
         iter1: Iterable[T1],
         iter2: Iterable[T2],
         iter3: Iterable[T3],
@@ -56,9 +62,13 @@ class IterTuples[T](IterWrapper[T]):
         *,
         strict: bool = ...,
     ) -> Iter[tuple[T, T1, T2, T3, T4, T5]]: ...
+    @overload
     def zip(
-        self, *others: Iterable[Any], strict: bool = False
-    ) -> Iter[tuple[Any, ...]]:
+        self: Iter[T], *others: Iterable[Any], strict: bool = False
+    ) -> Iter[tuple[Any, ...]]: ...
+    @overload
+    def zip(self: Expr, *others: Iterable[Any], strict: bool = False) -> Expr: ...
+    def zip(self, *others: Iterable[Any], strict: bool = False):
         """
         Zip with other iterables, optionally strict.
 
@@ -68,6 +78,7 @@ class IterTuples[T](IterWrapper[T]):
         """
         return self.apply(zip, *others, strict=strict)
 
+    # TODO: overloads for the rest
     def zip_offset[U](
         self,
         *others: Iterable[T],

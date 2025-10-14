@@ -14,12 +14,10 @@ from ._aggregations import IterAgg
 from ._booleans import IterBool
 from ._constructors import IterConstructors
 from ._dicts import IterDicts
-from ._tuples import IterTuples
 
 
 class Iter[T](
     IterAgg[T],
-    IterTuples[T],
     IterBool[T],
     IterDicts[T],
     BaseExecutor[T],

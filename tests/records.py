@@ -47,8 +47,10 @@ def _dummy_data() -> DataSchema:
 
 
 def _total_cost(expr: pc.Expr) -> pc.Expr:
-    return expr.field("items").itr(
-        lambda items: items.map(lambda item: item["price"] * item["quantity"]).sum()
+    return expr.field("items").apply(
+        lambda items: pc.Iter(items)
+        .map(lambda item: item["price"] * item["quantity"])
+        .sum()
     )
 
 
@@ -64,11 +66,10 @@ def _user_summary(record: pc.Record) -> pc.Record:
 def _enriched_record(record: pc.Record) -> pc.Record:
     user = pc.key("user")
     return record.with_fields(
-        pc.key("order")
-        .field("items")
-        .itr(lambda items: items.length())
-        .alias("item_count"),
-        user.field("roles").itr(lambda roles: roles.first()).alias("primary_role"),
+        pc.key("order").field("items").apply(len).alias("item_count"),
+        user.field("roles")
+        .apply(lambda roles: pc.Iter(roles).first())
+        .alias("primary_role"),
         pc.key("is_vip")
         .eq(True)
         .and_(user.field("status").eq("active"))
