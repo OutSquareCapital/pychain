@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Callable
-from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any, Self, TypeGuard, final
 
@@ -50,17 +49,24 @@ def _parse_lambda(name: str, op: Callable[..., Any]) -> str:
 
 
 @final
-@dataclass(slots=True)
 class Expr(Executor[Any]):
     _input_name: str
     _output_name: str
     _is_pychain_expr = True
-    _operations: list[Callable[[Any], Any]]
+    _data: list[Callable[[Any], Any]]  # type: ignore[assignment]
+    __slots__ = ("_data", "_input_name", "_output_name")  # type: ignore[assignment]
+
+    def __init__(
+        self, data: list[Callable[[Any], Any]], input_name: str, output_name: str
+    ) -> None:
+        self._input_name = input_name
+        self._output_name = output_name
+        super().__init__(data)
 
     def __repr__(self) -> str:
         """Return a string representation of the expression showing the execution plan."""
         ops_repr: list[str] = []
-        for op in self._operations:
+        for op in self.unwrap():
             if hasattr(op, OpType.NAME):
                 name = op.__name__
                 if name == f"<{OpType.LAMBDA}>":
@@ -78,14 +84,16 @@ class Expr(Executor[Any]):
 
     @property
     def _func(self) -> Callable[[Any], Any]:
-        return cz.functoolz.compose_left(*self._operations)
+        return cz.functoolz.compose_left(*self.unwrap())
 
     def __compute__(self, input: dict[Any, Any], output: dict[Any, Any]) -> None:
         output[self._output_name] = self._func(input[self._input_name])
 
     def _new(self, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Self:
         return self.__class__(
-            self._input_name, self._output_name, self._operations + [func]
+            self._data + [func],
+            self._input_name,
+            self._output_name,
         )
 
     def into(self, func: Callable[[Any], Any]) -> Self:
@@ -176,7 +184,7 @@ class Expr(Executor[Any]):
 
 class KeySelector:
     def __call__(self, name: str) -> Expr:
-        return Expr(name, name, [cz.functoolz.identity])
+        return Expr([cz.functoolz.identity], name, name)
 
     def __get_attr__(self, name: str) -> Expr:
         return self(name)

@@ -121,6 +121,17 @@ def aggregate_sales_pychain() -> pc.Dict[str, float]:
 # --- Example 3: Nested Data Processing ---
 
 
+def interop_example() -> None:
+    data: list[dict[str, int]] = [
+        {"a": 1, "b": 2, "c": 3},
+        {"a": 4, "b": 5, "d": 6},
+        {"a": 7, "c": 8, "e": 9},
+    ]
+    expr = pc.key("a").add(19).repeat(2).into(list)
+
+    pc.Iter(data).map(lambda x: pc.Dict(x).select(expr)).apply(list).println()
+
+
 class Book(TypedDict):
     title: str
     rating: float
@@ -199,5 +210,6 @@ if __name__ == "__main__":
     assert best_author_python() == ("Author A", 4.65)
     assert best_author_pychain() == ("Author A", 4.65)
     assert dataframe_example().shape == (5, 3)
+    interop_example()
 
     print("All checks passed! ✅")
