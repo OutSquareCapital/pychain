@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from functools import partial
 from typing import TYPE_CHECKING, Any, Self
 
@@ -93,7 +93,7 @@ class CoreDict[K, V](EagerWrapper[dict[K, V]]):
         """
         return self._new(lambda data: {mapping.get(k, k): v for k, v in data.items()})
 
-    def equals_to(self, other: Self | dict[Any, Any]) -> bool:
+    def equals_to(self, other: Self | dict[Any, Any] | Mapping[Any, Any]) -> bool:
         """
         Check if two records are equal based on their data.
         """
