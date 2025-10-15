@@ -2,10 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, Concatenate, Self
-
-if TYPE_CHECKING:
-    pass
+from typing import Any, Concatenate, Self
 
 
 class CommonBase[T](ABC):
@@ -21,12 +18,6 @@ class CommonBase[T](ABC):
 
     def __init__(self, data: T) -> None:
         self._data = data
-
-    @abstractmethod
-    def _new[**P](
-        self, func: Callable[Concatenate[T, P], T], *args: P.args, **kwargs: P.kwargs
-    ) -> Self:
-        raise NotImplementedError
 
     def pipe[**P, R](
         self,
@@ -58,8 +49,6 @@ class CommonBase[T](ABC):
         """
         raise NotImplementedError
 
-
-class EagerWrapper[T](CommonBase[T]):
     def _new[**P](
         self, func: Callable[Concatenate[T, P], T], *args: P.args, **kwargs: P.kwargs
     ) -> Self:
@@ -111,11 +100,11 @@ class EagerWrapper[T](CommonBase[T]):
         return func(self.unwrap(), *args, **kwargs)
 
 
-class IterWrapper[T](EagerWrapper[Iterable[T]]):
+class IterWrapper[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
 
 
-class Wrapper[T](EagerWrapper[T]):
+class Wrapper[T](CommonBase[T]):
     """
     A generic Wrapper for any type.
     The pipe into method is implemented to return a Wrapper of the result type.

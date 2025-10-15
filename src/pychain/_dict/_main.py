@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 import cytoolz as cz
 
-from .._core import EagerWrapper, SupportsKeysAndGetItem
+from .._core import CommonBase, SupportsKeysAndGetItem
 
 if TYPE_CHECKING:
     from .._iter import Iter
 
 
-class Dict[K, V](EagerWrapper[dict[K, V]]):
+class Dict[K, V](CommonBase[dict[K, V]]):
     """
     Wrapper for Python dictionaries with chainable methods.
     """
