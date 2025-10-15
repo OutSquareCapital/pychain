@@ -1,39 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, overload
 
 import cytoolz as cz
 import more_itertools as mit
 
 from .._core import IterWrapper
 
-if TYPE_CHECKING:
-    from .._implementations import Expr, Iter
-
 
 class BaseBool[T](IterWrapper[T]):
-    @overload
-    def is_iterable(self: Iter[T]) -> bool: ...
-    @overload
-    def is_iterable(self: Expr) -> Expr: ...
-    def is_iterable(self):
-        """
-        Return True if the iterable is not empty.
-
-        >>> from pychain import Iter
-        >>> Iter([1]).is_iterable()
-        True
-        >>> Iter([]).is_iterable()
-        True
-        """
-        return self.into(cz.itertoolz.isiterable)
-
-    @overload
-    def is_distinct(self: Iter[T]) -> bool: ...
-    @overload
-    def is_distinct(self: Expr) -> Expr: ...
-    def is_distinct(self):
+    def is_distinct(self) -> bool:
         """
         Return True if all items are distinct.
 
@@ -43,42 +19,7 @@ class BaseBool[T](IterWrapper[T]):
         """
         return self.into(cz.itertoolz.isdistinct)
 
-    @overload
-    def all(self: Iter[T]) -> bool: ...
-    @overload
-    def all(self: Expr) -> Expr: ...
-
-    def all(self):
-        """
-        Return True if all items are truthy.
-
-        >>> from pychain import Iter
-        >>> Iter([1, True]).all()
-        True
-        """
-        return self.into(all)
-
-    @overload
-    def any(self: Iter[T]) -> bool: ...
-    @overload
-    def any(self: Expr) -> Expr: ...
-
-    def any(self):
-        """
-        Return True if any item is truthy.
-
-        >>> from pychain import Iter
-        >>> Iter([0, 1]).any()
-        True
-        """
-        return self.into(any)
-
-    @overload
-    def all_equal[U](self: Iter[T], key: Callable[[T], U] | None = None) -> bool: ...
-    @overload
-    def all_equal(self: Expr, key: Callable[[Any], Any] | None = None) -> Expr: ...
-
-    def all_equal[U](self, key: Callable[[T], U] | None = None):
+    def all_equal[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
         Return True if all items are equal.
 
@@ -95,12 +36,7 @@ class BaseBool[T](IterWrapper[T]):
         """
         return self.into(mit.all_equal, key=key)
 
-    @overload
-    def all_unique[U](self: Iter[T], key: Callable[[T], U] | None = None) -> bool: ...
-    @overload
-    def all_unique(self: Expr, key: Callable[[Any], Any] | None = None) -> Expr: ...
-
-    def all_unique[U](self, key: Callable[[T], U] | None = None):
+    def all_unique[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
         Returns True if all the elements of iterable are unique (no two elements are equal).
 
@@ -123,26 +59,12 @@ class BaseBool[T](IterWrapper[T]):
         """
         return self.into(mit.all_unique, key=key)
 
-    @overload
-    def is_sorted[U](
-        self: Iter[T],
-        key: Callable[[T], U] | None = None,
-        reverse: bool = False,
-        strict: bool = False,
-    ) -> bool: ...
-    @overload
-    def is_sorted(
-        self: Expr,
-        key: Callable[[Any], Any] | None = None,
-        reverse: bool = False,
-        strict: bool = False,
-    ) -> Expr: ...
     def is_sorted[U](
         self,
         key: Callable[[T], U] | None = None,
         reverse: bool = False,
         strict: bool = False,
-    ):
+    ) -> bool:
         """
         Returns True if the items of iterable are in sorted order, and False otherwise.
 

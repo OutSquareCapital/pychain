@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Iterable
 from functools import partial
-from typing import TYPE_CHECKING, Any, Self, overload
+from typing import TYPE_CHECKING, Any, Self
 
 import cytoolz as cz
 import more_itertools as mit
@@ -11,7 +11,7 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from .._implementations import Expr, Iter
+    from .._implementations import Iter
 
 
 class BaseFilter[T](IterWrapper[T]):
@@ -269,13 +269,9 @@ class BaseFilter[T](IterWrapper[T]):
         """
         return self._new(lambda data: itertools.islice(data, start, stop))
 
-    @overload
-    def filter_subclass[R](self: Expr, parent: type[R]) -> Expr: ...
-    @overload
     def filter_subclass[U: type[Any], R](
-        self: Iter[U], parent: type[R]
-    ) -> Iter[type[R]]: ...
-    def filter_subclass[U: type[Any], R](self: IterWrapper[U], parent: type[R]):
+        self: IterWrapper[U], parent: type[R]
+    ) -> Iter[type[R]]:
         """
         Return elements that are subclasses of the given class.
 
@@ -291,12 +287,7 @@ class BaseFilter[T](IterWrapper[T]):
         """
         return self.apply(lambda data: (x for x in data if issubclass(x, parent)))
 
-    @overload
-    def filter_type[R](self: Expr, typ: type[R]) -> Expr: ...
-    @overload
-    def filter_type[R](self: Iter[T], typ: type[R]) -> Iter[R]: ...
-
-    def filter_type[R](self, typ: type[R]):
+    def filter_type[R](self, typ: type[R]) -> Iter[R]:
         """
         Return elements that are instances of the given type.
 
@@ -306,12 +297,7 @@ class BaseFilter[T](IterWrapper[T]):
         """
         return self.apply(lambda data: (x for x in data if isinstance(x, typ)))
 
-    @overload
-    def filter_callable(self: Expr) -> Expr: ...
-    @overload
-    def filter_callable(self: Iter[T]) -> Iter[Callable[..., Any]]: ...
-
-    def filter_callable(self):
+    def filter_callable(self) -> Iter[Callable[..., Any]]:
         """
         Return only elements that are callable.
 
@@ -321,12 +307,7 @@ class BaseFilter[T](IterWrapper[T]):
         """
         return self.apply(lambda data: (x for x in data if callable(x)))
 
-    @overload
-    def filter_map[R](self: Expr, func: Callable[[Any], R]) -> Expr: ...
-    @overload
-    def filter_map[R](self: Iter[T], func: Callable[[T], R]) -> Iter[R]: ...
-
-    def filter_map[R](self, func: Callable[[T], R]):
+    def filter_map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
         Apply func to every element of iterable, yielding only those which are not None.
 

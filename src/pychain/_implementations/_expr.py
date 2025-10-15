@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Self, TypeGuard
 
 import cytoolz as cz
 
-from .._executors import Executor
+from .._core import CommonBase
 
 if TYPE_CHECKING:
     from ._dict import Dict
@@ -64,7 +64,7 @@ def _op_name(op: Callable[..., Any]) -> str:
     return name
 
 
-class Expr(Executor[Any]):
+class Expr(CommonBase[Any]):
     _input_name: str
     _output_name: str
     _is_pychain_expr = True
@@ -105,9 +105,6 @@ class Expr(Executor[Any]):
             self._input_name,
             self._output_name,
         )
-
-    def into(self, func: Callable[[Any], Any]) -> Self:
-        return self._new(func)
 
     def alias(self, name: str) -> Expr:
         self._output_name = name

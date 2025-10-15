@@ -11,15 +11,11 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from .._implementations import Expr, Iter
+    from .._implementations import Iter
 
 
 class BaseMap[T](IterWrapper[T]):
-    @overload
-    def map(self: Expr, func: Callable[[Any], Any]) -> Expr: ...
-    @overload
-    def map[R](self: Iter[T], func: Callable[[T], R]) -> Iter[R]: ...
-    def map[R](self, func: Callable[[T], R]):
+    def map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
         Map each element through func and return a Iter of results.
 
@@ -29,14 +25,9 @@ class BaseMap[T](IterWrapper[T]):
         """
         return self.apply(partial(map, func))
 
-    @overload
-    def map_star(self: Expr, func: Callable[..., Any]) -> Expr: ...
-    @overload
     def map_star[U: Iterable[Any], R](
-        self: Iter[U], func: Callable[..., R]
-    ) -> Iter[R]: ...
-
-    def map_star[U: Iterable[Any], R](self: IterWrapper[U], func: Callable[..., R]):
+        self: IterWrapper[U], func: Callable[..., R]
+    ) -> Iter[R]:
         """
         Applies a function to each element, where each element is an iterable.
 
@@ -60,28 +51,15 @@ class BaseMap[T](IterWrapper[T]):
         - Use map_star when the performance matters (it is faster).
         - Use map with unpacking when readability matters (the types can be inferred).
         """
+
         return self.apply(partial(itertools.starmap, func))
 
-    @overload
-    def map_if[R](
-        self: Expr,
-        predicate: Callable[[Any], bool],
-        func: Callable[[Any], R],
-        func_else: Callable[[Any], R] | None = None,
-    ) -> Expr: ...
-    @overload
-    def map_if[R](
-        self: Iter[T],
-        predicate: Callable[[T], bool],
-        func: Callable[[T], R],
-        func_else: Callable[[T], R] | None = None,
-    ) -> Iter[R]: ...
     def map_if[R](
         self,
         predicate: Callable[[T], bool],
         func: Callable[[T], R],
         func_else: Callable[[T], R] | None = None,
-    ):
+    ) -> Iter[R]:
         """
         Evaluate each item from iterable using pred. If the result is equivalent to True, transform the item with func and yield it.
 
@@ -106,15 +84,9 @@ class BaseMap[T](IterWrapper[T]):
         """
         return self.apply(mit.map_if, predicate, func, func_else=func_else)
 
-    @overload
-    def map_except(
-        self: Expr, func: Callable[[Any], Any], *exceptions: type[BaseException]
-    ) -> Expr: ...
-    @overload
     def map_except[R](
-        self: Iter[T], func: Callable[[T], R], *exceptions: type[BaseException]
-    ) -> Iter[R]: ...
-    def map_except[R](self, func: Callable[[T], R], *exceptions: type[BaseException]):
+        self, func: Callable[[T], R], *exceptions: type[BaseException]
+    ) -> Iter[R]:
         """
         Transform each item from iterable with function and yield the result, unless function raises one of the specified exceptions.
         function is called to transform each item in iterable.
@@ -130,12 +102,7 @@ class BaseMap[T](IterWrapper[T]):
         """
         return self.apply(lambda data: mit.map_except(func, data, *exceptions))
 
-    @overload
-    def repeat(self: Expr, n: int) -> Expr: ...
-    @overload
-    def repeat(self: Iter[T], n: int) -> Iter[Iterable[T]]: ...
-
-    def repeat(self, n: int):
+    def repeat(self, n: int) -> Iter[Iterable[T]]:
         """
         Repeat the entire iterable n times (as elements) and return Iter.
 
@@ -149,11 +116,7 @@ class BaseMap[T](IterWrapper[T]):
     def repeat_last(self, default: T) -> Iter[T]: ...
     @overload
     def repeat_last[U](self, default: U) -> Iter[T | U]: ...
-    @overload
-    def repeat_last[U](self, default: U = None) -> Iter[T | U]: ...
-    @overload
-    def repeat_last(self: Expr, default: Any = None) -> Expr: ...
-    def repeat_last(self, default: Any = None):
+    def repeat_last[U](self, default: U = None) -> Iter[T | U]:
         """
         After the iterable is exhausted, keep yielding its last element.
 
@@ -168,11 +131,7 @@ class BaseMap[T](IterWrapper[T]):
         """
         return self.apply(mit.repeat_last, default)
 
-    @overload
-    def ichunked(self: Iter[T], n: int) -> Iter[Iterator[T]]: ...
-    @overload
-    def ichunked(self: Expr, n: int) -> Expr: ...
-    def ichunked(self, n: int):
+    def ichunked(self, n: int) -> Iter[Iterator[T]]:
         """
 
         Break *iterable* into sub-iterables with *n* elements each.
@@ -197,17 +156,13 @@ class BaseMap[T](IterWrapper[T]):
 
     @overload
     def explode[U](
-        self: Iter[Iterable[Iterable[Iterable[U]]]],
+        self: IterWrapper[Iterable[Iterable[Iterable[U]]]],
     ) -> Iter[Iterable[Iterable[U]]]: ...
     @overload
-    def explode[U](self: Iter[Iterable[Iterable[U]]]) -> Iter[Iterable[U]]: ...
+    def explode[U](self: IterWrapper[Iterable[Iterable[U]]]) -> Iter[Iterable[U]]: ...
     @overload
-    def explode[U](self: Iter[Iterable[U]]) -> Iter[U]: ...
-    @overload
-    def explode(self: Iter[Iterable[Any]]) -> Iter[Any]: ...
-    @overload
-    def explode(self: Expr) -> Expr: ...
-    def explode(self: BaseMap[Iterable[Any]]):
+    def explode[U](self: IterWrapper[Iterable[U]]) -> Iter[U]: ...
+    def explode(self: IterWrapper[Iterable[Any]]) -> Iter[Any]:
         """
         Flatten one level of nesting and return a new Iterable wrapper.
 
@@ -219,11 +174,7 @@ class BaseMap[T](IterWrapper[T]):
         """
         return self.apply(itertools.chain.from_iterable)
 
-    @overload
-    def pluck(self: Iter[T], key: int | str | list[int] | list[str]) -> Iter[T]: ...
-    @overload
-    def pluck(self: Expr, key: int | str | list[int] | list[str]) -> Expr: ...
-    def pluck(self, key: int | str | list[int] | list[str]):
+    def pluck(self, key: int | str | list[int] | list[str]) -> Iter[T]:
         """
         Get an element or several elements from each item in a sequence.
 

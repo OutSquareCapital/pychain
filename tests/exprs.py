@@ -47,15 +47,17 @@ class TestIterExprIntegration(unittest.TestCase):
         result = ResultData(
             **data.with_fields(
                 pc.key("values")
-                .filter(lambda x: x > 2)
-                .apply(list)
+                .itr(lambda x: x.filter(lambda x: x > 2).into(list))
                 .alias("filtered_values"),
                 pc.key("names")
-                .filter_contain("a", str.lower)
-                .apply(list)
+                .itr(lambda x: x.filter_contain("a", str.lower).into(list))
                 .alias("names_with_a"),
-                pc.key("values").reverse().apply(list).alias("reversed_values"),
-                pc.key("values").slice(1, 4).apply(list).alias("sliced_values"),
+                pc.key("values")
+                .itr(lambda x: x.reverse().into(list))
+                .alias("reversed_values"),
+                pc.key("values")
+                .itr(lambda x: x.slice(1, 4).into(list))
+                .alias("sliced_values"),
             ).unwrap()
         )
 
@@ -89,10 +91,12 @@ class TestIterExprIntegration(unittest.TestCase):
         expr_result = (
             record.with_fields(
                 pc.key("numbers")
-                .filter(lambda x: x % 2 == 0)  # Even numbers
-                .map(lambda x: x * 2)  # Double them
-                .accumulate(lambda a, b: a + b)  # Running sum
-                .apply(list)
+                .itr(
+                    lambda x: x.filter(lambda x: x % 2 == 0)  # Even numbers
+                    .map(lambda x: x * 2)  # Double them
+                    .accumulate(lambda a, b: a + b)  # Running sum
+                    .into(list)
+                )
                 .alias("result")
             )
             .unwrap()
@@ -117,30 +121,19 @@ class TestIterExprIntegration(unittest.TestCase):
         def _high_scorers(user: UserScores) -> bool:
             return sum(user["scores"]) / len(user["scores"]) >= 85
 
-        iter_result: list[UserScores] = (
-            pc.Iter(data["users"]).filter(_high_scorers).pluck("name").into(list)
+        iter_result: list[str] = (
+            pc.Iter(data["users"])
+            .filter(_high_scorers)
+            .map(lambda x: x["name"])
+            .into(list)
         )
-        # Using Expr with the same logic
-        expr_result: object | None = (
-            pc.Dict(data)
-            .select(pc.key("users").filter(_high_scorers).pluck("name").apply(list))
-            .unwrap()
-            .get("users")
-        )
-        expr_itr_result: dict[str, object] = (
+        expr_itr_result = (
             pc.Dict(data)
             .select(
                 pc.key("users").itr(
-                    lambda users: users.filter(_high_scorers).pluck("name").into(list)
-                )
-            )
-            .unwrap()
-        )
-        expr_fn_result: object | None = (
-            pc.Dict(data)
-            .select(
-                pc.key("users").apply(
-                    pc.fn().filter(_high_scorers).pluck("name").into(list)
+                    lambda users: users.filter(_high_scorers)
+                    .map(lambda x: x["name"])
+                    .into(list)
                 )
             )
             .unwrap()
@@ -149,9 +142,7 @@ class TestIterExprIntegration(unittest.TestCase):
         expected_result: list[str] = [
             user["name"] for user in data["users"] if _high_scorers(user)
         ]
-        self.assertEqual(iter_result, expr_result)
         self.assertEqual(iter_result, expr_itr_result)
-        self.assertEqual(iter_result, expr_fn_result)
         self.assertEqual(iter_result, expected_result)
 
 

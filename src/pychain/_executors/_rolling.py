@@ -1,22 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, overload
+from typing import TYPE_CHECKING
 
 import rolling
 
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from .._implementations import Expr, Iter
+    from .._implementations import Iter
 
 
 class BaseRolling[T](IterWrapper[T]):
-    @overload
-    def rolling_mean(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_mean(self: Iter[T], window_size: int) -> Iter[float]: ...
-    def rolling_mean(self, window_size: int):
+    def rolling_mean(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling mean.
 
@@ -26,12 +22,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Mean, window_size)
 
-    @overload
-    def rolling_median(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_median(self: Iter[T], window_size: int) -> Iter[T]: ...
-
-    def rolling_median(self, window_size: int):
+    def rolling_median(self, window_size: int) -> Iter[T]:
         """
         Compute the rolling median.
 
@@ -41,11 +32,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Median, window_size)
 
-    @overload
-    def rolling_sum(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_sum(self: Iter[T], window_size: int) -> Iter[T]: ...
-    def rolling_sum(self, window_size: int):
+    def rolling_sum(self, window_size: int) -> Iter[T]:
         """
         Compute the rolling sum.
 
@@ -57,12 +44,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Sum, window_size)
 
-    @overload
-    def rolling_min(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_min(self: Iter[T], window_size: int) -> Iter[T]: ...
-
-    def rolling_min(self, window_size: int):
+    def rolling_min(self, window_size: int) -> Iter[T]:
         """
         Compute the rolling minimum.
 
@@ -72,12 +54,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Min, window_size)
 
-    @overload
-    def rolling_max(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_max(self: Iter[T], window_size: int) -> Iter[T]: ...
-
-    def rolling_max(self, window_size: int):
+    def rolling_max(self, window_size: int) -> Iter[T]:
         """
         Compute the rolling maximum.
 
@@ -87,12 +64,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Max, window_size)
 
-    @overload
-    def rolling_var(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_var(self: Iter[T], window_size: int) -> Iter[float]: ...
-
-    def rolling_var(self, window_size: int):
+    def rolling_var(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling variance.
 
@@ -102,12 +74,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Var, window_size)
 
-    @overload
-    def rolling_std(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_std(self: Iter[T], window_size: int) -> Iter[float]: ...
-
-    def rolling_std(self, window_size: int):
+    def rolling_std(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling standard deviation.
 
@@ -117,12 +84,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Std, window_size)
 
-    @overload
-    def rolling_kurtosis(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_kurtosis(self: Iter[T], window_size: int) -> Iter[float]: ...
-
-    def rolling_kurtosis(self, window_size: int):
+    def rolling_kurtosis(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling kurtosis.
         The windows must have at least 4 observations.
@@ -133,12 +95,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Kurtosis, window_size)
 
-    @overload
-    def rolling_skew(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_skew(self: Iter[T], window_size: int) -> Iter[float]: ...
-
-    def rolling_skew(self, window_size: int):
+    def rolling_skew(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling skewness.
         The windows must have at least 3 observations.
@@ -149,11 +106,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Skew, window_size)
 
-    @overload
-    def rolling_all(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_all(self: Iter[T], window_size: int) -> Iter[bool]: ...
-    def rolling_all(self, window_size: int):
+    def rolling_all(self, window_size: int) -> Iter[bool]:
         """
         Compute whether all values in the window evaluate to True.
 
@@ -163,12 +116,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.All, window_size)
 
-    @overload
-    def rolling_any(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_any(self: Iter[T], window_size: int) -> Iter[bool]: ...
-
-    def rolling_any(self, window_size: int):
+    def rolling_any(self, window_size: int) -> Iter[bool]:
         """
         Compute whether any value in the window evaluates to True.
 
@@ -178,12 +126,7 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Any, window_size)
 
-    @overload
-    def rolling_product(self: Expr, window_size: int) -> Expr: ...
-    @overload
-    def rolling_product(self: Iter[T], window_size: int) -> Iter[float]: ...
-
-    def rolling_product(self, window_size: int):
+    def rolling_product(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling product.
 
@@ -193,16 +136,9 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Product, window_size)
 
-    @overload
     def rolling_apply[R](
-        self: Expr, func: Callable[[Iterable[Any]], R], window_size: int
-    ) -> Expr: ...
-    @overload
-    def rolling_apply[R](
-        self: Iter[T], func: Callable[[Iterable[T]], R], window_size: int
-    ) -> Iter[R]: ...
-
-    def rolling_apply[R](self, func: Callable[[Iterable[T]], R], window_size: int):
+        self, func: Callable[[Iterable[T]], R], window_size: int
+    ) -> Iter[R]:
         """
         Apply a custom function to each rolling window.
 
@@ -217,22 +153,9 @@ class BaseRolling[T](IterWrapper[T]):
         """
         return self.apply(rolling.Apply, window_size, "fixed", func)
 
-    @overload
-    def rolling_apply_pairwise[R](
-        self: Expr,
-        other: Iterable[Any],
-        func: Callable[[Any, Any], R],
-        window_size: int,
-    ) -> Expr: ...
-
-    @overload
-    def rolling_apply_pairwise[R](
-        self: Iter[T], other: Iterable[T], func: Callable[[T, T], R], window_size: int
-    ) -> Iter[R]: ...
-
     def rolling_apply_pairwise[R](
         self, other: Iterable[T], func: Callable[[T, T], R], window_size: int
-    ):
+    ) -> Iter[R]:
         """
         Apply a custom pairwise function to each rolling window of size 2.
 

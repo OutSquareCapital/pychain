@@ -59,8 +59,14 @@ def _dummy_data() -> DataSchema:
     }
 
 
+data = [1, 2, 3, 4]
+b = pc.Iter(data).into(sum)
+
+
 def _total_cost(expr: pc.Expr) -> pc.Expr:
-    return expr.field("items").map(lambda item: item["price"] * item["quantity"]).sum()
+    return expr.field("items").itr(
+        lambda x: x.map(lambda item: item["price"] * item["quantity"]).into(sum)
+    )
 
 
 def _user_summary(record: pc.Dict[str, Any]) -> pc.Dict[str, Any]:
@@ -75,8 +81,8 @@ def _user_summary(record: pc.Dict[str, Any]) -> pc.Dict[str, Any]:
 def _enriched_record(record: pc.Dict[str, Any]) -> pc.Dict[str, Any]:
     user = pc.key("user")
     return record.with_fields(
-        pc.key("order").field("items").length().alias("item_count"),
-        user.field("roles").first().alias("primary_role"),
+        pc.key("order").field("items").apply(len).alias("item_count"),
+        user.field("roles").itr(lambda roles: roles.first()).alias("primary_role"),
         pc.key("is_vip")
         .eq(True)
         .and_(user.field("status").eq("active"))

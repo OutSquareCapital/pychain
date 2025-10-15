@@ -4,15 +4,12 @@ import itertools
 from collections.abc import Callable, Iterable, Iterator
 from functools import partial
 from random import Random
-from typing import TYPE_CHECKING, Any, Self, overload
+from typing import Any, Self
 
 import cytoolz as cz
 import more_itertools as mit
 
 from .._core import IterWrapper, Peeked, SupportsRichComparison
-
-if TYPE_CHECKING:
-    from .._implementations import Expr, Iter
 
 
 class BaseProcess[T](IterWrapper[T]):
@@ -239,13 +236,6 @@ class BaseProcess[T](IterWrapper[T]):
         ['a', 'b', 'c', 'd']
         """
         return self._new(mit.strictly_n, n, too_short, too_long)
-
-    @overload
-    def sort[U: SupportsRichComparison[Any]](
-        self: Iter[U], reverse: bool = False
-    ) -> Iter[U]: ...
-    @overload
-    def sort[U: Expr](self: U, reverse: bool = False) -> U: ...
 
     def sort[U: SupportsRichComparison[Any]](
         self: IterWrapper[U], reverse: bool = False

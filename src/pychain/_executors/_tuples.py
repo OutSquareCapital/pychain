@@ -11,17 +11,17 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from .._implementations import Expr, Iter
+    from .._implementations import Iter
 
 
 class BaseTuples[T](IterWrapper[T]):
     @overload
     def zip[T1](
-        self: Iter[T], iter1: Iterable[T1], /, *, strict: bool = ...
+        self, iter1: Iterable[T1], /, *, strict: bool = ...
     ) -> Iter[tuple[T, T1]]: ...
     @overload
     def zip[T1, T2](
-        self: Iter[T],
+        self,
         iter1: Iterable[T1],
         iter2: Iterable[T2],
         /,
@@ -30,7 +30,7 @@ class BaseTuples[T](IterWrapper[T]):
     ) -> Iter[tuple[T, T1, T2]]: ...
     @overload
     def zip[T1, T2, T3](
-        self: Iter[T],
+        self,
         iter1: Iterable[T1],
         iter2: Iterable[T2],
         iter3: Iterable[T3],
@@ -40,7 +40,7 @@ class BaseTuples[T](IterWrapper[T]):
     ) -> Iter[tuple[T, T1, T2, T3]]: ...
     @overload
     def zip[T1, T2, T3, T4](
-        self: Iter[T],
+        self,
         iter1: Iterable[T1],
         iter2: Iterable[T2],
         iter3: Iterable[T3],
@@ -49,13 +49,9 @@ class BaseTuples[T](IterWrapper[T]):
         *,
         strict: bool = ...,
     ) -> Iter[tuple[T, T1, T2, T3, T4]]: ...
-    @overload
     def zip(
-        self: Iter[T], *others: Iterable[Any], strict: bool = False
-    ) -> Iter[tuple[Any, ...]]: ...
-    @overload
-    def zip(self: Expr, *others: Iterable[Any], strict: bool = False) -> Expr: ...
-    def zip(self, *others: Iterable[Any], strict: bool = False):
+        self, *others: Iterable[Any], strict: bool = False
+    ) -> Iter[tuple[Any, ...]]:
         """
         Zip with other iterables, optionally strict.
 
@@ -65,29 +61,13 @@ class BaseTuples[T](IterWrapper[T]):
         """
         return self.apply(zip, *others, strict=strict)
 
-    @overload
-    def zip_offset(
-        self: Expr,
-        *others: Iterable[Any],
-        offsets: list[int],
-        longest: bool = False,
-        fillvalue: Any = None,
-    ) -> Expr: ...
-    @overload
     def zip_offset[U](
-        self: Iter[T],
-        *others: Iterable[T],
-        offsets: list[int],
-        longest: bool = False,
-        fillvalue: U = None,
-    ) -> Iter[tuple[T | U, ...]]: ...
-    def zip_offset(
         self,
         *others: Iterable[T],
         offsets: list[int],
         longest: bool = False,
-        fillvalue: Any = None,
-    ):
+        fillvalue: U = None,
+    ) -> Iter[tuple[T | U, ...]]:
         """
         Zip the input iterables together, but offset the i-th iterable by the i-th item in offsets.
 
@@ -115,14 +95,8 @@ class BaseTuples[T](IterWrapper[T]):
         )
 
     @overload
-    def zip_broadcast(
-        self: Expr,
-        *others: Iterable[Any],
-        strict: bool = False,
-    ) -> Expr: ...
-    @overload
     def zip_broadcast[T1](
-        self: Iter[T],
+        self,
         iter1: Iterable[T1],
         /,
         *,
@@ -130,7 +104,7 @@ class BaseTuples[T](IterWrapper[T]):
     ) -> Iter[tuple[T, T1]]: ...
     @overload
     def zip_broadcast[T1, T2](
-        self: Iter[T],
+        self,
         iter1: Iterable[T1],
         iter2: Iterable[T2],
         /,
@@ -139,7 +113,7 @@ class BaseTuples[T](IterWrapper[T]):
     ) -> Iter[tuple[T, T1, T2]]: ...
     @overload
     def zip_broadcast[T1, T2, T3](
-        self: Iter[T],
+        self,
         iter1: Iterable[T1],
         iter2: Iterable[T2],
         iter3: Iterable[T3],
@@ -149,7 +123,7 @@ class BaseTuples[T](IterWrapper[T]):
     ) -> Iter[tuple[T, T1, T2, T3]]: ...
     @overload
     def zip_broadcast[T1, T2, T3, T4](
-        self: Iter[T],
+        self,
         iter1: Iterable[T1],
         iter2: Iterable[T2],
         iter3: Iterable[T3],
@@ -158,15 +132,9 @@ class BaseTuples[T](IterWrapper[T]):
         *,
         strict: bool = False,
     ) -> Iter[tuple[T, T1, T2, T3, T4]]: ...
-    @overload
     def zip_broadcast(
-        self: Iter[T], *others: Iterable[Any], strict: bool = False
-    ) -> Iter[tuple[T, ...]]: ...
-    def zip_broadcast(
-        self,
-        *others: Iterable[Any],
-        strict: bool = False,
-    ):
+        self, *others: Iterable[Any], strict: bool = False
+    ) -> Iter[tuple[Any, ...]]:
         """
         Version of zip that "broadcasts" any scalar (i.e., non-iterable) items into output tuples.
         str and bytes are not treated as iterables.
@@ -184,33 +152,29 @@ class BaseTuples[T](IterWrapper[T]):
         return self.apply(lambda x: mit.zip_broadcast(x, *others, strict=strict))
 
     @overload
-    def zip_equal(self: Iter[T]) -> Iter[tuple[T]]: ...
+    def zip_equal(self) -> Iter[tuple[T]]: ...
     @overload
-    def zip_equal[T2](self: Iter[T], __iter2: Iterable[T2]) -> Iter[tuple[T, T2]]: ...
+    def zip_equal[T2](self, __iter2: Iterable[T2]) -> Iter[tuple[T, T2]]: ...
     @overload
     def zip_equal[T2, T3](
-        self: Iter[T], __iter2: Iterable[T2], __iter3: Iterable[T3]
+        self, __iter2: Iterable[T2], __iter3: Iterable[T3]
     ) -> Iter[tuple[T, T2, T3]]: ...
     @overload
     def zip_equal[T2, T3, T4](
-        self: Iter[T],
+        self,
         __iter2: Iterable[T2],
         __iter3: Iterable[T3],
         __iter4: Iterable[T4],
     ) -> Iter[tuple[T, T2, T3, T4]]: ...
     @overload
     def zip_equal[T2, T3, T4, T5](
-        self: Iter[T],
+        self,
         __iter2: Iterable[T2],
         __iter3: Iterable[T3],
         __iter4: Iterable[T4],
         __iter5: Iterable[T5],
     ) -> Iter[tuple[T, T2, T3, T4, T5]]: ...
-    @overload
-    def zip_equal(self: Iter[Any], *others: Iterable[Any]) -> Iter[tuple[Any, ...]]: ...
-    @overload
-    def zip_equal(self: Expr, *others: Iterable[Any]) -> Expr: ...
-    def zip_equal(self, *others: Iterable[Any]):
+    def zip_equal(self, *others: Iterable[Any]) -> Iter[tuple[Any, ...]]:
         """
 
         ``zip`` the input *iterables* together but raise ``UnequalIterablesError`` if they aren't all the same length.
@@ -228,12 +192,7 @@ class BaseTuples[T](IterWrapper[T]):
         """
         return self.apply(lambda x: mit.zip_equal(x, *others))
 
-    @overload
-    def enumerate(self: Expr) -> Expr: ...
-    @overload
-    def enumerate(self: Iter[T]) -> Iter[tuple[int, T]]: ...
-
-    def enumerate(self):
+    def enumerate(self) -> Iter[tuple[int, T]]:
         """
         Return a Iter of (index, value) pairs.
 
@@ -244,18 +203,14 @@ class BaseTuples[T](IterWrapper[T]):
         return self.apply(enumerate)
 
     @overload
-    def combinations(self: Iter[T], r: Literal[2]) -> Iter[tuple[T, T]]: ...
+    def combinations(self, r: Literal[2]) -> Iter[tuple[T, T]]: ...
     @overload
-    def combinations(self: Iter[T], r: Literal[3]) -> Iter[tuple[T, T, T]]: ...
+    def combinations(self, r: Literal[3]) -> Iter[tuple[T, T, T]]: ...
     @overload
-    def combinations(self: Iter[T], r: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
+    def combinations(self, r: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
     @overload
-    def combinations(self: Iter[T], r: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
-    @overload
-    def combinations(self: Iter[T], r: int) -> Iter[tuple[T, ...]]: ...
-    @overload
-    def combinations(self: Expr, r: int) -> Expr: ...
-    def combinations(self, r: int):
+    def combinations(self, r: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
+    def combinations(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations of length r.
 
@@ -265,11 +220,7 @@ class BaseTuples[T](IterWrapper[T]):
         """
         return self.apply(itertools.combinations, r)
 
-    @overload
-    def batch(self: Iter[T], n: int) -> Iter[tuple[T, ...]]: ...
-    @overload
-    def batch(self: Expr, n: int) -> Expr: ...
-    def batch(self, n: int):
+    def batch(self, n: int) -> Iter[tuple[T, ...]]:
         """
         Batch elements into tuples of length n and return a new Iter.
 
@@ -279,15 +230,9 @@ class BaseTuples[T](IterWrapper[T]):
         """
         return self.apply(itertools.batched, n)
 
-    @overload
     def zip_longest[U](
-        self: Expr, *others: Iterable[Any], fill_value: Any = None
-    ) -> Expr: ...
-    @overload
-    def zip_longest[U](
-        self: Iter[T], *others: Iterable[T], fill_value: U = None
-    ) -> Iter[tuple[U | T, ...]]: ...
-    def zip_longest(self, *others: Iterable[T], fill_value: Any = None):
+        self, *others: Iterable[T], fill_value: U = None
+    ) -> Iter[tuple[U | T, ...]]:
         """
         Zip with other iterables, filling missing values.
 
@@ -298,18 +243,14 @@ class BaseTuples[T](IterWrapper[T]):
         return self.apply(itertools.zip_longest, *others, fillvalue=fill_value)
 
     @overload
-    def permutations(self: Iter[T], r: Literal[2]) -> Iter[tuple[T, T]]: ...
+    def permutations(self, r: Literal[2]) -> Iter[tuple[T, T]]: ...
     @overload
-    def permutations(self: Iter[T], r: Literal[3]) -> Iter[tuple[T, T, T]]: ...
+    def permutations(self, r: Literal[3]) -> Iter[tuple[T, T, T]]: ...
     @overload
-    def permutations(self: Iter[T], r: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
+    def permutations(self, r: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
     @overload
-    def permutations(self: Iter[T], r: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
-    @overload
-    def permutations(self: Iter[T], r: int | None = None) -> Iter[tuple[T, ...]]: ...
-    @overload
-    def permutations(self: Expr, r: int | None = None) -> Expr: ...
-    def permutations(self, r: int | None = None):
+    def permutations(self, r: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
+    def permutations(self, r: int | None = None) -> Iter[tuple[T, ...]]:
         """
         Return all permutations of length r.
 
@@ -320,31 +261,27 @@ class BaseTuples[T](IterWrapper[T]):
         return self.apply(itertools.permutations, r)
 
     @overload
-    def product(self: Iter[T]) -> Iter[tuple[T]]: ...
+    def product(self) -> Iter[tuple[T]]: ...
     @overload
-    def product[T1](self: Iter[T], iter1: Iterable[T1], /) -> Iter[tuple[T, T1]]: ...
+    def product[T1](self, iter1: Iterable[T1], /) -> Iter[tuple[T, T1]]: ...
     @overload
     def product[T1, T2](
-        self: Iter[T], iter1: Iterable[T1], iter2: Iterable[T2], /
+        self, iter1: Iterable[T1], iter2: Iterable[T2], /
     ) -> Iter[tuple[T, T1, T2]]: ...
     @overload
     def product[T1, T2, T3](
-        self: Iter[T], iter1: Iterable[T1], iter2: Iterable[T2], iter3: Iterable[T3], /
+        self, iter1: Iterable[T1], iter2: Iterable[T2], iter3: Iterable[T3], /
     ) -> Iter[tuple[T, T1, T2, T3]]: ...
     @overload
     def product[T1, T2, T3, T4](
-        self: Iter[T],
+        self,
         iter1: Iterable[T1],
         iter2: Iterable[T2],
         iter3: Iterable[T3],
         iter4: Iterable[T4],
         /,
     ) -> Iter[tuple[T, T1, T2, T3, T4]]: ...
-    @overload
-    def product(self: Iter[T], *others: Iterable[Any]) -> Iter[tuple[Any, ...]]: ...
-    @overload
-    def product(self: Expr, *others: Iterable[Any]) -> Expr: ...
-    def product(self, *others: Iterable[T]):
+    def product(self, *others: Iterable[Any]) -> Iter[tuple[Any, ...]]:
         """
         Computes the Cartesian product with another iterable.
         This is the declarative equivalent of nested for-loops.
@@ -364,27 +301,18 @@ class BaseTuples[T](IterWrapper[T]):
         return self.apply(itertools.product, *others)
 
     @overload
-    def combinations_with_replacement(
-        self: Iter[T], r: Literal[2]
-    ) -> Iter[tuple[T, T]]: ...
+    def combinations_with_replacement(self, r: Literal[2]) -> Iter[tuple[T, T]]: ...
+    @overload
+    def combinations_with_replacement(self, r: Literal[3]) -> Iter[tuple[T, T, T]]: ...
     @overload
     def combinations_with_replacement(
-        self: Iter[T], r: Literal[3]
-    ) -> Iter[tuple[T, T, T]]: ...
-    @overload
-    def combinations_with_replacement(
-        self: Iter[T], r: Literal[4]
+        self, r: Literal[4]
     ) -> Iter[tuple[T, T, T, T]]: ...
     @overload
     def combinations_with_replacement(
-        self: Iter[T], r: Literal[5]
+        self, r: Literal[5]
     ) -> Iter[tuple[T, T, T, T, T]]: ...
-    @overload
-    def combinations_with_replacement(self: Iter[T], r: int) -> Iter[tuple[T, ...]]: ...
-    @overload
-    def combinations_with_replacement(self: Expr, r: int) -> Expr: ...
-
-    def combinations_with_replacement(self, r: int):
+    def combinations_with_replacement(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations with replacement of length r.
 
@@ -394,12 +322,7 @@ class BaseTuples[T](IterWrapper[T]):
         """
         return self.apply(itertools.combinations_with_replacement, r)
 
-    @overload
-    def pairwise(self: Iter[T]) -> Iter[tuple[T, T]]: ...
-    @overload
-    def pairwise(self: Expr) -> Expr: ...
-
-    def pairwise(self):
+    def pairwise(self) -> Iter[tuple[T, T]]:
         """
         Return an iterator over pairs of consecutive elements.
 
@@ -409,32 +332,14 @@ class BaseTuples[T](IterWrapper[T]):
         """
         return self.apply(itertools.pairwise)
 
-    @overload
     def join[R, K](
-        self: Iter[T],
-        other: Iterable[R],
-        left_on: Callable[[T], K],
-        right_on: Callable[[R], K],
-        left_default: T | None = None,
-        right_default: R | None = None,
-    ) -> Iter[tuple[T, R]]: ...
-    @overload
-    def join[R, K](
-        self: Expr,
-        other: Iterable[R],
-        left_on: Callable[[T], K],
-        right_on: Callable[[R], K],
-        left_default: T | None = None,
-        right_default: R | None = None,
-    ) -> Expr: ...
-    def join(
         self,
-        other: Iterable[Any],
-        left_on: Callable[..., Any],
-        right_on: Callable[..., Any],
-        left_default: Any | None = None,
-        right_default: Any | None = None,
-    ):
+        other: Iterable[R],
+        left_on: Callable[[T], K],
+        right_on: Callable[[R], K],
+        left_default: T | None = None,
+        right_default: R | None = None,
+    ) -> Iter[tuple[T, R]]:
         """
         Perform a relational join with another iterable.
 
@@ -456,12 +361,7 @@ class BaseTuples[T](IterWrapper[T]):
             )
         )
 
-    @overload
-    def partition(self: Iter[T], n: int, pad: None = None) -> Iter[tuple[T, ...]]: ...
-    @overload
-    def partition(self: Expr, n: int, pad: None = None) -> Expr: ...
-
-    def partition(self, n: int, pad: T | None = None):
+    def partition(self, n: int, pad: None = None) -> Iter[tuple[T, ...]]:
         """
         Partition sequence into tuples of length n
 
@@ -477,12 +377,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         return self.apply(partial(cz.itertoolz.partition, n, pad=pad))
 
-    @overload
-    def partition_all(self: Iter[T], n: int) -> Iter[tuple[T, ...]]: ...
-    @overload
-    def partition_all(self: Expr, n: int) -> Expr: ...
-
-    def partition_all(self, n: int):
+    def partition_all(self, n: int) -> Iter[tuple[T, ...]]:
         """
         Partition all elements of sequence into tuples of length at most n
 
@@ -497,24 +392,17 @@ class BaseTuples[T](IterWrapper[T]):
         return self.apply(partial(cz.itertoolz.partition_all, n))
 
     @overload
-    def sliding_window(self: Iter[T], length: Literal[1]) -> Iter[tuple[T]]: ...
+    def sliding_window(self, length: Literal[1]) -> Iter[tuple[T]]: ...
     @overload
-    def sliding_window(self: Iter[T], length: Literal[2]) -> Iter[tuple[T, T]]: ...
+    def sliding_window(self, length: Literal[2]) -> Iter[tuple[T, T]]: ...
     @overload
-    def sliding_window(self: Iter[T], length: Literal[3]) -> Iter[tuple[T, T, T]]: ...
+    def sliding_window(self, length: Literal[3]) -> Iter[tuple[T, T, T]]: ...
     @overload
-    def sliding_window(
-        self: Iter[T], length: Literal[4]
-    ) -> Iter[tuple[T, T, T, T]]: ...
+    def sliding_window(self, length: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
     @overload
-    def sliding_window(
-        self: Iter[T], length: Literal[5]
-    ) -> Iter[tuple[T, T, T, T, T]]: ...
-    @overload
-    def sliding_window(self: Iter[T], length: int) -> Iter[tuple[T, ...]]: ...
-    @overload
-    def sliding_window(self: Expr, length: int) -> Expr: ...
-    def sliding_window(self, length: int):
+    def sliding_window(self, length: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
+
+    def sliding_window(self, length: int) -> Iter[tuple[T, ...]]:
         """
         A sequence of overlapping subsequences of the given length.
 
@@ -532,26 +420,12 @@ class BaseTuples[T](IterWrapper[T]):
         """
         return self.apply(partial(cz.itertoolz.sliding_window, length))
 
-    @overload
-    def diff(
-        self: Iter[T],
-        *others: Iterable[T],
-        default: T | None = None,
-        key: Callable[[T], Any] | None = None,
-    ) -> Iter[tuple[T, ...]]: ...
-    @overload
-    def diff(
-        self: Expr,
-        *others: Iterable[Any],
-        default: Any | None = None,
-        key: Callable[[Any], Any] | None = None,
-    ) -> Expr: ...
     def diff(
         self,
         *others: Iterable[T],
         default: T | None = None,
         key: Callable[[T], Any] | None = None,
-    ):
+    ) -> Iter[tuple[T, ...]]:
         """
         Return those items that differ between iterables.
 
@@ -570,15 +444,9 @@ class BaseTuples[T](IterWrapper[T]):
         """
         return self.apply(cz.itertoolz.diff, *others, default=default, key=key)
 
-    @overload
     def adjacent(
-        self: Iter[T], predicate: Callable[[T], bool], distance: int = 1
-    ) -> Iter[tuple[bool, T]]: ...
-    @overload
-    def adjacent(
-        self: Expr, predicate: Callable[[Any], bool], distance: int = 1
-    ) -> Expr: ...
-    def adjacent(self, predicate: Callable[[T], bool], distance: int = 1):
+        self, predicate: Callable[[T], bool], distance: int = 1
+    ) -> Iter[tuple[bool, T]]:
         """
         Return an iterable over (bool, item) tuples.
 
@@ -607,11 +475,7 @@ class BaseTuples[T](IterWrapper[T]):
         """
         return self.apply(partial(mit.adjacent, predicate, distance=distance))
 
-    @overload
-    def most_common(self: Expr, n: int | None = None) -> Expr: ...
-    @overload
-    def most_common(self: Iter[T], n: int | None = None) -> Iter[tuple[T, int]]: ...
-    def most_common(self, n: int | None = None):
+    def most_common(self, n: int | None = None) -> Iter[tuple[T, int]]:
         """
         Return an iterable over the n most common elements and their counts from the most common to the least.
 
@@ -625,12 +489,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         return self.apply(lambda data: Counter(data).most_common(n))
 
-    @overload
-    def classify_unique(self: Iter[T]) -> Iter[tuple[T, bool, bool]]: ...
-    @overload
-    def classify_unique(self: Expr) -> Expr: ...
-
-    def classify_unique(self):
+    def classify_unique(self) -> Iter[tuple[T, bool, bool]]:
         """
         Classify each element in terms of its uniqueness.
 
@@ -653,14 +512,14 @@ class BaseTuples[T](IterWrapper[T]):
 
     @overload
     def map_juxt[R1, R2](
-        self: Iter[T],
+        self,
         func1: Callable[[T], R1],
         func2: Callable[[T], R2],
         /,
     ) -> Iter[tuple[R1, R2]]: ...
     @overload
     def map_juxt[R1, R2, R3](
-        self: Iter[T],
+        self,
         func1: Callable[[T], R1],
         func2: Callable[[T], R2],
         func3: Callable[[T], R3],
@@ -668,20 +527,14 @@ class BaseTuples[T](IterWrapper[T]):
     ) -> Iter[tuple[R1, R2, R3]]: ...
     @overload
     def map_juxt[R1, R2, R3, R4](
-        self: Iter[T],
+        self,
         func1: Callable[[T], R1],
         func2: Callable[[T], R2],
         func3: Callable[[T], R3],
         func4: Callable[[T], R4],
         /,
     ) -> Iter[tuple[R1, R2, R3, R4]]: ...
-    @overload
-    def map_juxt(
-        self: Iter[T], *funcs: Callable[[T], object]
-    ) -> Iter[tuple[object, ...]]: ...
-    @overload
-    def map_juxt(self: Expr, *funcs: Callable[[Any], object]) -> Expr: ...
-    def map_juxt(self, *funcs: Callable[[T], object]):
+    def map_juxt(self, *funcs: Callable[[T], object]) -> Iter[tuple[object, ...]]:
         """
         Apply several functions to each item.
 
@@ -693,14 +546,7 @@ class BaseTuples[T](IterWrapper[T]):
         """
         return self.apply(partial(map, cz.functoolz.juxt(*funcs)))
 
-    @overload
-    def partition_by(
-        self: Iter[T], predicate: Callable[[T], bool]
-    ) -> Iter[tuple[T, ...]]: ...
-    @overload
-    def partition_by(self: Expr, predicate: Callable[[Any], bool]) -> Expr: ...
-
-    def partition_by(self, predicate: Callable[[T], bool]):
+    def partition_by(self, predicate: Callable[[T], bool]) -> Iter[tuple[T, ...]]:
         """
         Partition the `iterable` into a sequence of `tuples` according to a predicate function.
 

@@ -67,47 +67,6 @@ class CommonBase[T](ABC):
         """Pipe the instance in the function and return the result."""
         return func(self, *args, **kwargs)
 
-    @abstractmethod
-    def into(
-        self,
-        func: Callable[..., Any],
-        *args: Any,
-        **kwargs: Any,
-    ) -> Any:
-        """
-        Pass the *unwrapped* underlying data into a function.
-
-        The result is not wrapped.
-
-            >>> from pychain import Iter
-            >>> Iter.from_range(0, 5).into(tuple)
-            (0, 1, 2, 3, 4)
-
-        This is a core functionality that allows ending the chain whilst keeping the code style consistent.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def apply[**P](
-        self,
-        func: Callable[Concatenate[T, P], Any],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Any:
-        """
-        Pipe the underlying data into a function, then wrap the result in the same wrapper type.
-
-        Each pychain class implement this method to allow chaining of functions that transform the
-        underlying data and return a new wrapped instance of the same subclass.
-
-            >>> from pychain import Iter
-            >>> Iter.from_range(0, 5).apply(tuple).unwrap()
-            (0, 1, 2, 3, 4)
-
-        Use this to keep the chainable API after applying a transformation to the data.
-        """
-        raise NotImplementedError
-
     def pipe_chain(self, *funcs: Callable[[T], T]) -> Self:
         """
         Pipe a value through a sequence of functions.
@@ -143,6 +102,27 @@ class EagerWrapper[T](CommonBase[T]):
         """
         return func(self.unwrap(), *args, **kwargs)
 
+    @abstractmethod
+    def apply[**P](
+        self,
+        func: Callable[Concatenate[T, P], Any],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Any:
+        """
+        Pipe the underlying data into a function, then wrap the result in the same wrapper type.
 
-class IterWrapper[T](CommonBase[Iterable[T]]):
+        Each pychain class implement this method to allow chaining of functions that transform the
+        underlying data and return a new wrapped instance of the same subclass.
+
+            >>> from pychain import Iter
+            >>> Iter.from_range(0, 5).apply(tuple).unwrap()
+            (0, 1, 2, 3, 4)
+
+        Use this to keep the chainable API after applying a transformation to the data.
+        """
+        raise NotImplementedError
+
+
+class IterWrapper[T](EagerWrapper[Iterable[T]]):
     _data: Iterable[T]
