@@ -17,6 +17,7 @@ class BaseStruct[K, V](EagerWrapper[dict[K, V]]):
         """
         Return a Dict with keys transformed by func.
 
+        >>> from pychain import Dict
         >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_keys(str.lower).unwrap()
         {'alice': [20, 15, 30], 'bob': [10, 35]}
         >>>
@@ -29,6 +30,7 @@ class BaseStruct[K, V](EagerWrapper[dict[K, V]]):
         """
         Return a Dict with values transformed by func.
 
+        >>> from pychain import Dict
         >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_values(sum).unwrap()
         {'Alice': 65, 'Bob': 45}
         >>>
@@ -44,6 +46,7 @@ class BaseStruct[K, V](EagerWrapper[dict[K, V]]):
         """
         Transform (key, value) pairs using a function that takes a (key, value) tuple.
 
+        >>> from pychain import Dict
         >>> Dict({"Alice": 10, "Bob": 20}).map_items(
         ...     lambda kv: (kv[0].upper(), kv[1] * 2)
         ... ).unwrap()
@@ -57,6 +60,7 @@ class BaseStruct[K, V](EagerWrapper[dict[K, V]]):
 
         Values in the original dict must be unique and hashable.
 
+        >>> from pychain import Dict
         >>> Dict({"a": 1, "b": 2}).reverse().unwrap()
         {1: 'a', 2: 'b'}
         """
@@ -69,6 +73,7 @@ class BaseStruct[K, V](EagerWrapper[dict[K, V]]):
         """
         Transform (key, value) pairs using a function that takes key and value as separate arguments.
 
+        >>> from pychain import Dict
         >>> Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).unwrap()
         {2: 20}
         """

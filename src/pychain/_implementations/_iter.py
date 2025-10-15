@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any, Concatenate, final
 
 import cytoolz as cz
 
-from .._core import Pluckable
 from .._executors import Executor
 
 if TYPE_CHECKING:
@@ -115,16 +114,18 @@ class Iter[T](Executor[T]):
     ) -> Iter[R]:
         return Iter(self.into(func, *args, **kwargs))
 
-    def pluck[K, V](self: Iter[Pluckable[K, V]], key: K) -> Iter[V]:
+    def pluck(self, key: int | str | list[int] | list[str]) -> Iter[T]:
         """
-        Extract a value from each element in the sequence using a key or index.
-        This is a shortcut for `.map(lambda x: x[key])`.
+        ``plucks`` an element or several elements from each item in a sequence.
 
-        >>> data = Iter([{"id": 1, "val": "a"}, {"id": 2, "val": "b"}])
-        >>> data.pluck("val").into(list)
-        ['a', 'b']
-        >>> Iter([[10, 20], [30, 40]]).pluck(0).into(list)
-        [10, 30]
+        ``pluck`` maps itertoolz.get over a sequence and returns one or more elements of each item in the sequence.
+
+        >>> from pychain import Iter
+        >>> data = [{"id": 1, "name": "Cheese"}, {"id": 2, "name": "Pies"}]
+        >>> Iter(data).pluck("name").into(list)
+        ['Cheese', 'Pies']
+        >>> Iter([[1, 2, 3], [4, 5, 7]]).pluck([0, 1]).into(list)
+        [(1, 2), (4, 5)]
         """
         return self.apply(partial(cz.itertoolz.pluck, key))
 

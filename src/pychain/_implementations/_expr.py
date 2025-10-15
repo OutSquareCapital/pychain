@@ -48,6 +48,18 @@ def _parse_lambda(name: str, op: Callable[..., Any]) -> str:
         return name
 
 
+def _op_name(op: Callable[..., Any]) -> str:
+    if hasattr(op, OpType.NAME):
+        name = op.__name__
+        if name == f"<{OpType.LAMBDA}>":
+            name = _parse_lambda(name, op)
+    elif hasattr(op, OpType.CLASS):
+        name = f"{op.__class__.__name__}"
+    else:
+        name = str(op)
+    return name
+
+
 @final
 class Expr(Executor[Any]):
     _input_name: str
@@ -67,15 +79,7 @@ class Expr(Executor[Any]):
         """Return a string representation of the expression showing the execution plan."""
         ops_repr: list[str] = []
         for op in self.unwrap():
-            if hasattr(op, OpType.NAME):
-                name = op.__name__
-                if name == f"<{OpType.LAMBDA}>":
-                    name = _parse_lambda(name, op)
-            elif hasattr(op, OpType.CLASS):
-                name = f"{op.__class__.__name__}"
-            else:
-                name = str(op)
-            ops_repr.append(name)
+            ops_repr.append(_op_name(op))
         if ops_repr:
             pipeline = " -> ".join(ops_repr)
             return f"{OpType.EXPR}('{self._input_name}' -> {pipeline} -> '{self._output_name}')"

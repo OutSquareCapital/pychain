@@ -1,7 +1,6 @@
 from ._main import CommonBase, EagerWrapper, IterWrapper
 from ._protocols import (
     Peeked,
-    Pluckable,
     SizedIterable,
     SupportsAllComparisons,
     SupportsKeysAndGetItem,
@@ -13,7 +12,6 @@ __all__ = [
     "CommonBase",
     "IterWrapper",
     "SupportsAllComparisons",
-    "Pluckable",
     "SupportsRichComparison",
     "SupportsKeysAndGetItem",
     "Peeked",

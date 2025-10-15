@@ -17,11 +17,11 @@ if TYPE_CHECKING:
 class BaseFilter[T](IterWrapper[T]):
     def filter(self, func: Callable[[T], bool]) -> Self:
         """
-        Filter elements according to func and return a new Iterable wrapper.
+        Return an iterator yielding those items of iterable for which function is true.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).filter(lambda x: x > 1).into(list)
-            [2, 3]
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).filter(lambda x: x > 1).into(list)
+        [2, 3]
         """
         return self._new(partial(filter, func))
 

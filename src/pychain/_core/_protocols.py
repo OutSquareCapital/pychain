@@ -7,10 +7,6 @@ class Peeked[T](NamedTuple):
     sequence: Iterable[T]
 
 
-class Pluckable[KT, VT](Protocol):
-    def __getitem__(self, key: KT) -> VT: ...
-
-
 class SupportsDunderLT[T](Protocol):
     def __lt__(self, other: T, /) -> bool: ...
 

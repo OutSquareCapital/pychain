@@ -21,11 +21,11 @@ class BaseBool[T](IterWrapper[T]):
         """
         Return True if the iterable is not empty.
 
-            >>> from pychain import Iter
-            >>> Iter([1]).is_iterable()
-            True
-            >>> Iter([]).is_iterable()
-            True
+        >>> from pychain import Iter
+        >>> Iter([1]).is_iterable()
+        True
+        >>> Iter([]).is_iterable()
+        True
         """
         return self.into(cz.itertoolz.isiterable)
 
@@ -37,9 +37,9 @@ class BaseBool[T](IterWrapper[T]):
         """
         Return True if all items are distinct.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2]).is_distinct()
-            True
+        >>> from pychain import Iter
+        >>> Iter([1, 2]).is_distinct()
+        True
         """
         return self.into(cz.itertoolz.isdistinct)
 
@@ -117,6 +117,7 @@ class BaseBool[T](IterWrapper[T]):
         False
 
         The function returns as soon as the first non-unique element is encountered.
+
         Iterables with a mix of hashable and unhashable items can be used, but the function will be slower for unhashable items
 
         """
