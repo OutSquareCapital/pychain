@@ -3,18 +3,33 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Iterable
 from functools import partial
-from typing import TYPE_CHECKING, Concatenate, final
+from typing import TYPE_CHECKING, Concatenate
 
 import cytoolz as cz
 
-from .._executors import Executor
+from ._aggregations import BaseAgg
+from ._booleans import BaseBool
+from ._filters import BaseFilter
+from ._lists import BaseList
+from ._maps import BaseMap
+from ._process import BaseProcess
+from ._rolling import BaseRolling
+from ._tuples import BaseTuples
 
 if TYPE_CHECKING:
-    from ._dict import Dict
+    from .._dict import Dict
 
 
-@final
-class Iter[T](Executor[T]):
+class Iter[T](
+    BaseAgg[T],
+    BaseBool[T],
+    BaseFilter[T],
+    BaseProcess[T],
+    BaseMap[T],
+    BaseRolling[T],
+    BaseList[T],
+    BaseTuples[T],
+):
     """
     A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
 
@@ -24,6 +39,9 @@ class Iter[T](Executor[T]):
 
     It can be constructed from any iterable, including `lists`, `tuples`, `sets`, and `generators`.
     """
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.unwrap().__repr__()})"
 
     @staticmethod
     def from_count(start: int = 0, step: int = 1) -> Iter[int]:
@@ -193,7 +211,7 @@ class Iter[T](Executor[T]):
         'M': [{'name': 'Bob', 'gender': 'M'}, {'name': 'Charlie', 'gender': 'M'}],
         )
         """
-        from ._dict import Dict
+        from .._dict import Dict
 
         return Dict(self.into(partial(cz.itertoolz.groupby, on)))
 
@@ -205,7 +223,7 @@ class Iter[T](Executor[T]):
         >>> Iter(["cat", "cat", "ox", "pig", "pig", "cat"]).frequencies().unwrap()
         {'cat': 3, 'ox': 1, 'pig': 2}
         """
-        from ._dict import Dict
+        from .._dict import Dict
 
         return Dict(self.into(cz.itertoolz.frequencies))
 
@@ -221,7 +239,7 @@ class Iter[T](Executor[T]):
         >>> Iter([1, 2, 3]).count_by(iseven).unwrap()
         {False: 2, True: 1}
         """
-        from ._dict import Dict
+        from .._dict import Dict
 
         return Dict(self.into(partial(cz.recipes.countby, key)))
 
@@ -233,7 +251,7 @@ class Iter[T](Executor[T]):
         >>> Iter([1, 2, 3]).with_keys(["a", "b", "c"]).unwrap()
         {'a': 1, 'b': 2, 'c': 3}
         """
-        from ._dict import Dict
+        from .._dict import Dict
 
         return Dict(dict(zip(keys, self.unwrap())))
 
@@ -245,6 +263,6 @@ class Iter[T](Executor[T]):
         >>> Iter([1, 2, 3]).with_values(["a", "b", "c"]).unwrap()
         {1: 'a', 2: 'b', 3: 'c'}
         """
-        from ._dict import Dict
+        from .._dict import Dict
 
         return Dict(dict(zip(self.unwrap(), values)))

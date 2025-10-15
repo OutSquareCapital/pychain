@@ -8,7 +8,7 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from .._implementations import Iter
+    from ._main import Iter
 
 
 class BaseList[T](IterWrapper[T]):

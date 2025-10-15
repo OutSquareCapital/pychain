@@ -10,8 +10,8 @@ import cytoolz as cz
 from .._core import CommonBase
 
 if TYPE_CHECKING:
-    from ._dict import Dict
-    from ._iter import Iter
+    from .._dict import Dict
+    from .._iter import Iter
 
 type IntoExpr = str | Expr
 
@@ -81,7 +81,7 @@ class Expr(CommonBase[Any]):
     def __repr__(self) -> str:
         """Return a string representation of the expression showing the execution plan."""
         ops_repr: list[str] = []
-        for op in self.unwrap():
+        for op in self._data:
             ops_repr.append(_op_name(op))
         if ops_repr:
             pipeline = " -> ".join(ops_repr)
@@ -94,7 +94,7 @@ class Expr(CommonBase[Any]):
 
     @property
     def _func(self) -> Callable[[Any], Any]:
-        return cz.functoolz.compose_left(*self.unwrap())
+        return cz.functoolz.compose_left(*self._data)
 
     def __compute__(self, input: dict[Any, Any], output: dict[Any, Any]) -> None:
         output[self._output_name] = self._func(input[self._input_name])
@@ -123,12 +123,12 @@ class Expr(CommonBase[Any]):
         return self._new(func)
 
     def itr(self, func: Callable[[Iter[Any]], Any]) -> Self:
-        from ._iter import Iter
+        from .._iter import Iter
 
         return self._new(lambda data: func(Iter(data)))
 
     def struct(self, func: Callable[[Dict[Any, Any]], Any]) -> Self:
-        from ._dict import Dict
+        from .._dict import Dict
 
         return self._new(lambda data: func(Dict(data)))
 
