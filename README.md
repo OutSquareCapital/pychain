@@ -80,14 +80,13 @@ MODULES: set[ModuleType] = {
     qualitative,
 }
 
-
 def get_palettes() -> pc.Dict[str, list[str]]:
     clr = "color"
     scl = "scale"
     df: pl.DataFrame = (
         pc.Iter(MODULES)
         .map(
-            lambda mod: pc.Dict.from_object(mod)
+            lambda mod: pc.Dict(mod.__dict__)
             .filter_values(lambda v: isinstance(v, list))
             .unwrap()
         )
@@ -104,7 +103,8 @@ def get_palettes() -> pc.Dict[str, list[str]]:
     )
     keys: list[str] = df.get_column(scl).to_list()
     values: list[list[str]] = df.get_column(clr).to_list()
-    return pc.Dict.from_zip(keys, values)
+    return pc.Iter(keys).with_values(values)
+
 
 # Ouput excerpt:
 {'mygbm_r': ['#ef55f1',

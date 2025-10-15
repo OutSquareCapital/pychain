@@ -105,25 +105,6 @@ class Iter[T](
 
         return Iter(elements)
 
-    def into[**P, R](
-        self,
-        func: Callable[Concatenate[Iterable[T], P], R],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> R:
-        """
-        Pass the *unwrapped* underlying data into a function.
-
-        The result is not wrapped.
-
-            >>> from pychain import Iter
-            >>> Iter.from_range(0, 5).into(tuple)
-            (0, 1, 2, 3, 4)
-
-        This is a core functionality that allows ending the chain whilst keeping the code style consistent.
-        """
-        return func(self.unwrap(), *args, **kwargs)
-
     def apply[**P, R](
         self,
         func: Callable[Concatenate[Iterable[T], P], Iterable[R]],
