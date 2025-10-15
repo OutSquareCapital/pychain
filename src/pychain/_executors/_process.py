@@ -150,7 +150,7 @@ class BaseProcess[T](IterWrapper[T]):
         Iterator over elements repeating each as many times as its count.
 
         >>> from pychain import Iter
-        >>> Iter("ABCABC").elements().sort()
+        >>> Iter("ABCABC").elements().sort().unwrap()
         ['A', 'A', 'B', 'B', 'C', 'C']
 
         Knuth's example for prime factors of 1836:  2**2 * 3**3 * 17**1

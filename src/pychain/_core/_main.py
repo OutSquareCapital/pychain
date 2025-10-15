@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Any, Concatenate, Self
 
-import cytoolz as cz
-
 if TYPE_CHECKING:
     pass
 
@@ -25,7 +23,7 @@ class CommonBase[T](ABC):
         self._data = data
 
     def __repr__(self) -> str:
-        return f"{self.unwrap().__repr__()}"
+        return f"{self.__class__.__name__}({self.unwrap().__repr__()})"
 
     def _display_(self) -> T:
         """Display method specific for Marimo."""
@@ -66,20 +64,6 @@ class CommonBase[T](ABC):
     ) -> R:
         """Pipe the instance in the function and return the result."""
         return func(self, *args, **kwargs)
-
-    def pipe_chain(self, *funcs: Callable[[T], T]) -> Self:
-        """
-        Pipe a value through a sequence of functions.
-
-        Prefer this method over multiple apply calls when the functions don't transform the underlying type.
-
-        I.e. Wrapper(data).pipe_chain(f, g, h).unwrap() is equivalent to h(g(f(data)))
-
-        >>> from pychain import Wrapper
-        >>> Wrapper(5).pipe_chain(lambda x: x + 2, lambda x: x * 3, lambda x: x - 4)
-        17
-        """
-        return self._new(cz.functoolz.pipe, *funcs)
 
 
 class EagerWrapper[T](CommonBase[T]):

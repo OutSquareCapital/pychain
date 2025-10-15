@@ -312,10 +312,11 @@ class BaseFilter[T](IterWrapper[T]):
         Apply func to every element of iterable, yielding only those which are not None.
 
         >>> from pychain import Iter
+        >>>
+        >>> def to_int(s: str) -> int | None:
+        ...     return int(s) if s.isnumeric() else None
         >>> elems = ["1", "a", "2", "b", "3"]
-        >>> Iter(elems).filter_map(lambda s: int(s) if s.isnumeric() else None).into(
-        ...     list
-        ... )
+        >>> Iter(elems).filter_map(to_int).into(list)
         [1, 2, 3]
         """
         return self.apply(partial(mit.filter_map, func))

@@ -18,6 +18,17 @@ class Dict[K, V](BaseStruct[K, V]):
     Wrapper for Python dictionaries with chainable methods.
     """
 
+    def __init__(self, data: SupportsKeysAndGetItem[K, V] | dict[K, V]) -> None:
+        if not isinstance(data, dict):
+            data = dict(data)
+        super().__init__(data)
+
+    def __repr__(self) -> str:
+        data_formatted: str = "\n".join(
+            f"  {key!r}: {value!r}," for key, value in self.unwrap().items()
+        )
+        return f"{self.__class__.__name__}(\n{data_formatted}\n)"
+
     def _from_context(self, plan: Iterable[IntoExpr], is_selection: bool) -> Self:
         def _(data: dict[K, V]) -> dict[K, V]:
             if is_selection:
@@ -62,18 +73,6 @@ class Dict[K, V](BaseStruct[K, V]):
         {1: 200, 2: 300}
         """
         return Dict(self.into(func, *args, **kwargs))
-
-    def __init__(self, data: SupportsKeysAndGetItem[K, V] | dict[K, V]) -> None:
-        if not isinstance(data, dict):
-            data = dict(data)
-        super().__init__(data)
-
-    def __repr__(self) -> str:
-        data_formatted: str = "\n".join(
-            f"  {key!r}, {type(value).__name__}: {value!r},"
-            for key, value in self.unwrap().items()
-        )
-        return f"{self.__class__.__name__}(\n{data_formatted}\n)"
 
     def iter_keys(self) -> Iter[K]:
         """

@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Iterable
 from functools import partial
-from typing import TYPE_CHECKING, Any, Concatenate, final
+from typing import TYPE_CHECKING, Concatenate, final
 
 import cytoolz as cz
 
@@ -115,63 +115,39 @@ class Iter[T](Executor[T]):
         return Iter(self.into(func, *args, **kwargs))
 
     def reduce_by[K](
-        self,
-        key: Callable[[T], K],
-        binop: Callable[[T, T], T],
-        init: Any = "__no__default__",
+        self, key: Callable[[T], K], binop: Callable[[T, T], T]
     ) -> Iter[K]:
         """
         Perform a simultaneous groupby and reduction
 
-        >>> data = Iter([1, 2, 3, 4, 5])
-        >>> data.reduce_by(lambda x: x % 2 == 0, lambda x, y: x + y, 0).unwrap()
+        >>> from collections.abc import Iterable
+        >>> import pychain as pc
+        >>> from operator import add, mul
+        >>>
+        >>> def is_even(x: int) -> bool:
+        ...     return x % 2 == 0
+        >>>
+        >>> def group_reduce(data: Iterable[int]) -> int:
+        ...     return pc.Iter(data).reduce(add)
+        >>>
+        >>> data = pc.Iter([1, 2, 3, 4, 5])
+        >>> data.reduce_by(is_even, add).unwrap()
         {False: 9, True: 6}
-        >>> data.group_by(lambda x: x % 2 == 0).map_values(
-        ...     lambda group: Iter(group).reduce(lambda x, y: x + y)
-        ... ).unwrap()
+        >>> data.group_by(is_even).map_values(group_reduce).unwrap()
         {False: 9, True: 6}
 
         But the former does not build the intermediate groups, allowing it to operate in much less space.
 
         This makes it suitable for larger datasets that do not fit comfortably in memory
 
-        The init keyword argument is the default initialization of the reduction.
-
-        This can be either a constant value like 0 or a callable like lambda : 0 as might be used in defaultdict.
-
         Simple Examples
-
-        >>> from operator import add, mul
-        >>> Iter([1, 2, 3, 4, 5]).reduce_by(lambda x: x % 2 == 0, add).unwrap()
+        >>> pc.Iter([1, 2, 3, 4, 5]).reduce_by(is_even, add).unwrap()
         {False: 9, True: 6}
-        >>> Iter([1, 2, 3, 4, 5]).reduce_by(lambda x: x % 2 == 0, mul).unwrap()
+        >>> pc.Iter([1, 2, 3, 4, 5]).reduce_by(is_even, mul).unwrap()
         {False: 15, True: 8}
-
-        Complex Example
-
-        >>> projects = [
-        ...     {"name": "build roads", "state": "CA", "cost": 1000000},
-        ...     {"name": "fight crime", "state": "IL", "cost": 100000},
-        ...     {"name": "help farmers", "state": "IL", "cost": 2000000},
-        ...     {"name": "help farmers", "state": "CA", "cost": 200000},
-        ... ]
-        >>> Iter(projects).reduce_by(
-        ...     "state",
-        ...     lambda acc, x: acc + x["cost"],
-        ...     0,
-        ... ).unwrap()
-        {'CA': 1200000, 'IL': 2100000}
-
-        Example Using init
-
-        >>> def set_add(s, i):
-        ...     s.add(i)
-        ...     return s
-        >>> Iter([1, 2, 3, 4, 1, 2, 3]).reduce_by(lambda x: x % 2 == 0, set_add, set)
-        {False: {1, 3}, True: {2, 4}}
         """
 
-        return self.apply(partial(cz.itertoolz.reduceby, key, binop, init=init))
+        return self.apply(partial(cz.itertoolz.reduceby, key, binop))
 
     def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
         """
@@ -190,17 +166,17 @@ class Iter[T](Executor[T]):
         >>> Iter(names).group_by(len).sort()
         ... # doctest: +NORMALIZE_WHITESPACE
         Dict(
-            3, list: ['Bob', 'Dan'],
-            5, list: ['Alice', 'Edith', 'Frank'],
-            7, list: ['Charlie'],
+            3: ['Bob', 'Dan'],
+            5: ['Alice', 'Edith', 'Frank'],
+            7: ['Charlie'],
         )
         >>>
         >>> iseven = lambda x: x % 2 == 0
         >>> Iter([1, 2, 3, 4, 5, 6, 7, 8]).group_by(iseven)
         ... # doctest: +NORMALIZE_WHITESPACE
         Dict(
-            False, list: [1, 3, 5, 7],
-            True, list: [2, 4, 6, 8],
+        False: [1, 3, 5, 7],
+        True: [2, 4, 6, 8],
         )
 
         Non-callable keys imply grouping on a member.
@@ -213,8 +189,8 @@ class Iter[T](Executor[T]):
         >>> Iter(data).group_by("gender").sort()
         ... # doctest: +NORMALIZE_WHITESPACE
         Dict(
-            'F', list: [{'name': 'Alice', 'gender': 'F'}],
-            'M', list: [{'name': 'Bob', 'gender': 'M'}, {'name': 'Charlie', 'gender': 'M'}],
+        'F': [{'name': 'Alice', 'gender': 'F'}],
+        'M': [{'name': 'Bob', 'gender': 'M'}, {'name': 'Charlie', 'gender': 'M'}],
         )
         """
         from ._dict import Dict

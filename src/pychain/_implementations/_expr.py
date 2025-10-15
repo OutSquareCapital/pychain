@@ -207,8 +207,4 @@ class KeySelector:
         return self(name)
 
 
-def fn() -> Expr:
-    return Expr([cz.functoolz.identity], "", "")
-
-
 key = KeySelector()
