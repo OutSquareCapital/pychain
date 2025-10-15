@@ -122,8 +122,42 @@ class TestIterExprIntegration(unittest.TestCase):
             .unwrap()
             .get("high_scorers")
         )
-
+        expr_itr_result = (
+            pc.Dict(data)
+            .with_fields(
+                pc.key("users")
+                .itr(
+                    lambda users: users.filter(
+                        lambda user: sum(user["scores"]) / len(user["scores"]) >= 85
+                    )
+                    .pluck("name")
+                    .into(list)
+                )
+                .alias("high_scorers")
+            )
+            .unwrap()
+            .get("high_scorers")
+        )
+        expr_fn_result = (
+            pc.Dict(data)
+            .with_fields(
+                pc.key("users")
+                .apply(
+                    pc.fn()
+                    .filter(
+                        lambda user: sum(user["scores"]) / len(user["scores"]) >= 85
+                    )
+                    .pluck("name")
+                    .into(list)
+                )
+                .alias("high_scorers")
+            )
+            .unwrap()
+            .get("high_scorers")
+        )
         self.assertEqual(iter_result, expr_result)
+        self.assertEqual(iter_result, expr_itr_result)
+        self.assertEqual(iter_result, expr_fn_result)
         expected_result = [
             user["name"]
             for user in data["users"]

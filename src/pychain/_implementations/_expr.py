@@ -3,11 +3,15 @@ from __future__ import annotations
 import inspect
 from collections.abc import Callable
 from enum import StrEnum
-from typing import Any, Self, TypeGuard, final
+from typing import TYPE_CHECKING, Any, Self, TypeGuard
 
 import cytoolz as cz
 
 from .._executors import Executor
+
+if TYPE_CHECKING:
+    from ._dict import Dict
+    from ._iter import Iter
 
 type IntoExpr = str | Expr
 
@@ -60,7 +64,6 @@ def _op_name(op: Callable[..., Any]) -> str:
     return name
 
 
-@final
 class Expr(Executor[Any]):
     _input_name: str
     _output_name: str
@@ -85,6 +88,9 @@ class Expr(Executor[Any]):
             return f"{OpType.EXPR}('{self._input_name}' -> {pipeline} -> '{self._output_name}')"
         else:
             return f"{OpType.EXPR}('{self._input_name}' -> '{self._output_name}')"
+
+    def __call__(self, data: Any) -> Any:
+        return self._func(data)
 
     @property
     def _func(self) -> Callable[[Any], Any]:
@@ -118,6 +124,16 @@ class Expr(Executor[Any]):
 
     def apply(self, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Self:
         return self._new(func)
+
+    def itr(self, func: Callable[[Iter[Any]], Any]) -> Self:
+        from ._iter import Iter
+
+        return self._new(lambda data: func(Iter(data)))
+
+    def struct(self, func: Callable[[Dict[Any, Any]], Any]) -> Self:
+        from ._dict import Dict
+
+        return self._new(lambda data: func(Dict(data)))
 
     def add(self, value: Any) -> Self:
         return self._new(lambda x: x + value)
@@ -192,6 +208,10 @@ class KeySelector:
 
     def __get_attr__(self, name: str) -> Expr:
         return self(name)
+
+
+def fn() -> Expr:
+    return Expr([cz.functoolz.identity], "", "")
 
 
 key = KeySelector()
