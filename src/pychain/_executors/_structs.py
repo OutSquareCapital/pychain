@@ -164,21 +164,6 @@ class BaseStruct[K, V](EagerWrapper[dict[K, V]]):
         """
         return self._new(partial(cz.dicttoolz.keyfilter, predicate))
 
-    def filter_keys_not(self, predicate: Callable[[K], bool]) -> Self:
-        """
-        Return a new Dict containing keys that do not satisfy predicate.
-
-        >>> from pychain import Dict
-        >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> Dict(d).filter_keys_not(lambda x: x % 2 == 0).unwrap()
-        {1: 2, 3: 4}
-        """
-
-        def negate(k: K) -> bool:
-            return not predicate(k)
-
-        return self._new(partial(cz.dicttoolz.keyfilter, negate))
-
     def filter_values(self, predicate: Callable[[V], bool]) -> Self:
         """
         Return a new Dict containing items whose values satisfy predicate.
@@ -187,23 +172,10 @@ class BaseStruct[K, V](EagerWrapper[dict[K, V]]):
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
         >>> Dict(d).filter_values(lambda x: x % 2 == 0).unwrap()
         {1: 2, 3: 4}
+        >>> Dict(d).filter_values(lambda x: not x > 3).unwrap()
+        {1: 2, 2: 3}
         """
         return self._new(partial(cz.dicttoolz.valfilter, predicate))
-
-    def filter_values_not(self, predicate: Callable[[V], bool]) -> Self:
-        """
-        Return a new Dict containing items whose values do not satisfy predicate.
-
-        >>> from pychain import Dict
-        >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> Dict(d).filter_values_not(lambda x: x % 2 == 0).unwrap()
-        {2: 3, 4: 5}
-        """
-
-        def negate(v: V) -> bool:
-            return not predicate(v)
-
-        return self._new(partial(cz.dicttoolz.valfilter, negate))
 
     def filter_items(
         self,
@@ -213,60 +185,38 @@ class BaseStruct[K, V](EagerWrapper[dict[K, V]]):
         Filter items by predicate applied to (key, value) tuples.
 
         >>> from pychain import Dict
-        >>> Dict({1: 2, 3: 4}).filter_items(lambda it: it[1] > 2).unwrap()
-        {3: 4}
+        >>> def isvalid(item):
+        ...     k, v = item
+        ...     return k % 2 == 0 and v < 4
+        >>> d = Dict({1: 2, 2: 3, 3: 4, 4: 5})
+        >>>
+        >>> d.filter_items(isvalid).unwrap()
+        {2: 3}
+        >>> d.filter_items(lambda kv: not isvalid(kv)).unwrap()
+        {1: 2, 3: 4, 4: 5}
         """
         return self._new(partial(cz.dicttoolz.itemfilter, predicate))
-
-    def filter_items_not(
-        self,
-        predicate: Callable[[tuple[K, V]], bool],
-    ) -> Self:
-        """
-        Filter items by negated predicate applied to (key, value) tuples.
-
-        >>> from pychain import Dict
-        >>> Dict({1: 2, 3: 4}).filter_items_not(lambda it: it[1] > 2).unwrap()
-        {1: 2}
-        """
-
-        def negate(kv: tuple[K, V]) -> bool:
-            return not predicate(kv)
-
-        return self._new(partial(cz.dicttoolz.itemfilter, negate))
 
     def filter_kv(
         self,
         predicate: Callable[[K, V], bool],
     ) -> Self:
         """
-        Filter items by predicate applied to (key, value) tuples.
+        Filter items by predicate applied to unpacked (key, value) tuples.
 
         >>> from pychain import Dict
-        >>> Dict({1: 2, 3: 4}).filter_kv(lambda k, v: v > 2).unwrap()
-        {3: 4}
+        >>> def isvalid(key, value):
+        ...     return key % 2 == 0 and value < 4
+        >>> d = Dict({1: 2, 2: 3, 3: 4, 4: 5})
+        >>>
+        >>> d.filter_kv(isvalid).unwrap()
+        {2: 3}
+        >>> d.filter_kv(lambda k, v: not isvalid(k, v)).unwrap()
+        {1: 2, 3: 4, 4: 5}
         """
 
         return self._new(
             lambda data: cz.dicttoolz.itemfilter(
                 lambda kv: predicate(kv[0], kv[1]), data
-            )
-        )
-
-    def filter_kv_not(
-        self,
-        predicate: Callable[[K, V], bool],
-    ) -> Self:
-        """
-        Filter items by negated predicate applied to (key, value) tuples.
-
-        >>> from pychain import Dict
-        >>> Dict({1: 2, 3: 4}).filter_kv_not(lambda k, v: v > 2).unwrap()
-        {1: 2}
-        """
-
-        return self._new(
-            lambda data: cz.dicttoolz.itemfilter(
-                lambda kv: not predicate(kv[0], kv[1]), data
             )
         )
