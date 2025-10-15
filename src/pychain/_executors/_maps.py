@@ -5,6 +5,7 @@ from collections.abc import Callable, Iterable, Iterator
 from functools import partial
 from typing import TYPE_CHECKING, Any, overload
 
+import cytoolz as cz
 import more_itertools as mit
 
 from .._core import IterWrapper
@@ -217,3 +218,24 @@ class BaseMap[T](IterWrapper[T]):
         [1, 2, 3]
         """
         return self.apply(itertools.chain.from_iterable)
+
+    @overload
+    def pluck(self: Iter[T], key: int | str | list[int] | list[str]) -> Iter[T]: ...
+    @overload
+    def pluck(self: Expr, key: int | str | list[int] | list[str]) -> Expr: ...
+    def pluck(self, key: int | str | list[int] | list[str]):
+        """
+        Get an element or several elements from each item in a sequence.
+
+        ``pluck`` maps itertoolz.get over a sequence and returns one or more elements of each item in the sequence.
+
+        When given a single key, `pluck` can be thought of as .map(lambda x: x[key]).
+
+        >>> from pychain import Iter
+        >>> data = [{"id": 1, "name": "Cheese"}, {"id": 2, "name": "Pies"}]
+        >>> Iter(data).pluck("name").into(list)
+        ['Cheese', 'Pies']
+        >>> Iter([[1, 2, 3], [4, 5, 7]]).pluck([0, 1]).into(list)
+        [(1, 2), (4, 5)]
+        """
+        return self.apply(partial(cz.itertoolz.pluck, key))

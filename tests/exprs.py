@@ -77,14 +77,18 @@ class TestIterExprIntegration(unittest.TestCase):
         # Using Expr in a Record
         record = pc.Dict({"numbers": test_data})
 
-        expr_result = record.with_fields(
-            pc.key("numbers")
-            .filter(lambda x: x % 2 == 0)  # Even numbers
-            .map(lambda x: x * 2)  # Double them
-            .accumulate(lambda a, b: a + b)  # Running sum
-            .apply(list)
-            .alias("result")
-        ).unwrap()["result"]
+        expr_result = (
+            record.with_fields(
+                pc.key("numbers")
+                .filter(lambda x: x % 2 == 0)  # Even numbers
+                .map(lambda x: x * 2)  # Double them
+                .accumulate(lambda a, b: a + b)  # Running sum
+                .apply(list)
+                .alias("result")
+            )
+            .unwrap()
+            .get("result")
+        )
 
         # Both should produce the same result
         self.assertEqual(iter_result, expr_result)
@@ -102,7 +106,7 @@ class TestIterExprIntegration(unittest.TestCase):
         iter_result = (
             pc.Iter(data["users"])
             .filter(lambda user: sum(user["scores"]) / len(user["scores"]) >= 85)  # type: ignore
-            .map(lambda user: user["name"])
+            .pluck("name")
             .into(list)
         )
         # Using Expr with the same logic
@@ -111,11 +115,12 @@ class TestIterExprIntegration(unittest.TestCase):
             .with_fields(
                 pc.key("users")
                 .filter(lambda user: sum(user["scores"]) / len(user["scores"]) >= 85)
-                .map(lambda user: user["name"])
+                .pluck("name")
                 .apply(list)
                 .alias("high_scorers")
             )
-            .unwrap()["high_scorers"]
+            .unwrap()
+            .get("high_scorers")
         )
 
         self.assertEqual(iter_result, expr_result)

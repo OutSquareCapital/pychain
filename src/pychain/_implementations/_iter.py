@@ -114,21 +114,6 @@ class Iter[T](Executor[T]):
     ) -> Iter[R]:
         return Iter(self.into(func, *args, **kwargs))
 
-    def pluck(self, key: int | str | list[int] | list[str]) -> Iter[T]:
-        """
-        ``plucks`` an element or several elements from each item in a sequence.
-
-        ``pluck`` maps itertoolz.get over a sequence and returns one or more elements of each item in the sequence.
-
-        >>> from pychain import Iter
-        >>> data = [{"id": 1, "name": "Cheese"}, {"id": 2, "name": "Pies"}]
-        >>> Iter(data).pluck("name").into(list)
-        ['Cheese', 'Pies']
-        >>> Iter([[1, 2, 3], [4, 5, 7]]).pluck([0, 1]).into(list)
-        [(1, 2), (4, 5)]
-        """
-        return self.apply(partial(cz.itertoolz.pluck, key))
-
     def reduce_by[K](
         self,
         key: Callable[[T], K],
