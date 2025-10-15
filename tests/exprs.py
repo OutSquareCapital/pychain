@@ -1,6 +1,6 @@
 import unittest
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, TypedDict
 
 import pychain as pc
 
@@ -18,6 +18,15 @@ class ResultData(TestData):
     names_with_a: list[str]
     reversed_values: list[int]
     sliced_values: list[int]
+
+
+class UserScores(TypedDict):
+    name: str
+    scores: list[int]
+
+
+class UsersData(TypedDict):
+    users: list[UserScores]
 
 
 class TestIterExprIntegration(unittest.TestCase):
@@ -95,74 +104,54 @@ class TestIterExprIntegration(unittest.TestCase):
 
     def test_processing_nested_data(self):
         """Test processing nested data with both Iter and Expr."""
-        data = {
-            "users": [
-                {"name": "Alice", "scores": [85, 90, 78]},
-                {"name": "Bob", "scores": [92, 88, 95]},
-                {"name": "Charlie", "scores": [75, 80, 65]},
-            ]
-        }
+        data = UsersData(
+            {
+                "users": [
+                    {"name": "Alice", "scores": [85, 90, 78]},
+                    {"name": "Bob", "scores": [92, 88, 95]},
+                    {"name": "Charlie", "scores": [75, 80, 65]},
+                ]
+            }
+        )
 
-        iter_result = (
-            pc.Iter(data["users"])
-            .filter(lambda user: sum(user["scores"]) / len(user["scores"]) >= 85)  # type: ignore
-            .pluck("name")
-            .into(list)
+        def _high_scorers(user: UserScores) -> bool:
+            return sum(user["scores"]) / len(user["scores"]) >= 85
+
+        iter_result: list[UserScores] = (
+            pc.Iter(data["users"]).filter(_high_scorers).pluck("name").into(list)
         )
         # Using Expr with the same logic
-        expr_result = (
+        expr_result: object | None = (
             pc.Dict(data)
-            .with_fields(
-                pc.key("users")
-                .filter(lambda user: sum(user["scores"]) / len(user["scores"]) >= 85)
-                .pluck("name")
-                .apply(list)
-                .alias("high_scorers")
-            )
+            .select(pc.key("users").filter(_high_scorers).pluck("name").apply(list))
             .unwrap()
-            .get("high_scorers")
+            .get("users")
         )
-        expr_itr_result = (
+        expr_itr_result: dict[str, object] = (
             pc.Dict(data)
-            .with_fields(
-                pc.key("users")
-                .itr(
-                    lambda users: users.filter(
-                        lambda user: sum(user["scores"]) / len(user["scores"]) >= 85
-                    )
-                    .pluck("name")
-                    .into(list)
+            .select(
+                pc.key("users").itr(
+                    lambda users: users.filter(_high_scorers).pluck("name").into(list)
                 )
-                .alias("high_scorers")
             )
             .unwrap()
-            .get("high_scorers")
         )
-        expr_fn_result = (
+        expr_fn_result: object | None = (
             pc.Dict(data)
-            .with_fields(
-                pc.key("users")
-                .apply(
-                    pc.fn()
-                    .filter(
-                        lambda user: sum(user["scores"]) / len(user["scores"]) >= 85
-                    )
-                    .pluck("name")
-                    .into(list)
+            .select(
+                pc.key("users").apply(
+                    pc.fn().filter(_high_scorers).pluck("name").into(list)
                 )
-                .alias("high_scorers")
             )
             .unwrap()
-            .get("high_scorers")
+            .get("users")
         )
+        expected_result: list[str] = [
+            user["name"] for user in data["users"] if _high_scorers(user)
+        ]
         self.assertEqual(iter_result, expr_result)
         self.assertEqual(iter_result, expr_itr_result)
         self.assertEqual(iter_result, expr_fn_result)
-        expected_result = [
-            user["name"]
-            for user in data["users"]
-            if sum(user["scores"]) / len(user["scores"]) >= 85  # type: ignore
-        ]
         self.assertEqual(iter_result, expected_result)
 
 
