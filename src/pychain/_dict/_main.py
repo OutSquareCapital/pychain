@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any, Concatenate, Self
 import cytoolz as cz
 
 from .._core import EagerWrapper, SupportsKeysAndGetItem
-from .._expr import IntoExpr, parse_expr
 
 if TYPE_CHECKING:
     from .._iter import Iter
@@ -28,32 +27,6 @@ class Dict[K, V](EagerWrapper[dict[K, V]]):
             f"  {key!r}: {value!r}," for key, value in self.unwrap().items()
         )
         return f"{self.__class__.__name__}(\n{data_formatted}\n)"
-
-    def _from_context(self, plan: Iterable[IntoExpr], is_selection: bool) -> Self:
-        def _(data: dict[K, V]) -> dict[K, V]:
-            if is_selection:
-                result_dict: dict[K, V] = {}
-            else:
-                result_dict = data.copy()
-
-            for expr in plan:
-                parse_expr(expr).__compute__(data, result_dict)
-
-            return result_dict
-
-        return self._new(_)
-
-    def select(self, *exprs: IntoExpr) -> Self:
-        """
-        Select only the specified fields, creating a new dictionary with just those fields.
-        """
-        return self._from_context(exprs, True)
-
-    def with_fields(self, *exprs: IntoExpr) -> Self:
-        """
-        Adds or replaces fields in the existing dictionary.
-        """
-        return self._from_context(exprs, False)
 
     def apply[**P, KU, VU](
         self,
