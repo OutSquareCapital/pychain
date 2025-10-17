@@ -9,6 +9,24 @@ from .._core import IterWrapper
 
 
 class BaseBool[T](IterWrapper[T]):
+    def all(self) -> bool:
+        """
+        Return True if all items are truthy.
+            >>> from pychain import Iter
+            >>> Iter([1, True]).all()
+            True
+        """
+        return self.into(all)
+
+    def any(self) -> bool:
+        """
+        Return True if any item is truthy.
+            >>> from pychain import Iter
+            >>> Iter([0, 1]).any()
+            True
+        """
+        return self.into(any)
+
     def is_distinct(self) -> bool:
         """
         Return True if all items are distinct.

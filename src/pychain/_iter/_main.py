@@ -12,8 +12,10 @@ from ._booleans import BaseBool
 from ._filters import BaseFilter
 from ._lists import BaseList
 from ._maps import BaseMap
+from ._partitions import BasePartitions
 from ._process import BaseProcess
 from ._rolling import BaseRolling
+from ._transfos import BaseTransfos
 from ._tuples import BaseTuples
 
 if TYPE_CHECKING:
@@ -29,6 +31,8 @@ class Iter[T](
     BaseRolling[T],
     BaseList[T],
     BaseTuples[T],
+    BasePartitions[T],
+    BaseTransfos[T],
 ):
     """
     A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
