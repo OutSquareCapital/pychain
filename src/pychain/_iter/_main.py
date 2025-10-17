@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 from functools import partial
-from typing import TYPE_CHECKING, Concatenate
+from typing import TYPE_CHECKING, Any, Concatenate
 
 import cytoolz as cz
 
@@ -45,8 +45,33 @@ class Iter[T](
     It can be constructed from any iterable, including `lists`, `tuples`, `sets`, and `generators`.
     """
 
+    __slots__ = ()
+
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.unwrap().__repr__()})"
+
+    def itr[**P, R, U: Iterable[Any]](
+        self: Iter[U],
+        func: Callable[Concatenate[Iter[U], P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Iter[R]:
+        """
+        Apply a function to each element after wrapping it in an Iter.
+        Meant for when working with iterables of iterables.
+        This is a convenience method for the common pattern of mapping a function over an iterable of iterables.
+        >>> import pychain as pc
+        >>> data = [
+        ...     [1, 2, 3],
+        ...     [4, 5],
+        ...     [6, 7, 8, 9],
+        ... ]
+        >>> pc.Iter(data).itr(
+        ...     lambda x: x.repeat(2).explode().reduce(lambda a, b: a + b)
+        ... ).into(list)
+        [12, 18, 60]
+        """
+        return self.map(lambda x: func(Iter(x), *args, **kwargs))
 
     def struct[**P, R, K, V](
         self: Iter[dict[K, V]],
@@ -153,19 +178,19 @@ class Iter[T](
         ... ]
         >>> Iter(names).group_by(len).sort()
         ... # doctest: +NORMALIZE_WHITESPACE
-        Dict(
+        Dict({
             3: ['Bob', 'Dan'],
             5: ['Alice', 'Edith', 'Frank'],
-            7: ['Charlie'],
-        )
+            7: ['Charlie']
+        })
         >>>
         >>> iseven = lambda x: x % 2 == 0
         >>> Iter([1, 2, 3, 4, 5, 6, 7, 8]).group_by(iseven)
         ... # doctest: +NORMALIZE_WHITESPACE
-        Dict(
-        False: [1, 3, 5, 7],
-        True: [2, 4, 6, 8],
-        )
+        Dict({
+            False: [1, 3, 5, 7],
+            True: [2, 4, 6, 8]
+        })
 
         Non-callable keys imply grouping on a member.
 
@@ -176,10 +201,15 @@ class Iter[T](
         ... ]
         >>> Iter(data).group_by("gender").sort()
         ... # doctest: +NORMALIZE_WHITESPACE
-        Dict(
-        'F': [{'name': 'Alice', 'gender': 'F'}],
-        'M': [{'name': 'Bob', 'gender': 'M'}, {'name': 'Charlie', 'gender': 'M'}],
-        )
+        Dict({
+            'F': [
+                {'name': 'Alice', 'gender': 'F'}
+            ],
+            'M': [
+                {'name': 'Bob', 'gender': 'M'},
+                {'name': 'Charlie', 'gender': 'M'}
+            ]
+        })
         """
         from .._dict import Dict
 
