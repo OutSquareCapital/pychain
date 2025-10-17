@@ -56,10 +56,6 @@ class CommonBase[T](ABC, Pipeable):
     ) -> Self:
         return self.__class__(func(self.unwrap(), *args, **kwargs))
 
-    def _display_(self) -> T:
-        """Display method specific for Marimo."""
-        return self.unwrap()
-
     def println(self, pretty: bool = True) -> Self:
         """
         Print the underlying data and return self for chaining.
