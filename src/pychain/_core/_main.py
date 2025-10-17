@@ -106,6 +106,10 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
 
 
+class MappingWrapper[K, V](CommonBase[dict[K, V]]):
+    _data: dict[K, V]
+
+
 class Wrapper[T](CommonBase[T]):
     """
     A generic Wrapper for any type.
