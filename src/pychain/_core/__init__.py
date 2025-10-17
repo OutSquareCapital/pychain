@@ -1,4 +1,4 @@
-from ._main import CommonBase, IterWrapper, Wrapper
+from ._main import CommonBase, IterWrapper, Pipeable, Wrapper
 from ._protocols import (
     Peeked,
     SizedIterable,
@@ -16,4 +16,5 @@ __all__ = [
     "SupportsKeysAndGetItem",
     "Peeked",
     "SizedIterable",
+    "Pipeable",
 ]

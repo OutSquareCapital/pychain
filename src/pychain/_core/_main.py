@@ -5,7 +5,18 @@ from collections.abc import Callable, Iterable
 from typing import Any, Concatenate, Self
 
 
-class CommonBase[T](ABC):
+class Pipeable:
+    def pipe[**P, R](
+        self,
+        func: Callable[Concatenate[Self, P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> R:
+        """Pipe the instance in the function and return the result."""
+        return func(self, *args, **kwargs)
+
+
+class CommonBase[T](ABC, Pipeable):
     """
     Base class for all wrappers.
     You can subclass this to create your own wrapper types.
@@ -18,15 +29,6 @@ class CommonBase[T](ABC):
 
     def __init__(self, data: T) -> None:
         self._data = data
-
-    def pipe[**P, R](
-        self,
-        func: Callable[Concatenate[Self, P], R],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> R:
-        """Pipe the instance in the function and return the result."""
-        return func(self, *args, **kwargs)
 
     @abstractmethod
     def apply[**P](
