@@ -145,7 +145,6 @@ class BaseRolling[T](IterWrapper[T]):
         The function should accept an iterable and return a single value.
 
         >>> from pychain import Iter
-        >>> import rolling
         >>> def range_func(window):
         ...     return max(window) - min(window)
         >>> Iter([1, 3, 2, 5, 4]).rolling_apply(range_func, 3).into(list)

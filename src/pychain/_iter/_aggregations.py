@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 import statistics
 from collections.abc import Callable, Iterable
+from typing import Literal
 
 import cytoolz as cz
 import more_itertools as mit
@@ -145,6 +146,36 @@ class BaseAgg[T](IterWrapper[T]):
         10
         """
         return self.into(mit.argmin, key=key)
+
+    def sum[U: int | float](self: IterWrapper[U]) -> U | Literal[0]:
+        """
+        Return the sum of the sequence.
+
+        >>> from pychain import Iter
+        >>> Iter([1, 2, 3]).sum()
+        6
+        """
+        return self.into(sum)
+
+    def min[U: int | float](self: IterWrapper[U]) -> U:
+        """
+        Return the minimum of the sequence.
+
+        >>> from pychain import Iter
+        >>> Iter([3, 1, 2]).min()
+        1
+        """
+        return self.into(min)
+
+    def max[U: int | float](self: IterWrapper[U]) -> U:
+        """
+        Return the maximum of the sequence.
+
+        >>> from pychain import Iter
+        >>> Iter([3, 1, 2]).max()
+        3
+        """
+        return self.into(max)
 
     def mean[U: int | float](self: IterWrapper[U]) -> float:
         """
