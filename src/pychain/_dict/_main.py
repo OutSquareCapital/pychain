@@ -17,7 +17,9 @@ class Dict[K, V](CommonBase[dict[K, V]]):
     Wrapper for Python dictionaries with chainable methods.
     """
 
-    def __init__(self, data: SupportsKeysAndGetItem[K, V] | dict[K, V]) -> None:
+    def __init__(
+        self, data: SupportsKeysAndGetItem[K, V] | dict[K, V] | Mapping[K, V]
+    ) -> None:
         if not isinstance(data, dict):
             data = dict(data)
         super().__init__(data)
@@ -169,7 +171,7 @@ class Dict[K, V](CommonBase[dict[K, V]]):
         """
         return self._new(cz.dicttoolz.dissoc, *keys)
 
-    def rename(self, mapping: dict[K, K]) -> Self:
+    def rename(self, mapping: Mapping[K, K]) -> Self:
         """
         Return a new Dict with keys renamed according to the mapping.
 
@@ -193,7 +195,7 @@ class Dict[K, V](CommonBase[dict[K, V]]):
         """
         return self._new(lambda data: dict(sorted(data.items(), reverse=reverse)))
 
-    def merge(self, *others: dict[K, V]) -> Self:
+    def merge(self, *others: Mapping[K, V]) -> Self:
         """
         Merge other dicts into this one and return a new Dict.
 
@@ -208,7 +210,9 @@ class Dict[K, V](CommonBase[dict[K, V]]):
         """
         return self._new(cz.dicttoolz.merge, *others)
 
-    def merge_with(self, *others: dict[K, V], func: Callable[[Iterable[V]], V]) -> Self:
+    def merge_with(
+        self, *others: Mapping[K, V], func: Callable[[Iterable[V]], V]
+    ) -> Self:
         """
         Merge dicts using a function to combine values for duplicate keys.
 
@@ -301,7 +305,7 @@ class Dict[K, V](CommonBase[dict[K, V]]):
         """
         return self.map_values(lambda v: [v])
 
-    def equals_to(self, other: Self | dict[Any, Any] | Mapping[Any, Any]) -> bool:
+    def equals_to(self, other: Self | Mapping[Any, Any]) -> bool:
         """
         Check if two records are equal based on their data.
         """
@@ -387,7 +391,7 @@ class Dict[K, V](CommonBase[dict[K, V]]):
 
         return self.apply(lambda data: _recurse_schema(data, 0))
 
-    def diff(self, other: dict[K, V]) -> Dict[K, tuple[V | None, V | None]]:
+    def diff(self, other: Mapping[K, V]) -> Dict[K, tuple[V | None, V | None]]:
         """
         Returns a dict of the differences between this dict and another.
 
@@ -400,7 +404,7 @@ class Dict[K, V](CommonBase[dict[K, V]]):
         {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
         """
 
-        def _(data: dict[K, V]) -> dict[K, tuple[V | None, V | None]]:
+        def _(data: Mapping[K, V]) -> dict[K, tuple[V | None, V | None]]:
             all_keys: set[K] = data.keys() | other.keys()
             diffs: dict[K, tuple[V | None, V | None]] = {}
             for key in all_keys:
