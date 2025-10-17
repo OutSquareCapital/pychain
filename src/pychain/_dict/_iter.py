@@ -3,6 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable
 from typing import TYPE_CHECKING, Concatenate
 
+import cytoolz as cz
+
 from .._core import MappingWrapper
 
 if TYPE_CHECKING:
@@ -12,7 +14,7 @@ if TYPE_CHECKING:
 
 class IterDict[K, V](MappingWrapper[K, V]):
     def itr[**P, R, U](
-        self: Dict[K, Iterable[U]],  # type: ignore[misc]
+        self: MappingWrapper[K, Iterable[U]],
         func: Callable[Concatenate[Iter[U], P], R],
         *args: P.args,
         **kwargs: P.kwargs,
@@ -30,7 +32,11 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return self.map_values(lambda data: func(Iter(data), *args, **kwargs))
+        return self.apply(
+            lambda data: cz.dicttoolz.valmap(
+                lambda v: func(Iter(v), *args, **kwargs), data
+            )
+        )
 
     def iter_keys(self) -> Iter[K]:
         """

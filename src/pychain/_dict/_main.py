@@ -147,7 +147,7 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
         >>> Dict({1: 2, 3: 4}).implode().unwrap()
         {1: [2], 3: [4]}
         """
-        return self.map_values(lambda v: [v])
+        return self.apply(lambda v: cz.dicttoolz.valmap(lambda x: [x], v))
 
     def equals_to(self, other: Self | Mapping[Any, Any]) -> bool:
         """
