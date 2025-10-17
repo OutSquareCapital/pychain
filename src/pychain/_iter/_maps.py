@@ -174,7 +174,7 @@ class BaseMap[T](IterWrapper[T]):
         """
         return self.apply(itertools.chain.from_iterable)
 
-    def pluck(self, key: int | str | list[int] | list[str]) -> Iter[T]:
+    def pluck(self, key: int | str | Iterable[int] | Iterable[str]) -> Iter[T]:
         """
         Get an element or several elements from each item in a sequence.
 

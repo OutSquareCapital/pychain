@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import itertools
 from collections.abc import Callable, Iterable
 from functools import partial
 from typing import TYPE_CHECKING, Concatenate
@@ -9,6 +8,7 @@ import cytoolz as cz
 
 from ._aggregations import BaseAgg
 from ._booleans import BaseBool
+from ._constructors import IterConstructors
 from ._filters import BaseFilter
 from ._lists import BaseList
 from ._maps import BaseMap
@@ -33,6 +33,7 @@ class Iter[T](
     BaseTuples[T],
     BasePartitions[T],
     BaseTransfos[T],
+    IterConstructors,
 ):
     """
     A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
@@ -47,67 +48,51 @@ class Iter[T](
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.unwrap().__repr__()})"
 
-    @staticmethod
-    def from_count(start: int = 0, step: int = 1) -> Iter[int]:
+    def struct[**P, R, K, V](
+        self: Iter[dict[K, V]],
+        func: Callable[Concatenate[Dict[K, V], P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Iter[R]:
         """
-        Create an infinite iterator of evenly spaced values.
+                Apply a function to each element after wrapping it in a Dict.
+                Meant for when working with iterables of dictionaries.
+                This is a convenience method for the common pattern of mapping a function over an iterable of dictionaries.
+        >>> from typing import Any
+        >>> import pychain as pc
 
-        **Warning** ⚠️
+        >>> data: list[dict[str, Any]] = [
+        ...     {"name": "Alice", "age": 30, "city": "New York"},
+        ...     {"name": "Bob", "age": 25, "city": "Los Angeles"},
+        ...     {"name": "Charlie", "age": 35, "city": "New York"},
+        ...     {"name": "David", "age": 40, "city": "Paris"},
+        ... ]
 
-        This creates an infinite iterator.
 
-        Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
+        >>> def to_title(d: pc.Dict[str, Any]) -> pc.Dict[str, Any]:
+        ...     return d.map_keys(lambda k: k.title())
+        >>> def is_young(d: pc.Dict[str, Any]) -> bool:
+        ...     return d.unwrap().get("Age", 0) < 30
+        >>> def set_continent(d: pc.Dict[str, Any], value: str) -> dict[str, Any]:
+        ...     return d.with_key("Continent", value).unwrap()
+        >>> pc.Iter(data).struct(to_title).filter_false(is_young).map(
+        ...     lambda d: d.drop("Age").with_key("Continent", "NA")
+        ... ).map_if(
+        ...     lambda d: d.unwrap().get("City") == "Paris",
+        ...     lambda d: set_continent(d, "Europe"),
+        ...     lambda d: set_continent(d, "America"),
+        ... ).group_by(lambda d: d.get("Continent")).map_values(
+        ...     lambda d: pc.Iter(d)
+        ...     .struct(lambda d: d.drop("Continent").unwrap())
+        ...     .into(list)
+        ... ).unwrap()
+        {'America': [{'Name': 'Alice', 'City': 'New York'}, {'Name': 'Charlie', 'City': 'New York'}], 'Europe': [{'Name': 'David', 'City': 'Paris'}]}
 
-        >>> from pychain import Iter
-        >>> Iter.from_count(10, 2).head(3).into(list)
-        [10, 12, 14]
+
         """
+        from .._dict import Dict
 
-        return Iter(itertools.count(start, step))
-
-    @staticmethod
-    def from_range(start: int, stop: int, step: int = 1) -> Iter[int]:
-        """
-        Create an iterator from a range.
-
-        Syntactic sugar for `Iter(range(start, stop, step))`.
-
-        >>> from pychain import Iter
-        >>> Iter.from_range(1, 5).into(list)
-        [1, 2, 3, 4]
-        """
-
-        return Iter(range(start, stop, step))
-
-    @staticmethod
-    def from_func[U](func: Callable[[U], U], x: U) -> Iter[U]:
-        """
-        Create an infinite iterator by repeatedly applying a function into an original input x.
-
-        **Warning** ⚠️
-
-        This creates an infinite iterator.
-
-        Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
-
-        >>> from pychain import Iter
-        >>> Iter.from_func(lambda x: x + 1, 0).head(3).into(list)
-        [0, 1, 2]
-        """
-
-        return Iter(cz.itertoolz.iterate(func, x))
-
-    @staticmethod
-    def from_[U](*elements: U) -> Iter[U]:
-        """
-        Create an iterator from the given elements.
-
-        >>> from pychain import Iter
-        >>> Iter.from_(1, 2, 3).into(list)
-        [1, 2, 3]
-        """
-
-        return Iter(elements)
+        return self.map(lambda x: func(Dict(x), *args, **kwargs))
 
     def apply[**P, R](
         self,
@@ -232,8 +217,15 @@ class Iter[T](
         """
         Create a Dict by zipping the iterable with keys.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).with_keys(["a", "b", "c"]).unwrap()
+
+        >>> import pychain as pc
+        >>> keys = ["a", "b", "c"]
+        >>> values = [1, 2, 3]
+        >>> pc.Iter(values).with_keys(keys).unwrap()
+        {'a': 1, 'b': 2, 'c': 3}
+
+        This is equivalent to:
+        >>> pc.Iter(keys).zip(values).pipe(lambda x: pc.Dict(x.into(dict)).unwrap())
         {'a': 1, 'b': 2, 'c': 3}
         """
         from .._dict import Dict
@@ -244,8 +236,14 @@ class Iter[T](
         """
         Create a Dict by zipping the iterable with values.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).with_values(["a", "b", "c"]).unwrap()
+        >>> import pychain as pc
+        >>> keys = [1, 2, 3]
+        >>> values = ["a", "b", "c"]
+        >>> pc.Iter(keys).with_values(values).unwrap()
+        {1: 'a', 2: 'b', 3: 'c'}
+
+        This is equivalent to:
+        >>> pc.Iter(keys).zip(values).pipe(lambda x: pc.Dict(x.into(dict)).unwrap())
         {1: 'a', 2: 'b', 3: 'c'}
         """
         from .._dict import Dict
