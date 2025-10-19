@@ -227,16 +227,19 @@ def perf_test_frame(n: int):
     trade_limit = (
         pc.key("StrategyInfo")
         .key("instruments")
-        .pluck("instrument_execution_params", "trade_size_limit_percent")
+        .apply(
+            lambda lst: pc.Iter(lst)
+            .pluck("instrument_execution_params", "trade_size_limit_percent")
+            .into(list)
+        )
         .alias("trade_limit")
     )
-    series_dates = (
+    series_dates_test = (
         pc.key("StrategyPNL")
         .key("id")
-        .values()
-        .pluck("series", "data")
         .apply(
-            lambda d: pc.Iter(d)
+            lambda d: pc.Iter(d.values())
+            .pluck("series", "data")
             .map(lambda d: d.values())
             .explode()
             .apply(list)
@@ -247,14 +250,14 @@ def perf_test_frame(n: int):
         .alias("series_dates")
     )
     for _ in range(n):
-        data = df.select(e_risk, trade_limit, series_dates).unwrap()
+        data = df.select(e_risk, trade_limit, series_dates_test).unwrap()
     end = time.perf_counter()
     print("Dict selects:")
     print(f"{n} selects in {end - start:.2f}s ({n / (end - start):.0f}/s)")
     return data
 
 
-def perf_test(n: int = 100_000) -> None:
+def perf_test(n: int) -> None:
     """
     Dict win thanks to lazy iterators (4x faster since it doesn't materialize un-needed lists).
     However function call overhead is still significant for small pipelines (same 4x factor in favor of pure python).
@@ -278,17 +281,19 @@ def main(print_output: bool = False) -> None:
 
     # 2) update en profondeur
     jf2 = df.select(
-        pc.key.StrategyInfo.instruments.pluck(
-            "instrument_execution_params", "trade_size_limit_percent"
-        ).pluck("trade_size_limit_percent")
+        pc.key.StrategyInfo.instruments.apply(
+            lambda x: pc.Iter(x)
+            .pluck("instrument_execution_params", "trade_size_limit_percent")
+            .into(list)
+        )
     )
     if print_output:
         jf2.pipe(print)
 
 
 if __name__ == "__main__":
-    perf_test()
+    perf_test(500)
     # LAST TEST:
     # 100000 selects in 0.32s (309539/s)
     # 100000 selects in 0.03s (3151433/s) [pure-python]
-    main()
+    main(False)

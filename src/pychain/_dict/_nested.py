@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
+from functools import partial
 from typing import TYPE_CHECKING, Any, Concatenate
 
 import cytoolz as cz
@@ -85,7 +86,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         """
         return self.apply(cz.dicttoolz.assoc_in, keys, value=value)
 
-    def schema(self, max_depth: int = 2) -> Dict[str, Any]:
+    def schema(self, max_depth: int = 1) -> Dict[str, Any]:
         """
         Return the schema of the dictionary up to a maximum depth.
         When the max depth is reached, nested dicts are marked as 'dict'.
@@ -93,13 +94,20 @@ class NestedDict[K, V](MappingWrapper[K, V]):
 
         >>> import pychain as pc
         >>> # Depth 2: we see up to level2
-        >>> data = {"level1": {"level2": {"level3": {"key": "value"}}}}
-        >>> pc.Dict(data).schema().unwrap()
-        {'level1': {'level2': 'dict'}}
+        >>> data = {
+        ...     "level1": {"level2": {"level3": {"key": "value"}}},
+        ...     "other_key": 123,
+        ...     "list_key": [{"sub_key": "sub_value"}],
+        ... }
+        >>> pc.Dict(data).schema(max_depth=1).unwrap()
+        {'level1': 'dict', 'other_key': 'int', 'list_key': 'list'}
+
+        >>> pc.Dict(data).schema(max_depth=2).unwrap()
+        {'level1': {'level2': 'dict'}, 'other_key': 'int', 'list_key': 'dict'}
         >>>
         >>> # Depth 3: we see up to level3
         >>> pc.Dict(data).schema(max_depth=3).unwrap()
-        {'level1': {'level2': {'level3': 'dict'}}}
+        {'level1': {'level2': {'level3': 'dict'}}, 'other_key': 'int', 'list_key': {'sub_key': 'str'}}
         """
         return self.apply(schema_recursive, max_depth=max_depth)
 
@@ -114,9 +122,5 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(data).pluck("name").unwrap()
         {'person1': 'Alice', 'person2': 'Bob'}
         """
-
-        return self.apply(
-            lambda data: cz.dicttoolz.valmap(
-                lambda x: cz.dicttoolz.get_in(keys=keys, coll=x), data
-            )
-        )
+        getter = partial(cz.dicttoolz.get_in, keys)
+        return self.apply(lambda data: cz.dicttoolz.valmap(getter, data))

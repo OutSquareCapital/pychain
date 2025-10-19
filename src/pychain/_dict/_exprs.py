@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Any, Self
+from typing import Any, Self, TypeGuard
 
 import cytoolz as cz
 
@@ -15,7 +15,7 @@ class Expr(Pipeable):
     __ops__: tuple[Callable[[object], object], ...]
     _alias: str
 
-    def expr_repr(self) -> str:
+    def __repr__(self) -> str:
         parts: list[str] = []
         s_parts: list[str] = []
         for t in self.__tokens__:
@@ -52,28 +52,6 @@ class Expr(Pipeable):
     def name(self) -> str:
         return self._alias
 
-    def pluck(self, *names: str) -> Self:
-        """
-        Returns a new Expr with values extracted from each item in the data using the specified names as paths.
-
-        Uses cz.dicttoolz.get_in to retrieve nested values
-        """
-        return self._to_expr(
-            lambda data: [cz.dicttoolz.get_in(names, data) for data in data]
-        )
-
-    def keys(self) -> Self:
-        """
-        Returns a new Expr representing the dictionary keys of the current expression
-        """
-        return self._to_expr(lambda v: v.keys())
-
-    def values(self) -> Self:
-        """
-        Returns a new Expr representing the dictionary values of the current expression
-        """
-        return self._to_expr(lambda v: v.values())
-
     def apply(self, fn: Callable[[Any], Any]) -> Self:
         """
         Applies the given function fn to the data within the current Expr instance
@@ -89,4 +67,23 @@ class KeySelector:
         return self(name)
 
 
+def _expr_identity(obj: Any) -> TypeGuard[Expr]:
+    return hasattr(obj, "__tokens__")
+
+
+type IntoExpr = Expr | str
+
 key = KeySelector()
+
+
+def compute_exprs(
+    exprs: Iterable[IntoExpr], data_in: dict[str, Any], data_out: dict[str, Any]
+) -> dict[str, Any]:
+    for e in exprs:
+        if not _expr_identity(e):
+            e = Expr([], (), e)  # type: ignore[misc]
+        current: object = cz.dicttoolz.get_in(e.__tokens__, data_in)
+        for op in e.__ops__:
+            current = op(current)
+        data_out[e.name] = current
+    return data_out

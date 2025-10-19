@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Mapping
 from functools import partial
 from typing import Any, Concatenate, Self
 
 import cytoolz as cz
 
 from .._core import SupportsKeysAndGetItem
-from ._exprs import Expr
+from ._exprs import IntoExpr, compute_exprs
 from ._funcs import dict_repr
 from ._iter import IterDict
 from ._nested import NestedDict
@@ -31,26 +31,13 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({dict_repr(self.unwrap())})"
 
-    def _compute(
-        self: Dict[str, Any], exprs: Iterable[Expr], out: dict[str, Any]
-    ) -> Dict[str, Any]:
-        root = self.unwrap()
-
-        for e in exprs:
-            current: object = cz.dicttoolz.get_in(e.__tokens__, root)
-            for op in e.__ops__:
-                current = op(current)
-            out[e.name] = current
-
-        return Dict(out)
-
-    def select(self: Dict[str, Any], *exprs: Expr) -> Dict[str, Any]:
+    def select(self: Dict[str, Any], *exprs: IntoExpr) -> Dict[str, Any]:
         """Evaluate aliased expressions and return a new dict {alias: value}."""
-        return self._compute(exprs, {})
+        return Dict(compute_exprs(exprs, self.unwrap(), {}))
 
-    def with_fields(self: Dict[str, Any], *exprs: Expr) -> Dict[str, Any]:
+    def with_fields(self: Dict[str, Any], *exprs: IntoExpr) -> Dict[str, Any]:
         """Merge aliased expressions into the root dict (overwrite on collision)."""
-        return self._compute(exprs, dict(self.unwrap()))
+        return Dict(compute_exprs(exprs, self.unwrap(), dict(self.unwrap())))
 
     def apply[**P, KU, VU](
         self,
