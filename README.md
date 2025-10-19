@@ -36,14 +36,16 @@ The stubs used for the developpement, made by the maintainer of pychain, can be 
 
 Based on wrapper classes that encapsulate native Python data structures or third-party library objects.
 
-* **`Iter[T]`**: For any `Iterable`. This is the most generic and powerful wrapper. Most operations are **lazy**.
-* **`Dict[KT, VT]`**: For `dict` objects.
-* **`Wrapper[T]`**: For Any object.
+- Iter[T]: For any Iterable. Most operations are lazy.
+- Dict[KT, VT]: For dict-like objects.
+- Wrapper[T]: For any object to keep a consistent chaining style when the object itself is not chainable.
+- Pipeable/CommonBase: Shared core for consistent piping:
+  - into(...) passes unwrapped data to a function and returns the raw result (terminal).
+  - apply(...) passes unwrapped data to a function and re-wraps the result for continued chaining (non-terminal).
+  - println(...) prints the underlying data then returns self.
 
-**Note on `Wrapper`**:
-
-The primary goal of this class is to allow the user of pychain to keep a consistent method-chaining style across their codebase, even when working with objects that do not support this style (eg. numpy arrays, pure functions, ...).
-It does however not provide any additional functionality beyond the `pipe` methods family, and the convenience `to_iter` and `to_dict` methods.
+Note on Wrapper:
+The primary goal of this class is to allow the user of pychain to keep a consistent method-chaining style across their codebase, even when working with objects that do not support this style (eg. numpy arrays, pure functions, ...). It does however not provide any additional functionality beyond the pipe methods family, and the convenience to_iter and to_dict methods.
 
 ### Interoperability
 
@@ -54,6 +56,8 @@ Designed to integrate seamlessly with other data manipulation libraries, like `p
 Each method and class make extensive use of generics, type hints, and overloads (when necessary) to ensure type safety and improve developer experience.
 
 Since there's much less need for intermediate variables, the developper don't have to annotate them as much, whilst still keeping a type-safe codebase.
+
+Target: modern Python 3.13 syntax (PEP 695 generics, updated collections.abc types).
 
 ## Real-life simple example
 
@@ -149,41 +153,100 @@ def generate_palettes_literal() -> None:
 
 Since I have to reference the literal_content variable in the for loop, This is more reasonnable to use a for loop here rather than a map + reduce approach.
 
+## Expressions for Dict
+
+Compute new fields from existing nested data with key() and Expr.apply(), either selecting a new dict or merging into the root.
+
+```python
+import pychain as pc
+from pychain import key as K
+
+d = pc.Dict(
+    {
+        "user": {"name": "Alice", "age": 30},
+        "scores": {"math": 18, "eng": 15},
+    }
+)
+
+# Build a compact view
+view = d.select(
+    K("user").key("name").alias("name"),
+    K("scores").key("math").alias("math"),
+    K("scores").key("eng").alias("eng"),
+    K("user").key("age").apply(lambda x: x >= 18).alias("is_adult"),
+)
+# {'name': 'Alice', 'math': 18, 'eng': 15, 'is_adult': True}
+
+# Merge computed fields into root
+merged = d.with_fields(
+    K("scores").key("math").apply(lambda x: x * 10).alias("math_x10")
+)
+# {
+#   'user': {'name': 'Alice', 'age': 30},
+#   'scores': {'math': 18, 'eng': 15},
+#   'math_x10': 180
+# }
+```
+
+## Convenience mappers: itr and struct
+
+Operate on iterables of iterables or iterables of dicts without leaving the chain.
+
+```python
+import pychain as pc
+
+nested = pc.Iter([[1, 2, 3], [4, 5]])
+totals = nested.itr(lambda it: it.sum()).into(list)
+# [6, 9]
+
+records = pc.Iter(
+    [
+        {"name": "Alice", "age": 30},
+        {"name": "Bob", "age": 25},
+    ]
+)
+names = records.struct(lambda d: d.pluck("name").unwrap()).into(list)
+# ['Alice', 'Bob']
+```
+
 ## Installation
 
 ```bash
 uv add git+https://github.com/OutSquareCapital/pychain.git
 ```
 
-## Developpement
+## Development
 
 ### Architecture
 
 The codebase is organized into several modules, each responsible for different aspects of the library:
 
-* **`_core.py`**: Contains the base classes and core functionalities shared across all wrappers, as well as the Wrapper class.
-* **`_iter/`**: Contains the `Iter` class and its associated methods.
-* **`_dict/`**: Contains the `Dict` class and its associated methods.
-* **`_protocols.py`**: Contains typing protocols and type hints used throughout the library.
+- _core/: Core primitives shared across all wrappers
+  - _main.py: CommonBase, Wrapper, Pipeable and base wrappers (IterWrapper, MappingWrapper).
+  - _protocols.py: typing protocols and helper types (e.g., SupportsKeysAndGetItem).
+  - __init__.py: re-exports for public surface.
+- _iter/: Contains the Iter class and its associated methods.
+- _dict/: Contains the Dict class and its associated methods.
 
-#### Structure of `_iter` and `_dict` Packages
+#### Structure of _iter and_dict Packages
 
 Each of these packages is further divided into modules based on the type of operations they provide:
 
-* **`_constructors.py`**: Methods for creating new instances from various data sources. These are all static methods, as they do not depend on an existing instance, and a generic class don't interact very well with classmethods for instance creation.
-* **`_*.py`**: Categories of methods. Each module implement it's class that inherit from CommonBase. Iter has `_aggregations.py`, `_rolling.py`, etc...
-* **`_main.py`**: The main public class that take by inheritance the other modules as a mixin, implement the pipe_unwrap abstract method, and provide other methods that don't really fit in a specific category.
+- _constructors.py: Methods for creating new instances from various data sources.
+- _*.py: Categories of methods (e.g.,_aggregations.py, _rolling.py,_maps.py, ...).
+- _main.py: The main public class that mixes in the other modules, implements apply/into policy, and provides utility not fitting a specific category.
+- Expressions for Dict: _exprs.py with Expr/key helpers; compute_exprs is used by Dict.select and Dict.with_fields.
 
-the **init**.py file of each package only import the main class from_main.py to expose it at the package level.
+The __init__.py file of each package only imports the main class from _main.py to expose it at the package level.
 
 This architecture allows for a clear separation of concerns, making the codebase easier to navigate and maintain, whilst still maintaining a public API that is easy to use.
-
-A single monolithic file with thousands of lines of code quickly becomes unmanageable.
 
 ##### Note on mixins vs composition
 
 The choice of using mixins (multiple inheritance) over composition (having instances of other classes as attributes) was made to provide a more seamless and intuitive API for users.
+
 This way, users can access all methods directly from the main class without needing to navigate through multiple layers of objects.
+
 HOWEVER, Iter.struct property is a namespace composition, as it is in fact the methods of Dict that are exposed on Iter.
 
 ### Setup
