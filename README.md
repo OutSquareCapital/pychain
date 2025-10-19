@@ -159,33 +159,31 @@ Compute new fields from existing nested data with key() and Expr.apply(), either
 
 ```python
 import pychain as pc
-from pychain import key as K
 
-d = pc.Dict(
+# Build a compact view
+data = pc.Dict(
     {
         "user": {"name": "Alice", "age": 30},
         "scores": {"math": 18, "eng": 15},
     }
 )
 
-# Build a compact view
-view = d.select(
-    K("user").key("name").alias("name"),
-    K("scores").key("math").alias("math"),
-    K("scores").key("eng").alias("eng"),
-    K("user").key("age").apply(lambda x: x >= 18).alias("is_adult"),
+view = data.select(
+    pc.key("user").key("name"),
+    pc.key("scores").key("math"),
+    pc.key("scores").key("eng"),
+    pc.key("user").key("age").apply(lambda x: x >= 18).alias("is_adult"),
 )
-# {'name': 'Alice', 'math': 18, 'eng': 15, 'is_adult': True}
-
-# Merge computed fields into root
-merged = d.with_fields(
-    K("scores").key("math").apply(lambda x: x * 10).alias("math_x10")
+# {"name": "Alice", "math": 18, "eng": 15, "is_adult": True}
+merged = data.with_fields(
+    pc.key("scores").key("math").apply(lambda x: x * 10).alias("math_x10")
 )
 # {
 #   'user': {'name': 'Alice', 'age': 30},
 #   'scores': {'math': 18, 'eng': 15},
 #   'math_x10': 180
 # }
+
 ```
 
 ## Convenience mappers: itr and struct
