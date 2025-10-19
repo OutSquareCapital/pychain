@@ -22,9 +22,9 @@ class BaseAgg[T](IterWrapper[T]):
 
         It then serves as a default when the iterable is empty.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2, 3]).reduce(lambda a, b: a + b)
-            6
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).reduce(lambda a, b: a + b)
+        6
         """
         return self.into(functools.partial(functools.reduce, func))
 
@@ -36,8 +36,8 @@ class BaseAgg[T](IterWrapper[T]):
 
         combination_index computes the index of the first element, without computing the previous combinations.
 
-        >>> from pychain import Iter
-        >>> Iter("abcdefg").combination_index("adf")
+        >>> import pychain as pc
+        >>> pc.Iter("abcdefg").combination_index("adf")
         10
 
         ValueError will be raised if the given element isn't one of the combinations of iterable.
@@ -48,9 +48,9 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the first element.
 
-            >>> from pychain import Iter
-            >>> Iter([9]).first()
-            9
+        >>> import pychain as pc
+        >>> pc.Iter([9]).first()
+        9
         """
         return self.into(cz.itertoolz.first)
 
@@ -58,9 +58,9 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the second element.
 
-            >>> from pychain import Iter
-            >>> Iter([9, 8]).second()
-            8
+        >>> import pychain as pc
+        >>> pc.Iter([9, 8]).second()
+        8
         """
         return self.into(cz.itertoolz.second)
 
@@ -68,9 +68,9 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the last element.
 
-            >>> from pychain import Iter
-            >>> Iter([7, 8, 9]).last()
-            9
+        >>> import pychain as pc
+        >>> pc.Iter([7, 8, 9]).last()
+        9
         """
         return self.into(cz.itertoolz.last)
 
@@ -79,9 +79,9 @@ class BaseAgg[T](IterWrapper[T]):
         Return the length of the sequence.
         Like the builtin len but works on lazy sequences.
 
-            >>> from pychain import Iter
-            >>> Iter([1, 2]).length()
-            2
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2]).length()
+        2
         """
         return self.into(cz.itertoolz.count)
 
@@ -89,8 +89,8 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return item at index.
 
-        >>> from pychain import Iter
-        >>> Iter([10, 20]).item(1)
+        >>> import pychain as pc
+        >>> pc.Iter([10, 20]).item(1)
         20
         """
         return self.into(functools.partial(cz.itertoolz.nth, index))
@@ -99,16 +99,16 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Index of the first occurrence of a maximum value in an iterable.
 
-        >>> from pychain import Iter
-        >>> Iter("abcdefghabcd").argmax()
+        >>> import pychain as pc
+        >>> pc.Iter("abcdefghabcd").argmax()
         7
-        >>> Iter([0, 1, 2, 3, 3, 2, 1, 0]).argmax()
+        >>> pc.Iter([0, 1, 2, 3, 3, 2, 1, 0]).argmax()
         3
 
         For example, identify the best machine learning model:
 
-        >>> models = Iter(["svm", "random forest", "knn", "naïve bayes"])
-        >>> accuracy = Iter([68, 61, 84, 72])
+        >>> models = pc.Iter(["svm", "random forest", "knn", "naïve bayes"])
+        >>> accuracy = pc.Iter([68, 61, 84, 72])
         >>> # Most accurate model
         >>> models.item(accuracy.argmax())
         'knn'
@@ -123,10 +123,10 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Index of the first occurrence of a minimum value in an iterable.
 
-        >>> from pychain import Iter
-        >>> Iter("efghabcdijkl").argmin()
+        >>> import pychain as pc
+        >>> pc.Iter("efghabcdijkl").argmin()
         4
-        >>> Iter([3, 2, 1, 0, 4, 2, 1, 0]).argmin()
+        >>> pc.Iter([3, 2, 1, 0, 4, 2, 1, 0]).argmin()
         3
 
         For example, look up a label corresponding to the position of a value that minimizes a cost function:
@@ -134,8 +134,8 @@ class BaseAgg[T](IterWrapper[T]):
         >>> def cost(x):
         ...     "Days for a wound to heal given a subject's age."
         ...     return x**2 - 20 * x + 150
-        >>> labels = Iter(["homer", "marge", "bart", "lisa", "maggie"])
-        >>> ages = Iter([35, 30, 10, 9, 1])
+        >>> labels = pc.Iter(["homer", "marge", "bart", "lisa", "maggie"])
+        >>> ages = pc.Iter([35, 30, 10, 9, 1])
 
         >>> # Fastest healing family member
         >>> labels.item(ages.argmin(key=cost))
@@ -151,8 +151,8 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the sum of the sequence.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).sum()
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).sum()
         6
         """
         return self.into(sum)
@@ -161,8 +161,8 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the minimum of the sequence.
 
-        >>> from pychain import Iter
-        >>> Iter([3, 1, 2]).min()
+        >>> import pychain as pc
+        >>> pc.Iter([3, 1, 2]).min()
         1
         """
         return self.into(min)
@@ -171,8 +171,8 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the maximum of the sequence.
 
-        >>> from pychain import Iter
-        >>> Iter([3, 1, 2]).max()
+        >>> import pychain as pc
+        >>> pc.Iter([3, 1, 2]).max()
         3
         """
         return self.into(max)
@@ -181,8 +181,8 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the mean of the sequence.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).mean()
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).mean()
         2
         """
         return self.into(statistics.mean)
@@ -191,8 +191,8 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the median of the sequence.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 3, 2]).median()
+        >>> import pychain as pc
+        >>> pc.Iter([1, 3, 2]).median()
         2
         """
         return self.into(statistics.median)
@@ -201,8 +201,8 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the mode of the sequence.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 2, 3]).mode()
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 2, 3]).mode()
         2
         """
         return self.into(statistics.mode)
@@ -213,8 +213,8 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the standard deviation of the sequence.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).stdev()
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).stdev()
         1.0
         """
         return self.into(statistics.stdev)
@@ -225,8 +225,8 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the variance of the sequence.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3, 7, 8]).variance()
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3, 7, 8]).variance()
         9.7
         """
         return self.into(statistics.variance)

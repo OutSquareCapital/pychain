@@ -12,8 +12,8 @@ class BaseBool[T](IterWrapper[T]):
     def all(self) -> bool:
         """
         Return True if all items are truthy.
-            >>> from pychain import Iter
-            >>> Iter([1, True]).all()
+            >>> import pychain as pc
+            >>> pc.Iter([1, True]).all()
             True
         """
         return self.into(all)
@@ -21,8 +21,8 @@ class BaseBool[T](IterWrapper[T]):
     def any(self) -> bool:
         """
         Return True if any item is truthy.
-            >>> from pychain import Iter
-            >>> Iter([0, 1]).any()
+            >>> import pychain as pc
+            >>> pc.Iter([0, 1]).any()
             True
         """
         return self.into(any)
@@ -31,8 +31,8 @@ class BaseBool[T](IterWrapper[T]):
         """
         Return True if all items are distinct.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2]).is_distinct()
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2]).is_distinct()
         True
         """
         return self.into(cz.itertoolz.isdistinct)
@@ -41,15 +41,15 @@ class BaseBool[T](IterWrapper[T]):
         """
         Return True if all items are equal.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 1, 1]).all_equal()
+        >>> import pychain as pc
+        >>> pc.Iter([1, 1, 1]).all_equal()
         True
 
         A function that accepts a single argument and returns a transformed version of each input item can be specified with key:
 
-        >>> Iter("AaaA").all_equal(key=str.casefold)
+        >>> pc.Iter("AaaA").all_equal(key=str.casefold)
         True
-        >>> Iter([1, 2, 3]).all_equal(key=lambda x: x < 10)
+        >>> pc.Iter([1, 2, 3]).all_equal(key=lambda x: x < 10)
         True
         """
         return self.into(mit.all_equal, key=key)
@@ -58,16 +58,16 @@ class BaseBool[T](IterWrapper[T]):
         """
         Returns True if all the elements of iterable are unique (no two elements are equal).
 
-        >>> from pychain import Iter
-        >>> Iter("ABCB").all_unique()
+        >>> import pychain as pc
+        >>> pc.Iter("ABCB").all_unique()
         False
 
         If a key function is specified, it will be used to make comparisons.
 
-        >>> Iter("ABCb").all_unique()
+        >>> pc.Iter("ABCb").all_unique()
         True
 
-        >>> Iter("ABCb").all_unique(str.lower)
+        >>> pc.Iter("ABCb").all_unique(str.lower)
         False
 
         The function returns as soon as the first non-unique element is encountered.
@@ -88,17 +88,17 @@ class BaseBool[T](IterWrapper[T]):
 
         Key and reverse have the same meaning that they do in the built-in sorted function.
 
-        >>> from pychain import Iter
-        >>> Iter(["1", "2", "3", "4", "5"]).is_sorted(key=int)
+        >>> import pychain as pc
+        >>> pc.Iter(["1", "2", "3", "4", "5"]).is_sorted(key=int)
         True
-        >>> Iter([5, 4, 3, 1, 2]).is_sorted(reverse=True)
+        >>> pc.Iter([5, 4, 3, 1, 2]).is_sorted(reverse=True)
         False
 
         If strict, tests for strict sorting, that is, returns False if equal elements are found:
 
-        >>> Iter([1, 2, 2]).is_sorted()
+        >>> pc.Iter([1, 2, 2]).is_sorted()
         True
-        >>> Iter([1, 2, 2]).is_sorted(strict=True)
+        >>> pc.Iter([1, 2, 2]).is_sorted(strict=True)
         False
 
         The function returns False after encountering the first out-of-order item.

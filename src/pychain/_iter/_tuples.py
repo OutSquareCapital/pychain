@@ -55,8 +55,8 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Zip with other iterables, optionally strict.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2]).zip([10, 20]).into(list)
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2]).zip([10, 20]).into(list)
         [(1, 10), (2, 20)]
         """
         return self.apply(zip, *others, strict=strict)
@@ -71,8 +71,8 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Zip the input iterables together, but offset the i-th iterable by the i-th item in offsets.
 
-        >>> from pychain import Iter
-        >>> Iter("0123").zip_offset("abcdef", offsets=(0, 1)).into(list)
+        >>> import pychain as pc
+        >>> pc.Iter("0123").zip_offset("abcdef", offsets=(0, 1)).into(list)
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e')]
 
         This can be used as a lightweight alternative to SciPy or pandas to analyze data sets in which some series have a lead or lag relationship.
@@ -81,7 +81,9 @@ class BaseTuples[T](IterWrapper[T]):
 
         To continue until the longest iterable is exhausted, set longest to True.
 
-        >>> Iter("0123").zip_offset("abcdef", offsets=(0, 1), longest=True).into(list)
+        >>> pc.Iter("0123").zip_offset("abcdef", offsets=(0, 1), longest=True).into(
+        ...     list
+        ... )
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e'), (None, 'f')]
         """
         return self.apply(
@@ -139,11 +141,11 @@ class BaseTuples[T](IterWrapper[T]):
         Version of zip that "broadcasts" any scalar (i.e., non-iterable) items into output tuples.
         str and bytes are not treated as iterables.
 
-        >>> from pychain import Iter
+        >>> import pychain as pc
         >>> iterable_1 = [1, 2, 3]
         >>> iterable_2 = ["a", "b", "c"]
         >>> scalar = "_"
-        >>> Iter(iterable_1).zip_broadcast(iterable_2, scalar).into(list)
+        >>> pc.Iter(iterable_1).zip_broadcast(iterable_2, scalar).into(list)
         [(1, 'a', '_'), (2, 'b', '_'), (3, 'c', '_')]
 
         If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
@@ -179,10 +181,10 @@ class BaseTuples[T](IterWrapper[T]):
 
         ``zip`` the input *iterables* together but raise ``UnequalIterablesError`` if they aren't all the same length.
 
-        >>> from pychain import Iter
-        >>> Iter.from_range(0, 3).zip_equal("abc").into(list)
+        >>> import pychain as pc
+        >>> pc.Iter.from_range(0, 3).zip_equal("abc").into(list)
         [(0, 'a'), (1, 'b'), (2, 'c')]
-        >>> Iter.from_range(0, 3).zip_equal("abcd").into(list)
+        >>> pc.Iter.from_range(0, 3).zip_equal("abcd").into(list)
         ... # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
@@ -196,8 +198,8 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Return a Iter of (index, value) pairs.
 
-        >>> from pychain import Iter
-        >>> Iter(["a", "b"]).enumerate().into(list)
+        >>> import pychain as pc
+        >>> pc.Iter(["a", "b"]).enumerate().into(list)
         [(0, 'a'), (1, 'b')]
         """
         return self.apply(enumerate)
@@ -214,8 +216,8 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Return all combinations of length r.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).combinations(2).into(list)
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).combinations(2).into(list)
         [(1, 2), (1, 3), (2, 3)]
         """
         return self.apply(itertools.combinations, r)
@@ -226,8 +228,8 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Zip with other iterables, filling missing values.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2]).zip_longest([10], fill_value=0).into(list)
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2]).zip_longest([10], fill_value=0).into(list)
         [(1, 10), (2, 0)]
         """
         return self.apply(itertools.zip_longest, *others, fillvalue=fill_value)
@@ -244,8 +246,8 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Return all permutations of length r.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).permutations(2).into(list)
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).permutations(2).into(list)
         [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]
         """
         return self.apply(itertools.permutations, r)
@@ -282,8 +284,8 @@ class BaseTuples[T](IterWrapper[T]):
         **Tip**: This method is often chained with `.starmap()` to apply a
         function to each generated pair.
 
-        >>> from pychain import Iter
-        >>> colors = Iter(["blue", "red"])
+        >>> import pychain as pc
+        >>> colors = pc.Iter(["blue", "red"])
         >>> sizes = ["S", "M"]
         >>> colors.product(sizes).into(list)
         [('blue', 'S'), ('blue', 'M'), ('red', 'S'), ('red', 'M')]
@@ -306,8 +308,8 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Return all combinations with replacement of length r.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).combinations_with_replacement(2).into(list)
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).combinations_with_replacement(2).into(list)
         [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
         """
         return self.apply(itertools.combinations_with_replacement, r)
@@ -316,8 +318,8 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Return an iterator over pairs of consecutive elements.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).pairwise().into(list)
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).pairwise().into(list)
         [(1, 2), (2, 3)]
         """
         return self.apply(itertools.pairwise)
@@ -333,8 +335,8 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Perform a relational join with another iterable.
 
-        >>> from pychain import Iter
-        >>> colors = Iter(["blue", "red"])
+        >>> import pychain as pc
+        >>> colors = pc.Iter(["blue", "red"])
         >>> sizes = ["S", "M"]
         >>> colors.join(sizes, left_on=lambda c: c, right_on=lambda s: s).into(list)
         [(None, 'S'), (None, 'M'), ('blue', None), ('red', None)]
@@ -360,17 +362,17 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Return those items that differ between iterables.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 2, 3]).diff([1, 2, 10, 100], default=None).into(list)
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).diff([1, 2, 10, 100], default=None).into(list)
         [(3, 10), (None, 100)]
 
 
         A key function may also be applied to each item to use during comparisons:
 
-        >>> from pychain import Iter
-        >>> Iter(["apples", "bananas"]).diff(["Apples", "Oranges"], key=str.lower).into(
-        ...     list
-        ... )
+        >>> import pychain as pc
+        >>> pc.Iter(["apples", "bananas"]).diff(
+        ...     ["Apples", "Oranges"], key=str.lower
+        ... ).into(list)
         [('bananas', 'Oranges')]
         """
         return self.apply(cz.itertoolz.diff, *others, default=default, key=key)
@@ -405,8 +407,10 @@ class BaseTuples[T](IterWrapper[T]):
 
         Returns a new Iter where each item is a tuple of the results of applying each function to the original item.
 
-        >>> from pychain import Iter
-        >>> Iter([1, -2, 3]).map_juxt(lambda n: n % 2 == 0, lambda n: n > 0).into(list)
+        >>> import pychain as pc
+        >>> pc.Iter([1, -2, 3]).map_juxt(lambda n: n % 2 == 0, lambda n: n > 0).into(
+        ...     list
+        ... )
         [(False, True), (True, False), (False, True)]
         """
         return self.apply(partial(map, cz.functoolz.juxt(*funcs)))

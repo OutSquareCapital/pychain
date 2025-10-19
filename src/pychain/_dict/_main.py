@@ -48,12 +48,12 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
         """
         Apply a function to the underlying dict and return a new Dict.
 
-        >>> from pychain import Dict
+        >>> import pychain as pc
         >>>
         >>> def mul_by_ten(d: dict[int, int]) -> dict[int, int]:
         ...     return {k: v * 10 for k, v in d.items()}
         >>>
-        >>> Dict({1: 20, 2: 30}).apply(mul_by_ten).unwrap()
+        >>> pc.Dict({1: 20, 2: 30}).apply(mul_by_ten).unwrap()
         {1: 200, 2: 300}
         """
         return Dict(self.into(func, *args, **kwargs))
@@ -62,11 +62,13 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
         """
         Return a Dict with keys transformed by func.
 
-        >>> from pychain import Dict
-        >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_keys(str.lower).unwrap()
+        >>> import pychain as pc
+        >>> pc.Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_keys(
+        ...     str.lower
+        ... ).unwrap()
         {'alice': [20, 15, 30], 'bob': [10, 35]}
         >>>
-        >>> Dict({1: "a"}).map_keys(str).unwrap()
+        >>> pc.Dict({1: "a"}).map_keys(str).unwrap()
         {'1': 'a'}
         """
         return self.apply(partial(cz.dicttoolz.keymap, func))
@@ -75,11 +77,11 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
         """
         Return a Dict with values transformed by func.
 
-        >>> from pychain import Dict
-        >>> Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_values(sum).unwrap()
+        >>> import pychain as pc
+        >>> pc.Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_values(sum).unwrap()
         {'Alice': 65, 'Bob': 45}
         >>>
-        >>> Dict({1: 1}).map_values(lambda v: v + 1).unwrap()
+        >>> pc.Dict({1: 1}).map_values(lambda v: v + 1).unwrap()
         {1: 2}
         """
         return self.apply(partial(cz.dicttoolz.valmap, func))
@@ -91,8 +93,8 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
         """
         Transform (key, value) pairs using a function that takes a (key, value) tuple.
 
-        >>> from pychain import Dict
-        >>> Dict({"Alice": 10, "Bob": 20}).map_items(
+        >>> import pychain as pc
+        >>> pc.Dict({"Alice": 10, "Bob": 20}).map_items(
         ...     lambda kv: (kv[0].upper(), kv[1] * 2)
         ... ).unwrap()
         {'ALICE': 20, 'BOB': 40}
@@ -106,8 +108,8 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
         """
         Transform (key, value) pairs using a function that takes key and value as separate arguments.
 
-        >>> from pychain import Dict
-        >>> Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).unwrap()
+        >>> import pychain as pc
+        >>> pc.Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).unwrap()
         {2: 20}
         """
         return self.apply(
@@ -120,8 +122,8 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
 
         Values in the original dict must be unique and hashable.
 
-        >>> from pychain import Dict
-        >>> Dict({"a": 1, "b": 2}).reverse().unwrap()
+        >>> import pychain as pc
+        >>> pc.Dict({"a": 1, "b": 2}).reverse().unwrap()
         {1: 'a', 2: 'b'}
         """
         return self.apply(partial(cz.dicttoolz.itemmap, reversed))
@@ -131,7 +133,8 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
         Nest all the values in lists.
         syntactic sugar for map_values(lambda v: [v])
 
-        >>> Dict({1: 2, 3: 4}).implode().unwrap()
+        >>> import pychain as pc
+        >>> pc.Dict({1: 2, 3: 4}).implode().unwrap()
         {1: [2], 3: [4]}
         """
         return self.apply(lambda v: cz.dicttoolz.valmap(lambda x: [x], v))
@@ -153,9 +156,10 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
         The keys of the returned dict are the keys that are not shared or have different values.
         The values are tuples containing the value from self and the value from other.
 
+        >>> import pychain as pc
         >>> d1 = {"a": 1, "b": 2, "c": 3}
         >>> d2 = {"b": 2, "c": 4, "d": 5}
-        >>> Dict(d1).diff(d2).sort().unwrap()
+        >>> pc.Dict(d1).diff(d2).sort().unwrap()
         {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
         """
 

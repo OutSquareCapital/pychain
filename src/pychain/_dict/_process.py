@@ -19,21 +19,21 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         Applies the func to the value at the path specified by keys, returning a new Dict with the updated value.
 
         If the path does not exist, it will be created with the default value (if provided) before applying func.
-        >>> from pychain import Dict
+        >>> import pychain as pc
         >>> inc = lambda x: x + 1
-        >>> Dict({"a": 0}).update_in("a", func=inc).unwrap()
+        >>> pc.Dict({"a": 0}).update_in("a", func=inc).unwrap()
         {'a': 1}
         >>> transaction = {
         ...     "name": "Alice",
         ...     "purchase": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
         ...     "credit card": "5555-1234-1234-1234",
         ... }
-        >>> Dict(transaction).update_in("purchase", "costs", func=sum).unwrap()
+        >>> pc.Dict(transaction).update_in("purchase", "costs", func=sum).unwrap()
         {'name': 'Alice', 'purchase': {'items': ['Apple', 'Orange'], 'costs': 1.75}, 'credit card': '5555-1234-1234-1234'}
         >>> # updating a value when k0 is not in d
-        >>> Dict({}).update_in(1, 2, 3, func=str, default="bar").unwrap()
+        >>> pc.Dict({}).update_in(1, 2, 3, func=str, default="bar").unwrap()
         {1: {2: {3: 'bar'}}}
-        >>> Dict({1: "foo"}).update_in(2, 3, 4, func=inc, default=0).unwrap()
+        >>> pc.Dict({1: "foo"}).update_in(2, 3, 4, func=inc, default=0).unwrap()
         {1: 'foo', 2: {3: {4: 1}}}
         """
         return self._new(cz.dicttoolz.update_in, keys, func, default=default)
@@ -44,12 +44,12 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         Does not modify the initial dictionary.
 
-        >>> from pychain import Dict
-        >>> Dict({"x": 1}).with_key("x", 2).unwrap()
+        >>> import pychain as pc
+        >>> pc.Dict({"x": 1}).with_key("x", 2).unwrap()
         {'x': 2}
-        >>> Dict({"x": 1}).with_key("y", 3).unwrap()
+        >>> pc.Dict({"x": 1}).with_key("y", 3).unwrap()
         {'x': 1, 'y': 3}
-        >>> Dict({}).with_key("x", 1).unwrap()
+        >>> pc.Dict({}).with_key("x", 1).unwrap()
         {'x': 1}
         """
         return self._new(cz.dicttoolz.assoc, key, value)
@@ -78,10 +78,10 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         Keys not in the mapping are kept as is.
 
-        >>> from pychain import Dict
+        >>> import pychain as pc
         >>> d = {"a": 1, "b": 2, "c": 3}
         >>> mapping = {"b": "beta", "c": "gamma"}
-        >>> Dict(d).rename(mapping).unwrap()
+        >>> pc.Dict(d).rename(mapping).unwrap()
         {'a': 1, 'beta': 2, 'gamma': 3}
         """
         return self._new(lambda data: {mapping.get(k, k): v for k, v in data.items()})
@@ -90,8 +90,8 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         """
         Sort the dictionary by its keys and return a new Dict.
 
-        >>> from pychain import Dict
-        >>> Dict({"b": 2, "a": 1}).sort().unwrap()
+        >>> import pychain as pc
+        >>> pc.Dict({"b": 2, "a": 1}).sort().unwrap()
         {'a': 1, 'b': 2}
         """
         return self._new(lambda data: dict(sorted(data.items(), reverse=reverse)))
@@ -100,13 +100,13 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         """
         Merge other dicts into this one and return a new Dict.
 
-        >>> from pychain import Dict
-        >>> Dict({1: "one"}).merge({2: "two"}).unwrap()
+        >>> import pychain as pc
+        >>> pc.Dict({1: "one"}).merge({2: "two"}).unwrap()
         {1: 'one', 2: 'two'}
 
         Later dictionaries have precedence
 
-        >>> Dict({1: 2, 3: 4}).merge({3: 3, 4: 4}).unwrap()
+        >>> pc.Dict({1: 2, 3: 4}).merge({3: 3, 4: 4}).unwrap()
         {1: 2, 3: 3, 4: 4}
         """
         return self._new(cz.dicttoolz.merge, *others)
@@ -119,10 +119,10 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         A key may occur in more than one dict, and all values mapped from the key will be passed to the function as a list, such as func([val1, val2, ...]).
 
-        >>> from pychain import Dict
-        >>> Dict({1: 1, 2: 2}).merge_with({1: 10, 2: 20}, func=sum).unwrap()
+        >>> import pychain as pc
+        >>> pc.Dict({1: 1, 2: 2}).merge_with({1: 10, 2: 20}, func=sum).unwrap()
         {1: 11, 2: 22}
-        >>> Dict({1: 1, 2: 2}).merge_with({2: 20, 3: 30}, func=max).unwrap()
+        >>> pc.Dict({1: 1, 2: 2}).merge_with({2: 20, 3: 30}, func=max).unwrap()
         {1: 1, 2: 20, 3: 30}
 
         """
@@ -132,9 +132,9 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         """
         Return a new Dict containing keys that satisfy predicate.
 
-        >>> from pychain import Dict
+        >>> import pychain as pc
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> Dict(d).filter_keys(lambda x: x % 2 == 0).unwrap()
+        >>> pc.Dict(d).filter_keys(lambda x: x % 2 == 0).unwrap()
         {2: 3, 4: 5}
         """
         return self._new(partial(cz.dicttoolz.keyfilter, predicate))
@@ -143,11 +143,11 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         """
         Return a new Dict containing items whose values satisfy predicate.
 
-        >>> from pychain import Dict
+        >>> import pychain as pc
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> Dict(d).filter_values(lambda x: x % 2 == 0).unwrap()
+        >>> pc.Dict(d).filter_values(lambda x: x % 2 == 0).unwrap()
         {1: 2, 3: 4}
-        >>> Dict(d).filter_values(lambda x: not x > 3).unwrap()
+        >>> pc.Dict(d).filter_values(lambda x: not x > 3).unwrap()
         {1: 2, 2: 3}
         """
         return self._new(partial(cz.dicttoolz.valfilter, predicate))
@@ -159,11 +159,11 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         """
         Filter items by predicate applied to (key, value) tuples.
 
-        >>> from pychain import Dict
+        >>> import pychain as pc
         >>> def isvalid(item):
         ...     k, v = item
         ...     return k % 2 == 0 and v < 4
-        >>> d = Dict({1: 2, 2: 3, 3: 4, 4: 5})
+        >>> d = pc.Dict({1: 2, 2: 3, 3: 4, 4: 5})
         >>>
         >>> d.filter_items(isvalid).unwrap()
         {2: 3}
@@ -179,10 +179,10 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         """
         Filter items by predicate applied to unpacked (key, value) tuples.
 
-        >>> from pychain import Dict
+        >>> import pychain as pc
         >>> def isvalid(key, value):
         ...     return key % 2 == 0 and value < 4
-        >>> d = Dict({1: 2, 2: 3, 3: 4, 4: 5})
+        >>> d = pc.Dict({1: 2, 2: 3, 3: 4, 4: 5})
         >>>
         >>> d.filter_kv(isvalid).unwrap()
         {2: 3}

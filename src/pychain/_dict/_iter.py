@@ -42,8 +42,8 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         Return a Iter of the dict's keys.
 
-        >>> from pychain import Dict
-        >>> Dict({1: 2}).iter_keys().into(list)
+        >>> import pychain as pc
+        >>> pc.Dict({1: 2}).iter_keys().into(list)
         [1]
         """
         from .._iter import Iter
@@ -54,8 +54,8 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         Return a Iter of the dict's values.
 
-        >>> from pychain import Dict
-        >>> Dict({1: 2}).iter_values().into(list)
+        >>> import pychain as pc
+        >>> pc.Dict({1: 2}).iter_values().into(list)
         [2]
         """
         from .._iter import Iter
@@ -66,8 +66,8 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         Return a Iter of the dict's items.
 
-        >>> from pychain import Dict
-        >>> Dict({1: 2}).iter_items().into(list)
+        >>> import pychain as pc
+        >>> pc.Dict({1: 2}).iter_items().into(list)
         [(1, 2)]
         """
         from .._iter import Iter

@@ -43,8 +43,8 @@ class CommonBase[T](ABC, Pipeable):
         Each pychain class implement this method to allow chaining of functions that transform the
         underlying data and return a new wrapped instance of the same subclass.
 
-            >>> from pychain import Iter
-            >>> Iter.from_range(0, 5).apply(tuple).unwrap()
+            >>> import pychain as pc
+            >>> pc.Iter.from_range(0, 5).apply(tuple).unwrap()
             (0, 1, 2, 3, 4)
 
         Use this to keep the chainable API after applying a transformation to the data.
@@ -89,8 +89,8 @@ class CommonBase[T](ABC, Pipeable):
 
         The result is not wrapped.
 
-            >>> from pychain import Iter
-            >>> Iter.from_range(0, 5).into(tuple)
+            >>> import pychain as pc
+            >>> pc.Iter.from_range(0, 5).into(tuple)
             (0, 1, 2, 3, 4)
 
         This is a core functionality that allows ending the chain whilst keeping the code style consistent.

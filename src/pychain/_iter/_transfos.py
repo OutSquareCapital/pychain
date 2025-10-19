@@ -25,13 +25,13 @@ class BaseTransfos[T](IterWrapper[T]):
 
         For example, to find whether items are adjacent to a 3:
 
-        >>> from pychain import Iter
-        >>> Iter.from_range(0, 6).adjacent(lambda x: x == 3).into(list)
+        >>> import pychain as pc
+        >>> pc.Iter.from_range(0, 6).adjacent(lambda x: x == 3).into(list)
         [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
 
         Set distance to change what counts as adjacent. For example, to find whether items are two places away from a 3:
 
-        >>> Iter.from_range(0, 6).adjacent(lambda x: x == 3, distance=2).into(list)
+        >>> pc.Iter.from_range(0, 6).adjacent(lambda x: x == 3, distance=2).into(list)
         [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
 
         This is useful for contextualizing the results of a search function.
@@ -50,8 +50,8 @@ class BaseTransfos[T](IterWrapper[T]):
 
         If n is None, then all elements are returned.
 
-        >>> from pychain import Iter
-        >>> Iter([1, 1, 2, 3, 3, 3]).most_common(2).into(list)
+        >>> import pychain as pc
+        >>> pc.Iter([1, 1, 2, 3, 3, 3]).most_common(2).into(list)
         [(3, 3), (1, 2)]
         """
         from collections import Counter
@@ -68,8 +68,10 @@ class BaseTransfos[T](IterWrapper[T]):
         - False if the element is equal to the one preceding it in the input, True otherwise (i.e. the equivalent of unique_justseen)
         - False if this element has been seen anywhere in the input before, True otherwise (i.e. the equivalent of unique_everseen)
 
-        >>> from pychain import Iter
-        >>> Iter("otto").classify_unique().into(list)  # doctest: +NORMALIZE_WHITESPACE
+        >>> import pychain as pc
+        >>> pc.Iter("otto").classify_unique().into(
+        ...     list
+        ... )  # doctest: +NORMALIZE_WHITESPACE
         [('o', True,  True),
         ('t', True,  True),
         ('t', False, False),

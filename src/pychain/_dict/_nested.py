@@ -73,13 +73,13 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         """
         Set a nested key path and return a new Dict with new, potentially nested, key value pair.
 
-        >>> from pychain import Dict
+        >>> import pychain as pc
         >>> purchase = {
         ...     "name": "Alice",
         ...     "order": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
         ...     "credit card": "5555-1234-1234-1234",
         ... }
-        >>> Dict(purchase).with_nested_key(
+        >>> pc.Dict(purchase).with_nested_key(
         ...     "order", "costs", value=[0.25, 1.00]
         ... ).unwrap()
         {'name': 'Alice', 'order': {'items': ['Apple', 'Orange'], 'costs': [0.25, 1.0]}, 'credit card': '5555-1234-1234-1234'}
