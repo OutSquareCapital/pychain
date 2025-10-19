@@ -9,7 +9,7 @@ from typing import Any, Self
 import cytoolz as cz
 import more_itertools as mit
 
-from .._core import IterWrapper, Peeked, SupportsRichComparison
+from .._core import IterWrapper, Peeked
 
 
 class BaseProcess[T](IterWrapper[T]):
@@ -236,18 +236,3 @@ class BaseProcess[T](IterWrapper[T]):
         ['a', 'b', 'c', 'd']
         """
         return self._new(mit.strictly_n, n, too_short, too_long)
-
-    def sort[U: SupportsRichComparison[Any]](
-        self: IterWrapper[U], reverse: bool = False
-    ) -> IterWrapper[U]:
-        """
-        Sort the elements of the sequence.
-        Note: This method must consume the entire iterable to perform the sort.
-
-        The result is a new iterable over the sorted sequence.
-
-        >>> from pychain import Iter
-        >>> Iter([3, 1, 2]).sort().into(list)
-        [1, 2, 3]
-        """
-        return self._new(partial(sorted, reverse=reverse))

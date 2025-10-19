@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Concatenate
 
 import cytoolz as cz
 
+from .._core import SupportsRichComparison
 from ._aggregations import BaseAgg
 from ._booleans import BaseBool
 from ._constructors import IterConstructors
@@ -118,6 +119,21 @@ class Iter[T](
         from .._dict import Dict
 
         return self.map(lambda x: func(Dict(x), *args, **kwargs))
+
+    def sort[U: SupportsRichComparison[Any]](
+        self: Iter[U], reverse: bool = False
+    ) -> Iter[U]:
+        """
+        Sort the elements of the sequence.
+        Note: This method must consume the entire iterable to perform the sort.
+
+        The result is a new iterable over the sorted sequence.
+
+        >>> from pychain import Iter
+        >>> Iter([3, 1, 2]).sort().into(list)
+        [1, 2, 3]
+        """
+        return self._new(partial(sorted, reverse=reverse))
 
     def apply[**P, R](
         self,
