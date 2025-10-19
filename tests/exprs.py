@@ -273,15 +273,17 @@ def main(print_output: bool = False) -> None:
 
     # 1) select / expressions
     df1 = df.select(
-        pc.key.StrategyPNL.key("id"),
-        pc.key.PNLData.riskWeight.alias("risk_weight"),
+        pc.key("StrategyPNL").key("id"),
+        pc.key("PNLData").key("riskWeight").alias("risk_weight"),
     )
     if print_output:
         df1.pipe(print)
 
     # 2) update en profondeur
     jf2 = df.select(
-        pc.key.StrategyInfo.instruments.apply(
+        pc.key("StrategyInfo")
+        .key("instruments")
+        .apply(
             lambda x: pc.Iter(x)
             .pluck("instrument_execution_params", "trade_size_limit_percent")
             .into(list)

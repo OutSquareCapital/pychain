@@ -28,9 +28,6 @@ class Expr(Pipeable):
         base = f"Expr({symbolic} -> {lowered})"
         return f"{base}.alias({self._alias!r})"
 
-    def __getattr__(self, name: str) -> Self:
-        return self.key(name)
-
     def _to_expr(self, op: Callable[[Any], Any]) -> Self:
         return self.__class__(
             self.__tokens__,
@@ -59,12 +56,8 @@ class Expr(Pipeable):
         return self._to_expr(lambda data: fn(data))
 
 
-class KeySelector:
-    def __call__(self, name: str) -> Expr:
-        return Expr([name], (), name)
-
-    def __getattr__(self, name: str) -> Expr:
-        return self(name)
+def key(name: str) -> Expr:
+    return Expr([name], (), name)
 
 
 def _expr_identity(obj: Any) -> TypeGuard[Expr]:
@@ -72,8 +65,6 @@ def _expr_identity(obj: Any) -> TypeGuard[Expr]:
 
 
 type IntoExpr = Expr | str
-
-key = KeySelector()
 
 
 def compute_exprs(
