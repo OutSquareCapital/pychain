@@ -145,7 +145,7 @@ class Iter[T](
 
     def reduce_by[K](
         self, key: Callable[[T], K], binop: Callable[[T, T], T]
-    ) -> Iter[K]:
+    ) -> Dict[K, T]:
         """
         Perform a simultaneous groupby and reduction
 
@@ -175,8 +175,9 @@ class Iter[T](
         >>> pc.Iter([1, 2, 3, 4, 5]).reduce_by(is_even, mul).unwrap()
         {False: 15, True: 8}
         """
+        from .._dict import Dict
 
-        return self.apply(partial(cz.itertoolz.reduceby, key, binop))
+        return Dict(self.into(partial(cz.itertoolz.reduceby, key, binop)))
 
     def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
         """
