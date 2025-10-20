@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from functools import partial
-from typing import Self
+from typing import Any, Self
 
 import cytoolz as cz
 
@@ -10,6 +10,24 @@ from .._core import MappingWrapper
 
 
 class ProcessDict[K, V](MappingWrapper[K, V]):
+    def for_each(self, func: Callable[[K, V], Any]) -> Self:
+        """
+        Apply a function to each key-value pair in the dict for side effects.
+
+        Returns the original Dict unchanged.
+
+        >>> import pychain as pc
+        >>> pc.Dict({"a": 1, "b": 2}).for_each(
+        ...     lambda k, v: print(f"Key: {k}, Value: {v}")
+        ... ).unwrap()
+        Key: a, Value: 1
+        Key: b, Value: 2
+        {'a': 1, 'b': 2}
+        """
+        for k, v in self.unwrap().items():
+            func(k, v)
+        return self
+
     def update_in(
         self, *keys: K, func: Callable[[V], V], default: V | None = None
     ) -> Self:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from functools import partial
-from typing import TYPE_CHECKING, Any, overload
+from typing import TYPE_CHECKING, Any, Concatenate, Self, overload
 
 import cytoolz as cz
 import more_itertools as mit
@@ -15,6 +15,28 @@ if TYPE_CHECKING:
 
 
 class BaseMap[T](IterWrapper[T]):
+    def for_each[**P](
+        self,
+        func: Callable[Concatenate[T, P], Any],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Self:
+        """
+        Apply a function to each element in the iterable for side effects.
+
+        Returns the original Iter unchanged.
+
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).for_each(lambda x: print(x))
+        1
+        2
+        3
+        Iter([1, 2, 3])
+        """
+        for v in self.unwrap():
+            func(v, *args, **kwargs)
+        return self
+
     def map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
         Map each element through func and return a Iter of results.
