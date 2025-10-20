@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Generator, Iterable
 from functools import partial
 from typing import TYPE_CHECKING, Any, Self
 
@@ -73,15 +73,19 @@ class BaseFilter[T](IterWrapper[T]):
 
         return self._new(lambda data: (x for x in data if _(x)))
 
-    def filter_attr(self, attr: str) -> Self:
+    def filter_attr[U](self, attr: str, dtype: type[U] = object) -> Iter[U]:
         """
         Return elements that have the given attribute.
 
+        Optionally, specify the expected type of the attribute for better type hinting.
+
+        This does not enforce type checking at runtime for performance considerations.
+
         >>> import pychain as pc
-        >>> pc.Iter(["hello", "world", 2, 5]).filter_attr("capitalize").into(list)
+        >>> pc.Iter(["hello", "world", 2, 5]).filter_attr("capitalize", str).into(list)
         ['hello', 'world']
         """
-        return self._new(lambda data: (x for x in data if hasattr(x, attr)))
+        return self.apply(lambda data: (x for x in data if hasattr(x, attr)))
 
     def filter_false(self, func: Callable[[T], bool]) -> Self:
         """
@@ -270,10 +274,10 @@ class BaseFilter[T](IterWrapper[T]):
         return self._new(lambda data: itertools.islice(data, start, stop))
 
     def filter_subclass[U: type[Any], R](
-        self: IterWrapper[U], parent: type[R]
+        self: IterWrapper[U], parent: type[R], keep_parent: bool = True
     ) -> Iter[type[R]]:
         """
-        Return elements that are subclasses of the given class.
+        Return elements that are subclasses of the given class, optionally excluding the parent class itself.
 
             >>> import pychain as pc
             >>> class A:
@@ -282,12 +286,22 @@ class BaseFilter[T](IterWrapper[T]):
             ...     pass
             >>> class C:
             ...     pass
-            >>> pc.Iter([A, B, C]).filter_subclass(A).map(lambda c: c.__name__).into(
-            ...     list
-            ... )
+            >>> data = pc.Iter([A, B, C])
+            >>> data.filter_subclass(A).map(lambda c: c.__name__).into(list)
             ['A', 'B']
+            >>> data.filter_subclass(A, keep_parent=False).map(
+            ...     lambda c: c.__name__
+            ... ).into(list)
+            ['B']
         """
-        return self.apply(lambda data: (x for x in data if issubclass(x, parent)))
+
+        def _(data: Iterable[type[Any]]) -> Generator[type[R], None, None]:
+            if keep_parent:
+                return (x for x in data if issubclass(x, parent))
+            else:
+                return (x for x in data if issubclass(x, parent) and x is not parent)
+
+        return self.apply(_)
 
     def filter_type[R](self, typ: type[R]) -> Iter[R]:
         """
