@@ -8,13 +8,14 @@ import cytoolz as cz
 
 from .._core import SupportsKeysAndGetItem
 from ._exprs import IntoExpr, compute_exprs
+from ._filters import FilterDict
 from ._funcs import dict_repr, difference
 from ._iter import IterDict
 from ._nested import NestedDict
 from ._process import ProcessDict
 
 
-class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
+class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V], FilterDict[K, V]):
     """
     Wrapper for Python dictionaries with chainable methods.
     """

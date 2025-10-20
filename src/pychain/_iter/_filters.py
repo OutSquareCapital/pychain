@@ -267,9 +267,9 @@ class BaseFilter[T](IterWrapper[T]):
         """
         Return a slice of the iterable.
 
-            >>> import pychain as pc
-            >>> pc.Iter([1, 2, 3, 4, 5]).slice(1, 4).into(list)
-            [2, 3, 4]
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3, 4, 5]).slice(1, 4).into(list)
+        [2, 3, 4]
         """
         return self._new(lambda data: itertools.islice(data, start, stop))
 
@@ -279,20 +279,21 @@ class BaseFilter[T](IterWrapper[T]):
         """
         Return elements that are subclasses of the given class, optionally excluding the parent class itself.
 
-            >>> import pychain as pc
-            >>> class A:
-            ...     pass
-            >>> class B(A):
-            ...     pass
-            >>> class C:
-            ...     pass
-            >>> data = pc.Iter([A, B, C])
-            >>> data.filter_subclass(A).map(lambda c: c.__name__).into(list)
-            ['A', 'B']
-            >>> data.filter_subclass(A, keep_parent=False).map(
-            ...     lambda c: c.__name__
-            ... ).into(list)
-            ['B']
+        >>> import pychain as pc
+        >>> class A:
+        ...     pass
+        >>> class B(A):
+        ...     pass
+        >>> class C:
+        ...     pass
+        >>> def name(cls: type[Any]) -> str:
+        ...     return cls.__name__
+        >>>
+        >>> data = pc.Iter([A, B, C])
+        >>> data.filter_subclass(A).map(name).into(list)
+        ['A', 'B']
+        >>> data.filter_subclass(A, keep_parent=False).map(name).into(list)
+        ['B']
         """
 
         def _(data: Iterable[type[Any]]) -> Generator[type[R], None, None]:
@@ -307,9 +308,9 @@ class BaseFilter[T](IterWrapper[T]):
         """
         Return elements that are instances of the given type.
 
-            >>> import pychain as pc
-            >>> pc.Iter([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
-            [1, 5]
+        >>> import pychain as pc
+        >>> pc.Iter([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
+        [1, 5]
         """
         return self.apply(lambda data: (x for x in data if isinstance(x, typ)))
 

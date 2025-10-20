@@ -72,7 +72,9 @@ class Iter[T](
         ... ).into(list)
         [12, 18, 60]
         """
-        return self.map(lambda x: func(Iter(x), *args, **kwargs))
+        return self.apply(
+            lambda data: map(lambda x: func(Iter(x), *args, **kwargs), data)
+        )
 
     def struct[**P, R, K, V](
         self: Iter[dict[K, V]],
@@ -118,7 +120,9 @@ class Iter[T](
         """
         from .._dict import Dict
 
-        return self.map(lambda x: func(Dict(x), *args, **kwargs))
+        return self.apply(
+            lambda data: map(lambda x: func(Dict(x), *args, **kwargs), data)
+        )
 
     def sort[U: SupportsRichComparison[Any]](
         self: Iter[U], reverse: bool = False

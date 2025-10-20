@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
-from functools import partial
 from typing import Any, Concatenate, Self
 
 import cytoolz as cz
@@ -150,71 +149,3 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         """
         return self._new(lambda data: cz.dicttoolz.merge_with(func, data, *others))
-
-    def filter_keys(self, predicate: Callable[[K], bool]) -> Self:
-        """
-        Return a new Dict containing keys that satisfy predicate.
-
-        >>> import pychain as pc
-        >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> pc.Dict(d).filter_keys(lambda x: x % 2 == 0).unwrap()
-        {2: 3, 4: 5}
-        """
-        return self._new(partial(cz.dicttoolz.keyfilter, predicate))
-
-    def filter_values(self, predicate: Callable[[V], bool]) -> Self:
-        """
-        Return a new Dict containing items whose values satisfy predicate.
-
-        >>> import pychain as pc
-        >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
-        >>> pc.Dict(d).filter_values(lambda x: x % 2 == 0).unwrap()
-        {1: 2, 3: 4}
-        >>> pc.Dict(d).filter_values(lambda x: not x > 3).unwrap()
-        {1: 2, 2: 3}
-        """
-        return self._new(partial(cz.dicttoolz.valfilter, predicate))
-
-    def filter_items(
-        self,
-        predicate: Callable[[tuple[K, V]], bool],
-    ) -> Self:
-        """
-        Filter items by predicate applied to (key, value) tuples.
-
-        >>> import pychain as pc
-        >>> def isvalid(item):
-        ...     k, v = item
-        ...     return k % 2 == 0 and v < 4
-        >>> d = pc.Dict({1: 2, 2: 3, 3: 4, 4: 5})
-        >>>
-        >>> d.filter_items(isvalid).unwrap()
-        {2: 3}
-        >>> d.filter_items(lambda kv: not isvalid(kv)).unwrap()
-        {1: 2, 3: 4, 4: 5}
-        """
-        return self._new(partial(cz.dicttoolz.itemfilter, predicate))
-
-    def filter_kv(
-        self,
-        predicate: Callable[[K, V], bool],
-    ) -> Self:
-        """
-        Filter items by predicate applied to unpacked (key, value) tuples.
-
-        >>> import pychain as pc
-        >>> def isvalid(key, value):
-        ...     return key % 2 == 0 and value < 4
-        >>> d = pc.Dict({1: 2, 2: 3, 3: 4, 4: 5})
-        >>>
-        >>> d.filter_kv(isvalid).unwrap()
-        {2: 3}
-        >>> d.filter_kv(lambda k, v: not isvalid(k, v)).unwrap()
-        {1: 2, 3: 4, 4: 5}
-        """
-
-        return self._new(
-            lambda data: cz.dicttoolz.itemfilter(
-                lambda kv: predicate(kv[0], kv[1]), data
-            )
-        )
