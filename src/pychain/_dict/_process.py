@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
 from functools import partial
-from typing import Any, Self
+from typing import Any, Concatenate, Self
 
 import cytoolz as cz
 
@@ -10,7 +10,12 @@ from .._core import MappingWrapper
 
 
 class ProcessDict[K, V](MappingWrapper[K, V]):
-    def for_each(self, func: Callable[[K, V], Any]) -> Self:
+    def for_each[**P](
+        self,
+        func: Callable[Concatenate[K, V, P], Any],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Self:
         """
         Apply a function to each key-value pair in the dict for side effects.
 
@@ -25,7 +30,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         {'a': 1, 'b': 2}
         """
         for k, v in self.unwrap().items():
-            func(k, v)
+            func(k, v, *args, **kwargs)
         return self
 
     def update_in(
