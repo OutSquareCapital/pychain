@@ -57,6 +57,7 @@ class Expr(Pipeable):
 
 
 def key(name: str) -> Expr:
+    """Create an Expr that accesses the given key."""
     return Expr([name], (), name)
 
 
@@ -72,7 +73,7 @@ def compute_exprs(
 ) -> dict[str, Any]:
     for e in exprs:
         if not _expr_identity(e):
-            e = Expr([], (), e)  # type: ignore[misc]
+            e = key(e)  # type: ignore
         current: object = cz.dicttoolz.get_in(e.__tokens__, data_in)
         for op in e.__ops__:
             current = op(current)

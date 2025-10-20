@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import Any
 
 import cytoolz as cz
@@ -42,6 +43,19 @@ def flatten_recursive(
         return dict(items)
 
     return _(data)
+
+
+def difference[K, V](
+    data: Mapping[K, V], other: Mapping[K, V]
+) -> dict[K, tuple[V | None, V | None]]:
+    all_keys: set[K] = data.keys() | other.keys()
+    diffs: dict[K, tuple[V | None, V | None]] = {}
+    for key in all_keys:
+        self_val = data.get(key)
+        other_val = other.get(key)
+        if self_val != other_val:
+            diffs[key] = (self_val, other_val)
+    return diffs
 
 
 def dict_repr(

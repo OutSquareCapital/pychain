@@ -8,7 +8,7 @@ import cytoolz as cz
 
 from .._core import SupportsKeysAndGetItem
 from ._exprs import IntoExpr, compute_exprs
-from ._funcs import dict_repr
+from ._funcs import dict_repr, difference
 from ._iter import IterDict
 from ._nested import NestedDict
 from ._process import ProcessDict
@@ -32,11 +32,53 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
         return f"{self.__class__.__name__}({dict_repr(self.unwrap())})"
 
     def select(self: Dict[str, Any], *exprs: IntoExpr) -> Dict[str, Any]:
-        """Evaluate aliased expressions and return a new dict {alias: value}."""
+        """
+        Select and alias fields from the dict based on expressions and/or strings.
+
+        Navigate nested fields using the `pychain.key` function.
+
+        - Chain `key.key()` calls to access nested fields.
+        - Use `key.apply()` to transform values.
+        - Use `key.alias()` to rename fields in the resulting dict.
+        >>> import pychain as pc
+        >>> data = {
+        ...     "name": "Alice",
+        ...     "age": 30,
+        ...     "scores": {"eng": [85, 90, 95], "math": [80, 88, 92]},
+        ... }
+        >>> scores_expr = pc.key("scores")  # save an expression for reuse
+        >>> pc.Dict(data).select(
+        ...     pc.key("name").alias("student_name"),
+        ...     "age",  # shorthand for pc.key("age")
+        ...     scores_expr.key("math").alias("math_scores"),
+        ...     scores_expr.key("eng")
+        ...     .apply(lambda v: pc.Iter(v).mean())
+        ...     .alias("average_eng_score"),
+        ... ).unwrap()
+        {'student_name': 'Alice', 'age': 30, 'math_scores': [80, 88, 92], 'average_eng_score': 90}
+
+        """
         return Dict(compute_exprs(exprs, self.unwrap(), {}))
 
     def with_fields(self: Dict[str, Any], *exprs: IntoExpr) -> Dict[str, Any]:
-        """Merge aliased expressions into the root dict (overwrite on collision)."""
+        """
+        Merge aliased expressions into the root dict (overwrite on collision).
+        >>> import pychain as pc
+        >>> data = {
+        ...     "name": "Alice",
+        ...     "age": 30,
+        ...     "scores": {"eng": [85, 90, 95], "math": [80, 88, 92]},
+        ... }
+        >>> scores_expr = pc.key("scores")  # save an expression for reuse
+        >>> pc.Dict(data).with_fields(
+        ...     scores_expr.key("eng")
+        ...     .apply(lambda v: pc.Iter(v).mean())
+        ...     .alias("average_eng_score"),
+        ... ).unwrap()
+        {'name': 'Alice', 'age': 30, 'scores': {'eng': [85, 90, 95], 'math': [80, 88, 92]}, 'average_eng_score': 90}
+
+
+        """
         return Dict(compute_exprs(exprs, self.unwrap(), dict(self.unwrap())))
 
     def apply[**P, KU, VU](
@@ -162,15 +204,4 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
         >>> pc.Dict(d1).diff(d2).sort().unwrap()
         {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
         """
-
-        def _(data: Mapping[K, V]) -> dict[K, tuple[V | None, V | None]]:
-            all_keys: set[K] = data.keys() | other.keys()
-            diffs: dict[K, tuple[V | None, V | None]] = {}
-            for key in all_keys:
-                self_val = data.get(key)
-                other_val = other.get(key)
-                if self_val != other_val:
-                    diffs[key] = (self_val, other_val)
-            return diffs
-
-        return self.apply(_)
+        return self.apply(difference, other)
