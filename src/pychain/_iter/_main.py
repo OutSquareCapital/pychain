@@ -11,6 +11,7 @@ from ._aggregations import BaseAgg
 from ._booleans import BaseBool
 from ._constructors import IterConstructors
 from ._filters import BaseFilter
+from ._joins import BaseJoins
 from ._lists import BaseList
 from ._maps import BaseMap
 from ._partitions import BasePartitions
@@ -34,6 +35,7 @@ class Iter[T](
     BaseTuples[T],
     BasePartitions[T],
     BaseTransfos[T],
+    BaseJoins[T],
     IterConstructors,
 ):
     """
