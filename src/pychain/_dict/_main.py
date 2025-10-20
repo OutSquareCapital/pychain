@@ -31,6 +31,21 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V]):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({dict_repr(self.unwrap())})"
 
+    @staticmethod
+    def from_(obj: object) -> Dict[str, Any]:
+        """
+        Create a Dict from an object's __dict__ attribute.
+        >>> import pychain as pc
+        >>> class Person:
+        ...     def __init__(self, name: str, age: int):
+        ...         self.name = name
+        ...         self.age = age
+        >>> person = Person("Alice", 30)
+        >>> pc.Dict.from_(person).unwrap()
+        {'name': 'Alice', 'age': 30}
+        """
+        return Dict(obj.__dict__)
+
     def select(self: Dict[str, Any], *exprs: IntoExpr) -> Dict[str, Any]:
         """
         Select and alias fields from the dict based on expressions and/or strings.
