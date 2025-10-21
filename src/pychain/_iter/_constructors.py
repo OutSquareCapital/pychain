@@ -17,10 +17,8 @@ class IterConstructors:
         Create an infinite iterator of evenly spaced values.
 
         **Warning** ⚠️
-
-        This creates an infinite iterator.
-
-        Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
+            This creates an infinite iterator.
+            Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 
         >>> import pychain as pc
         >>> pc.Iter.from_count(10, 2).head(3).into(list)
@@ -36,7 +34,6 @@ class IterConstructors:
         Create an iterator from a range.
 
         Syntactic sugar for `Iter(range(start, stop, step))`.
-
         >>> import pychain as pc
         >>> pc.Iter.from_range(1, 5).into(list)
         [1, 2, 3, 4]
@@ -51,10 +48,8 @@ class IterConstructors:
         Create an infinite iterator by repeatedly applying a function into an original input x.
 
         **Warning** ⚠️
-
-        This creates an infinite iterator.
-
-        Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
+            This creates an infinite iterator.
+            Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 
         >>> import pychain as pc
         >>> pc.Iter.from_func(lambda x: x + 1, 0).head(3).into(list)
@@ -68,7 +63,6 @@ class IterConstructors:
     def from_[U](*elements: U) -> Iter[U]:
         """
         Create an iterator from the given elements.
-
         >>> import pychain as pc
         >>> pc.Iter.from_(1, 2, 3).into(list)
         [1, 2, 3]

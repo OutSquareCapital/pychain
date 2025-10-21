@@ -17,7 +17,6 @@ class BaseTuples[T](IterWrapper[T]):
     def enumerate(self) -> Iter[tuple[int, T]]:
         """
         Return a Iter of (index, value) pairs.
-
         >>> import pychain as pc
         >>> pc.Iter(["a", "b"]).enumerate().into(list)
         [(0, 'a'), (1, 'b')]
@@ -35,7 +34,6 @@ class BaseTuples[T](IterWrapper[T]):
     def combinations(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations of length r.
-
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).combinations(2).into(list)
         [(1, 2), (1, 3), (2, 3)]
@@ -53,7 +51,6 @@ class BaseTuples[T](IterWrapper[T]):
     def permutations(self, r: int | None = None) -> Iter[tuple[T, ...]]:
         """
         Return all permutations of length r.
-
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).permutations(2).into(list)
         [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]
@@ -75,7 +72,6 @@ class BaseTuples[T](IterWrapper[T]):
     def combinations_with_replacement(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations with replacement of length r.
-
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).combinations_with_replacement(2).into(list)
         [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
@@ -85,7 +81,6 @@ class BaseTuples[T](IterWrapper[T]):
     def pairwise(self) -> Iter[tuple[T, T]]:
         """
         Return an iterator over pairs of consecutive elements.
-
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).pairwise().into(list)
         [(1, 2), (2, 3)]
@@ -121,7 +116,6 @@ class BaseTuples[T](IterWrapper[T]):
         Apply several functions to each item.
 
         Returns a new Iter where each item is a tuple of the results of applying each function to the original item.
-
         >>> import pychain as pc
         >>> pc.Iter([1, -2, 3]).map_juxt(lambda n: n % 2 == 0, lambda n: n > 0).into(
         ...     list

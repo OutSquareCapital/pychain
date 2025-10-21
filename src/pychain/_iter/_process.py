@@ -18,24 +18,21 @@ class BaseProcess[T](IterWrapper[T]):
         Repeat the sequence indefinitely.
 
         **Warning** ⚠️
+            This creates an infinite iterator.
+            Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 
-        This creates an infinite iterator.
-
-        Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
-
-            >>> import pychain as pc
-            >>> pc.Iter([1, 2]).cycle().head(5).into(list)
-            [1, 2, 1, 2, 1]
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2]).cycle().head(5).into(list)
+        [1, 2, 1, 2, 1]
         """
         return self._new(itertools.cycle)
 
     def interpose(self, element: T) -> Self:
         """
         Interpose element between items and return a new Iterable wrapper.
-
-            >>> import pychain as pc
-            >>> pc.Iter([1, 2]).interpose(0).into(list)
-            [1, 0, 2]
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2]).interpose(0).into(list)
+        [1, 0, 2]
         """
         return self._new(partial(cz.itertoolz.interpose, element))
 
@@ -44,10 +41,9 @@ class BaseProcess[T](IterWrapper[T]):
     ) -> Self:
         """
         Randomly sample items with given probability.
-
-            >>> import pychain as pc
-            >>> len(Iterable(Iter([1, 2, 3]).random_sample(0.5)))  # doctest: +SKIP
-            1
+        >>> import pychain as pc
+        >>> len(Iterable(Iter([1, 2, 3]).random_sample(0.5)))  # doctest: +SKIP
+        1
         """
 
         return self._new(
@@ -57,31 +53,28 @@ class BaseProcess[T](IterWrapper[T]):
     def accumulate(self, func: Callable[[T, T], T]) -> Self:
         """
         Return cumulative application of binary op provided by the function.
-
-            >>> import pychain as pc
-            >>> pc.Iter([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
-            [1, 3, 6]
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
+        [1, 3, 6]
         """
         return self._new(partial(cz.itertoolz.accumulate, func))
 
     def insert_left(self, value: T) -> Self:
         """
         Prepend value to the sequence and return a new Iterable wrapper.
-
-            >>> import pychain as pc
-            >>> pc.Iter([2, 3]).insert_left(1).into(list)
-            [1, 2, 3]
+        >>> import pychain as pc
+        >>> pc.Iter([2, 3]).insert_left(1).into(list)
+        [1, 2, 3]
         """
         return self._new(partial(cz.itertoolz.cons, value))
 
     def peekn(self, n: int) -> Self:
         """¨
         Print and return sequence after peeking n items.
-
-            >>> import pychain as pc
-            >>> pc.Iter([1, 2, 3]).peekn(2).into(list)
-            Peeked 2 values: (1, 2)
-            [1, 2, 3]
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3]).peekn(2).into(list)
+        Peeked 2 values: (1, 2)
+        [1, 2, 3]
         """
 
         def _(data: Iterable[T]) -> Iterable[T]:
@@ -94,11 +87,10 @@ class BaseProcess[T](IterWrapper[T]):
     def peek(self) -> Self:
         """
         Print and return sequence after peeking first item.
-
-            >>> import pychain as pc
-            >>> pc.Iter([1, 2]).peek().into(list)
-            Peeked value: 1
-            [1, 2]
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2]).peek().into(list)
+        Peeked value: 1
+        [1, 2]
         """
 
         def _(data: Iterable[T]) -> Iterable[T]:
@@ -113,20 +105,18 @@ class BaseProcess[T](IterWrapper[T]):
     ) -> Self:
         """
         Merge already-sorted sequences.
-
-            >>> import pychain as pc
-            >>> pc.Iter([1, 3]).merge_sorted([2, 4]).into(list)
-            [1, 2, 3, 4]
+        >>> import pychain as pc
+        >>> pc.Iter([1, 3]).merge_sorted([2, 4]).into(list)
+        [1, 2, 3, 4]
         """
         return self._new(cz.itertoolz.merge_sorted, *others, key=sort_on)
 
     def interleave(self, *others: Iterable[T]) -> Self:
         """
         Interleave multiple sequences element-wise.
-
-            >>> import pychain as pc
-            >>> pc.Iter([1, 2]).interleave([3, 4]).into(list)
-            [1, 3, 2, 4]
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2]).interleave([3, 4]).into(list)
+        [1, 3, 2, 4]
         """
         return self._new(lambda data: cz.itertoolz.interleave((data, *others)))
 
@@ -137,10 +127,9 @@ class BaseProcess[T](IterWrapper[T]):
         An infinite sequence will prevent the rest of the arguments from being included.
 
         We use chain.from_iterable rather than chain(*seqs) so that seqs can be a generator.
-
-            >>> import pychain as pc
-            >>> pc.Iter([1, 2]).concat([3, 4], [5]).into(list)
-            [1, 2, 3, 4, 5]
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2]).concat([3, 4], [5]).into(list)
+        [1, 2, 3, 4, 5]
         """
 
         return self._new(lambda data: itertools.chain.from_iterable((data, *others)))
@@ -148,13 +137,11 @@ class BaseProcess[T](IterWrapper[T]):
     def elements(self) -> Self:
         """
         Iterator over elements repeating each as many times as its count.
-
         >>> import pychain as pc
         >>> pc.Iter("ABCABC").elements().sort().unwrap()
         ['A', 'A', 'B', 'B', 'C', 'C']
 
         Knuth's example for prime factors of 1836:  2**2 * 3**3 * 17**1
-
         >>> import math
         >>> pc.Iter({2: 2, 3: 3, 17: 1}).elements().into(math.prod)
         1836
@@ -170,7 +157,6 @@ class BaseProcess[T](IterWrapper[T]):
     def reverse(self) -> Self:
         """
         Return a new Iterable wrapper with elements in reverse order.
-
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).reverse().into(list)
         [3, 2, 1]
@@ -193,7 +179,6 @@ class BaseProcess[T](IterWrapper[T]):
         If it has fewer than *n* items, call function *too_short* with the actual number of items.
 
         If it has more than *n* items, call function *too_long* with the number ``n + 1``.
-
         >>> import pychain as pc
         >>> iterable = ["a", "b", "c", "d"]
         >>> n = 4
@@ -205,7 +190,6 @@ class BaseProcess[T](IterWrapper[T]):
 
         By default, *too_short* and *too_long* are functions that raise
         ``ValueError``.
-
         >>> pc.Iter("ab").is_strictly_n(3).into(
         ...     list
         ... )  # doctest: +IGNORE_EXCEPTION_DETAIL
@@ -225,7 +209,6 @@ class BaseProcess[T](IterWrapper[T]):
         *too_short* will be called with the number of items in *iterable*.
 
         *too_long* will be called with `n + 1`.
-
         >>> def too_short(item_count):
         ...     raise RuntimeError
         >>> pc.Iter("abcd").is_strictly_n(6, too_short=too_short).into(list)

@@ -53,7 +53,6 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[Any, ...]]:
         """
         Zip with other iterables, optionally strict.
-
         >>> import pychain as pc
         >>> pc.Iter([1, 2]).zip([10, 20]).into(list)
         [(1, 10), (2, 20)]
@@ -69,9 +68,9 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[T | U, ...]]:
         """
         Zip the input iterables together, but offset the i-th iterable by the i-th item in offsets.
-
         >>> import pychain as pc
-        >>> pc.Iter("0123").zip_offset("abcdef", offsets=(0, 1)).into(list)
+        >>> data = pc.Iter("0123")
+        >>> data.zip_offset("abcdef", offsets=(0, 1)).into(list)
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e')]
 
         This can be used as a lightweight alternative to SciPy or pandas to analyze data sets in which some series have a lead or lag relationship.
@@ -79,10 +78,7 @@ class BaseJoins[T](IterWrapper[T]):
         By default, the sequence will end when the shortest iterable is exhausted.
 
         To continue until the longest iterable is exhausted, set longest to True.
-
-        >>> pc.Iter("0123").zip_offset("abcdef", offsets=(0, 1), longest=True).into(
-        ...     list
-        ... )
+        >>> data.zip_offset("abcdef", offsets=(0, 1), longest=True).into(list)
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e'), (None, 'f')]
         """
         return self.apply(
@@ -139,12 +135,11 @@ class BaseJoins[T](IterWrapper[T]):
         """
         Version of zip that "broadcasts" any scalar (i.e., non-iterable) items into output tuples.
         str and bytes are not treated as iterables.
-
         >>> import pychain as pc
-        >>> iterable_1 = [1, 2, 3]
-        >>> iterable_2 = ["a", "b", "c"]
+        >>> data = pc.Iter([1, 2, 3])
+        >>> other = ["a", "b", "c"]
         >>> scalar = "_"
-        >>> pc.Iter(iterable_1).zip_broadcast(iterable_2, scalar).into(list)
+        >>> data.zip_broadcast(other, scalar).into(list)
         [(1, 'a', '_'), (2, 'b', '_'), (3, 'c', '_')]
 
         If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
@@ -177,9 +172,7 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[T, T2, T3, T4, T5]]: ...
     def zip_equal(self, *others: Iterable[Any]) -> Iter[tuple[Any, ...]]:
         """
-
         ``zip`` the input *iterables* together but raise ``UnequalIterablesError`` if they aren't all the same length.
-
         >>> import pychain as pc
         >>> pc.Iter.from_range(0, 3).zip_equal("abc").into(list)
         [(0, 'a'), (1, 'b'), (2, 'c')]
@@ -198,7 +191,6 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[U | T, ...]]:
         """
         Zip with other iterables, filling missing values.
-
         >>> import pychain as pc
         >>> pc.Iter([1, 2]).zip_longest([10], fill_value=0).into(list)
         [(1, 10), (2, 0)]
@@ -234,10 +226,6 @@ class BaseJoins[T](IterWrapper[T]):
 
         It pairs every element from the source iterable with every element from the
         other iterable.
-
-        **Tip**: This method is often chained with `.starmap()` to apply a
-        function to each generated pair.
-
         >>> import pychain as pc
         >>> colors = pc.Iter(["blue", "red"])
         >>> sizes = ["S", "M"]
@@ -265,7 +253,6 @@ class BaseJoins[T](IterWrapper[T]):
 
         Note:
             This method consumes inner data, unsorts it, and removes duplicates.
-
 
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 2]).intersection([2, 3], [2]).into(list)
@@ -314,17 +301,16 @@ class BaseJoins[T](IterWrapper[T]):
         Return those items that differ between iterables.
 
         Each output item is a tuple where the i-th element is from the i-th input iterable.
-        If an input iterable is exhausted before others, then the corresponding output items will be filled with *default*.
 
+        If an input iterable is exhausted before others, then the corresponding output items will be filled with *default*.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3]).diff_at([1, 2, 10, 100], default=None).into(list)
+        >>> data = pc.Iter([1, 2, 3])
+        >>> data.diff_at([1, 2, 10, 100], default=None).into(list)
         [(3, 10), (None, 100)]
-        >>> pc.Iter([1, 2, 3]).diff_at([1, 2, 10, 100, 2, 6, 7], default=0).into(list)
+        >>> data.diff_at([1, 2, 10, 100, 2, 6, 7], default=0).into(list)
         [(3, 10), (0, 100), (0, 2), (0, 6), (0, 7)]
 
-
         A key function may also be applied to each item to use during comparisons:
-
         >>> import pychain as pc
         >>> pc.Iter(["apples", "bananas"]).diff_at(
         ...     ["Apples", "Oranges"], key=str.lower
@@ -343,7 +329,6 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[T, R]]:
         """
         Perform a relational join with another iterable.
-
         >>> import pychain as pc
         >>> colors = pc.Iter(["blue", "red"])
         >>> sizes = ["S", "M"]
