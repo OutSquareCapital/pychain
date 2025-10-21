@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
-from typing import Any, Concatenate, Self
+from typing import TYPE_CHECKING, Any, Concatenate, Self
+
+if TYPE_CHECKING:
+    from .._dict import Dict
+    from .._iter import Iter
 
 
 class Pipeable:
@@ -101,9 +105,29 @@ class CommonBase[T](ABC, Pipeable):
 class IterWrapper[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
 
+    def apply[**P, R](
+        self,
+        func: Callable[Concatenate[Iterable[T], P], Iterable[R]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Iter[R]:
+        from .._iter import Iter
+
+        return Iter(self.into(func, *args, **kwargs))
+
 
 class MappingWrapper[K, V](CommonBase[dict[K, V]]):
     _data: dict[K, V]
+
+    def apply[**P, KU, VU](
+        self,
+        func: Callable[Concatenate[dict[K, V], P], dict[KU, VU]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Dict[KU, VU]:
+        from .._dict import Dict
+
+        return Dict(self.into(func, *args, **kwargs))
 
 
 class Wrapper[T](CommonBase[T]):
@@ -121,13 +145,4 @@ class Wrapper[T](CommonBase[T]):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Wrapper[R]:
-        """
-        Pipe the underlying data into a function, then wrap the result in a new `Wrapper` instance.
-
-        Note that if the generic type `R` is itself a generic type, the resulting `Wrapper` will not retain that information in some cases.
-
-        This is a limitation of Python's type system for generics.
-
-        This is also why pipe into is an abstract method in `CommonBase`, altough `Dict` and `Iter` have the exact same implementation.
-        """
         return Wrapper(self.into(func, *args, **kwargs))

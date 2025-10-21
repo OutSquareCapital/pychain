@@ -147,14 +147,6 @@ class Iter[T](
         """
         return self._new(partial(sorted, reverse=reverse))
 
-    def apply[**P, R](
-        self,
-        func: Callable[Concatenate[Iterable[T], P], Iterable[R]],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Iter[R]:
-        return Iter(self.into(func, *args, **kwargs))
-
     def with_keys[K](self, keys: Iterable[K]) -> Dict[K, T]:
         """
         Create a Dict by zipping the iterable with keys.

@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Generator, Iterable
 from functools import partial
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any, Self, TypeGuard
 
 import cytoolz as cz
 import more_itertools as mit
@@ -81,7 +81,14 @@ class BaseFilter[T](IterWrapper[T]):
         >>> pc.Iter(["hello", "world", 2, 5]).filter_attr("capitalize", str).into(list)
         ['hello', 'world']
         """
-        return self.apply(lambda data: (x for x in data if hasattr(x, attr)))
+
+        def check(data: Iterable[Any]) -> Generator[U, None, None]:
+            def _(x: Any) -> TypeGuard[U]:
+                return hasattr(x, attr)
+
+            return (x for x in data if _(x))
+
+        return self.apply(check)
 
     def filter_false(self, func: Callable[[T], bool]) -> Self:
         """

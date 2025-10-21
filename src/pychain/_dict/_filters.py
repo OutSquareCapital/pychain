@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from functools import partial
-from typing import TYPE_CHECKING, Any, Self
+from typing import TYPE_CHECKING, Any, Self, TypeGuard
 
 import cytoolz as cz
 
@@ -95,9 +95,11 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         ... ).unwrap()
         {'a': 'hello', 'b': 'world'}
         """
-        return self.apply(
-            lambda data: cz.dicttoolz.valfilter(lambda x: hasattr(x, attr), data)
-        )
+
+        def has_attr(x: V) -> TypeGuard[U]:
+            return hasattr(x, attr)
+
+        return self.apply(lambda data: cz.dicttoolz.valfilter(has_attr, data))  # type: ignore
 
     def filter_type[R](self, typ: type[R]) -> Dict[K, R]:
         """
@@ -108,9 +110,11 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(data).filter_type(str).unwrap()
         {'a': 'one', 'b': 'two'}
         """
-        return self.apply(
-            lambda data: cz.dicttoolz.valfilter(lambda x: isinstance(x, typ), data)
-        )
+
+        def _(_: V) -> TypeGuard[R]:
+            return isinstance(_, typ)
+
+        return self.apply(lambda data: cz.dicttoolz.valfilter(_, data))  # type: ignore
 
     def filter_callable(self) -> Dict[K, Callable[..., Any]]:
         """
@@ -123,7 +127,11 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(data).filter_callable().map_values(lambda x: x.__name__).unwrap()
         {3: 'foo', 4: 'print'}
         """
-        return self.apply(lambda data: cz.dicttoolz.valfilter(callable, data))
+
+        def _(x: V) -> TypeGuard[Callable[..., Any]]:
+            return callable(x)
+
+        return self.apply(lambda data: cz.dicttoolz.valfilter(_, data))  # type: ignore
 
     def filter_subclass[U: type[Any], R](
         self: FilterDict[K, U], parent: type[R], keep_parent: bool = True
@@ -150,13 +158,13 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {'second': 'B'}
         """
 
-        def _(x: type[Any]):
+        def _(x: type[Any]) -> TypeGuard[type[R]]:
             if keep_parent:
                 return issubclass(x, parent)
             else:
                 return issubclass(x, parent) and x is not parent
 
-        return self.apply(lambda data: cz.dicttoolz.valfilter(_, data))
+        return self.apply(lambda data: cz.dicttoolz.valfilter(_, data))  # type: ignore
 
     def intersect_keys(self, *others: Mapping[K, V]) -> Self:
         """

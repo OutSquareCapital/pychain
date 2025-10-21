@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Callable, Mapping
 from functools import partial
-from typing import Any, Concatenate, Self
+from typing import Any, Self
 
 import cytoolz as cz
 
@@ -106,25 +106,6 @@ class Dict[K, V](
 
         """
         return Dict(compute_exprs(exprs, self.unwrap(), dict(self.unwrap())))
-
-    def apply[**P, KU, VU](
-        self,
-        func: Callable[Concatenate[dict[K, V], P], dict[KU, VU]],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Dict[KU, VU]:
-        """
-        Apply a function to the underlying dict and return a new Dict.
-
-        >>> import pychain as pc
-        >>>
-        >>> def mul_by_ten(d: dict[int, int]) -> dict[int, int]:
-        ...     return {k: v * 10 for k, v in d.items()}
-        >>>
-        >>> pc.Dict({1: 20, 2: 30}).apply(mul_by_ten).unwrap()
-        {1: 200, 2: 300}
-        """
-        return Dict(self.into(func, *args, **kwargs))
 
     def map_keys[T](self, func: Callable[[K], T]) -> Dict[T, V]:
         """
