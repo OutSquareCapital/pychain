@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from collections.abc import Callable, Mapping
 from functools import partial
 from typing import Any, Concatenate, Self
@@ -9,13 +10,22 @@ import cytoolz as cz
 from .._core import SupportsKeysAndGetItem
 from ._exprs import IntoExpr, compute_exprs
 from ._filters import FilterDict
-from ._funcs import dict_repr, difference
+from ._funcs import dict_repr
+from ._groups import GroupsDict
 from ._iter import IterDict
+from ._joins import JoinsDict
 from ._nested import NestedDict
 from ._process import ProcessDict
 
 
-class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V], FilterDict[K, V]):
+class Dict[K, V](
+    ProcessDict[K, V],
+    IterDict[K, V],
+    NestedDict[K, V],
+    JoinsDict[K, V],
+    FilterDict[K, V],
+    GroupsDict[K, V],
+):
     """
     Wrapper for Python dictionaries with chainable methods.
     """
@@ -174,17 +184,23 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V], FilterDict
             lambda data: cz.dicttoolz.itemmap(lambda kv: func(kv[0], kv[1]), data)
         )
 
-    def reverse(self) -> Dict[V, K]:
+    def invert(self) -> Dict[V, list[K]]:
         """
-        Return a new Dict with keys and values swapped.
-
-        Values in the original dict must be unique and hashable.
+        Invert the dictionary, grouping keys by common (and hashable) values.
 
         >>> import pychain as pc
-        >>> pc.Dict({"a": 1, "b": 2}).reverse().unwrap()
-        {1: 'a', 2: 'b'}
+        >>> d = {"a": 1, "b": 2, "c": 1}
+        >>> pc.Dict(d).invert().unwrap()
+        {1: ['a', 'c'], 2: ['b']}
         """
-        return self.apply(partial(cz.dicttoolz.itemmap, reversed))
+
+        def _invert(data: dict[K, V]) -> dict[V, list[K]]:
+            inverted: dict[V, list[K]] = defaultdict(list)
+            for k, v in data.items():
+                inverted[v].append(k)
+            return dict(inverted)
+
+        return self.apply(_invert)
 
     def implode(self) -> Dict[K, list[V]]:
         """
@@ -206,18 +222,3 @@ class Dict[K, V](ProcessDict[K, V], IterDict[K, V], NestedDict[K, V], FilterDict
             if isinstance(other, Dict)
             else self.unwrap() == other
         )
-
-    def diff(self, other: Mapping[K, V]) -> Dict[K, tuple[V | None, V | None]]:
-        """
-        Returns a dict of the differences between this dict and another.
-
-        The keys of the returned dict are the keys that are not shared or have different values.
-        The values are tuples containing the value from self and the value from other.
-
-        >>> import pychain as pc
-        >>> d1 = {"a": 1, "b": 2, "c": 3}
-        >>> d2 = {"b": 2, "c": 4, "d": 5}
-        >>> pc.Dict(d1).diff(d2).sort().unwrap()
-        {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
-        """
-        return self.apply(difference, other)

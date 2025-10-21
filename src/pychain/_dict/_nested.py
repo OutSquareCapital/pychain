@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any, Concatenate
 import cytoolz as cz
 
 from .._core import MappingWrapper
-from ._funcs import flatten_recursive, schema_recursive
 
 if TYPE_CHECKING:
     from .._dict import Dict
@@ -65,9 +64,25 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         {'config_params_retries': 3, 'config_params_timeout': 30, 'config_mode': 'fast', 'version': 1.0}
         >>> pc.Dict(data).flatten(max_depth=1).unwrap()
         {'config.params': {'retries': 3, 'timeout': 30}, 'config.mode': 'fast', 'version': 1.0}
-
         """
-        return self.apply(flatten_recursive, sep=sep, max_depth=max_depth)
+
+        def _(
+            d: dict[Any, Any], parent_key: str = "", current_depth: int = 1
+        ) -> dict[str, Any]:
+            items: list[tuple[str, Any]] = []
+            for k, v in d.items():
+                new_key = parent_key + sep + k if parent_key else k
+                if isinstance(v, dict) and (
+                    max_depth is None or current_depth < max_depth + 1
+                ):
+                    items.extend(
+                        _(v, new_key, current_depth + 1).items()  # type: ignore
+                    )
+                else:
+                    items.append((new_key, v))  # type: ignore
+            return dict(items)
+
+        return self.apply(_)
 
     def with_nested_key(self, *keys: K, value: V) -> Dict[K, V]:
         """
@@ -109,7 +124,26 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(data).schema(max_depth=3).unwrap()
         {'level1': {'level2': {'level3': 'dict'}}, 'other_key': 'int', 'list_key': {'sub_key': 'str'}}
         """
-        return self.apply(schema_recursive, max_depth=max_depth)
+
+        def _(data: dict[Any, Any]) -> Any:
+            def _recurse_schema(node: Any, current_depth: int) -> Any:
+                if isinstance(node, dict):
+                    if current_depth >= max_depth:
+                        return "dict"
+                    return {
+                        k: _recurse_schema(v, current_depth + 1)
+                        for k, v in node.items()  # type: ignore
+                    }
+                elif cz.itertoolz.isiterable(node):
+                    if current_depth >= max_depth:
+                        return type(node).__name__
+                    return _recurse_schema(cz.itertoolz.first(node), current_depth + 1)
+                else:
+                    return type(node).__name__
+
+            return _recurse_schema(data, 0)
+
+        return self.apply(_)
 
     def pluck[U: str | int](self: NestedDict[U, Any], *keys: str) -> Dict[U, Any]:
         """
@@ -124,3 +158,16 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         """
         getter = partial(cz.dicttoolz.get_in, keys)
         return self.apply(lambda data: cz.dicttoolz.valmap(getter, data))
+
+    def get_in(self, *keys: K, default: Any = None) -> Any:
+        """
+        Retrieve a value from a nested dictionary structure.
+
+        >>> import pychain as pc
+        >>> data = {"a": {"b": {"c": 1}}}
+        >>> pc.Dict(data).get_in("a", "b", "c")
+        1
+        >>> pc.Dict(data).get_in("a", "x", default="Not Found")
+        'Not Found'
+        """
+        return self.into(lambda data: cz.dicttoolz.get_in(keys, data, default))
