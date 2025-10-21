@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Generator, Iterable
-from functools import partial
 from typing import TYPE_CHECKING, Any, Concatenate
 
 from .._core import SupportsRichComparison
@@ -136,8 +135,8 @@ class Iter[T](
         return self.apply(_struct)
 
     def sort[U: SupportsRichComparison[Any]](
-        self: Iter[U], reverse: bool = False
-    ) -> Iter[U]:
+        self: Iter[U], reverse: bool = False, key: Callable[[U], Any] | None = None
+    ) -> EagerIter[U]:
         """
         Sort the elements of the sequence.
         Note: This method must consume the entire iterable to perform the sort.
@@ -148,7 +147,11 @@ class Iter[T](
         >>> pc.Iter([3, 1, 2]).sort().into(list)
         [1, 2, 3]
         """
-        return self._new(partial(sorted, reverse=reverse))
+
+        def _sort(data: Iterable[U]):
+            return sorted(data, reverse=reverse, key=key)
+
+        return self.collect(_sort)
 
     def with_keys[K](self, keys: Iterable[K]) -> Dict[K, T]:
         """
@@ -183,3 +186,7 @@ class Iter[T](
         from .._dict import Dict
 
         return Dict(dict(zip(self.unwrap(), values)))
+
+
+class EagerIter[T](Iter[T]):
+    pass

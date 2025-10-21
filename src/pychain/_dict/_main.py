@@ -82,9 +82,12 @@ class Dict[K, V](
         ...     .alias("average_eng_score"),
         ... ).unwrap()
         {'student_name': 'Alice', 'age': 30, 'math_scores': [80, 88, 92], 'average_eng_score': 90}
-
         """
-        return Dict(compute_exprs(exprs, self.unwrap(), {}))
+
+        def _select(data: dict[str, Any]) -> dict[str, Any]:
+            return compute_exprs(exprs, data, {})
+
+        return self.apply(_select)
 
     def with_fields(self: Dict[str, Any], *exprs: IntoExpr) -> Dict[str, Any]:
         """
@@ -102,10 +105,12 @@ class Dict[K, V](
         ...     .alias("average_eng_score"),
         ... ).unwrap()
         {'name': 'Alice', 'age': 30, 'scores': {'eng': [85, 90, 95], 'math': [80, 88, 92]}, 'average_eng_score': 90}
-
-
         """
-        return Dict(compute_exprs(exprs, self.unwrap(), dict(self.unwrap())))
+
+        def _with_fields(data: dict[str, Any]) -> dict[str, Any]:
+            return compute_exprs(exprs, data, data.copy())
+
+        return self.apply(_with_fields)
 
     def map_keys[T](self, func: Callable[[K], T]) -> Dict[T, V]:
         """
@@ -192,7 +197,11 @@ class Dict[K, V](
         >>> pc.Dict({1: 2, 3: 4}).implode().unwrap()
         {1: [2], 3: [4]}
         """
-        return self.apply(lambda v: cz.dicttoolz.valmap(lambda x: [x], v))
+
+        def _implode(data: dict[K, V]) -> dict[K, list[V]]:
+            return cz.dicttoolz.valmap(lambda x: [x], data)
+
+        return self.apply(_implode)
 
     def equals_to(self, other: Self | Mapping[Any, Any]) -> bool:
         """

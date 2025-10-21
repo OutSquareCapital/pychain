@@ -4,16 +4,19 @@ import itertools
 from collections.abc import Callable, Iterable, Iterator
 from functools import partial
 from random import Random
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any
 
 import cytoolz as cz
 import more_itertools as mit
 
 from .._core import IterWrapper, Peeked
 
+if TYPE_CHECKING:
+    from ._main import Iter
+
 
 class BaseProcess[T](IterWrapper[T]):
-    def cycle(self) -> Self:
+    def cycle(self) -> Iter[T]:
         """
         Repeat the sequence indefinitely.
 
@@ -25,20 +28,20 @@ class BaseProcess[T](IterWrapper[T]):
         >>> pc.Iter([1, 2]).cycle().head(5).into(list)
         [1, 2, 1, 2, 1]
         """
-        return self._new(itertools.cycle)
+        return self.apply(itertools.cycle)
 
-    def interpose(self, element: T) -> Self:
+    def interpose(self, element: T) -> Iter[T]:
         """
         Interpose element between items and return a new Iterable wrapper.
         >>> import pychain as pc
         >>> pc.Iter([1, 2]).interpose(0).into(list)
         [1, 0, 2]
         """
-        return self._new(partial(cz.itertoolz.interpose, element))
+        return self.apply(partial(cz.itertoolz.interpose, element))
 
     def random_sample(
         self, probability: float, state: Random | int | None = None
-    ) -> Self:
+    ) -> Iter[T]:
         """
         Randomly sample items with given probability.
         >>> import pychain as pc
@@ -46,29 +49,29 @@ class BaseProcess[T](IterWrapper[T]):
         1
         """
 
-        return self._new(
+        return self.apply(
             partial(cz.itertoolz.random_sample, probability, random_state=state)
         )
 
-    def accumulate(self, func: Callable[[T, T], T]) -> Self:
+    def accumulate(self, func: Callable[[T, T], T]) -> Iter[T]:
         """
         Return cumulative application of binary op provided by the function.
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
         [1, 3, 6]
         """
-        return self._new(partial(cz.itertoolz.accumulate, func))
+        return self.apply(partial(cz.itertoolz.accumulate, func))
 
-    def insert_left(self, value: T) -> Self:
+    def insert_left(self, value: T) -> Iter[T]:
         """
         Prepend value to the sequence and return a new Iterable wrapper.
         >>> import pychain as pc
         >>> pc.Iter([2, 3]).insert_left(1).into(list)
         [1, 2, 3]
         """
-        return self._new(partial(cz.itertoolz.cons, value))
+        return self.apply(partial(cz.itertoolz.cons, value))
 
-    def peekn(self, n: int) -> Self:
+    def peekn(self, n: int) -> Iter[T]:
         """¨
         Print and return sequence after peeking n items.
         >>> import pychain as pc
@@ -82,9 +85,9 @@ class BaseProcess[T](IterWrapper[T]):
             print(f"Peeked {n} values: {peeked.value}")
             return peeked.sequence
 
-        return self._new(_)
+        return self.apply(_)
 
-    def peek(self) -> Self:
+    def peek(self) -> Iter[T]:
         """
         Print and return sequence after peeking first item.
         >>> import pychain as pc
@@ -98,20 +101,20 @@ class BaseProcess[T](IterWrapper[T]):
             print(f"Peeked value: {peeked.value}")
             return peeked.sequence
 
-        return self._new(_)
+        return self.apply(_)
 
     def merge_sorted(
         self, *others: Iterable[T], sort_on: Callable[[T], Any] | None = None
-    ) -> Self:
+    ) -> Iter[T]:
         """
         Merge already-sorted sequences.
         >>> import pychain as pc
         >>> pc.Iter([1, 3]).merge_sorted([2, 4]).into(list)
         [1, 2, 3, 4]
         """
-        return self._new(cz.itertoolz.merge_sorted, *others, key=sort_on)
+        return self.apply(cz.itertoolz.merge_sorted, *others, key=sort_on)
 
-    def interleave(self, *others: Iterable[T]) -> Self:
+    def interleave(self, *others: Iterable[T]) -> Iter[T]:
         """
         Interleave multiple sequences element-wise.
         >>> import pychain as pc
@@ -122,9 +125,9 @@ class BaseProcess[T](IterWrapper[T]):
         def _interleave(data: Iterable[T]) -> Iterator[T]:
             return cz.itertoolz.interleave((data, *others))
 
-        return self._new(_interleave)
+        return self.apply(_interleave)
 
-    def concat(self, *others: Iterable[T]) -> Self:
+    def concat(self, *others: Iterable[T]) -> Iter[T]:
         """
         Concatenate zero or more iterables, any of which may be infinite.
 
@@ -139,9 +142,9 @@ class BaseProcess[T](IterWrapper[T]):
         def _concat(data: Iterable[T]) -> Iterator[T]:
             return itertools.chain.from_iterable((data, *others))
 
-        return self._new(_concat)
+        return self.apply(_concat)
 
-    def elements(self) -> Self:
+    def elements(self) -> Iter[T]:
         """
         Iterator over elements repeating each as many times as its count.
         >>> import pychain as pc
@@ -159,9 +162,12 @@ class BaseProcess[T](IterWrapper[T]):
         """
         from collections import Counter
 
-        return self._new(lambda x: Counter(x).elements())
+        def _elements(data: Iterable[T]) -> Iterator[T]:
+            return Counter(data).elements()
 
-    def reverse(self) -> Self:
+        return self.apply(_elements)
+
+    def reverse(self) -> Iter[T]:
         """
         Return a new Iterable wrapper with elements in reverse order.
         >>> import pychain as pc
@@ -172,14 +178,18 @@ class BaseProcess[T](IterWrapper[T]):
 
         The result is a new iterable over the reversed sequence.
         """
-        return self._new(lambda x: reversed(list(x)))
+
+        def _reverse(data: Iterable[T]) -> Iterator[T]:
+            return reversed(list(data))
+
+        return self.apply(_reverse)
 
     def is_strictly_n(
         self,
         n: int,
         too_short: Callable[..., Iterator[T]] | None = None,
         too_long: Callable[..., Iterator[T]] | None = None,
-    ) -> Self:
+    ) -> Iter[T]:
         """
         Validate that *iterable* has exactly *n* items and return them if it does.
 
@@ -229,4 +239,4 @@ class BaseProcess[T](IterWrapper[T]):
         The boss is going to hear about this
         ['a', 'b', 'c', 'd']
         """
-        return self._new(mit.strictly_n, n, too_short, too_long)
+        return self.apply(mit.strictly_n, n, too_short, too_long)

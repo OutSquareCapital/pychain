@@ -38,7 +38,11 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(d1).left_join(d2).unwrap()
         {'a': (1, None), 'b': (2, 10)}
         """
-        return self.apply(lambda data: {k: (v, other.get(k)) for k, v in data.items()})
+
+        def _left_join(data: Mapping[K, V]) -> dict[K, tuple[V, W | None]]:
+            return {k: (v, other.get(k)) for k, v in data.items()}
+
+        return self.apply(_left_join)
 
     def diff(self, other: Mapping[K, V]) -> Dict[K, tuple[V | None, V | None]]:
         """

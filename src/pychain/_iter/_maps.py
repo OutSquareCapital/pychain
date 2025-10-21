@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Iterable, Iterator, Mapping
+from collections.abc import Callable, Generator, Iterable, Iterator, Mapping
 from functools import partial
 from typing import TYPE_CHECKING, Any, Concatenate, Self, overload
 
@@ -57,12 +57,12 @@ class BaseMap[T](IterWrapper[T]):
         >>> import pychain as pc
         >>> def make_sku(color, size):
         ...     return f"{color}-{size}"
-        >>> data = pc.Iter(["blue", "red"]).product(["S", "M"]).apply(list)
-        >>> data.map_star(make_sku).into(list)
+        >>> data = ["blue", "red"]
+        >>> pc.Iter(data).product(["S", "M"]).map_star(make_sku).into(list)
         ['blue-S', 'blue-M', 'red-S', 'red-M']
 
         This is equivalent to:
-        >>> data.map(lambda x: make_sku(*x)).into(list)
+        >>> pc.Iter(data).product(["S", "M"]).map(lambda x: make_sku(*x)).into(list)
         ['blue-S', 'blue-M', 'red-S', 'red-M']
 
         - Use map_star when the performance matters (it is faster).
@@ -222,7 +222,7 @@ class BaseMap[T](IterWrapper[T]):
         [1.23, 2.35, 3.46]
         """
 
-        def _round(data: Iterable[U]) -> Iterator[float]:
-            return map(lambda x: round(x, ndigits), data)
+        def _round(data: Iterable[U]) -> Generator[float | int, None, None]:
+            return (round(x, ndigits) for x in data)
 
         return self.apply(_round)

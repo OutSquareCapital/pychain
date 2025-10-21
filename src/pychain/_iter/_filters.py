@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Generator, Iterable, Iterator
 from functools import partial
-from typing import TYPE_CHECKING, Any, Self, TypeGuard
+from typing import TYPE_CHECKING, Any, TypeGuard
 
 import cytoolz as cz
 import more_itertools as mit
@@ -11,20 +11,24 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import Iter
+    from ._main import EagerIter, Iter
 
 
 class BaseFilter[T](IterWrapper[T]):
-    def filter(self, func: Callable[[T], bool]) -> Self:
+    def filter(self, func: Callable[[T], bool]) -> Iter[T]:
         """
         Return an iterator yielding those items of iterable for which function is true.
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).filter(lambda x: x > 1).into(list)
         [2, 3]
         """
-        return self._new(partial(filter, func))
 
-    def filter_isin(self, values: Iterable[T]) -> Self:
+        def _filter(data: Iterable[T]) -> Iterator[T]:
+            return (x for x in data if func(x))
+
+        return self.apply(_filter)
+
+    def filter_isin(self, values: Iterable[T]) -> Iter[T]:
         """
         Return elements that are in the given values iterable.
         >>> import pychain as pc
@@ -36,9 +40,9 @@ class BaseFilter[T](IterWrapper[T]):
             value_set: set[T] = set(values)
             return (x for x in data if x in value_set)
 
-        return self._new(_)
+        return self.apply(_)
 
-    def filter_notin(self, values: Iterable[T]) -> Self:
+    def filter_notin(self, values: Iterable[T]) -> Iter[T]:
         """
         Return elements that are not in the given values iterable.
 
@@ -51,11 +55,11 @@ class BaseFilter[T](IterWrapper[T]):
             value_set: set[T] = set(values)
             return (x for x in data if x not in value_set)
 
-        return self._new(_)
+        return self.apply(_)
 
-    def filter_contain[U: IterWrapper[str]](
-        self: U, text: str, format: Callable[[str], str] | None = None
-    ) -> U:
+    def filter_contain(
+        self: IterWrapper[str], text: str, format: Callable[[str], str] | None = None
+    ) -> Iter[str]:
         """
         Return elements that contain the given text.
 
@@ -76,7 +80,7 @@ class BaseFilter[T](IterWrapper[T]):
 
             return (x for x in data if _(x))
 
-        return self._new(_)
+        return self.apply(_)
 
     def filter_attr[U](self, attr: str, dtype: type[U] = object) -> Iter[U]:
         """
@@ -98,18 +102,18 @@ class BaseFilter[T](IterWrapper[T]):
 
         return self.apply(check)
 
-    def filter_false(self, func: Callable[[T], bool]) -> Self:
+    def filter_false(self, func: Callable[[T], bool]) -> Iter[T]:
         """
         Return elements for which func is false.
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).filter_false(lambda x: x > 1).into(list)
         [1]
         """
-        return self._new(partial(itertools.filterfalse, func))
+        return self.apply(partial(itertools.filterfalse, func))
 
     def filter_except(
         self, func: Callable[[T], object], *exceptions: type[BaseException]
-    ) -> Self:
+    ) -> Iter[T]:
         """
         Yield the items from iterable for which the validator function does not raise one of the specified exceptions.
 
@@ -127,36 +131,36 @@ class BaseFilter[T](IterWrapper[T]):
         def _(data: Iterable[T]) -> Iterator[T]:
             return mit.filter_except(func, data, *exceptions)
 
-        return self._new(_)
+        return self.apply(_)
 
-    def take_while(self, predicate: Callable[[T], bool]) -> Self:
+    def take_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
         """
         Take items while predicate holds and return a new Iterable wrapper.
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 0]).take_while(lambda x: x > 0).into(list)
         [1, 2]
         """
-        return self._new(partial(itertools.takewhile, predicate))
+        return self.apply(partial(itertools.takewhile, predicate))
 
-    def drop_while(self, predicate: Callable[[T], bool]) -> Self:
+    def drop_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
         """
         Drop items while predicate holds and return the remainder.
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 0]).drop_while(lambda x: x > 0).into(list)
         [0]
         """
-        return self._new(partial(itertools.dropwhile, predicate))
+        return self.apply(partial(itertools.dropwhile, predicate))
 
-    def compress(self, *selectors: bool) -> Self:
+    def compress(self, *selectors: bool) -> Iter[T]:
         """
         Filter elements using a boolean selector iterable.
         >>> import pychain as pc
         >>> pc.Iter("ABCDEF").compress(1, 0, 1, 0, 1, 1).into(list)
         ['A', 'C', 'E', 'F']
         """
-        return self._new(itertools.compress, selectors)
+        return self.apply(itertools.compress, selectors)
 
-    def unique(self, key: Callable[[T], Any] | None = None) -> Self:
+    def unique(self, key: Callable[[T], Any] | None = None) -> Iter[T]:
         """
         Return only unique elements of a sequence
         >>> import pychain as pc
@@ -169,9 +173,9 @@ class BaseFilter[T](IterWrapper[T]):
         >>> pc.Iter(["cat", "mouse", "dog", "hen"]).unique(key=len).into(list)
         ['cat', 'mouse']
         """
-        return self._new(cz.itertoolz.unique, key=key)
+        return self.apply(cz.itertoolz.unique, key=key)
 
-    def head(self, n: int) -> Self:
+    def head(self, n: int) -> Iter[T]:
         """
         Return first n elements wrapped.
         >>> import pychain as pc
@@ -179,27 +183,27 @@ class BaseFilter[T](IterWrapper[T]):
         [1, 2]
         """
 
-        return self._new(partial(cz.itertoolz.take, n))
+        return self.apply(partial(cz.itertoolz.take, n))
 
-    def tail(self, n: int) -> Self:
+    def tail(self, n: int) -> EagerIter[T]:
         """
         Return last n elements wrapped.
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).tail(2).into(list)
         [2, 3]
         """
-        return self._new(partial(cz.itertoolz.tail, n))
+        return self.collect(partial(cz.itertoolz.tail, n))
 
-    def drop_first(self, n: int) -> Self:
+    def drop_first(self, n: int) -> Iter[T]:
         """
         Drop first n elements and return the remainder wrapped.
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).drop_first(1).into(list)
         [2, 3]
         """
-        return self._new(partial(cz.itertoolz.drop, n))
+        return self.apply(partial(cz.itertoolz.drop, n))
 
-    def unique_justseen(self, key: Callable[[T], Any] | None = None) -> Self:
+    def unique_justseen(self, key: Callable[[T], Any] | None = None) -> Iter[T]:
         """
         Yields elements in order, ignoring serial duplicates
 
@@ -209,9 +213,11 @@ class BaseFilter[T](IterWrapper[T]):
         >>> pc.Iter("ABBCcAD").unique_justseen(str.lower).into(list)
         ['A', 'B', 'C', 'A', 'D']
         """
-        return self._new(mit.unique_justseen, key=key)
+        return self.apply(mit.unique_justseen, key=key)
 
-    def unique_in_window(self, n: int, key: Callable[[T], Any] | None = None) -> Self:
+    def unique_in_window(
+        self, n: int, key: Callable[[T], Any] | None = None
+    ) -> Iter[T]:
         """
         Yield the items from iterable that haven't been seen recently. n is the size of the lookback window.
         >>> import pychain as pc
@@ -226,18 +232,18 @@ class BaseFilter[T](IterWrapper[T]):
 
         The items in iterable must be hashable.
         """
-        return self._new(mit.unique_in_window, n, key=key)
+        return self.apply(mit.unique_in_window, n, key=key)
 
-    def top_n(self, n: int, key: Callable[[T], Any] | None = None) -> Self:
+    def top_n(self, n: int, key: Callable[[T], Any] | None = None) -> EagerIter[T]:
         """
         Return the top-n items according to key.
         >>> import pychain as pc
         >>> pc.Iter([1, 3, 2]).top_n(2).into(list)
         [3, 2]
         """
-        return self._new(partial(cz.itertoolz.topk, n, key=key))
+        return self.collect(partial(cz.itertoolz.topk, n, key=key))
 
-    def extract(self, indices: Iterable[int]) -> Self:
+    def extract(self, indices: Iterable[int]) -> Iter[T]:
         """
         Yield values at the specified indices.
         >>> import pychain as pc
@@ -252,18 +258,18 @@ class BaseFilter[T](IterWrapper[T]):
 
         Raises ValueError for negative indices.
         """
-        return self._new(mit.extract, indices)
+        return self.apply(mit.extract, indices)
 
-    def every(self, index: int) -> Self:
+    def every(self, index: int) -> Iter[T]:
         """
         Return every nth item starting from first.
         >>> import pychain as pc
         >>> pc.Iter([10, 20, 30, 40]).every(2).into(list)
         [10, 30]
         """
-        return self._new(partial(cz.itertoolz.take_nth, index))
+        return self.apply(partial(cz.itertoolz.take_nth, index))
 
-    def slice(self, start: int | None = None, stop: int | None = None) -> Self:
+    def slice(self, start: int | None = None, stop: int | None = None) -> Iter[T]:
         """
         Return a slice of the iterable.
         >>> import pychain as pc
@@ -274,7 +280,7 @@ class BaseFilter[T](IterWrapper[T]):
         def _(data: Iterable[T]) -> Iterator[T]:
             return itertools.islice(data, start, stop)
 
-        return self._new(_)
+        return self.apply(_)
 
     def filter_subclass[U: type[Any], R](
         self: IterWrapper[U], parent: type[R], keep_parent: bool = True

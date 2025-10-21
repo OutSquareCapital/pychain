@@ -133,10 +133,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {3: 'foo', 4: 'print'}
         """
 
-        def _(x: V) -> TypeGuard[Callable[..., Any]]:
-            return callable(x)
+        def _filter_callable(data: dict[K, V]) -> dict[K, Callable[..., Any]]:
+            return cz.dicttoolz.valfilter(callable, data)  # type: ignore
 
-        return self.apply(lambda data: cz.dicttoolz.valfilter(_, data))  # type: ignore
+        return self.apply(_filter_callable)
 
     def filter_subclass[U: type[Any], R](
         self: FilterDict[K, U], parent: type[R], keep_parent: bool = True
@@ -163,13 +163,16 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {'second': 'B'}
         """
 
-        def _(x: type[Any]) -> TypeGuard[type[R]]:
-            if keep_parent:
-                return issubclass(x, parent)
-            else:
-                return issubclass(x, parent) and x is not parent
+        def _filter_subclass(data: dict[K, U]) -> dict[K, type[R]]:
+            def _(x: type[Any]) -> TypeGuard[type[R]]:
+                if keep_parent:
+                    return issubclass(x, parent)
+                else:
+                    return issubclass(x, parent) and x is not parent
 
-        return self.apply(lambda data: cz.dicttoolz.valfilter(_, data))  # type: ignore
+            return cz.dicttoolz.valfilter(_, data)  # type: ignore
+
+        return self.apply(_filter_subclass)
 
     def intersect_keys(self, *others: Mapping[K, V]) -> Self:
         """

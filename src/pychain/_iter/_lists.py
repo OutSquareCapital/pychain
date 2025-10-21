@@ -8,7 +8,7 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import Iter
+    from ._main import EagerIter, Iter
 
 
 class BaseList[T](IterWrapper[T]):
@@ -192,7 +192,7 @@ class BaseList[T](IterWrapper[T]):
         """
         return self.apply(mit.chunked_even, n)
 
-    def unique_to_each(self, *others: Iterable[T]) -> Iter[list[T]]:
+    def unique_to_each(self, *others: Iterable[T]) -> EagerIter[list[T]]:
         """
         Return the elements from each of the input iterables that aren't in the other input iterables.
 
@@ -207,15 +207,17 @@ class BaseList[T](IterWrapper[T]):
         Similarly, C is only needed for pkg_2, and D is only needed for pkg_3:
 
         >>> import pychain as pc
-        >>> pc.Iter({"A", "B"}).unique_to_each({"B", "C"}, {"B", "D"}).into(list)
+        >>> pc.Iter({"A", "B"}).unique_to_each({"B", "C"}, {"B", "D"}).unwrap()
         [['A'], ['C'], ['D']]
 
         If there are duplicates in one input iterable that aren't in the others they will be duplicated in the output.
 
         Input order is preserved:
-        >>> pc.Iter("mississippi").unique_to_each("missouri").into(list)
+        >>> pc.Iter("mississippi").unique_to_each("missouri").unwrap()
         [['p', 'p'], ['o', 'u', 'r']]
 
         It is assumed that the elements of each iterable are hashable.
         """
-        return self.apply(mit.unique_to_each, *others)
+        from ._main import EagerIter
+
+        return EagerIter(self.into(mit.unique_to_each, *others))

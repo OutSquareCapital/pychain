@@ -9,7 +9,7 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import Iter
+    from ._main import EagerIter, Iter
 
 
 class BaseTransfos[T](IterWrapper[T]):
@@ -42,9 +42,9 @@ class BaseTransfos[T](IterWrapper[T]):
         """
         return self.apply(partial(mit.adjacent, predicate, distance=distance))
 
-    def most_common(self, n: int | None = None) -> Iter[tuple[T, int]]:
+    def most_common(self, n: int | None = None) -> EagerIter[tuple[T, int]]:
         """
-        Return an iterable over the n most common elements and their counts from the most common to the least.
+        Return a Sequence over the n most common elements and their counts from the most common to the least.
 
         If n is None, then all elements are returned.
         >>> import pychain as pc
@@ -53,10 +53,12 @@ class BaseTransfos[T](IterWrapper[T]):
         """
         from collections import Counter
 
+        from ._main import EagerIter
+
         def _most_common(data: Iterable[T]) -> list[tuple[T, int]]:
             return Counter(data).most_common(n)
 
-        return self.apply(_most_common)
+        return EagerIter(self.into(_most_common))
 
     def classify_unique(self) -> Iter[tuple[T, bool, bool]]:
         """

@@ -156,8 +156,13 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(data).pluck("name").unwrap()
         {'person1': 'Alice', 'person2': 'Bob'}
         """
+
         getter = partial(cz.dicttoolz.get_in, keys)
-        return self.apply(lambda data: cz.dicttoolz.valmap(getter, data))
+
+        def _pluck(data: Mapping[U, Any]) -> dict[U, Any]:
+            return cz.dicttoolz.valmap(getter, data)
+
+        return self.apply(_pluck)
 
     def get_in(self, *keys: K, default: Any = None) -> Any:
         """

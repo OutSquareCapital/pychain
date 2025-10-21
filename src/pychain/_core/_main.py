@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 if TYPE_CHECKING:
     from .._dict import Dict
-    from .._iter import Iter
+    from .._iter import EagerIter, Iter
 
 
 class Pipeable:
@@ -46,19 +46,13 @@ class CommonBase[T](ABC, Pipeable):
 
         Each pychain class implement this method to allow chaining of functions that transform the
         underlying data and return a new wrapped instance of the same subclass.
-
-            >>> import pychain as pc
-            >>> pc.Iter.from_range(0, 5).apply(tuple).unwrap()
-            (0, 1, 2, 3, 4)
+        >>> import pychain as pc
+        >>> pc.Iter([1, 2, 3, 4]).apply(lambda x: x + [5, 6, 7]).unwrap()
+        [1, 2, 3, 4, 5, 6, 7]
 
         Use this to keep the chainable API after applying a transformation to the data.
         """
         raise NotImplementedError
-
-    def _new[**P](
-        self, func: Callable[Concatenate[T, P], T], *args: P.args, **kwargs: P.kwargs
-    ) -> Self:
-        return self.__class__(func(self.unwrap(), *args, **kwargs))
 
     def println(self, pretty: bool = True) -> Self:
         """
@@ -93,9 +87,9 @@ class CommonBase[T](ABC, Pipeable):
 
         The result is not wrapped.
 
-            >>> import pychain as pc
-            >>> pc.Iter.from_range(0, 5).into(list)
-            [0, 1, 2, 3, 4]
+        >>> import pychain as pc
+        >>> pc.Iter.from_range(0, 5).into(list)
+        [0, 1, 2, 3, 4]
 
         This is a core functionality that allows ending the chain whilst keeping the code style consistent.
         """
@@ -115,9 +109,24 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
 
         return Iter(self.into(func, *args, **kwargs))
 
+    def collect(
+        self, factory: Callable[[Iterable[T]], Sequence[T] | set[T]] = list
+    ) -> EagerIter[T]:
+        from .._iter import EagerIter
+
+        return EagerIter(self.into(factory))
+
 
 class MappingWrapper[K, V](CommonBase[dict[K, V]]):
     _data: dict[K, V]
+
+    def _new[**P](
+        self,
+        func: Callable[Concatenate[dict[K, V], P], dict[K, V]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Self:
+        return self.__class__(self.into(func, *args, **kwargs))
 
     def apply[**P, KU, VU](
         self,

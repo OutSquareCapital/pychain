@@ -10,7 +10,7 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import Iter
+    from ._main import EagerIter, Iter
 
 
 class BaseJoins[T](IterWrapper[T]):
@@ -242,7 +242,7 @@ class BaseJoins[T](IterWrapper[T]):
         """
         return self.apply(itertools.product, *others)
 
-    def union(self, *others: Iterable[T]) -> Iter[T]:
+    def union(self, *others: Iterable[T]) -> EagerIter[T]:
         """
         Return the union of this iterable and 'others' as a new Iter.
 
@@ -257,9 +257,9 @@ class BaseJoins[T](IterWrapper[T]):
         def _union(data: Iterable[T]) -> set[T]:
             return set(data).union(*others)
 
-        return self.apply(_union)
+        return self.collect(_union)
 
-    def intersection(self, *others: Iterable[T]) -> Iter[T]:
+    def intersection(self, *others: Iterable[T]) -> EagerIter[T]:
         """
         Return the elements common of this iterable and 'others'.
 
@@ -274,9 +274,9 @@ class BaseJoins[T](IterWrapper[T]):
         def _intersection(data: Iterable[T]) -> set[T]:
             return set(data).intersection(*others)
 
-        return self.apply(_intersection)
+        return self.collect(_intersection)
 
-    def diff_unique(self, *others: Iterable[T]) -> Iter[T]:
+    def diff_unique(self, *others: Iterable[T]) -> EagerIter[T]:
         """
         Return the difference of this iterable and 'others' as a new Iter.
 
@@ -293,9 +293,9 @@ class BaseJoins[T](IterWrapper[T]):
         def _difference(data: Iterable[T]) -> set[T]:
             return set(data).difference(*others)
 
-        return self.apply(_difference)
+        return self.collect(_difference)
 
-    def diff_symmetric(self, *others: Iterable[T]) -> Iter[T]:
+    def diff_symmetric(self, *others: Iterable[T]) -> EagerIter[T]:
         """
         Return the symmetric difference (XOR) of this iterable and 'other'
         as a new Iter.
@@ -313,7 +313,7 @@ class BaseJoins[T](IterWrapper[T]):
         def _symmetric_difference(data: Iterable[T]) -> set[T]:
             return set(data).symmetric_difference(*others)
 
-        return self.apply(_symmetric_difference)
+        return self.collect(_symmetric_difference)
 
     def diff_at(
         self,
