@@ -56,6 +56,8 @@ class BaseJoins[T](IterWrapper[T]):
         >>> import pychain as pc
         >>> pc.Iter([1, 2]).zip([10, 20]).into(list)
         [(1, 10), (2, 20)]
+        >>> pc.Iter(["a", "b"]).zip([1, 2, 3]).into(list)
+        [('a', 1), ('b', 2)]
         """
         return self.apply(zip, *others, strict=strict)
 

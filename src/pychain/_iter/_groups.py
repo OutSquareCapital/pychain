@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from functools import partial
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, overload
 
 import cytoolz as cz
 
@@ -10,6 +10,7 @@ from .._core import IterWrapper
 
 if TYPE_CHECKING:
     from .._dict import Dict
+    from ._main import Iter
 
 
 class BaseGroups[T](IterWrapper[T]):
@@ -123,3 +124,105 @@ class BaseGroups[T](IterWrapper[T]):
         from .._dict import Dict
 
         return Dict(self.into(partial(cz.recipes.countby, key)))
+
+    @overload
+    def group_by_transform(
+        self,
+        keyfunc: None = None,
+        valuefunc: None = None,
+        reducefunc: None = None,
+    ) -> Iter[tuple[T, Iterator[T]]]: ...
+    @overload
+    def group_by_transform[U](
+        self,
+        keyfunc: Callable[[T], U],
+        valuefunc: None,
+        reducefunc: None,
+    ) -> Iter[tuple[U, Iterator[T]]]: ...
+    @overload
+    def group_by_transform[V](
+        self,
+        keyfunc: None,
+        valuefunc: Callable[[T], V],
+        reducefunc: None,
+    ) -> Iter[tuple[T, Iterator[V]]]: ...
+    @overload
+    def group_by_transform[U, V](
+        self,
+        keyfunc: Callable[[T], U],
+        valuefunc: Callable[[T], V],
+        reducefunc: None,
+    ) -> Iter[tuple[U, Iterator[V]]]: ...
+    @overload
+    def group_by_transform[W](
+        self,
+        keyfunc: None,
+        valuefunc: None,
+        reducefunc: Callable[[Iterator[T]], W],
+    ) -> Iter[tuple[T, W]]: ...
+    @overload
+    def group_by_transform[U, W](
+        self,
+        keyfunc: Callable[[T], U],
+        valuefunc: None,
+        reducefunc: Callable[[Iterator[T]], W],
+    ) -> Iter[tuple[U, W]]: ...
+    @overload
+    def group_by_transform[V, W](
+        self,
+        keyfunc: None,
+        valuefunc: Callable[[T], V],
+        reducefunc: Callable[[Iterator[V]], W],
+    ) -> Iter[tuple[T, W]]: ...
+    @overload
+    def group_by_transform[U, V, W](
+        self,
+        keyfunc: Callable[[T], U],
+        valuefunc: Callable[[T], V],
+        reducefunc: Callable[[Iterator[V]], W],
+    ) -> Iter[tuple[U, W]]: ...
+    def group_by_transform[U, V](
+        self,
+        keyfunc: Callable[[T], U] | None = None,
+        valuefunc: Callable[[T], V] | None = None,
+        reducefunc: Any = None,
+    ) -> Iter[tuple[Any, ...]]:
+        """
+        An extension of itertools.groupby that can apply transformations to the grouped data.
+
+        - keyfunc is a function computing a key value for each item in iterable
+        - valuefunc is a function that transforms the individual items from iterable after grouping
+        - reducefunc is a function that transforms each group of items
+        >>> import pychain as pc
+        >>> data = pc.Iter("aAAbBBcCC")
+        >>> data.group_by_transform(
+        ...     lambda k: k.upper(), lambda v: v.lower(), lambda g: "".join(g)
+        ... ).into(list)
+        [('A', 'aaa'), ('B', 'bbb'), ('C', 'ccc')]
+
+        Each optional argument defaults to an identity function if not specified.
+
+        group_by_transform is useful when grouping elements of an iterable using a separate iterable as the key.
+
+        To do this, zip the iterables and pass a keyfunc that extracts the first element and a valuefunc that extracts the second element:
+        >>> from operator import itemgetter
+        >>> data = pc.Iter([0, 0, 1, 1, 1, 2, 2, 2, 3])
+        >>> data.zip("abcdefghi").group_by_transform(itemgetter(0), itemgetter(1)).map(
+        ...     lambda kv: (kv[0], "".join(kv[1]))
+        ... ).into(list)
+        [(0, 'ab'), (1, 'cde'), (2, 'fgh'), (3, 'i')]
+
+        Note that the order of items in the iterable is significant.
+
+        Only adjacent items are grouped together, so if you don't want any duplicate groups, you should sort the iterable by the key function.
+        """
+        import more_itertools as mit
+
+        return self.apply(
+            lambda data: mit.groupby_transform(
+                data,
+                keyfunc=keyfunc,
+                valuefunc=valuefunc,
+                reducefunc=reducefunc,
+            )
+        )
