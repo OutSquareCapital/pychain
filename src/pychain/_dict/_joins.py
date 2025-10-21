@@ -1,0 +1,101 @@
+from __future__ import annotations
+
+from collections.abc import Callable, Iterable, Mapping
+from typing import TYPE_CHECKING, Self
+
+import cytoolz as cz
+
+from .._core import MappingWrapper
+
+if TYPE_CHECKING:
+    from ._main import Dict
+
+
+class JoinsDict[K, V](MappingWrapper[K, V]):
+    def inner_join[W](self, other: Mapping[K, W]) -> Dict[K, tuple[V, W]]:
+        """
+        Performs an inner join with another mapping based on keys.
+        Only keys present in both mappings are kept.
+
+        >>> import pychain as pc
+        >>> d1 = {"a": 1, "b": 2}
+        >>> d2 = {"b": 10, "c": 20}
+        >>> pc.Dict(d1).inner_join(d2).unwrap()
+        {'b': (2, 10)}
+        """
+        return self.apply(
+            lambda data: {k: (v, other[k]) for k, v in data.items() if k in other}
+        )
+
+    def left_join[W](self, other: Mapping[K, W]) -> Dict[K, tuple[V, W | None]]:
+        """
+        Performs a left join with another mapping based on keys.
+        All keys from the left dictionary (self) are kept.
+
+        >>> import pychain as pc
+        >>> d1 = {"a": 1, "b": 2}
+        >>> d2 = {"b": 10, "c": 20}
+        >>> pc.Dict(d1).left_join(d2).unwrap()
+        {'a': (1, None), 'b': (2, 10)}
+        """
+        return self.apply(lambda data: {k: (v, other.get(k)) for k, v in data.items()})
+
+    def diff(self, other: Mapping[K, V]) -> Dict[K, tuple[V | None, V | None]]:
+        """
+        Returns a dict of the differences between this dict and another.
+
+        The keys of the returned dict are the keys that are not shared or have different values.
+        The values are tuples containing the value from self and the value from other.
+
+        >>> import pychain as pc
+        >>> d1 = {"a": 1, "b": 2, "c": 3}
+        >>> d2 = {"b": 2, "c": 4, "d": 5}
+        >>> pc.Dict(d1).diff(d2).sort().unwrap()
+        {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
+        """
+
+        def _(
+            data: Mapping[K, V], other: Mapping[K, V]
+        ) -> dict[K, tuple[V | None, V | None]]:
+            all_keys: set[K] = data.keys() | other.keys()
+            diffs: dict[K, tuple[V | None, V | None]] = {}
+            for key in all_keys:
+                self_val = data.get(key)
+                other_val = other.get(key)
+                if self_val != other_val:
+                    diffs[key] = (self_val, other_val)
+            return diffs
+
+        return self.apply(_, other)
+
+    def merge(self, *others: Mapping[K, V]) -> Self:
+        """
+        Merge other dicts into this one and return a new Dict.
+
+        >>> import pychain as pc
+        >>> pc.Dict({1: "one"}).merge({2: "two"}).unwrap()
+        {1: 'one', 2: 'two'}
+
+        Later dictionaries have precedence
+
+        >>> pc.Dict({1: 2, 3: 4}).merge({3: 3, 4: 4}).unwrap()
+        {1: 2, 3: 3, 4: 4}
+        """
+        return self._new(cz.dicttoolz.merge, *others)
+
+    def merge_with(
+        self, *others: Mapping[K, V], func: Callable[[Iterable[V]], V]
+    ) -> Self:
+        """
+        Merge dicts using a function to combine values for duplicate keys.
+
+        A key may occur in more than one dict, and all values mapped from the key will be passed to the function as a list, such as func([val1, val2, ...]).
+
+        >>> import pychain as pc
+        >>> pc.Dict({1: 1, 2: 2}).merge_with({1: 10, 2: 20}, func=sum).unwrap()
+        {1: 11, 2: 22}
+        >>> pc.Dict({1: 1, 2: 2}).merge_with({2: 20, 3: 30}, func=max).unwrap()
+        {1: 1, 2: 20, 3: 30}
+
+        """
+        return self._new(lambda data: cz.dicttoolz.merge_with(func, data, *others))

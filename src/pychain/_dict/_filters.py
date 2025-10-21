@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from functools import partial
 from typing import TYPE_CHECKING, Any, Self
 
@@ -157,3 +157,43 @@ class FilterDict[K, V](MappingWrapper[K, V]):
                 return issubclass(x, parent) and x is not parent
 
         return self.apply(lambda data: cz.dicttoolz.valfilter(_, data))
+
+    def intersect_keys(self, *others: Mapping[K, V]) -> Self:
+        """
+        Return a new Dict keeping only keys present in self and all others.
+
+        >>> import pychain as pc
+        >>> d1 = {"a": 1, "b": 2, "c": 3}
+        >>> d2 = {"b": 10, "c": 20}
+        >>> d3 = {"c": 30}
+        >>> pc.Dict(d1).intersect_keys(d2, d3).unwrap()
+        {'c': 3}
+        """
+
+        def _(data: dict[K, V]) -> dict[K, V]:
+            self_keys = set(data.keys())
+            for other in others:
+                self_keys.intersection_update(other.keys())
+            return {k: data[k] for k in self_keys}
+
+        return self._new(_)
+
+    def diff_keys(self, *others: Mapping[K, V]) -> Self:
+        """
+        Return a new Dict keeping only keys present in self but not in others.
+
+        >>> import pychain as pc
+        >>> d1 = {"a": 1, "b": 2, "c": 3}
+        >>> d2 = {"b": 10, "d": 40}
+        >>> d3 = {"c": 30}
+        >>> pc.Dict(d1).diff_keys(d2, d3).unwrap()
+        {'a': 1}
+        """
+
+        def _(data: dict[K, V]) -> dict[K, V]:
+            self_keys = set(data.keys())
+            for other in others:
+                self_keys.difference_update(other.keys())
+            return {k: data[k] for k in self_keys}
+
+        return self._new(_)
