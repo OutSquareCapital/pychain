@@ -94,8 +94,8 @@ class CommonBase[T](ABC, Pipeable):
         The result is not wrapped.
 
             >>> import pychain as pc
-            >>> pc.Iter.from_range(0, 5).into(tuple)
-            (0, 1, 2, 3, 4)
+            >>> pc.Iter.from_range(0, 5).into(list)
+            [0, 1, 2, 3, 4]
 
         This is a core functionality that allows ending the chain whilst keeping the code style consistent.
         """

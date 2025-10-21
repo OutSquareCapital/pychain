@@ -148,14 +148,14 @@ class BaseFilter[T](IterWrapper[T]):
         """
         Return only unique elements of a sequence
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3]).unique().into(tuple)
-        (1, 2, 3)
-        >>> pc.Iter([1, 2, 1, 3]).unique().into(tuple)
-        (1, 2, 3)
+        >>> pc.Iter([1, 2, 3]).unique().into(list)
+        [1, 2, 3]
+        >>> pc.Iter([1, 2, 1, 3]).unique().into(list)
+        [1, 2, 3]
 
         Uniqueness can be defined by key keyword
-        >>> pc.Iter(["cat", "mouse", "dog", "hen"]).unique(key=len).into(tuple)
-        ('cat', 'mouse')
+        >>> pc.Iter(["cat", "mouse", "dog", "hen"]).unique(key=len).into(list)
+        ['cat', 'mouse']
         """
         return self._new(cz.itertoolz.unique, key=key)
 
