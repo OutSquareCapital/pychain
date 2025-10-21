@@ -118,7 +118,11 @@ class BaseProcess[T](IterWrapper[T]):
         >>> pc.Iter([1, 2]).interleave([3, 4]).into(list)
         [1, 3, 2, 4]
         """
-        return self._new(lambda data: cz.itertoolz.interleave((data, *others)))
+
+        def _interleave(data: Iterable[T]) -> Iterator[T]:
+            return cz.itertoolz.interleave((data, *others))
+
+        return self._new(_interleave)
 
     def concat(self, *others: Iterable[T]) -> Self:
         """
@@ -132,7 +136,10 @@ class BaseProcess[T](IterWrapper[T]):
         [1, 2, 3, 4, 5]
         """
 
-        return self._new(lambda data: itertools.chain.from_iterable((data, *others)))
+        def _concat(data: Iterable[T]) -> Iterator[T]:
+            return itertools.chain.from_iterable((data, *others))
+
+        return self._new(_concat)
 
     def elements(self) -> Self:
         """

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from functools import partial
 from typing import TYPE_CHECKING, Any, overload
 
 import cytoolz as cz
+import more_itertools as mit
 
 from .._core import IterWrapper
 
@@ -216,13 +217,13 @@ class BaseGroups[T](IterWrapper[T]):
 
         Only adjacent items are grouped together, so if you don't want any duplicate groups, you should sort the iterable by the key function.
         """
-        import more_itertools as mit
 
-        return self.apply(
-            lambda data: mit.groupby_transform(
+        def _(data: Iterable[T]) -> Iterator[tuple[Any, ...]]:
+            return mit.groupby_transform(
                 data,
                 keyfunc=keyfunc,
                 valuefunc=valuefunc,
                 reducefunc=reducefunc,
             )
-        )
+
+        return self.apply(_)

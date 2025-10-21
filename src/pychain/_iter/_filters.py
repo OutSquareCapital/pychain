@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Callable, Generator, Iterable, Iterator
 from functools import partial
 from typing import TYPE_CHECKING, Any, Self, TypeGuard
 
@@ -31,8 +31,12 @@ class BaseFilter[T](IterWrapper[T]):
         >>> pc.Iter([1, 2, 3, 4]).filter_isin([2, 4, 6]).into(list)
         [2, 4]
         """
-        value_set: set[T] = set(values)
-        return self._new(lambda data: (x for x in data if x in value_set))
+
+        def _(data: Iterable[T]) -> Generator[T, None, None]:
+            value_set: set[T] = set(values)
+            return (x for x in data if x in value_set)
+
+        return self._new(_)
 
     def filter_notin(self, values: Iterable[T]) -> Self:
         """
@@ -42,8 +46,12 @@ class BaseFilter[T](IterWrapper[T]):
         >>> pc.Iter([1, 2, 3, 4]).filter_notin([2, 4, 6]).into(list)
         [1, 3]
         """
-        value_set: set[T] = set(values)
-        return self._new(lambda data: (x for x in data if x not in value_set))
+
+        def _(data: Iterable[T]) -> Generator[T, None, None]:
+            value_set: set[T] = set(values)
+            return (x for x in data if x not in value_set)
+
+        return self._new(_)
 
     def filter_contain[U: IterWrapper[str]](
         self: U, text: str, format: Callable[[str], str] | None = None
@@ -57,18 +65,18 @@ class BaseFilter[T](IterWrapper[T]):
         >>> data = pc.Iter(["apple", "banana", "cherry", "date"])
         >>> data.filter_contain("ana").into(list)
         ['banana']
-        >>> upper_data = data.map(str.upper).apply(list)
-        >>> upper_data.filter_contain("an").into(list)
-        []
-        >>> upper_data.filter_contain("ana", str.lower).into(list)
+        >>> data.map(str.upper).filter_contain("ana", str.lower).into(list)
         ['BANANA']
         """
 
-        def _(x: str) -> bool:
-            formatted = format(x) if format else x
-            return text in formatted
+        def _(data: Iterable[str]) -> Generator[str, None, None]:
+            def _(x: str) -> bool:
+                formatted = format(x) if format else x
+                return text in formatted
 
-        return self._new(lambda data: (x for x in data if _(x)))
+            return (x for x in data if _(x))
+
+        return self._new(_)
 
     def filter_attr[U](self, attr: str, dtype: type[U] = object) -> Iter[U]:
         """
@@ -115,7 +123,11 @@ class BaseFilter[T](IterWrapper[T]):
         >>> pc.Iter(iterable).filter_except(int, ValueError, TypeError).into(list)
         ['1', '2', '4']
         """
-        return self._new(lambda data: mit.filter_except(func, data, *exceptions))
+
+        def _(data: Iterable[T]) -> Iterator[T]:
+            return mit.filter_except(func, data, *exceptions)
+
+        return self._new(_)
 
     def take_while(self, predicate: Callable[[T], bool]) -> Self:
         """
@@ -258,7 +270,11 @@ class BaseFilter[T](IterWrapper[T]):
         >>> pc.Iter([1, 2, 3, 4, 5]).slice(1, 4).into(list)
         [2, 3, 4]
         """
-        return self._new(lambda data: itertools.islice(data, start, stop))
+
+        def _(data: Iterable[T]) -> Iterator[T]:
+            return itertools.islice(data, start, stop)
+
+        return self._new(_)
 
     def filter_subclass[U: type[Any], R](
         self: IterWrapper[U], parent: type[R], keep_parent: bool = True
@@ -297,7 +313,11 @@ class BaseFilter[T](IterWrapper[T]):
         >>> pc.Iter([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
         [1, 5]
         """
-        return self.apply(lambda data: (x for x in data if isinstance(x, typ)))
+
+        def _(data: Iterable[T]) -> Generator[R, None, None]:
+            return (x for x in data if isinstance(x, typ))
+
+        return self.apply(_)
 
     def filter_callable(self) -> Iter[Callable[..., Any]]:
         """
@@ -306,7 +326,11 @@ class BaseFilter[T](IterWrapper[T]):
         >>> pc.Iter([len, 42, str, None, list]).filter_callable().into(list)
         [<built-in function len>, <class 'str'>, <class 'list'>]
         """
-        return self.apply(lambda data: (x for x in data if callable(x)))
+
+        def _(data: Iterable[T]) -> Generator[Callable[..., Any], None, None]:
+            return (x for x in data if callable(x))
+
+        return self.apply(_)
 
     def filter_map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """

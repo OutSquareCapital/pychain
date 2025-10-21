@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Iterator
 from typing import TYPE_CHECKING, Any, overload
 
 import cytoolz as cz
@@ -147,7 +147,10 @@ class BaseJoins[T](IterWrapper[T]):
         If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
         """
 
-        return self.apply(lambda x: mit.zip_broadcast(x, *others, strict=strict))
+        def _(data: Iterable[T]) -> Iterable[tuple[T | Any, ...]]:
+            return mit.zip_broadcast(data, *others, strict=strict)
+
+        return self.apply(_)
 
     @overload
     def zip_equal(self) -> Iter[tuple[T]]: ...
@@ -184,9 +187,12 @@ class BaseJoins[T](IterWrapper[T]):
         ...
         more_itertools.more.UnequalIterablesError: Iterables have different
         lengths
-
         """
-        return self.apply(lambda x: mit.zip_equal(x, *others))
+
+        def _(data: Iterable[T]) -> Iterator[tuple[Any, ...]]:
+            return mit.zip_equal(data, *others)
+
+        return self.apply(_)
 
     def zip_longest[U](
         self, *others: Iterable[T], fill_value: U = None
@@ -247,7 +253,11 @@ class BaseJoins[T](IterWrapper[T]):
         >>> pc.Iter([1, 2, 2]).union([2, 3], [4]).sort().into(list)
         [1, 2, 3, 4]
         """
-        return self.apply(lambda data: set(data).union(*others))
+
+        def _union(data: Iterable[T]) -> set[T]:
+            return set(data).union(*others)
+
+        return self.apply(_union)
 
     def intersection(self, *others: Iterable[T]) -> Iter[T]:
         """
@@ -260,7 +270,11 @@ class BaseJoins[T](IterWrapper[T]):
         >>> pc.Iter([1, 2, 2]).intersection([2, 3], [2]).into(list)
         [2]
         """
-        return self.apply(lambda data: set(data).intersection(*others))
+
+        def _intersection(data: Iterable[T]) -> set[T]:
+            return set(data).intersection(*others)
+
+        return self.apply(_intersection)
 
     def diff_unique(self, *others: Iterable[T]) -> Iter[T]:
         """
@@ -275,7 +289,11 @@ class BaseJoins[T](IterWrapper[T]):
         >>> pc.Iter([1, 2, 2]).diff_unique([2, 3]).into(list)
         [1]
         """
-        return self.apply(lambda data: set(data).difference(*others))
+
+        def _difference(data: Iterable[T]) -> set[T]:
+            return set(data).difference(*others)
+
+        return self.apply(_difference)
 
     def diff_symmetric(self, *others: Iterable[T]) -> Iter[T]:
         """
@@ -291,7 +309,11 @@ class BaseJoins[T](IterWrapper[T]):
         >>> pc.Iter([1, 2, 3]).diff_symmetric([3, 4, 5]).sort().into(list)
         [1, 2, 4, 5]
         """
-        return self.apply(lambda data: set(data).symmetric_difference(*others))
+
+        def _symmetric_difference(data: Iterable[T]) -> set[T]:
+            return set(data).symmetric_difference(*others)
+
+        return self.apply(_symmetric_difference)
 
     def diff_at(
         self,
@@ -338,13 +360,14 @@ class BaseJoins[T](IterWrapper[T]):
         [(None, 'S'), (None, 'M'), ('blue', None), ('red', None)]
         """
 
-        return self.apply(
-            lambda x: cz.itertoolz.join(
+        def _join(data: Iterable[T]) -> Iterator[tuple[T, R]]:
+            return cz.itertoolz.join(
                 leftkey=left_on,
-                leftseq=x,
+                leftseq=data,
                 rightkey=right_on,
                 rightseq=other,
                 left_default=left_default,
                 right_default=right_default,
             )
-        )
+
+        return self.apply(_join)

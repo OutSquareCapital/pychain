@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Generator, Iterable
 from functools import partial
 from typing import TYPE_CHECKING, Any, Concatenate
 
@@ -74,9 +74,11 @@ class Iter[T](
         ... ).into(list)
         [12, 18, 60]
         """
-        return self.apply(
-            lambda data: map(lambda x: func(Iter(x), *args, **kwargs), data)
-        )
+
+        def _itr(data: Iterable[U]) -> Generator[R, None, None]:
+            return (func(Iter(x), *args, **kwargs) for x in data)
+
+        return self.apply(_itr)
 
     def struct[**P, R, K, V](
         self: Iter[dict[K, V]],
@@ -128,9 +130,10 @@ class Iter[T](
         """
         from .._dict import Dict
 
-        return self.apply(
-            lambda data: map(lambda x: func(Dict(x), *args, **kwargs), data)
-        )
+        def _struct(data: Iterable[dict[K, V]]) -> Generator[R, None, None]:
+            return (func(Dict(x), *args, **kwargs) for x in data)
+
+        return self.apply(_struct)
 
     def sort[U: SupportsRichComparison[Any]](
         self: Iter[U], reverse: bool = False

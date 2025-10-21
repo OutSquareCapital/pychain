@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from typing import overload
 
 import cytoolz as cz
@@ -38,7 +38,11 @@ class BaseBool[T](IterWrapper[T]):
         >>> pc.Iter([]).not_all()
         False
         """
-        return self.into(lambda data: not all(data))
+
+        def _not_all(data: Iterable[T]) -> bool:
+            return not all(data)
+
+        return self.into(_not_all)
 
     def any(self) -> bool:
         """
@@ -66,7 +70,11 @@ class BaseBool[T](IterWrapper[T]):
         >>> pc.Iter([]).not_any()
         True
         """
-        return self.into(lambda data: not any(data))
+
+        def _not_any(data: Iterable[T]) -> bool:
+            return not any(data)
+
+        return self.into(_not_any)
 
     def is_distinct(self) -> bool:
         """

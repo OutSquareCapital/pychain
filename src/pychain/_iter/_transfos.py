@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from functools import partial
 from typing import TYPE_CHECKING
 
@@ -53,7 +53,10 @@ class BaseTransfos[T](IterWrapper[T]):
         """
         from collections import Counter
 
-        return self.apply(lambda data: Counter(data).most_common(n))
+        def _most_common(data: Iterable[T]) -> list[tuple[T, int]]:
+            return Counter(data).most_common(n)
+
+        return self.apply(_most_common)
 
     def classify_unique(self) -> Iter[tuple[T, bool, bool]]:
         """

@@ -114,7 +114,11 @@ class BaseMap[T](IterWrapper[T]):
         >>> pc.Iter(iterable).map_except(int, ValueError, TypeError).into(list)
         [1, 2, 4]
         """
-        return self.apply(lambda data: mit.map_except(func, data, *exceptions))
+
+        def _map_except(data: Iterable[T]) -> Iterator[R]:
+            return mit.map_except(func, data, *exceptions)
+
+        return self.apply(_map_except)
 
     def repeat(self, n: int) -> Iter[Iterable[T]]:
         """
@@ -217,4 +221,8 @@ class BaseMap[T](IterWrapper[T]):
         >>> pc.Iter([1.2345, 2.3456, 3.4567]).round(2).into(list)
         [1.23, 2.35, 3.46]
         """
-        return self.apply(lambda data: map(lambda x: round(x, ndigits), data))
+
+        def _round(data: Iterable[U]) -> Iterator[float]:
+            return map(lambda x: round(x, ndigits), data)
+
+        return self.apply(_round)

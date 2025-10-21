@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Generator, Iterable
 from typing import TYPE_CHECKING
 
 import more_itertools as mit
@@ -21,7 +21,11 @@ class BaseList[T](IterWrapper[T]):
         >>> pc.Iter.from_range(0, 5).implode().into(list)
         [[0], [1], [2], [3], [4]]
         """
-        return self.apply(lambda data: ([x] for x in data))
+
+        def _implode(data: Iterable[T]) -> Generator[list[T], None, None]:
+            return ([x] for x in data)
+
+        return self.apply(_implode)
 
     def split_at(
         self,

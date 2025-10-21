@@ -75,11 +75,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {1: 2, 3: 4, 4: 5}
         """
 
-        return self._new(
-            lambda data: cz.dicttoolz.itemfilter(
-                lambda kv: predicate(kv[0], kv[1]), data
-            )
-        )
+        def _filter_kv(data: dict[K, V]) -> dict[K, V]:
+            return cz.dicttoolz.itemfilter(lambda kv: predicate(kv[0], kv[1]), data)
+
+        return self._new(_filter_kv)
 
     def filter_attr[U](self, attr: str, dtype: type[U] = object) -> Dict[K, U]:
         """
@@ -96,10 +95,13 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {'a': 'hello', 'b': 'world'}
         """
 
-        def has_attr(x: V) -> TypeGuard[U]:
-            return hasattr(x, attr)
+        def _filter_attr(data: dict[K, V]) -> dict[K, U]:
+            def has_attr(x: V) -> TypeGuard[U]:
+                return hasattr(x, attr)
 
-        return self.apply(lambda data: cz.dicttoolz.valfilter(has_attr, data))  # type: ignore
+            return cz.dicttoolz.valfilter(has_attr, data)  # type: ignore
+
+        return self.apply(_filter_attr)
 
     def filter_type[R](self, typ: type[R]) -> Dict[K, R]:
         """
@@ -111,10 +113,13 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {'a': 'one', 'b': 'two'}
         """
 
-        def _(_: V) -> TypeGuard[R]:
-            return isinstance(_, typ)
+        def _filter_type(data: dict[K, V]) -> dict[K, R]:
+            def _(_: V) -> TypeGuard[R]:
+                return isinstance(_, typ)
 
-        return self.apply(lambda data: cz.dicttoolz.valfilter(_, data))  # type: ignore
+            return cz.dicttoolz.valfilter(_, data)  # type: ignore
+
+        return self.apply(_filter_type)
 
     def filter_callable(self) -> Dict[K, Callable[..., Any]]:
         """
