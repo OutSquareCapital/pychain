@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Generator, Iterable
+from collections.abc import Callable, Generator, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, Concatenate
 
 from .._core import SupportsRichComparison
@@ -47,7 +47,7 @@ class Iter[T](
     It can be constructed from any iterable, including `lists`, `tuples`, `sets`, and `generators`.
     """
 
-    __slots__ = ()
+    __slots__ = ("_data",)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.unwrap().__repr__()})"
@@ -189,4 +189,7 @@ class Iter[T](
 
 
 class EagerIter[T](Iter[T]):
-    pass
+    __slots__ = ("_data",)
+
+    def __init__(self, data: Sequence[T] | set[T]) -> None:
+        self._data = data
