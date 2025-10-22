@@ -3,15 +3,49 @@ from __future__ import annotations
 import functools
 import statistics
 from collections.abc import Callable, Iterable
-from typing import Literal
+from typing import TYPE_CHECKING, Literal, NamedTuple
 
 import cytoolz as cz
 import more_itertools as mit
 
 from .._core import IterWrapper
 
+if TYPE_CHECKING:
+    from ._main import Iter
+
+
+class Unzipped[T, V](NamedTuple):
+    first: Iter[T]
+    second: Iter[V]
+
 
 class BaseAgg[T](IterWrapper[T]):
+    def unzip[U, V](self: IterWrapper[tuple[U, V]]) -> Unzipped[U, V]:
+        """
+        Converts an iterator of pairs into a pair of iterators.
+
+        ``Iter.unzip()`` consumes the iterator of pairs.
+
+        Returns an Unzipped NamedTuple, containing two iterators:
+        - one from the left elements of the pairs
+        - one from the right elements.
+        This function is, in some sense, the opposite of zip.
+        >>> import pychain as pc
+        >>> data = [(1, "a"), (2, "b"), (3, "c")]
+        >>> unzipped = pc.Iter.from_(data).unzip()
+        >>> unzipped.first.into(list)
+        [1, 2, 3]
+        >>> unzipped.second.into(list)
+        ['a', 'b', 'c']
+        """
+        from ._main import Iter
+
+        def _unzip(data: Iterable[tuple[U, V]]) -> Unzipped[U, V]:
+            d: list[tuple[U, V]] = list(data)
+            return Unzipped(Iter(x[0] for x in d), Iter(x[1] for x in d))
+
+        return self.into(_unzip)
+
     def reduce(self, func: Callable[[T, T], T]) -> T:
         """
         Apply a function of two arguments cumulatively to the items of an iterable, from left to right.
