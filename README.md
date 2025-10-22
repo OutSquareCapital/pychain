@@ -91,7 +91,7 @@ def get_palettes() -> pc.Dict[str, list[str]]:
     df: pl.DataFrame = (
         pc.Iter.from_(MODULES)
         .map(
-            lambda mod: pc.Dict.from_(mod)
+            lambda mod: pc.Dict.from_object(mod)
             .filter_values(lambda v: isinstance(v, list))
             .unwrap()
         )

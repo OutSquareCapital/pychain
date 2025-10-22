@@ -32,18 +32,31 @@ class Dict[K, V](
 
     __slots__ = ()
 
-    def __init__(
-        self, data: SupportsKeysAndGetItem[K, V] | dict[K, V] | Mapping[K, V]
-    ) -> None:
-        if not isinstance(data, dict):
-            data = dict(data)
-        super().__init__(data)
-
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({dict_repr(self.unwrap())})"
 
     @staticmethod
-    def from_(obj: object) -> Dict[str, Any]:
+    def from_(data: Mapping[K, V] | SupportsKeysAndGetItem[K, V]) -> Dict[K, V]:
+        """
+        Create a Dict from a mapping or SupportsKeysAndGetItem.
+        >>> import pychain as pc
+        >>> class MyMapping:
+        ...     def __init__(self):
+        ...         self._data = {1: "a", 2: "b", 3: "c"}
+        ...
+        ...     def keys(self):
+        ...         return self._data.keys()
+        ...
+        ...     def __getitem__(self, key):
+        ...         return self._data[key]
+        >>>
+        >>> pc.Dict.from_(MyMapping()).unwrap()
+        {1: 'a', 2: 'b', 3: 'c'}
+        """
+        return Dict(dict(data))
+
+    @staticmethod
+    def from_object(obj: object) -> Dict[str, Any]:
         """
         Create a Dict from an object's __dict__ attribute.
         >>> import pychain as pc
@@ -52,7 +65,7 @@ class Dict[K, V](
         ...         self.name = name
         ...         self.age = age
         >>> person = Person("Alice", 30)
-        >>> pc.Dict.from_(person).unwrap()
+        >>> pc.Dict.from_object(person).unwrap()
         {'name': 'Alice', 'age': 30}
         """
         return Dict(obj.__dict__)
