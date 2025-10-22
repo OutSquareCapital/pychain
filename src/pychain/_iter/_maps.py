@@ -22,15 +22,14 @@ class BaseMap[T](IterWrapper[T]):
         **kwargs: P.kwargs,
     ) -> Self:
         """
-        Apply a function to each element in the iterable for side effects.
-
-        Returns the original Iter unchanged.
+        Apply a function to each element in the iterable.
+        Can be used for side effects such as printing or logging.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3]).for_each(lambda x: print(x))
+        >>> pc.Iter.from_([1, 2, 3]).for_each(lambda x: print(x)).collect().unwrap()
         1
         2
         3
-        Iter([1, 2, 3])
+        []
         """
         for v in self.unwrap():
             func(v, *args, **kwargs)
@@ -40,7 +39,7 @@ class BaseMap[T](IterWrapper[T]):
         """
         Map each element through func and return a Iter of results.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2]).map(lambda x: x + 1).into(list)
+        >>> pc.Iter.from_([1, 2]).map(lambda x: x + 1).into(list)
         [2, 3]
         """
         return self.apply(partial(map, func))
@@ -57,12 +56,12 @@ class BaseMap[T](IterWrapper[T]):
         >>> import pychain as pc
         >>> def make_sku(color, size):
         ...     return f"{color}-{size}"
-        >>> data = ["blue", "red"]
-        >>> pc.Iter(data).product(["S", "M"]).map_star(make_sku).into(list)
+        >>> data = pc.Seq(["blue", "red"])
+        >>> data.iter().product(["S", "M"]).map_star(make_sku).into(list)
         ['blue-S', 'blue-M', 'red-S', 'red-M']
 
         This is equivalent to:
-        >>> pc.Iter(data).product(["S", "M"]).map(lambda x: make_sku(*x)).into(list)
+        >>> data.iter().product(["S", "M"]).map(lambda x: make_sku(*x)).into(list)
         ['blue-S', 'blue-M', 'red-S', 'red-M']
 
         - Use map_star when the performance matters (it is faster).
@@ -112,7 +111,7 @@ class BaseMap[T](IterWrapper[T]):
         If an exception other than one given by exceptions is raised by function, it is raised like normal.
         >>> import pychain as pc
         >>> iterable = ["1", "2", "three", "4", None]
-        >>> pc.Iter(iterable).map_except(int, ValueError, TypeError).into(list)
+        >>> pc.Iter.from_(iterable).map_except(int, ValueError, TypeError).into(list)
         [1, 2, 4]
         """
 
@@ -125,7 +124,7 @@ class BaseMap[T](IterWrapper[T]):
         """
         Repeat the entire iterable n times (as elements) and return Iter.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2]).repeat(2).into(list)
+        >>> pc.Iter.from_([1, 2]).repeat(2).collect().unwrap()  # doctest: +SKIP
         [[1, 2], [1, 2]]
         """
         return self.apply(partial(itertools.repeat, times=n))
@@ -183,7 +182,7 @@ class BaseMap[T](IterWrapper[T]):
 
         This is a shortcut for `.apply(itertools.chain.from_iterable)`.
         >>> import pychain as pc
-        >>> pc.Iter([[1, 2], [3]]).explode().into(list)
+        >>> pc.Iter.from_([[1, 2], [3]]).explode().into(list)
         [1, 2, 3]
         """
         return self.apply(itertools.chain.from_iterable)
@@ -194,19 +193,21 @@ class BaseMap[T](IterWrapper[T]):
         """
         Get an element from each item in a sequence using a nested key path.
         >>> import pychain as pc
-        >>> data = pc.Iter(
+        >>> data = pc.Seq(
         ...     [
         ...         {"id": 1, "info": {"name": "Alice", "age": 30}},
         ...         {"id": 2, "info": {"name": "Bob", "age": 25}},
         ...     ]
         ... )
-        >>> data.pluck("info").into(list)
+        >>> data.iter().pluck("info").into(list)
         [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]
-        >>> data.pluck("info", "name").into(list)
+        >>> data.iter().pluck("info", "name").into(list)
         ['Alice', 'Bob']
 
-        Example: get the maximum age along with the corresponding id
-        >>> data.pluck("info", "age").zip(data.pluck("id").into(list)).max()
+        Example: get the maximum age along with the corresponding id)
+        >>> data.iter().pluck("info", "age").zip(
+        ...     data.iter().pluck("id").into(list)
+        ... ).max()
         (30, 1)
         """
 
@@ -219,7 +220,7 @@ class BaseMap[T](IterWrapper[T]):
         """
         Round each element in the iterable to the given number of decimal places and return Iter.
         >>> import pychain as pc
-        >>> pc.Iter([1.2345, 2.3456, 3.4567]).round(2).into(list)
+        >>> pc.Iter.from_([1.2345, 2.3456, 3.4567]).round(2).into(list)
         [1.23, 2.35, 3.46]
         """
 

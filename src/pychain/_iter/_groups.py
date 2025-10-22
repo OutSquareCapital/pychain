@@ -28,12 +28,12 @@ class BaseGroups[T](IterWrapper[T]):
         ...     return x % 2 == 0
         >>>
         >>> def group_reduce(data: Iterable[int]) -> int:
-        ...     return pc.Iter(data).reduce(add)
+        ...     return pc.Iter.from_(data).reduce(add)
         >>>
-        >>> data = pc.Iter([1, 2, 3, 4, 5])
-        >>> data.reduce_by(is_even, add).unwrap()
+        >>> data = pc.Seq([1, 2, 3, 4, 5])
+        >>> data.iter().reduce_by(is_even, add).unwrap()
         {False: 9, True: 6}
-        >>> data.group_by(is_even).map_values(group_reduce).unwrap()
+        >>> data.iter().group_by(is_even).map_values(group_reduce).unwrap()
         {False: 9, True: 6}
 
         But the former does not build the intermediate groups, allowing it to operate in much less space.
@@ -41,9 +41,9 @@ class BaseGroups[T](IterWrapper[T]):
         This makes it suitable for larger datasets that do not fit comfortably in memory
 
         Simple Examples
-        >>> pc.Iter([1, 2, 3, 4, 5]).reduce_by(is_even, add).unwrap()
+        >>> pc.Iter.from_([1, 2, 3, 4, 5]).reduce_by(is_even, add).unwrap()
         {False: 9, True: 6}
-        >>> pc.Iter([1, 2, 3, 4, 5]).reduce_by(is_even, mul).unwrap()
+        >>> pc.Iter.from_([1, 2, 3, 4, 5]).reduce_by(is_even, mul).unwrap()
         {False: 15, True: 8}
         """
         from .._dict import Dict
@@ -62,7 +62,7 @@ class BaseGroups[T](IterWrapper[T]):
         ...     "Edith",
         ...     "Frank",
         ... ]
-        >>> pc.Iter(names).group_by(len).sort()
+        >>> pc.Iter.from_(names).group_by(len).sort()
         ... # doctest: +NORMALIZE_WHITESPACE
         Dict({
             3: ['Bob', 'Dan'],
@@ -71,7 +71,7 @@ class BaseGroups[T](IterWrapper[T]):
         })
         >>>
         >>> iseven = lambda x: x % 2 == 0
-        >>> pc.Iter([1, 2, 3, 4, 5, 6, 7, 8]).group_by(iseven)
+        >>> pc.Iter.from_([1, 2, 3, 4, 5, 6, 7, 8]).group_by(iseven)
         ... # doctest: +NORMALIZE_WHITESPACE
         Dict({
             False: [1, 3, 5, 7],
@@ -84,7 +84,7 @@ class BaseGroups[T](IterWrapper[T]):
         ...     {"name": "Bob", "gender": "M"},
         ...     {"name": "Charlie", "gender": "M"},
         ... ]
-        >>> pc.Iter(data).group_by("gender").sort()
+        >>> pc.Iter.from_(data).group_by("gender").sort()
         ... # doctest: +NORMALIZE_WHITESPACE
         Dict({
             'F': [
@@ -104,7 +104,8 @@ class BaseGroups[T](IterWrapper[T]):
         """
         Find number of occurrences of each value in the iterable.
         >>> import pychain as pc
-        >>> pc.Iter(["cat", "cat", "ox", "pig", "pig", "cat"]).frequencies().unwrap()
+        >>> data = ["cat", "cat", "ox", "pig", "pig", "cat"]
+        >>> pc.Iter.from_(data).frequencies().unwrap()
         {'cat': 3, 'ox': 1, 'pig': 2}
         """
         from .._dict import Dict
@@ -115,11 +116,11 @@ class BaseGroups[T](IterWrapper[T]):
         """
         Count elements of a collection by a key function
         >>> import pychain as pc
-        >>> pc.Iter(["cat", "mouse", "dog"]).count_by(len).unwrap()
+        >>> pc.Iter.from_(["cat", "mouse", "dog"]).count_by(len).unwrap()
         {3: 2, 5: 1}
         >>> def iseven(x):
         ...     return x % 2 == 0
-        >>> pc.Iter([1, 2, 3]).count_by(iseven).unwrap()
+        >>> pc.Iter.from_([1, 2, 3]).count_by(iseven).unwrap()
         {False: 2, True: 1}
         """
         from .._dict import Dict
@@ -195,7 +196,7 @@ class BaseGroups[T](IterWrapper[T]):
         - valuefunc is a function that transforms the individual items from iterable after grouping
         - reducefunc is a function that transforms each group of items
         >>> import pychain as pc
-        >>> data = pc.Iter("aAAbBBcCC")
+        >>> data = pc.Iter.from_("aAAbBBcCC")
         >>> data.group_by_transform(
         ...     lambda k: k.upper(), lambda v: v.lower(), lambda g: "".join(g)
         ... ).into(list)
@@ -207,7 +208,7 @@ class BaseGroups[T](IterWrapper[T]):
 
         To do this, zip the iterables and pass a keyfunc that extracts the first element and a valuefunc that extracts the second element:
         >>> from operator import itemgetter
-        >>> data = pc.Iter([0, 0, 1, 1, 1, 2, 2, 2, 3])
+        >>> data = pc.Iter.from_([0, 0, 1, 1, 1, 2, 2, 2, 3])
         >>> data.zip("abcdefghi").group_by_transform(itemgetter(0), itemgetter(1)).map(
         ...     lambda kv: (kv[0], "".join(kv[1]))
         ... ).into(list)

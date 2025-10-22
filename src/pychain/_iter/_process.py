@@ -39,7 +39,7 @@ class BaseProcess[T](IterWrapper[T]):
             Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
 
         >>> import pychain as pc
-        >>> pc.Iter([1, 2]).cycle().head(5).into(list)
+        >>> pc.Iter.from_([1, 2]).cycle().head(5).into(list)
         [1, 2, 1, 2, 1]
         """
         return self.apply(itertools.cycle)
@@ -48,7 +48,7 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Interpose element between items and return a new Iterable wrapper.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2]).interpose(0).into(list)
+        >>> pc.Iter.from_([1, 2]).interpose(0).into(list)
         [1, 0, 2]
         """
         return self.apply(partial(cz.itertoolz.interpose, element))
@@ -65,24 +65,24 @@ class BaseProcess[T](IterWrapper[T]):
 
         See below how the first time it returned 13 items and the next time it returned 6 items.
         >>> import pychain as pc
-        >>> seq = list(range(100))
-        >>> pc.Iter(seq).random_sample(0.1).into(list)  # doctest: +SKIP
+        >>> data = pc.Seq(list(range(100)))
+        >>> data.iter().random_sample(0.1).into(list)  # doctest: +SKIP
         [6, 9, 19, 35, 45, 50, 58, 62, 68, 72, 78, 86, 95]
-        >>> pc.Iter(seq).random_sample(0.1).into(list)  # doctest: +SKIP
+        >>> data.iter().random_sample(0.1).into(list)  # doctest: +SKIP
         [6, 44, 54, 61, 69, 94]
 
         Providing an integer seed for random_state will result in deterministic sampling.
 
         Given the same seed it will return the same sample every time.
-        >>> pc.Iter(seq).random_sample(0.1, state=2016).into(list)
+        >>> data.iter().random_sample(0.1, state=2016).into(list)
         [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
-        >>> pc.Iter(seq).random_sample(0.1, state=2016).into(list)
+        >>> data.iter().random_sample(0.1, state=2016).into(list)
         [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
 
         random_state can also be any object with a method random that returns floats between 0.0 and 1.0 (exclusive).
         >>> from random import Random
         >>> randobj = Random(2016)
-        >>> pc.Iter(seq).random_sample(0.1, state=randobj).into(list)
+        >>> data.iter().random_sample(0.1, state=randobj).into(list)
         [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
         """
 
@@ -94,7 +94,7 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Return cumulative application of binary op provided by the function.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
+        >>> pc.Iter.from_([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
         [1, 3, 6]
         """
         return self.apply(partial(cz.itertoolz.accumulate, func))
@@ -103,7 +103,7 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Prepend value to the sequence and return a new Iterable wrapper.
         >>> import pychain as pc
-        >>> pc.Iter([2, 3]).insert_left(1).into(list)
+        >>> pc.Iter.from_([2, 3]).insert_left(1).into(list)
         [1, 2, 3]
         """
         return self.apply(partial(cz.itertoolz.cons, value))
@@ -112,7 +112,7 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Print and return sequence after peeking n items.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3]).peekn(2).into(list)
+        >>> pc.Iter.from_([1, 2, 3]).peekn(2).into(list)
         Peeked 2 values: (1, 2)
         [1, 2, 3]
         """
@@ -128,7 +128,7 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Print and return sequence after peeking first item.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2]).peek().into(list)
+        >>> pc.Iter.from_([1, 2]).peek().into(list)
         Peeked value: 1
         [1, 2]
         """
@@ -146,7 +146,7 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Merge already-sorted sequences.
         >>> import pychain as pc
-        >>> pc.Iter([1, 3]).merge_sorted([2, 4]).into(list)
+        >>> pc.Iter.from_([1, 3]).merge_sorted([2, 4]).into(list)
         [1, 2, 3, 4]
         """
         return self.apply(cz.itertoolz.merge_sorted, *others, key=sort_on)
@@ -155,7 +155,7 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Interleave multiple sequences element-wise.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2]).interleave([3, 4]).into(list)
+        >>> pc.Iter.from_([1, 2]).interleave([3, 4]).into(list)
         [1, 3, 2, 4]
         """
 
@@ -172,7 +172,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         We use chain.from_iterable rather than chain(*seqs) so that seqs can be a generator.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2]).concat([3, 4], [5]).into(list)
+        >>> pc.Iter.from_([1, 2]).concat([3, 4], [5]).into(list)
         [1, 2, 3, 4, 5]
         """
 
@@ -185,12 +185,13 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Iterator over elements repeating each as many times as its count.
         >>> import pychain as pc
-        >>> pc.Iter("ABCABC").elements().sort().unwrap()
+        >>> pc.Iter.from_("ABCABC").elements().sort().unwrap()
         ['A', 'A', 'B', 'B', 'C', 'C']
 
         Knuth's example for prime factors of 1836:  2**2 * 3**3 * 17**1
         >>> import math
-        >>> pc.Iter({2: 2, 3: 3, 17: 1}).elements().into(math.prod)
+        >>> pc.Iter.from_({2: 2, 3: 3, 17: 1}).elements().into(math.prod)
+        ... # doctest: +SKIP
         1836
 
         Note, if an element's count has been set to zero or is a negative
@@ -208,7 +209,7 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Return a new Iterable wrapper with elements in reverse order.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3]).reverse().into(list)
+        >>> pc.Iter.from_([1, 2, 3]).reverse().into(list)
         [3, 2, 1]
 
         Note: This method must consume the entire iterable to perform the reversal.
@@ -236,7 +237,7 @@ class BaseProcess[T](IterWrapper[T]):
         >>> import pychain as pc
         >>> iterable = ["a", "b", "c", "d"]
         >>> n = 4
-        >>> pc.Iter(iterable).is_strictly_n(n).into(list)
+        >>> pc.Iter.from_(iterable).is_strictly_n(n).into(list)
         ['a', 'b', 'c', 'd']
 
         Note that the returned iterable must be consumed in order for the check to
@@ -244,14 +245,14 @@ class BaseProcess[T](IterWrapper[T]):
 
         By default, *too_short* and *too_long* are functions that raise
         ``ValueError``.
-        >>> pc.Iter("ab").is_strictly_n(3).into(
+        >>> pc.Iter.from_("ab").is_strictly_n(3).into(
         ...     list
         ... )  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
         ValueError: too few items in iterable (got 2)
 
-        >>> pc.Iter("abc").is_strictly_n(2).into(
+        >>> pc.Iter.from_("abc").is_strictly_n(2).into(
         ...     list
         ... )  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
@@ -265,14 +266,14 @@ class BaseProcess[T](IterWrapper[T]):
         *too_long* will be called with `n + 1`.
         >>> def too_short(item_count):
         ...     raise RuntimeError
-        >>> pc.Iter("abcd").is_strictly_n(6, too_short=too_short).into(list)
+        >>> pc.Iter.from_("abcd").is_strictly_n(6, too_short=too_short).into(list)
         Traceback (most recent call last):
         ...
         RuntimeError
 
         >>> def too_long(item_count):
         ...     print("The boss is going to hear about this")
-        >>> pc.Iter("abcdef").is_strictly_n(4, too_long=too_long).into(list)
+        >>> pc.Iter.from_("abcdef").is_strictly_n(4, too_long=too_long).into(list)
         The boss is going to hear about this
         ['a', 'b', 'c', 'd']
         """

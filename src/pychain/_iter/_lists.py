@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 from collections.abc import Callable, Generator, Iterable
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import more_itertools as mit
 
@@ -38,7 +38,7 @@ class BaseList[T](IterWrapper[T]):
         Yield lists of items from iterable, where each list is delimited by an item where callable pred returns True.
 
         >>> import pychain as pc
-        >>> pc.Iter("abcdcba").split_at(lambda x: x == "b").into(list)
+        >>> pc.Iter.from_("abcdcba").split_at(lambda x: x == "b").into(list)
         [['a'], ['c', 'd', 'c'], ['a']]
         >>> pc.Iter.from_(range(10)).split_at(lambda n: n % 2 == 1).into(list)
         [[0], [2], [4], [6], [8], []]
@@ -54,9 +54,9 @@ class BaseList[T](IterWrapper[T]):
         By default, the delimiting items are not included in the output.
 
         To include them, set *keep_separator* to `True`.
-        >>> pc.Iter("abcdcba").split_at(lambda x: x == "b", keep_separator=True).into(
-        ...     list
-        ... )
+        >>> def cond(x: str) -> bool:
+        ...     return x == "b"
+        >>> pc.Iter.from_("abcdcba").split_at(cond, keep_separator=True).into(list)
         [['a'], ['b'], ['c', 'd', 'c'], ['b'], ['a']]
         """
         return self.apply(mit.split_at, pred, maxsplit, keep_separator)
@@ -70,7 +70,7 @@ class BaseList[T](IterWrapper[T]):
 
         If maxsplit is not specified or -1, then there is no limit on the number of splits:
         >>> import pychain as pc
-        >>> pc.Iter("one1two2").split_after(str.isdigit).into(list)
+        >>> pc.Iter.from_("one1two2").split_after(str.isdigit).into(list)
         [['o', 'n', 'e', '1'], ['t', 'w', 'o', '2']]
 
         >>> def cond(n: int) -> bool:
@@ -90,7 +90,7 @@ class BaseList[T](IterWrapper[T]):
         Yield lists of items from iterable, where each list ends with an item where callable pred returns True.
 
         >>> import pychain as pc
-        >>> pc.Iter("abcdcba").split_before(lambda x: x == "b").into(list)
+        >>> pc.Iter.from_("abcdcba").split_before(lambda x: x == "b").into(list)
         [['a'], ['b', 'c', 'd', 'c'], ['b', 'a']]
         >>>
         >>> def cond(n: int) -> bool:
@@ -111,22 +111,22 @@ class BaseList[T](IterWrapper[T]):
         """
         Yield a list of sequential items from iterable of length 'n' for each integer 'n' in sizes.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3, 4, 5, 6]).split_into([1, 2, 3]).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).split_into([1, 2, 3]).into(list)
         [[1], [2, 3], [4, 5, 6]]
 
         If the sum of sizes is smaller than the length of iterable, then the remaining items of iterable will not be returned.
-        >>> pc.Iter([1, 2, 3, 4, 5, 6]).split_into([2, 3]).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).split_into([2, 3]).into(list)
         [[1, 2], [3, 4, 5]]
 
         If the sum of sizes is larger than the length of iterable:
         - fewer items will be returned in the iteration that overruns the iterable
         - further lists will be empty
-        >>> pc.Iter([1, 2, 3, 4]).split_into([1, 2, 3, 4]).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4]).split_into([1, 2, 3, 4]).into(list)
         [[1], [2, 3], [4], []]
 
         When a None object is encountered in sizes, the returned list will contain items up to the end of iterable the same way that itertools.slice does:
-
-        >>> pc.Iter([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]).split_into([2, 3, None]).into(list)
+        >>> data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
+        >>> pc.Iter.from_(data).split_into([2, 3, None]).into(list)
         [[1, 2], [3, 4, 5], [6, 7, 8, 9, 0]]
 
         split_into can be useful for grouping a series of items where the sizes of the groups are not uniform.
@@ -145,14 +145,14 @@ class BaseList[T](IterWrapper[T]):
 
         For example, to find runs of increasing numbers, split the iterable when element i is larger than element i + 1:
         >>> import pychain as pc
-        >>> data = pc.Iter([1, 2, 3, 3, 2, 5, 2, 4, 2])
-        >>> data.split_when(lambda x, y: x > y).into(list)
+        >>> data = pc.Seq([1, 2, 3, 3, 2, 5, 2, 4, 2])
+        >>> data.iter().split_when(lambda x, y: x > y).into(list)
         [[1, 2, 3, 3], [2, 5], [2, 4], [2]]
 
         At most max_split splits are done.
 
         If max_split is not specified or -1, then there is no limit on the number of splits:
-        >>> data.split_when(lambda x, y: x > y, max_split=2).into(list)
+        >>> data.iter().split_when(lambda x, y: x > y, max_split=2).into(list)
         [[1, 2, 3, 3], [2, 5], [2, 4, 2]]
         """
         return self.apply(mit.split_when, predicate, max_split)
@@ -172,9 +172,9 @@ class BaseList[T](IterWrapper[T]):
         then ``ValueError`` will be raised before the last list is yielded.
 
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3, 4, 5, 6]).chunked(3).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).chunked(3).into(list)
         [[1, 2, 3], [4, 5, 6]]
-        >>> pc.Iter([1, 2, 3, 4, 5, 6, 7, 8]).chunked(3).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4, 5, 6, 7, 8]).chunked(3).into(list)
         [[1, 2, 3], [4, 5, 6], [7, 8]]
         """
         return self.apply(mit.chunked, n, strict)
@@ -185,17 +185,17 @@ class BaseList[T](IterWrapper[T]):
 
         Items are distributed such the lengths of the lists differ by at most 1 item.
         >>> import pychain as pc
-        >>> iterable = [1, 2, 3, 4, 5, 6, 7]
-        >>> pc.Iter(iterable).chunked_even(3).into(list)  # List lengths: 3, 2, 2
+        >>> iterable = pc.Seq([1, 2, 3, 4, 5, 6, 7])
+        >>> iterable.iter().chunked_even(3).into(list)  # List lengths: 3, 2, 2
         [[1, 2, 3], [4, 5], [6, 7]]
-        >>> pc.Iter(iterable).chunked(3).into(list)  # List lengths: 3, 3, 1
+        >>> iterable.iter().chunked(3).into(list)  # List lengths: 3, 3, 1
         [[1, 2, 3], [4, 5, 6], [7]]
         """
         return self.apply(mit.chunked_even, n)
 
-    def unique_to_each(self, *others: Iterable[T]) -> Iter[list[T]]:
+    def unique_to_each[U: Iterable[Any]](self: IterWrapper[U]) -> Iter[list[U]]:
         """
-        Return the elements from each of the input iterables that aren't in the other input iterables.
+        Return the elements from each of the iterables that aren't in the other iterables.
 
         For example, suppose you have a set of packages, each with a set of dependencies:
 
@@ -208,14 +208,15 @@ class BaseList[T](IterWrapper[T]):
         Similarly, C is only needed for pkg_2, and D is only needed for pkg_3:
 
         >>> import pychain as pc
-        >>> data = {"A", "B"}
-        >>> pc.Iter(data).unique_to_each({"B", "C"}, {"B", "D"}).collect().unwrap()
+        >>> data = ({"A", "B"}, {"B", "C"}, {"B", "D"})
+        >>> pc.Iter.from_(data).unique_to_each().collect().unwrap()
         [['A'], ['C'], ['D']]
 
         If there are duplicates in one input iterable that aren't in the others they will be duplicated in the output.
 
         Input order is preserved:
-        >>> pc.Iter("mississippi").unique_to_each("missouri").collect().unwrap()
+        >>> data = ("mississippi", "missouri")
+        >>> pc.Iter.from_(data).unique_to_each().collect().unwrap()
         [['p', 'p'], ['o', 'u', 'r']]
 
         It is assumed that the elements of each iterable are hashable.
@@ -223,11 +224,11 @@ class BaseList[T](IterWrapper[T]):
 
         from collections import Counter
 
-        def _unique_to_each(data: Iterable[T]) -> Generator[list[T], None, None]:
+        def _unique_to_each(data: Iterable[U]) -> Generator[list[U], None, None]:
             """from more_itertools.unique_to_each"""
-            pool: list[Iterable[T]] = [it for it in (data, *others)]
-            counts: Counter[T] = Counter(itertools.chain.from_iterable(map(set, pool)))
-            uniques: set[T] = {element for element in counts if counts[element] == 1}
+            pool: list[Iterable[U]] = [it for it in data]
+            counts: Counter[U] = Counter(itertools.chain.from_iterable(map(set, pool)))
+            uniques: set[U] = {element for element in counts if counts[element] == 1}
             return ((list(filter(uniques.__contains__, it))) for it in pool)
 
         return self.apply(_unique_to_each)

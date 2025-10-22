@@ -89,7 +89,7 @@ def get_palettes() -> pc.Dict[str, list[str]]:
     clr = "color"
     scl = "scale"
     df: pl.DataFrame = (
-        pc.Iter(MODULES)
+        pc.Iter.from_(MODULES)
         .map(
             lambda mod: pc.Dict.from_(mod)
             .filter_values(lambda v: isinstance(v, list))
@@ -108,7 +108,7 @@ def get_palettes() -> pc.Dict[str, list[str]]:
     )
     keys: list[str] = df.get_column(scl).to_list()
     values: list[list[str]] = df.get_column(clr).to_list()
-    return pc.Iter(keys).with_values(values)
+    return pc.Iter.from_(keys).with_values(values)
 
 
 # Ouput excerpt:
@@ -194,11 +194,11 @@ Operate on iterables of iterables or iterables of dicts without leaving the chai
 ```python
 import pychain as pc
 
-nested = pc.Iter([[1, 2, 3], [4, 5]])
+nested = pc.Iter.from_([[1, 2, 3], [4, 5]])
 totals = nested.itr(lambda it: it.sum()).into(list)
 # [6, 9]
 
-records = pc.Iter(
+records = pc.Iter.from_(
     [
         {"name": "Alice", "age": 30},
         {"name": "Bob", "age": 25},

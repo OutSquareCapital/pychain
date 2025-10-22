@@ -16,11 +16,11 @@ class BaseBool[T](IterWrapper[T]):
 
         If the iterable is empty, return True.
         >>> import pychain as pc
-        >>> pc.Iter([1, True]).all()
+        >>> pc.Iter.from_([1, True]).all()
         True
-        >>> pc.Iter([]).all()
+        >>> pc.Iter.from_([]).all()
         True
-        >>> pc.Iter([1, 0]).all()
+        >>> pc.Iter.from_([1, 0]).all()
         False
         """
         return self.into(all)
@@ -31,11 +31,11 @@ class BaseBool[T](IterWrapper[T]):
 
         If the iterable is empty, return False.
         >>> import pychain as pc
-        >>> pc.Iter([1, 0]).not_all()
+        >>> pc.Iter.from_([1, 0]).not_all()
         True
-        >>> pc.Iter([1, True]).not_all()
+        >>> pc.Iter.from_([1, True]).not_all()
         False
-        >>> pc.Iter([]).not_all()
+        >>> pc.Iter.from_([]).not_all()
         False
         """
 
@@ -50,7 +50,7 @@ class BaseBool[T](IterWrapper[T]):
 
         If the iterable is empty, return False.
         >>> import pychain as pc
-        >>> pc.Iter([0, 1]).any()
+        >>> pc.Iter.from_([0, 1]).any()
         True
         >>> pc.Iter.from_(range(0)).any()
         False
@@ -63,11 +63,11 @@ class BaseBool[T](IterWrapper[T]):
 
         If the iterable is empty, return True.
         >>> import pychain as pc
-        >>> pc.Iter([0, False]).not_any()
+        >>> pc.Iter.from_([0, False]).not_any()
         True
-        >>> pc.Iter([0, 1]).not_any()
+        >>> pc.Iter.from_([0, 1]).not_any()
         False
-        >>> pc.Iter([]).not_any()
+        >>> pc.Iter.from_([]).not_any()
         True
         """
 
@@ -80,7 +80,7 @@ class BaseBool[T](IterWrapper[T]):
         """
         Return True if all items are distinct.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2]).is_distinct()
+        >>> pc.Iter.from_([1, 2]).is_distinct()
         True
         """
         return self.into(cz.itertoolz.isdistinct)
@@ -89,13 +89,13 @@ class BaseBool[T](IterWrapper[T]):
         """
         Return True if all items are equal.
         >>> import pychain as pc
-        >>> pc.Iter([1, 1, 1]).all_equal()
+        >>> pc.Iter.from_([1, 1, 1]).all_equal()
         True
 
         A function that accepts a single argument and returns a transformed version of each input item can be specified with key:
-        >>> pc.Iter("AaaA").all_equal(key=str.casefold)
+        >>> pc.Iter.from_("AaaA").all_equal(key=str.casefold)
         True
-        >>> pc.Iter([1, 2, 3]).all_equal(key=lambda x: x < 10)
+        >>> pc.Iter.from_([1, 2, 3]).all_equal(key=lambda x: x < 10)
         True
         """
         return self.into(mit.all_equal, key=key)
@@ -104,14 +104,14 @@ class BaseBool[T](IterWrapper[T]):
         """
         Returns True if all the elements of iterable are unique (no two elements are equal).
         >>> import pychain as pc
-        >>> pc.Iter("ABCB").all_unique()
+        >>> pc.Iter.from_("ABCB").all_unique()
         False
 
         If a key function is specified, it will be used to make comparisons.
-        >>> pc.Iter("ABCb").all_unique()
+        >>> pc.Iter.from_("ABCb").all_unique()
         True
 
-        >>> pc.Iter("ABCb").all_unique(str.lower)
+        >>> pc.Iter.from_("ABCb").all_unique(str.lower)
         False
 
         The function returns as soon as the first non-unique element is encountered.
@@ -132,15 +132,15 @@ class BaseBool[T](IterWrapper[T]):
 
         Key and reverse have the same meaning that they do in the built-in sorted function.
         >>> import pychain as pc
-        >>> pc.Iter(["1", "2", "3", "4", "5"]).is_sorted(key=int)
+        >>> pc.Iter.from_(["1", "2", "3", "4", "5"]).is_sorted(key=int)
         True
-        >>> pc.Iter([5, 4, 3, 1, 2]).is_sorted(reverse=True)
+        >>> pc.Iter.from_([5, 4, 3, 1, 2]).is_sorted(reverse=True)
         False
 
         If strict, tests for strict sorting, that is, returns False if equal elements are found:
-        >>> pc.Iter([1, 2, 2]).is_sorted()
+        >>> pc.Iter.from_([1, 2, 2]).is_sorted()
         True
-        >>> pc.Iter([1, 2, 2]).is_sorted(strict=True)
+        >>> pc.Iter.from_([1, 2, 2]).is_sorted(strict=True)
         False
 
         The function returns False after encountering the first out-of-order item.

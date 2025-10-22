@@ -15,7 +15,6 @@ from ._maps import BaseMap
 from ._partitions import BasePartitions
 from ._process import BaseProcess
 from ._rolling import BaseRolling
-from ._transfos import BaseTransfos
 from ._tuples import BaseTuples
 
 if TYPE_CHECKING:
@@ -32,7 +31,6 @@ class Iter[T](
     BaseList[T],
     BaseTuples[T],
     BasePartitions[T],
-    BaseTransfos[T],
     BaseJoins[T],
     BaseGroups[T],
     BaseEager[T],
@@ -72,7 +70,7 @@ class Iter[T](
         ...     [4, 5],
         ...     [6, 7, 8, 9],
         ... ]
-        >>> pc.Iter(data).itr(
+        >>> pc.Iter.from_(data).itr(
         ...     lambda x: x.repeat(2)
         ...     .explode()
         ...     .reduce(lambda a, b: a + b)  # doctest: +SKIP
@@ -112,14 +110,14 @@ class Iter[T](
         >>> def set_continent(d: pc.Dict[str, Any], value: str) -> dict[str, Any]:
         ...     return d.with_key("Continent", value).unwrap()
         >>>
-        >>> pc.Iter(data).struct(to_title).filter_false(is_young).map(
+        >>> pc.Iter.from_(data).struct(to_title).filter_false(is_young).map(
         ...     lambda d: d.drop("Age").with_key("Continent", "NA")
         ... ).map_if(
         ...     lambda d: d.unwrap().get("City") == "Paris",
         ...     lambda d: set_continent(d, "Europe"),
         ...     lambda d: set_continent(d, "America"),
         ... ).group_by(lambda d: d.get("Continent")).map_values(
-        ...     lambda d: pc.Iter(d)
+        ...     lambda d: pc.Iter.from_(d)
         ...     .struct(lambda d: d.drop("Continent").unwrap())
         ...     .into(list)
         ... )  # doctest: +NORMALIZE_WHITESPACE
@@ -146,11 +144,13 @@ class Iter[T](
         >>> import pychain as pc
         >>> keys = ["a", "b", "c"]
         >>> values = [1, 2, 3]
-        >>> pc.Iter(values).with_keys(keys).unwrap()
+        >>> pc.Iter.from_(values).with_keys(keys).unwrap()
         {'a': 1, 'b': 2, 'c': 3}
 
         This is equivalent to:
-        >>> pc.Iter(keys).zip(values).pipe(lambda x: pc.Dict(x.into(dict)).unwrap())
+        >>> pc.Iter.from_(keys).zip(values).pipe(
+        ...     lambda x: pc.Dict(x.into(dict)).unwrap()
+        ... )
         {'a': 1, 'b': 2, 'c': 3}
         """
         from .._dict import Dict
@@ -163,11 +163,13 @@ class Iter[T](
         >>> import pychain as pc
         >>> keys = [1, 2, 3]
         >>> values = ["a", "b", "c"]
-        >>> pc.Iter(keys).with_values(values).unwrap()
+        >>> pc.Iter.from_(keys).with_values(values).unwrap()
         {1: 'a', 2: 'b', 3: 'c'}
 
         This is equivalent to:
-        >>> pc.Iter(keys).zip(values).pipe(lambda x: pc.Dict(x.into(dict)).unwrap())
+        >>> pc.Iter.from_(keys).zip(values).pipe(
+        ...     lambda x: pc.Dict(x.into(dict)).unwrap()
+        ... )
         {1: 'a', 2: 'b', 3: 'c'}
         """
         from .._dict import Dict
@@ -175,7 +177,7 @@ class Iter[T](
         return Dict(dict(zip(self.unwrap(), values)))
 
 
-class Seq[T](BaseAgg[T]):
+class Seq[T](BaseAgg[T], BaseEager[T]):
     __slots__ = ("_data",)
 
     def __init__(self, data: Collection[T]) -> None:

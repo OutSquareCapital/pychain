@@ -1,5 +1,5 @@
 from ._core import Wrapper
 from ._dict import Dict, key
-from ._iter import Iter
+from ._iter import Iter, Seq
 
-__all__ = ["Dict", "Iter", "Wrapper", "key"]
+__all__ = ["Dict", "Iter", "Wrapper", "key", "Seq"]

@@ -29,11 +29,11 @@ class BasePartitions[T](IterWrapper[T]):
         """
         A sequence of overlapping subsequences of the given length.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3, 4]).sliding_window(2).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4]).sliding_window(2).into(list)
         [(1, 2), (2, 3), (3, 4)]
 
         This function allows you to apply custom function not available in the rolling namespace.
-        >>> pc.Iter([1, 2, 3, 4]).sliding_window(2).map(
+        >>> pc.Iter.from_([1, 2, 3, 4]).sliding_window(2).map(
         ...     lambda seq: float(sum(seq)) / len(seq)
         ... ).into(list)
         [1.5, 2.5, 3.5]
@@ -58,11 +58,11 @@ class BasePartitions[T](IterWrapper[T]):
         """
         Partition sequence into tuples of length n
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3, 4]).partition(2).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4]).partition(2).into(list)
         [(1, 2), (3, 4)]
 
         If the length of seq is not evenly divisible by n, the final tuple is dropped if pad is not specified, or filled to length n by pad:
-        >>> pc.Iter([1, 2, 3, 4, 5]).partition(2).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4, 5]).partition(2).into(list)
         [(1, 2), (3, 4), (5, None)]
         """
 
@@ -74,9 +74,9 @@ class BasePartitions[T](IterWrapper[T]):
 
         The final tuple may be shorter to accommodate extra elements.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3, 4]).partition_all(2).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4]).partition_all(2).into(list)
         [(1, 2), (3, 4)]
-        >>> pc.Iter([1, 2, 3, 4, 5]).partition_all(2).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4, 5]).partition_all(2).into(list)
         [(1, 2), (3, 4), (5,)]
         """
         return self.apply(partial(cz.itertoolz.partition_all, n))
@@ -88,11 +88,11 @@ class BasePartitions[T](IterWrapper[T]):
         Every time the output of `predicate` changes, a new `tuple` is started,
         and subsequent items are collected into that `tuple`.
         >>> import pychain as pc
-        >>> pc.Iter("I have space").partition_by(lambda c: c == " ").into(list)
+        >>> pc.Iter.from_("I have space").partition_by(lambda c: c == " ").into(list)
         [('I',), (' ',), ('h', 'a', 'v', 'e'), (' ',), ('s', 'p', 'a', 'c', 'e')]
         >>>
         >>> data = [1, 2, 1, 99, 88, 33, 99, -1, 5]
-        >>> pc.Iter(data).partition_by(lambda x: x > 10).into(list)
+        >>> pc.Iter.from_(data).partition_by(lambda x: x > 10).into(list)
         [(1, 2, 1), (99, 88, 33, 99), (-1, 5)]
 
         """
@@ -105,7 +105,7 @@ class BasePartitions[T](IterWrapper[T]):
         - The data is consumed lazily, just enough to fill a batch.
         - The result is yielded as soon as a batch is full or when the input iterable is exhausted.
         >>> import pychain as pc
-        >>> pc.Iter("ABCDEFG").batch(3).into(list)
+        >>> pc.Iter.from_("ABCDEFG").batch(3).into(list)
         [('A', 'B', 'C'), ('D', 'E', 'F'), ('G',)]
         """
         return self.apply(itertools.batched, n)

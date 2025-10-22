@@ -78,7 +78,7 @@ class Dict[K, V](
         ...     "age",  # shorthand for pc.key("age")
         ...     scores_expr.key("math").alias("math_scores"),
         ...     scores_expr.key("eng")
-        ...     .apply(lambda v: pc.Iter(v).mean())
+        ...     .apply(lambda v: pc.Seq(v).mean())
         ...     .alias("average_eng_score"),
         ... ).unwrap()
         {'student_name': 'Alice', 'age': 30, 'math_scores': [80, 88, 92], 'average_eng_score': 90}
@@ -101,7 +101,7 @@ class Dict[K, V](
         >>> scores_expr = pc.key("scores")  # save an expression for reuse
         >>> pc.Dict(data).with_fields(
         ...     scores_expr.key("eng")
-        ...     .apply(lambda v: pc.Iter(v).mean())
+        ...     .apply(lambda v: pc.Seq(v).mean())
         ...     .alias("average_eng_score"),
         ... ).unwrap()
         {'name': 'Alice', 'age': 30, 'scores': {'eng': [85, 90, 95], 'math': [80, 88, 92]}, 'average_eng_score': 90}
