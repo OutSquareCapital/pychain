@@ -54,9 +54,9 @@ class BaseJoins[T](IterWrapper[T]):
         """
         Zip with other iterables, optionally strict.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2]).zip([10, 20]).into(list)
+        >>> pc.Iter.from_([1, 2]).zip([10, 20]).into(list)
         [(1, 10), (2, 20)]
-        >>> pc.Iter(["a", "b"]).zip([1, 2, 3]).into(list)
+        >>> pc.Iter.from_(["a", "b"]).zip([1, 2, 3]).into(list)
         [('a', 1), ('b', 2)]
         """
         return self.apply(zip, *others, strict=strict)
@@ -71,8 +71,8 @@ class BaseJoins[T](IterWrapper[T]):
         """
         Zip the input iterables together, but offset the i-th iterable by the i-th item in offsets.
         >>> import pychain as pc
-        >>> data = pc.Iter("0123")
-        >>> data.zip_offset("abcdef", offsets=(0, 1)).into(list)
+        >>> data = pc.Seq("0123")
+        >>> data.iter().zip_offset("abcdef", offsets=(0, 1)).into(list)
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e')]
 
         This can be used as a lightweight alternative to SciPy or pandas to analyze data sets in which some series have a lead or lag relationship.
@@ -80,7 +80,7 @@ class BaseJoins[T](IterWrapper[T]):
         By default, the sequence will end when the shortest iterable is exhausted.
 
         To continue until the longest iterable is exhausted, set longest to True.
-        >>> data.zip_offset("abcdef", offsets=(0, 1), longest=True).into(list)
+        >>> data.iter().zip_offset("abcdef", offsets=(0, 1), longest=True).into(list)
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e'), (None, 'f')]
         """
         return self.apply(
@@ -139,7 +139,7 @@ class BaseJoins[T](IterWrapper[T]):
 
         ``str`` and ``bytes`` are not treated as iterables.
         >>> import pychain as pc
-        >>> data = pc.Iter([1, 2, 3])
+        >>> data = pc.Iter.from_([1, 2, 3])
         >>> other = ["a", "b", "c"]
         >>> scalar = "_"
         >>> data.zip_broadcast(other, scalar).into(list)
@@ -237,7 +237,7 @@ class BaseJoins[T](IterWrapper[T]):
         """
         Zip with other iterables, filling missing values.
         >>> import pychain as pc
-        >>> pc.Iter([1, 2]).zip_longest([10], fill_value=0).into(list)
+        >>> pc.Iter.from_([1, 2]).zip_longest([10], fill_value=0).into(list)
         [(1, 10), (2, 0)]
         """
         return self.apply(itertools.zip_longest, *others, fillvalue=fill_value)
@@ -272,7 +272,7 @@ class BaseJoins[T](IterWrapper[T]):
         It pairs every element from the source iterable with every element from the
         other iterable.
         >>> import pychain as pc
-        >>> colors = pc.Iter(["blue", "red"])
+        >>> colors = pc.Iter.from_(["blue", "red"])
         >>> sizes = ["S", "M"]
         >>> colors.product(sizes).into(list)
         [('blue', 'S'), ('blue', 'M'), ('red', 'S'), ('red', 'M')]
@@ -292,15 +292,15 @@ class BaseJoins[T](IterWrapper[T]):
 
         If an input iterable is exhausted before others, then the corresponding output items will be filled with *default*.
         >>> import pychain as pc
-        >>> data = pc.Iter([1, 2, 3])
-        >>> data.diff_at([1, 2, 10, 100], default=None).into(list)
+        >>> data = pc.Seq([1, 2, 3])
+        >>> data.iter().diff_at([1, 2, 10, 100], default=None).into(list)
         [(3, 10), (None, 100)]
-        >>> data.diff_at([1, 2, 10, 100, 2, 6, 7], default=0).into(list)
+        >>> data.iter().diff_at([1, 2, 10, 100, 2, 6, 7], default=0).into(list)
         [(3, 10), (0, 100), (0, 2), (0, 6), (0, 7)]
 
         A key function may also be applied to each item to use during comparisons:
         >>> import pychain as pc
-        >>> pc.Iter(["apples", "bananas"]).diff_at(
+        >>> pc.Iter.from_(["apples", "bananas"]).diff_at(
         ...     ["Apples", "Oranges"], key=str.lower
         ... ).into(list)
         [('bananas', 'Oranges')]
@@ -318,7 +318,7 @@ class BaseJoins[T](IterWrapper[T]):
         """
         Perform a relational join with another iterable.
         >>> import pychain as pc
-        >>> colors = pc.Iter(["blue", "red"])
+        >>> colors = pc.Iter.from_(["blue", "red"])
         >>> sizes = ["S", "M"]
         >>> colors.join(sizes, left_on=lambda c: c, right_on=lambda s: s).into(list)
         [(None, 'S'), (None, 'M'), ('blue', None), ('red', None)]
