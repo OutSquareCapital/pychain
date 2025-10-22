@@ -84,13 +84,13 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         """
         from ._main import Dict
 
-        def _(data: dict[K, V]) -> dict[G, R]:
+        def _group_by_key_agg(data: dict[K, V]) -> dict[G, R]:
             groups = cz.itertoolz.groupby(lambda kv: key_func(kv[0]), data.items())
             return cz.dicttoolz.valmap(
                 lambda items: agg_func(Dict(dict(items))), groups
             )
 
-        return self.apply(_)
+        return self.apply(_group_by_key_agg)
 
     def group_by_value_agg[G, R](
         self,
@@ -129,10 +129,10 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         """
         from ._main import Dict
 
-        def _(data: dict[K, V]) -> dict[G, R]:
+        def _group_by_value_agg(data: dict[K, V]) -> dict[G, R]:
             groups = cz.itertoolz.groupby(lambda kv: value_func(kv[1]), data.items())
             return cz.dicttoolz.valmap(
                 lambda items: agg_func(Dict(dict(items))), groups
             )
 
-        return self.apply(_)
+        return self.apply(_group_by_value_agg)

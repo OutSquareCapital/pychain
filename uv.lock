@@ -122,7 +122,7 @@ wheels = [
 [[package]]
 name = "cytoolz-stubs"
 version = "0.2.2"
-source = { git = "https://github.com/py-stubs/cytoolz-stubs.git#c992d74b199c54b1431c1c963923dade23dc4e1d" }
+source = { git = "https://github.com/py-stubs/cytoolz-stubs.git#2b07a765490701af9e95f44ef8caedb2d1cfa221" }
 
 [[package]]
 name = "more-itertools"

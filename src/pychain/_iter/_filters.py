@@ -36,11 +36,11 @@ class BaseFilter[T](IterWrapper[T]):
         [2, 4]
         """
 
-        def _(data: Iterable[T]) -> Generator[T, None, None]:
+        def _filter_isin(data: Iterable[T]) -> Generator[T, None, None]:
             value_set: set[T] = set(values)
             return (x for x in data if x in value_set)
 
-        return self.apply(_)
+        return self.apply(_filter_isin)
 
     def filter_notin(self, values: Iterable[T]) -> Iter[T]:
         """
@@ -51,11 +51,11 @@ class BaseFilter[T](IterWrapper[T]):
         [1, 3]
         """
 
-        def _(data: Iterable[T]) -> Generator[T, None, None]:
+        def _filter_notin(data: Iterable[T]) -> Generator[T, None, None]:
             value_set: set[T] = set(values)
             return (x for x in data if x not in value_set)
 
-        return self.apply(_)
+        return self.apply(_filter_notin)
 
     def filter_contain(
         self: IterWrapper[str], text: str, format: Callable[[str], str] | None = None
@@ -73,14 +73,14 @@ class BaseFilter[T](IterWrapper[T]):
         ['BANANA']
         """
 
-        def _(data: Iterable[str]) -> Generator[str, None, None]:
+        def _filter_contain(data: Iterable[str]) -> Generator[str, None, None]:
             def _(x: str) -> bool:
                 formatted = format(x) if format else x
                 return text in formatted
 
             return (x for x in data if _(x))
 
-        return self.apply(_)
+        return self.apply(_filter_contain)
 
     def filter_attr[U](self, attr: str, dtype: type[U] = object) -> Iter[U]:
         """
@@ -128,10 +128,10 @@ class BaseFilter[T](IterWrapper[T]):
         ['1', '2', '4']
         """
 
-        def _(data: Iterable[T]) -> Iterator[T]:
+        def _filter_except(data: Iterable[T]) -> Iterator[T]:
             return mit.filter_except(func, data, *exceptions)
 
-        return self.apply(_)
+        return self.apply(_filter_except)
 
     def take_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
         """
@@ -259,10 +259,10 @@ class BaseFilter[T](IterWrapper[T]):
         [2, 3, 4]
         """
 
-        def _(data: Iterable[T]) -> Iterator[T]:
+        def _slice(data: Iterable[T]) -> Iterator[T]:
             return itertools.islice(data, start, stop)
 
-        return self.apply(_)
+        return self.apply(_slice)
 
     def filter_subclass[U: type[Any], R](
         self: IterWrapper[U], parent: type[R], keep_parent: bool = True
@@ -286,13 +286,15 @@ class BaseFilter[T](IterWrapper[T]):
         ['B']
         """
 
-        def _(data: Iterable[type[Any]]) -> Generator[type[R], None, None]:
+        def _filter_subclass(
+            data: Iterable[type[Any]],
+        ) -> Generator[type[R], None, None]:
             if keep_parent:
                 return (x for x in data if issubclass(x, parent))
             else:
                 return (x for x in data if issubclass(x, parent) and x is not parent)
 
-        return self.apply(_)
+        return self.apply(_filter_subclass)
 
     def filter_type[R](self, typ: type[R]) -> Iter[R]:
         """
@@ -302,10 +304,10 @@ class BaseFilter[T](IterWrapper[T]):
         [1, 5]
         """
 
-        def _(data: Iterable[T]) -> Generator[R, None, None]:
+        def _filter_type(data: Iterable[T]) -> Generator[R, None, None]:
             return (x for x in data if isinstance(x, typ))
 
-        return self.apply(_)
+        return self.apply(_filter_type)
 
     def filter_callable(self) -> Iter[Callable[..., Any]]:
         """
@@ -315,10 +317,12 @@ class BaseFilter[T](IterWrapper[T]):
         [<built-in function len>, <class 'str'>, <class 'list'>]
         """
 
-        def _(data: Iterable[T]) -> Generator[Callable[..., Any], None, None]:
+        def _filter_callable(
+            data: Iterable[T],
+        ) -> Generator[Callable[..., Any], None, None]:
             return (x for x in data if callable(x))
 
-        return self.apply(_)
+        return self.apply(_filter_callable)
 
     def filter_map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """

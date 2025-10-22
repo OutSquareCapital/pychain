@@ -99,7 +99,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
             def has_attr(x: V) -> TypeGuard[U]:
                 return hasattr(x, attr)
 
-            return cz.dicttoolz.valfilter(has_attr, data)  # type: ignore
+            return cz.dicttoolz.valfilter(has_attr, data)
 
         return self.apply(_filter_attr)
 
@@ -114,10 +114,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         """
 
         def _filter_type(data: dict[K, V]) -> dict[K, R]:
-            def _(_: V) -> TypeGuard[R]:
-                return isinstance(_, typ)
+            def _(x: V) -> TypeGuard[R]:
+                return isinstance(x, typ)
 
-            return cz.dicttoolz.valfilter(_, data)  # type: ignore
+            return cz.dicttoolz.valfilter(_, data)
 
         return self.apply(_filter_type)
 
@@ -134,7 +134,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         """
 
         def _filter_callable(data: dict[K, V]) -> dict[K, Callable[..., Any]]:
-            return cz.dicttoolz.valfilter(callable, data)  # type: ignore
+            def _(x: V) -> TypeGuard[Callable[..., Any]]:
+                return callable(x)
+
+            return cz.dicttoolz.valfilter(_, data)
 
         return self.apply(_filter_callable)
 
@@ -170,7 +173,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
                 else:
                     return issubclass(x, parent) and x is not parent
 
-            return cz.dicttoolz.valfilter(_, data)  # type: ignore
+            return cz.dicttoolz.valfilter(_, data)
 
         return self.apply(_filter_subclass)
 
@@ -186,13 +189,13 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {'c': 3}
         """
 
-        def _(data: dict[K, V]) -> dict[K, V]:
+        def _intersect_keys(data: dict[K, V]) -> dict[K, V]:
             self_keys = set(data.keys())
             for other in others:
                 self_keys.intersection_update(other.keys())
             return {k: data[k] for k in self_keys}
 
-        return self._new(_)
+        return self._new(_intersect_keys)
 
     def diff_keys(self, *others: Mapping[K, V]) -> Self:
         """
@@ -206,10 +209,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {'a': 1}
         """
 
-        def _(data: dict[K, V]) -> dict[K, V]:
+        def _diff_keys(data: dict[K, V]) -> dict[K, V]:
             self_keys = set(data.keys())
             for other in others:
                 self_keys.difference_update(other.keys())
             return {k: data[k] for k in self_keys}
 
-        return self._new(_)
+        return self._new(_diff_keys)

@@ -218,12 +218,7 @@ class BaseGroups[T](IterWrapper[T]):
         Only adjacent items are grouped together, so if you don't want any duplicate groups, you should sort the iterable by the key function.
         """
 
-        def _(data: Iterable[T]) -> Iterator[tuple[Any, ...]]:
-            return mit.groupby_transform(
-                data,
-                keyfunc=keyfunc,
-                valuefunc=valuefunc,
-                reducefunc=reducefunc,
-            )
+        def _group_by_transform(data: Iterable[T]) -> Iterator[tuple[Any, ...]]:
+            return mit.groupby_transform(data, keyfunc, valuefunc, reducefunc)
 
-        return self.apply(_)
+        return self.apply(_group_by_transform)

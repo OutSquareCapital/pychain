@@ -66,7 +66,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         {'config.params': {'retries': 3, 'timeout': 30}, 'config.mode': 'fast', 'version': 1.0}
         """
 
-        def _(
+        def _flatten(
             d: dict[Any, Any], parent_key: str = "", current_depth: int = 1
         ) -> dict[str, Any]:
             items: list[tuple[str, Any]] = []
@@ -76,13 +76,13 @@ class NestedDict[K, V](MappingWrapper[K, V]):
                     max_depth is None or current_depth < max_depth + 1
                 ):
                     items.extend(
-                        _(v, new_key, current_depth + 1).items()  # type: ignore
+                        _flatten(v, new_key, current_depth + 1).items()  # type: ignore
                     )
                 else:
                     items.append((new_key, v))  # type: ignore
             return dict(items)
 
-        return self.apply(_)
+        return self.apply(_flatten)
 
     def with_nested_key(self, *keys: K, value: V) -> Dict[K, V]:
         """
@@ -125,7 +125,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         {'level1': {'level2': {'level3': 'dict'}}, 'other_key': 'int', 'list_key': {'sub_key': 'str'}}
         """
 
-        def _(data: dict[Any, Any]) -> Any:
+        def _schema(data: dict[Any, Any]) -> Any:
             def _recurse_schema(node: Any, current_depth: int) -> Any:
                 if isinstance(node, dict):
                     if current_depth >= max_depth:
@@ -143,7 +143,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
 
             return _recurse_schema(data, 0)
 
-        return self.apply(_)
+        return self.apply(_schema)
 
     def pluck[U: str | int](self: NestedDict[U, Any], *keys: str) -> Dict[U, Any]:
         """

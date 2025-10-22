@@ -21,7 +21,8 @@ class IterDict[K, V](MappingWrapper[K, V]):
     ) -> Dict[K, R]:
         """
         Apply a function to each value after wrapping it in an Iter.
-        Syntactic sugar for map_values(lambda data: func(Iter(data), *args, **kwargs))
+
+        Syntactic sugar for ``map_values(lambda data: func(Iter(data), *args, **kwargs))``
         >>> import pychain as pc
         >>> data = {
         ...     "numbers1": [1, 2, 3],

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Generator, Iterable, Iterator
 from functools import partial
 from random import Random
 from typing import TYPE_CHECKING, Any
@@ -13,6 +13,20 @@ from .._core import IterWrapper, Peeked
 
 if TYPE_CHECKING:
     from ._main import Iter
+
+
+def _too_short(item_count: int):
+    return mit.raise_(
+        ValueError,
+        f"Too few items in iterable (got {item_count})",
+    )
+
+
+def _too_long(item_count: int):
+    return mit.raise_(
+        ValueError,
+        f"Too many items in iterable (got at least {item_count})",
+    )
 
 
 class BaseProcess[T](IterWrapper[T]):
@@ -103,12 +117,12 @@ class BaseProcess[T](IterWrapper[T]):
         [1, 2, 3]
         """
 
-        def _(data: Iterable[T]) -> Iterator[T]:
+        def _peekn(data: Iterable[T]) -> Iterator[T]:
             peeked = Peeked(*cz.itertoolz.peekn(n, data))
             print(f"Peeked {n} values: {peeked.value}")
             return peeked.sequence
 
-        return self.apply(_)
+        return self.apply(_peekn)
 
     def peek(self) -> Iter[T]:
         """
@@ -119,12 +133,12 @@ class BaseProcess[T](IterWrapper[T]):
         [1, 2]
         """
 
-        def _(data: Iterable[T]) -> Iterator[T]:
+        def _peek(data: Iterable[T]) -> Iterator[T]:
             peeked = Peeked(*cz.itertoolz.peek(data))
             print(f"Peeked value: {peeked.value}")
             return peeked.sequence
 
-        return self.apply(_)
+        return self.apply(_peek)
 
     def merge_sorted(
         self, *others: Iterable[T], sort_on: Callable[[T], Any] | None = None
@@ -210,8 +224,8 @@ class BaseProcess[T](IterWrapper[T]):
     def is_strictly_n(
         self,
         n: int,
-        too_short: Callable[..., Iterator[T]] | None = None,
-        too_long: Callable[..., Iterator[T]] | None = None,
+        too_short: Callable[[int], Iterator[T]] | Callable[[int], None] = _too_short,
+        too_long: Callable[[int], Iterator[T]] | Callable[[int], None] = _too_long,
     ) -> Iter[T]:
         """
         Validate that *iterable* has exactly *n* items and return them if it does.
@@ -262,4 +276,22 @@ class BaseProcess[T](IterWrapper[T]):
         The boss is going to hear about this
         ['a', 'b', 'c', 'd']
         """
-        return self.apply(mit.strictly_n, n, too_short, too_long)  # type: ignore
+
+        def strictly_n_(iterable: Iterable[T]) -> Generator[T, Any, None]:
+            """from more_itertools.strictly_n"""
+            it = iter(iterable)
+
+            sent = 0
+            for item in itertools.islice(it, n):
+                yield item
+                sent += 1
+
+            if sent < n:
+                too_short(sent)
+                return
+
+            for item in it:
+                too_long(n + 1)
+                return
+
+        return self.apply(strictly_n_)

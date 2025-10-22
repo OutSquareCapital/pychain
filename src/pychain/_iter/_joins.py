@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Generator, Iterable, Iterator
 from typing import TYPE_CHECKING, Any, overload
 
 import cytoolz as cz
@@ -148,10 +148,46 @@ class BaseJoins[T](IterWrapper[T]):
         If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
         """
 
-        def _(data: Iterable[T]) -> Iterator[tuple[T | Any, ...]]:
-            return mit.zip_broadcast(data, *others, strict=strict)  # type: ignore
+        def _zip_broadcast(
+            *objects: Iterable[Any],
+        ) -> Generator[tuple[Iterable[Any], ...] | tuple[object, ...], Any, None]:
+            """from more_itertools.zip_broadcast"""
 
-        return self.apply(_)
+            def is_scalar(obj: Any) -> bool:
+                if isinstance(obj, (str, bytes)):
+                    return True
+                try:
+                    iter(obj)
+                except TypeError:
+                    return True
+                else:
+                    return False
+
+            size = len(objects)
+            if not size:
+                return
+
+            new_item: list[object] = [None] * size
+            iterables: list[Iterator[Any]] = []
+            iterable_positions: list[int] = []
+            for i, obj in enumerate(objects):
+                if is_scalar(obj):
+                    new_item[i] = obj
+                else:
+                    iterables.append(iter(obj))
+                    iterable_positions.append(i)
+
+            if not iterables:
+                yield tuple(objects)
+                return
+
+            zipper = mit.zip_equal if strict else zip
+            for item in zipper(*iterables):
+                for i, new_item[i] in zip(iterable_positions, item):
+                    pass
+                yield tuple(new_item)
+
+        return self.apply(_zip_broadcast, *others)
 
     @overload
     def zip_equal(self) -> Iter[tuple[T]]: ...
@@ -190,10 +226,10 @@ class BaseJoins[T](IterWrapper[T]):
         lengths
         """
 
-        def _(data: Iterable[T]) -> Iterator[tuple[Any, ...]]:
+        def _zip_equal(data: Iterable[T]) -> Iterator[tuple[Any, ...]]:
             return mit.zip_equal(data, *others)
 
-        return self.apply(_)
+        return self.apply(_zip_equal)
 
     def zip_longest[U](
         self, *others: Iterable[T], fill_value: U = None

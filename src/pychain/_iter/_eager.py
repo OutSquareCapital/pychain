@@ -28,7 +28,7 @@ class BaseEager[T](IterWrapper[T]):
         [1, 2, 3]
         """
 
-        def _sort(data: Iterable[U]):
+        def _sort(data: Iterable[U]) -> list[U]:
             return sorted(data, reverse=reverse, key=key)
 
         return self.collect(_sort)

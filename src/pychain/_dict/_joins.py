@@ -58,7 +58,7 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
         {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
         """
 
-        def _(
+        def _diff(
             data: Mapping[K, V], other: Mapping[K, V]
         ) -> dict[K, tuple[V | None, V | None]]:
             all_keys: set[K] = data.keys() | other.keys()
@@ -70,7 +70,7 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
                     diffs[key] = (self_val, other_val)
             return diffs
 
-        return self.apply(_, other)
+        return self.apply(_diff, other)
 
     def merge(self, *others: Mapping[K, V]) -> Self:
         """
