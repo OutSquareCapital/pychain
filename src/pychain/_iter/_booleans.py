@@ -142,23 +142,23 @@ class BaseBool[T](IterWrapper[T]):
         return self.into(mit.is_sorted, key=key, reverse=reverse, strict=strict)
 
     @overload
-    def first_true(
+    def find(
         self, default: None = None, predicate: Callable[[T], bool] | None = ...
     ) -> T | None: ...
     @overload
-    def first_true(
-        self, default: T, predicate: Callable[[T], bool] | None = ...
-    ) -> T: ...
+    def find(self, default: T, predicate: Callable[[T], bool] | None = ...) -> T: ...
 
-    def first_true[U](
+    def find[U](
         self, default: U = None, predicate: Callable[[T], bool] | None = None
     ) -> U | T:
         """
-        Returns the first true value in the iterable.
+        Searches for an element of an iterator that satisfies a ``predicate``, by:
+        - Taking a closure that returns true or false as ``predicate`` (optional).
+        - Using the identity function if no ``predicate`` is provided.
+        - Applying this closure to each element of the iterator.
+        - Returning the first element that satisfies the ``predicate``.
 
-        If no true value is found, returns default
-
-        If pred is not None, returns the first item for which pred(item) == True .
+        If all the elements return false, ``Iter.find()`` returns the default value.
         >>> import pychain as pc
         >>> def gt_five(x: int) -> bool:
         ...     return x > 5
@@ -166,11 +166,11 @@ class BaseBool[T](IterWrapper[T]):
         >>> def gt_nine(x: int) -> bool:
         ...     return x > 9
         >>>
-        >>> pc.Iter.from_(range(10)).first_true()
+        >>> pc.Iter.from_(range(10)).find()
         1
-        >>> pc.Iter.from_(range(10)).first_true(predicate=gt_five)
+        >>> pc.Iter.from_(range(10)).find(predicate=gt_five)
         6
-        >>> pc.Iter.from_(range(10)).first_true(default="missing", predicate=gt_nine)
+        >>> pc.Iter.from_(range(10)).find(default="missing", predicate=gt_nine)
         'missing'
         """
         return self.into(mit.first_true, default, predicate)

@@ -18,10 +18,10 @@ class IterConstructors:
 
         **Warning** ⚠️
             This creates an infinite iterator.
-            Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
+            Be sure to use ``Iter.take()`` or ``Iter.slice()`` to limit the number of items taken.
 
         >>> import pychain as pc
-        >>> pc.Iter.from_count(10, 2).head(3).into(list)
+        >>> pc.Iter.from_count(10, 2).take(3).into(list)
         [10, 12, 14]
         """
         from ._main import Iter
@@ -29,21 +29,21 @@ class IterConstructors:
         return Iter(itertools.count(start, step))
 
     @staticmethod
-    def from_func[U](func: Callable[[U], U], x: U) -> Iter[U]:
+    def from_func[U](func: Callable[[U], U], input: U) -> Iter[U]:
         """
-        Create an infinite iterator by repeatedly applying a function into an original input x.
+        Create an infinite iterator by repeatedly applying a function into an original ``input``.
 
         **Warning** ⚠️
             This creates an infinite iterator.
-            Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
+            Be sure to use ``Iter.take()`` or ``Iter.slice()`` to limit the number of items taken.
 
         >>> import pychain as pc
-        >>> pc.Iter.from_func(lambda x: x + 1, 0).head(3).into(list)
+        >>> pc.Iter.from_func(lambda x: x + 1, 0).take(3).into(list)
         [0, 1, 2]
         """
         from ._main import Iter
 
-        return Iter(cz.itertoolz.iterate(func, x))
+        return Iter(cz.itertoolz.iterate(func, input))
 
     @staticmethod
     def from_[U](data: Iterable[U]) -> Iter[U]:
@@ -87,7 +87,7 @@ class IterConstructors:
 
         **Warning** ⚠️
             If the `generator` function never returns `None`, it creates an infinite iterator.
-            Be sure to use `Iter.head()` or `Iter.slice()` to limit the number of items taken if necessary.
+            Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken if necessary.
 
         >>> import pychain as pc
         >>> # Example 1: Simple counter up to 5
@@ -108,13 +108,13 @@ class IterConstructors:
         >>> pc.Iter.unfold(seed=(0, 1), generator=fib_generator).into(list)
         [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
 
-        >>> # Example 3: Infinite iterator (requires head())
-        >>> pc.Iter.unfold(seed=1, generator=lambda s: (s, s * 2)).head(5).into(list)
+        >>> # Example 3: Infinite iterator (requires take())
+        >>> pc.Iter.unfold(seed=1, generator=lambda s: (s, s * 2)).take(5).into(list)
         [1, 2, 4, 8, 16]
         """
         from ._main import Iter
 
-        def _generate() -> Iterator[V]:
+        def _unfold() -> Iterator[V]:
             current_seed: S = seed
             while True:
                 result: tuple[V, S] | None = generator(current_seed)
@@ -124,4 +124,4 @@ class IterConstructors:
                 yield value
                 current_seed = next_seed
 
-        return Iter(_generate())
+        return Iter(_unfold())

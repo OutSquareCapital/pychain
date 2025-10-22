@@ -169,12 +169,16 @@ class BaseMap[T](IterWrapper[T]):
     def repeat_last[U](self, default: U = None) -> Iter[T | U]:
         """
         After the iterable is exhausted, keep yielding its last element.
+        **Warning** ⚠️
+            This creates an infinite iterator.
+            Be sure to use ``Iter.take()`` or ``Iter.slice()`` to limit the number of items taken.
+
         >>> import pychain as pc
-        >>> pc.Iter.from_(range(3)).repeat_last().head(5).into(list)
+        >>> pc.Iter.from_(range(3)).repeat_last().take(5).into(list)
         [0, 1, 2, 2, 2]
 
         If the iterable is empty, yield default forever:
-        >>> pc.Iter.from_(range(0)).repeat_last(42).head(5).into(list)
+        >>> pc.Iter.from_(range(0)).repeat_last(42).take(5).into(list)
         [42, 42, 42, 42, 42]
         """
         return self.apply(mit.repeat_last, default)

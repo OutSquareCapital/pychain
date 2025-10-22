@@ -36,10 +36,10 @@ class BaseProcess[T](IterWrapper[T]):
 
         **Warning** ⚠️
             This creates an infinite iterator.
-            Be sure to use Iter.head() or Iter.slice() to limit the number of items taken.
+            Be sure to use Iter.take() or Iter.slice() to limit the number of items taken.
 
         >>> import pychain as pc
-        >>> pc.Iter.from_([1, 2]).cycle().head(5).into(list)
+        >>> pc.Iter.from_([1, 2]).cycle().take(5).into(list)
         [1, 2, 1, 2, 1]
         """
         return self.apply(itertools.cycle)

@@ -177,12 +177,21 @@ class BaseFilter[T](IterWrapper[T]):
         """
         return self.apply(cz.itertoolz.unique, key=key)
 
-    def head(self, n: int) -> Iter[T]:
+    def take(self, n: int) -> Iter[T]:
         """
-        Return first n elements wrapped.
+        Creates an iterator that yields the first n elements, or fewer if the underlying iterator ends sooner.
+
+        ``Iter.take(n)`` yields elements until n elements are yielded or the end of the iterator is reached (whichever happens first).
+
+        The returned iterator is either:
+        - A prefix of length n if the original iterator contains at least n elements
+        - All of the (fewer than n) elements of the original iterator if it contains fewer than n elements.
         >>> import pychain as pc
-        >>> pc.Iter.from_([1, 2, 3]).head(2).into(list)
+        >>> data = [1, 2, 3]
+        >>> pc.Iter.from_(data).take(2).into(list)
         [1, 2]
+        >>> pc.Iter.from_(data).take(5).into(list)
+        [1, 2, 3]
         """
 
         return self.apply(partial(cz.itertoolz.take, n))

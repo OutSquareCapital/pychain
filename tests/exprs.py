@@ -245,7 +245,7 @@ def perf_test_frame(n: int):
             .collect()
             .iter()
             .repeat(20)
-            .head(n=5)
+            .take(n=5)
             .into(list)
         )
         .alias("series_dates")
@@ -261,7 +261,9 @@ def perf_test_frame(n: int):
 def perf_test(n: int) -> None:
     """
     Dict win thanks to lazy iterators (4x faster since it doesn't materialize un-needed lists).
+
     However function call overhead is still significant for small pipelines (same 4x factor in favor of pure python).
+
     Which all in all is fine since it's for data exploration, not a web backend with low latency requirements.
     """
     d1 = perf_test_frame(n)
