@@ -23,9 +23,11 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(d1).inner_join(d2).unwrap()
         {'b': (2, 10)}
         """
-        return self.apply(
-            lambda data: {k: (v, other[k]) for k, v in data.items() if k in other}
-        )
+
+        def _inner_join(data: Mapping[K, V]) -> dict[K, tuple[V, W]]:
+            return {k: (v, other[k]) for k, v in data.items() if k in other}
+
+        return self.apply(_inner_join)
 
     def left_join[W](self, other: Mapping[K, W]) -> Dict[K, tuple[V, W | None]]:
         """
@@ -102,4 +104,8 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
         {1: 1, 2: 20, 3: 30}
 
         """
-        return self._new(lambda data: cz.dicttoolz.merge_with(func, data, *others))
+
+        def _merge_with(data: Mapping[K, V]) -> dict[K, V]:
+            return cz.dicttoolz.merge_with(func, data, *others)
+
+        return self._new(_merge_with)

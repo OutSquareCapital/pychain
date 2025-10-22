@@ -179,9 +179,14 @@ class Dict[K, V](
         >>> pc.Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).unwrap()
         {2: 20}
         """
-        return self.apply(
-            lambda data: cz.dicttoolz.itemmap(lambda kv: func(kv[0], kv[1]), data)
-        )
+
+        def _map_kv(data: dict[K, V]) -> dict[KR, VR]:
+            def _(kv: tuple[K, V]) -> tuple[KR, VR]:
+                return func(kv[0], kv[1])
+
+            return cz.dicttoolz.itemmap(_, data)
+
+        return self.apply(_map_kv)
 
     def invert(self) -> Dict[V, list[K]]:
         """
@@ -212,7 +217,10 @@ class Dict[K, V](
         """
 
         def _implode(data: dict[K, V]) -> dict[K, list[V]]:
-            return cz.dicttoolz.valmap(lambda x: [x], data)
+            def _(v: V) -> list[V]:
+                return [v]
+
+            return cz.dicttoolz.valmap(_, data)
 
         return self.apply(_implode)
 

@@ -53,7 +53,11 @@ class Expr(Pipeable):
         """
         Applies the given function fn to the data within the current Expr instance
         """
-        return self._to_expr(lambda data: fn(data))
+
+        def _apply(data: Any) -> Any:
+            return fn(data)
+
+        return self._to_expr(_apply)
 
 
 def key(name: str) -> Expr:

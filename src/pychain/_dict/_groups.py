@@ -21,11 +21,14 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(d).group_by_value(lambda v: v % 2).unwrap()
         {1: {'a': 1, 'c': 3}, 0: {'b': 2, 'd': 2}}
         """
-        return self.apply(
-            lambda data: cz.dicttoolz.valmap(
-                dict, cz.itertoolz.groupby(lambda kv: func(kv[1]), data.items())
-            )
-        )
+
+        def _group_by_value(data: dict[K, V]) -> dict[G, dict[K, V]]:
+            def _(kv: tuple[K, V]) -> G:
+                return func(kv[1])
+
+            return cz.dicttoolz.valmap(dict, cz.itertoolz.groupby(_, data.items()))
+
+        return self.apply(_group_by_value)
 
     def group_by_key[G](self, func: Callable[[K], G]) -> Dict[G, dict[K, V]]:
         """
@@ -36,11 +39,14 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(d).group_by_key(lambda k: k.split("_")[0]).unwrap()
         {'user': {'user_1': 10, 'user_2': 20}, 'admin': {'admin_1': 100}}
         """
-        return self.apply(
-            lambda data: cz.dicttoolz.valmap(
-                dict, cz.itertoolz.groupby(lambda kv: func(kv[0]), data.items())
-            )
-        )
+
+        def _group_by_key(data: dict[K, V]) -> dict[G, dict[K, V]]:
+            def _(kv: tuple[K, V]) -> G:
+                return func(kv[0])
+
+            return cz.dicttoolz.valmap(dict, cz.itertoolz.groupby(_, data.items()))
+
+        return self.apply(_group_by_key)
 
     def group_by_key_agg[G, R](
         self,
@@ -85,10 +91,14 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         from ._main import Dict
 
         def _group_by_key_agg(data: dict[K, V]) -> dict[G, R]:
-            groups = cz.itertoolz.groupby(lambda kv: key_func(kv[0]), data.items())
-            return cz.dicttoolz.valmap(
-                lambda items: agg_func(Dict(dict(items))), groups
-            )
+            def _key_func(kv: tuple[K, V]) -> G:
+                return key_func(kv[0])
+
+            def _agg_func(items: list[tuple[K, V]]) -> R:
+                return agg_func(Dict(dict(items)))
+
+            groups = cz.itertoolz.groupby(_key_func, data.items())
+            return cz.dicttoolz.valmap(_agg_func, groups)
 
         return self.apply(_group_by_key_agg)
 
@@ -130,9 +140,13 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         from ._main import Dict
 
         def _group_by_value_agg(data: dict[K, V]) -> dict[G, R]:
-            groups = cz.itertoolz.groupby(lambda kv: value_func(kv[1]), data.items())
-            return cz.dicttoolz.valmap(
-                lambda items: agg_func(Dict(dict(items))), groups
-            )
+            def _key_func(kv: tuple[K, V]) -> G:
+                return value_func(kv[1])
+
+            def _agg_func(items: list[tuple[K, V]]) -> R:
+                return agg_func(Dict(dict(items)))
+
+            groups = cz.itertoolz.groupby(_key_func, data.items())
+            return cz.dicttoolz.valmap(_agg_func, groups)
 
         return self.apply(_group_by_value_agg)

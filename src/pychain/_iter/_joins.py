@@ -83,15 +83,17 @@ class BaseJoins[T](IterWrapper[T]):
         >>> data.iter().zip_offset("abcdef", offsets=(0, 1), longest=True).into(list)
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e'), (None, 'f')]
         """
-        return self.apply(
-            lambda x: mit.zip_offset(
-                x,
+
+        def _zip_offset(data: Iterable[T]) -> Iterator[tuple[T | U, ...]]:
+            return mit.zip_offset(
+                data,
                 *others,
                 offsets=offsets,
                 longest=longest,
                 fillvalue=fillvalue,
             )
-        )
+
+        return self.apply(_zip_offset)
 
     @overload
     def zip_broadcast[T1](

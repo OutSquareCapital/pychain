@@ -106,7 +106,11 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(d).rename(mapping).unwrap()
         {'a': 1, 'beta': 2, 'gamma': 3}
         """
-        return self._new(lambda data: {mapping.get(k, k): v for k, v in data.items()})
+
+        def _rename(data: dict[K, V]) -> dict[K, V]:
+            return {mapping.get(k, k): v for k, v in data.items()}
+
+        return self._new(_rename)
 
     def sort(self, reverse: bool = False) -> Self:
         """
@@ -116,4 +120,8 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict({"b": 2, "a": 1}).sort().unwrap()
         {'a': 1, 'b': 2}
         """
-        return self._new(lambda data: dict(sorted(data.items(), reverse=reverse)))
+
+        def _sort(data: dict[K, V]) -> dict[K, V]:
+            return dict(sorted(data.items(), reverse=reverse))
+
+        return self._new(_sort)

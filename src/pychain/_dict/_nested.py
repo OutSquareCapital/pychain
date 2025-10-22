@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class NestedDict[K, V](MappingWrapper[K, V]):
-    def struct[**P, R, U: Mapping[Any, Any]](
+    def struct[**P, R, U: dict[Any, Any]](
         self: NestedDict[K, U],
         func: Callable[Concatenate[Dict[K, U], P], R],
         *args: P.args,
@@ -37,11 +37,13 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         """
         from ._main import Dict
 
-        return self.apply(
-            lambda data: cz.dicttoolz.valmap(
-                lambda v: func(Dict(v), *args, **kwargs), data
-            )
-        )
+        def _struct(data: Mapping[K, U]) -> dict[K, R]:
+            def _(v: dict[Any, Any]) -> R:
+                return func(Dict(v), *args, **kwargs)
+
+            return cz.dicttoolz.valmap(_, data)
+
+        return self.apply(_struct)
 
     def flatten(
         self: NestedDict[str, Any], sep: str = ".", max_depth: int | None = None
@@ -175,4 +177,8 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         >>> pc.Dict(data).get_in("a", "x", default="Not Found")
         'Not Found'
         """
-        return self.into(lambda data: cz.dicttoolz.get_in(keys, data, default))
+
+        def _get_in(data: Mapping[K, V]) -> Any:
+            return cz.dicttoolz.get_in(keys, data, default)
+
+        return self.into(_get_in)

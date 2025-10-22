@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from typing import TYPE_CHECKING, Concatenate
 
 import cytoolz as cz
@@ -33,11 +33,13 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return self.apply(
-            lambda data: cz.dicttoolz.valmap(
-                lambda v: func(Iter.from_(v), *args, **kwargs), data
-            )
-        )
+        def _itr(data: Mapping[K, Iterable[U]]) -> dict[K, R]:
+            def _(v: Iterable[U]) -> R:
+                return func(Iter.from_(v), *args, **kwargs)
+
+            return cz.dicttoolz.valmap(_, data)
+
+        return self.apply(_itr)
 
     def iter_keys(self) -> Iter[K]:
         """

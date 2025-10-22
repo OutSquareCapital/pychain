@@ -76,7 +76,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         """
 
         def _filter_kv(data: dict[K, V]) -> dict[K, V]:
-            return cz.dicttoolz.itemfilter(lambda kv: predicate(kv[0], kv[1]), data)
+            def _(kv: tuple[K, V]) -> bool:
+                return predicate(kv[0], kv[1])
+
+            return cz.dicttoolz.itemfilter(_, data)
 
         return self._new(_filter_kv)
 
