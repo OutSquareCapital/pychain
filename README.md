@@ -26,19 +26,59 @@ Manipulate data through composable chains of operations, enhancing readability a
 
 ### Core Components 🧱
 
-* **`Iter[T]`:** Wraps any Python `Iterable` (`list`, `tuple`, generator...). Most operations are **lazy**, consuming the underlying iterator on demand. Provides a vast array of methods for transformation, filtering, aggregation, joining, etc..
-* **`Seq[T]`:** Wraps a Python `Collection` (`list`, `tuple`, `set`...). Represents **eagerly** evaluated data. Exposes methods requiring the full dataset (e.g., `sort`, `union`) or aggregation methods. Use `.iter()` to switch back to lazy processing.
-* **`Dict[K, V]`:** Wraps a Python `dict`. Provides chainable methods specific to dictionaries (manipulating keys, values, items, nesting, joins, grouping) and includes an **expression API** to facilitate work on nested structures.
-* **`Wrapper[T]`:** A generic wrapper for any Python object, allowing integration into `pychain`'s fluent style using `pipe`, `apply`, and `into`.
+#### `Iter[T]`
+
+To instantiate it, wrap a Python `Iterator` or `Generator`, or take any Iterable (`list`, `tuple`, etc...) and call Iter.from_ (which will call the builtin `iter()` on it).
+
+All operations that return a new `Iter` are **lazy**, consuming the underlying iterator on demand.
+
+Provides a vast array of methods for transformation, filtering, aggregation, joining, etc..
+
+#### `Seq[T]`
+
+Wraps a Python `Collection` (`list`, `tuple`, `set`...), and represents **eagerly** evaluated data.
+
+Exposes a subset of the `Iter` methods who operate on the full dataset (e.g., `sort`, `union`) or who aggregate it.
+
+It is most useful when you need to reuse the data multiple times without re-iterating it.
+
+Use `.iter()` to switch back to lazy processing.
+
+#### `Dict[K, V]`
+
+Wraps a Python `dict` (or any Mapping via ``Dict.from_``) and provides chainable methods specific to dictionaries (manipulating keys, values, items, nesting, joins, grouping).
+
+Promote immutability by returning new `Dict` instances on each operation, and avoiding in-place modifications.
+
+Can work as easily on known data structure (e.g `dict[str, int]`), with methods like `map_values`, `filter_keys`, etc., who works on the whole `dict` in a performant way, mostly thanks to `cytoolz` functions.
+
+But `Dict` can work also as well as on "irregular" structures (e.g., `dict[Any, Any]`, TypedDict, etc..), with methods like `schema`, `pluck`, `flatten`, etc., to explore and manipulate nested data.
+
+To help with this, `Dict` provides a set of utilities for working with nested data, including:
+
+* `pluck` to extract multiple fields at once.
+* `flatten` to collapse nested structures into a single level.
+* `schema` to infer the structure of the data by recursively analyzing keys and value types.
+* `pychain.key` expressions to compute/retrieve/select/create new fields from existing nested data in a declarative way.
+
+#### `Wrapper[T]`
+
+A generic wrapper for any Python object, allowing integration into `pychain`'s fluent style using `pipe`, `apply`, and `into`.
+
+Can be for example used to wrap numpy arrays, json outputs from requests, or any custom class instance, as a way to integrate them into a chain of operations, rather than breaking the chain to reference intermediate variables.
 
 ### Core Piping Methods 🚰
 
 All wrappers inherit from `CommonBase`:
 
-* `into(func, *args)`: Passes the **unwrapped** data to `func` and returns the raw result (terminal).
-* `apply(func, *args)`: Passes the **unwrapped** data to `func` and **re-wraps** the result for continued chaining.
-* `pipe(func, *args)`: Passes the **wrapped instance** (`self`) to `func` and returns the raw result (can be terminal).
-* `println()`: Prints the unwrapped data and returns `self`.
+* `into[**P, R](func: Callable, *args: P.args, **kwargs: P.kwargs) -> R`
+    Passes the **unwrapped** data to `func` and returns the raw result (terminal).
+* `apply[**P, R](func: Callable, *args: P.args, **kwargs: P.kwargs) -> "CurrentWrapper"[R]`
+    Passes the **unwrapped** data to`func` and **re-wraps** the result for continued chaining.
+* `pipe[**P, R](func: Callable, *args: P.args, **kwargs: P.kwargs) -> R`
+    Passes the **wrapped instance** (`self`) to `func` and returns the raw result (can be terminal).
+* `println()`
+    Prints the unwrapped data and returns `self`.
 
 ### Rich Lazy Iteration (`Iter`) 😴
 
@@ -146,7 +186,9 @@ In one of my project, I have to introspect some modules from plotly to get some 
 I want to check wether the colors are in hex format or not, and I want to get a dictionary of palettes.
 We can see here that pychain allow to keep the same style than polars, with method chaining, but for plain python objects.
 
-Due to the freedom of python, multiple paradigms are implemented across libraries. If you like the fluent, functional, chainable style, pychain can help you to keep it across your codebase, rather than mixing object().method().method() and then another where it's [[... for ... in ...] ... ].
+Due to the freedom of python, multiple paradigms are implemented across libraries.
+
+If you like the fluent, functional, chainable style, pychain can help you to keep it across your codebase, rather than mixing object().method().method() and then another where it's [[... for ... in ...] ... ].
 
 ```python
 
