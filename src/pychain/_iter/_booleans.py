@@ -14,13 +14,14 @@ class BaseBool[T](IterWrapper[T]):
         """
         Tests if every element of the iterator matches a predicate.
 
-        ``Iter.all()`` takes a closure that returns true or false.
+        `Iter.all()` takes a closure that returns true or false.
 
-        It applies this closure to each element of the iterator, and if they all return true, then so does ``Iter.all()``.
+        It applies this closure to each element of the iterator, and if they all return true, then so does `Iter.all()`.
 
         If any of them return false, it returns false.
 
         An empty iterator returns true.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, True]).all()
         True
@@ -43,9 +44,9 @@ class BaseBool[T](IterWrapper[T]):
         """
         Tests if any element of the iterator matches a predicate.
 
-        ``Iter.any()`` takes a closure that returns true or false.
+        `Iter.any()` takes a closure that returns true or false.
 
-        It applies this closure to each element of the iterator, and if any of them return true, then so does ``Iter.any()``.
+        It applies this closure to each element of the iterator, and if any of them return true, then so does `Iter.any()`.
 
         If they all return false, it returns false.
 
@@ -93,11 +94,13 @@ class BaseBool[T](IterWrapper[T]):
     def all_unique[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
         Returns True if all the elements of iterable are unique (no two elements are equal).
+
         >>> import pychain as pc
         >>> pc.Iter.from_("ABCB").all_unique()
         False
 
         If a key function is specified, it will be used to make comparisons.
+
         >>> pc.Iter.from_("ABCb").all_unique()
         True
 
@@ -152,13 +155,13 @@ class BaseBool[T](IterWrapper[T]):
         self, default: U = None, predicate: Callable[[T], bool] | None = None
     ) -> U | T:
         """
-        Searches for an element of an iterator that satisfies a ``predicate``, by:
-        - Taking a closure that returns true or false as ``predicate`` (optional).
-        - Using the identity function if no ``predicate`` is provided.
+        Searches for an element of an iterator that satisfies a `predicate`, by:
+        - Taking a closure that returns true or false as `predicate` (optional).
+        - Using the identity function if no `predicate` is provided.
         - Applying this closure to each element of the iterator.
-        - Returning the first element that satisfies the ``predicate``.
+        - Returning the first element that satisfies the `predicate`.
 
-        If all the elements return false, ``Iter.find()`` returns the default value.
+        If all the elements return false, `Iter.find()` returns the default value.
         >>> import pychain as pc
         >>> def gt_five(x: int) -> bool:
         ...     return x > 5

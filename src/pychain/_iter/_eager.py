@@ -36,6 +36,7 @@ class BaseEager[T](IterWrapper[T]):
     def tail(self, n: int) -> Seq[T]:
         """
         Return a tuple of the last n elements.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).tail(2).unwrap()
         (2, 3)
@@ -45,6 +46,7 @@ class BaseEager[T](IterWrapper[T]):
     def top_n(self, n: int, key: Callable[[T], Any] | None = None) -> Seq[T]:
         """
         Return a tuple of the top-n items according to key.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 3, 2]).top_n(2).unwrap()
         (3, 2)
@@ -129,6 +131,7 @@ class BaseEager[T](IterWrapper[T]):
         Return a Sequence over the n most common elements and their counts from the most common to the least.
 
         If n is None, then all elements are returned.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 1, 2, 3, 3, 3]).most_common(2).unwrap()
         [(3, 3), (1, 2)]

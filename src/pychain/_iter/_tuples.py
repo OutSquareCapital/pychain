@@ -18,6 +18,7 @@ class BaseTuples[T](IterWrapper[T]):
     def enumerate(self) -> Iter[tuple[int, T]]:
         """
         Return a Iter of (index, value) pairs.
+
         >>> import pychain as pc
         >>> pc.Iter.from_(["a", "b"]).enumerate().into(list)
         [(0, 'a'), (1, 'b')]
@@ -35,6 +36,7 @@ class BaseTuples[T](IterWrapper[T]):
     def combinations(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations of length r.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).combinations(2).into(list)
         [(1, 2), (1, 3), (2, 3)]
@@ -52,6 +54,7 @@ class BaseTuples[T](IterWrapper[T]):
     def permutations(self, r: int | None = None) -> Iter[tuple[T, ...]]:
         """
         Return all permutations of length r.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).permutations(2).into(list)
         [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]
@@ -73,6 +76,7 @@ class BaseTuples[T](IterWrapper[T]):
     def combinations_with_replacement(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations with replacement of length r.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).combinations_with_replacement(2).into(list)
         [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
@@ -82,6 +86,7 @@ class BaseTuples[T](IterWrapper[T]):
     def pairwise(self) -> Iter[tuple[T, T]]:
         """
         Return an iterator over pairs of consecutive elements.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).pairwise().into(list)
         [(1, 2), (2, 3)]
@@ -117,6 +122,7 @@ class BaseTuples[T](IterWrapper[T]):
         Apply several functions to each item.
 
         Returns a new Iter where each item is a tuple of the results of applying each function to the original item.
+
         >>> import pychain as pc
         >>> def is_even(n: int) -> bool:
         ...     return n % 2 == 0
@@ -139,11 +145,13 @@ class BaseTuples[T](IterWrapper[T]):
         The bool indicates whether that item satisfies the predicate or is adjacent to an item that does.
 
         For example, to find whether items are adjacent to a 3:
+
         >>> import pychain as pc
         >>> pc.Iter.from_(range(6)).adjacent(lambda x: x == 3).into(list)
         [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
 
         Set distance to change what counts as adjacent. For example, to find whether items are two places away from a 3:
+
         >>> pc.Iter.from_(range(6)).adjacent(lambda x: x == 3, distance=2).into(list)
         [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
 
@@ -165,6 +173,7 @@ class BaseTuples[T](IterWrapper[T]):
         - The element itself
         - False if the element is equal to the one preceding it in the input, True otherwise (i.e. the equivalent of unique_justseen)
         - False if this element has been seen anywhere in the input before, True otherwise (i.e. the equivalent of unique_everseen)
+
         >>> import pychain as pc
         >>> pc.Iter.from_("otto").classify_unique().into(list)
         ... # doctest: +NORMALIZE_WHITESPACE

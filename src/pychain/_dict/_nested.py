@@ -22,7 +22,8 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         """
         Apply a function to each value after wrapping it in a Dict.
 
-        Syntactic sugar for ``map_values(lambda data: func(pc.Dict(data), *args, **kwargs))``
+        Syntactic sugar for `map_values(lambda data: func(pc.Dict(data), *args, **kwargs))`
+
         >>> import pychain as pc
         >>> data = {
         ...     "person1": {"name": "Alice", "age": 30, "city": "New York"},
@@ -118,7 +119,6 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         ... }
         >>> pc.Dict(data).schema(max_depth=1).unwrap()
         {'level1': 'dict', 'other_key': 'int', 'list_key': 'list'}
-
         >>> pc.Dict(data).schema(max_depth=2).unwrap()
         {'level1': {'level2': 'dict'}, 'other_key': 'int', 'list_key': 'dict'}
         >>>
@@ -149,6 +149,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
 
     def pluck[U: str | int](self: NestedDict[U, Any], *keys: str) -> Dict[U, Any]:
         """
+        Extract values from nested dictionaries using a sequence of keys.
 
         >>> import pychain as pc
         >>> data = {

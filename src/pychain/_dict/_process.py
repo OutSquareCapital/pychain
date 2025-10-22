@@ -41,6 +41,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         Applies the func to the value at the path specified by keys, returning a new Dict with the updated value.
 
         If the path does not exist, it will be created with the default value (if provided) before applying func.
+
         >>> import pychain as pc
         >>> inc = lambda x: x + 1
         >>> pc.Dict({"a": 0}).update_in("a", func=inc).unwrap()

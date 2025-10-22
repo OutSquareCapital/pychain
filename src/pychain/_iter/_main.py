@@ -64,6 +64,7 @@ class Iter[T](
         Apply a function to each element after wrapping it in an Iter.
 
         This is a convenience method for the common pattern of mapping a function over an iterable of iterables.
+
         >>> import pychain as pc
         >>> data = [
         ...     [1, 2, 3],
@@ -91,6 +92,7 @@ class Iter[T](
         Apply a function to each element after wrapping it in a Dict.
 
         This is a convenience method for the common pattern of mapping a function over an iterable of dictionaries.
+
         >>> from typing import Any
         >>> import pychain as pc
 
@@ -139,6 +141,7 @@ class Iter[T](
     def with_keys[K](self, keys: Iterable[K]) -> Dict[K, T]:
         """
         Create a Dict by zipping the iterable with keys.
+
         >>> import pychain as pc
         >>> keys = ["a", "b", "c"]
         >>> values = [1, 2, 3]
@@ -146,6 +149,7 @@ class Iter[T](
         {'a': 1, 'b': 2, 'c': 3}
 
         This is equivalent to:
+
         >>> pc.Iter.from_(keys).zip(values).pipe(
         ...     lambda x: pc.Dict(x.into(dict)).unwrap()
         ... )
@@ -158,6 +162,7 @@ class Iter[T](
     def with_values[V](self, values: Iterable[V]) -> Dict[T, V]:
         """
         Create a Dict by zipping the iterable with values.
+
         >>> import pychain as pc
         >>> keys = [1, 2, 3]
         >>> values = ["a", "b", "c"]
@@ -165,6 +170,7 @@ class Iter[T](
         {1: 'a', 2: 'b', 3: 'c'}
 
         This is equivalent to:
+
         >>> pc.Iter.from_(keys).zip(values).pipe(
         ...     lambda x: pc.Dict(x.into(dict)).unwrap()
         ... )

@@ -47,6 +47,7 @@ class BaseProcess[T](IterWrapper[T]):
     def interpose(self, element: T) -> Iter[T]:
         """
         Interpose element between items and return a new Iterable wrapper.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).interpose(0).into(list)
         [1, 0, 2]
@@ -64,6 +65,7 @@ class BaseProcess[T](IterWrapper[T]):
         random_sample considers each item independently and without replacement.
 
         See below how the first time it returned 13 items and the next time it returned 6 items.
+
         >>> import pychain as pc
         >>> data = pc.Seq(list(range(100)))
         >>> data.iter().random_sample(0.1).into(list)  # doctest: +SKIP
@@ -74,12 +76,14 @@ class BaseProcess[T](IterWrapper[T]):
         Providing an integer seed for random_state will result in deterministic sampling.
 
         Given the same seed it will return the same sample every time.
+
         >>> data.iter().random_sample(0.1, state=2016).into(list)
         [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
         >>> data.iter().random_sample(0.1, state=2016).into(list)
         [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
 
         random_state can also be any object with a method random that returns floats between 0.0 and 1.0 (exclusive).
+
         >>> from random import Random
         >>> randobj = Random(2016)
         >>> data.iter().random_sample(0.1, state=randobj).into(list)
@@ -93,6 +97,7 @@ class BaseProcess[T](IterWrapper[T]):
     def accumulate(self, func: Callable[[T, T], T]) -> Iter[T]:
         """
         Return cumulative application of binary op provided by the function.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
         [1, 3, 6]
@@ -102,6 +107,7 @@ class BaseProcess[T](IterWrapper[T]):
     def insert_left(self, value: T) -> Iter[T]:
         """
         Prepend value to the sequence and return a new Iterable wrapper.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([2, 3]).insert_left(1).into(list)
         [1, 2, 3]
@@ -111,6 +117,7 @@ class BaseProcess[T](IterWrapper[T]):
     def peekn(self, n: int) -> Iter[T]:
         """
         Print and return sequence after peeking n items.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).peekn(2).into(list)
         Peeked 2 values: (1, 2)
@@ -127,6 +134,7 @@ class BaseProcess[T](IterWrapper[T]):
     def peek(self) -> Iter[T]:
         """
         Print and return sequence after peeking first item.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).peek().into(list)
         Peeked value: 1
@@ -145,6 +153,7 @@ class BaseProcess[T](IterWrapper[T]):
     ) -> Iter[T]:
         """
         Merge already-sorted sequences.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 3]).merge_sorted([2, 4]).into(list)
         [1, 2, 3, 4]
@@ -154,6 +163,7 @@ class BaseProcess[T](IterWrapper[T]):
     def interleave(self, *others: Iterable[T]) -> Iter[T]:
         """
         Interleave multiple sequences element-wise.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).interleave([3, 4]).into(list)
         [1, 3, 2, 4]
@@ -171,6 +181,7 @@ class BaseProcess[T](IterWrapper[T]):
         An infinite sequence will prevent the rest of the arguments from being included.
 
         We use chain.from_iterable rather than chain(*seqs) so that seqs can be a generator.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).chain([3, 4], [5]).into(list)
         [1, 2, 3, 4, 5]
@@ -184,11 +195,13 @@ class BaseProcess[T](IterWrapper[T]):
     def elements(self) -> Iter[T]:
         """
         Iterator over elements repeating each as many times as its count.
+
         >>> import pychain as pc
         >>> pc.Iter.from_("ABCABC").elements().sort().unwrap()
         ['A', 'A', 'B', 'B', 'C', 'C']
 
         Knuth's example for prime factors of 1836:  2**2 * 3**3 * 17**1
+
         >>> import math
         >>> data = [2, 2, 3, 3, 3, 17]
         >>> pc.Iter.from_(data).elements().into(math.prod)
@@ -208,6 +221,7 @@ class BaseProcess[T](IterWrapper[T]):
     def reverse(self) -> Iter[T]:
         """
         Return a new Iterable wrapper with elements in reverse order.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).reverse().into(list)
         [3, 2, 1]
@@ -233,7 +247,8 @@ class BaseProcess[T](IterWrapper[T]):
 
         If it has fewer than *n* items, call function *too_short* with the actual number of items.
 
-        If it has more than *n* items, call function *too_long* with the number ``n + 1``.
+        If it has more than *n* items, call function *too_long* with the number `n + 1`.
+
         >>> import pychain as pc
         >>> iterable = ["a", "b", "c", "d"]
         >>> n = 4
@@ -243,8 +258,8 @@ class BaseProcess[T](IterWrapper[T]):
         Note that the returned iterable must be consumed in order for the check to
         be made.
 
-        By default, *too_short* and *too_long* are functions that raise
-        ``ValueError``.
+        By default, *too_short* and *too_long* are functions that raise`ValueError`.
+
         >>> pc.Iter.from_("ab").is_strictly_n(3).into(
         ...     list
         ... )  # doctest: +IGNORE_EXCEPTION_DETAIL
@@ -264,6 +279,7 @@ class BaseProcess[T](IterWrapper[T]):
         *too_short* will be called with the number of items in *iterable*.
 
         *too_long* will be called with `n + 1`.
+
         >>> def too_short(item_count):
         ...     raise RuntimeError
         >>> pc.Iter.from_("abcd").is_strictly_n(6, too_short=too_short).into(list)

@@ -39,6 +39,7 @@ class Dict[K, V](
     def from_(data: Mapping[K, V] | SupportsKeysAndGetItem[K, V]) -> Dict[K, V]:
         """
         Create a Dict from a mapping or SupportsKeysAndGetItem.
+
         >>> import pychain as pc
         >>> class MyMapping:
         ...     def __init__(self):
@@ -59,6 +60,7 @@ class Dict[K, V](
     def from_object(obj: object) -> Dict[str, Any]:
         """
         Create a Dict from an object's __dict__ attribute.
+
         >>> import pychain as pc
         >>> class Person:
         ...     def __init__(self, name: str, age: int):
@@ -79,6 +81,7 @@ class Dict[K, V](
         - Chain `key.key()` calls to access nested fields.
         - Use `key.apply()` to transform values.
         - Use `key.alias()` to rename fields in the resulting dict.
+
         >>> import pychain as pc
         >>> data = {
         ...     "name": "Alice",
@@ -105,6 +108,7 @@ class Dict[K, V](
     def with_fields(self: Dict[str, Any], *exprs: IntoExpr) -> Dict[str, Any]:
         """
         Merge aliased expressions into the root dict (overwrite on collision).
+
         >>> import pychain as pc
         >>> data = {
         ...     "name": "Alice",

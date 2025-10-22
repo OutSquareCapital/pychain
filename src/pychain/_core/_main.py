@@ -46,6 +46,7 @@ class CommonBase[T](ABC, Pipeable):
 
         Each pychain class implement this method to allow chaining of functions that transform the
         underlying data and return a new wrapped instance of the same subclass.
+
         >>> import pychain as pc
         >>> from collections.abc import Iterable, Iterator
         >>> def add_one(data: Iterable[int]) -> Iterator[int]:

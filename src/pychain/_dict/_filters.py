@@ -152,7 +152,6 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
         By default, the parent class itself is included. To exclude it, set *keep_parent* to `False`.
 
-
         >>> import pychain as pc
         >>> class A:
         ...     pass

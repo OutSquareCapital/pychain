@@ -18,7 +18,7 @@ class IterConstructors:
 
         **Warning** ⚠️
             This creates an infinite iterator.
-            Be sure to use ``Iter.take()`` or ``Iter.slice()`` to limit the number of items taken.
+            Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken.
 
         >>> import pychain as pc
         >>> pc.Iter.from_count(10, 2).take(3).into(list)
@@ -31,11 +31,11 @@ class IterConstructors:
     @staticmethod
     def from_func[U](func: Callable[[U], U], input: U) -> Iter[U]:
         """
-        Create an infinite iterator by repeatedly applying a function into an original ``input``.
+        Create an infinite iterator by repeatedly applying a function into an original `input`.
 
         **Warning** ⚠️
             This creates an infinite iterator.
-            Be sure to use ``Iter.take()`` or ``Iter.slice()`` to limit the number of items taken.
+            Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken.
 
         >>> import pychain as pc
         >>> pc.Iter.from_func(lambda x: x + 1, 0).take(3).into(list)
@@ -56,6 +56,7 @@ class IterConstructors:
         If you need to reuse the data, consider collecting it into a list first with `.collect()`.
 
         In general, avoid intermediate references when dealing with lazy iterators, and prioritize method chaining instead.
+
         >>> import pychain as pc
         >>> data: tuple[int, ...] = (1, 2, 3)
         >>> iterator = pc.Iter.from_(data)
@@ -97,7 +98,6 @@ class IterConstructors:
         ...     return None
         >>> pc.Iter.unfold(seed=0, generator=counter_generator).into(list)
         [0, 10, 20, 30, 40]
-
         >>> # Example 2: Fibonacci sequence up to 100
         >>> type FibState = tuple[int, int]
         >>> def fib_generator(state: FibState) -> tuple[int, FibState] | None:
@@ -107,7 +107,6 @@ class IterConstructors:
         ...     return (a, (b, a + b))
         >>> pc.Iter.unfold(seed=(0, 1), generator=fib_generator).into(list)
         [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
-
         >>> # Example 3: Infinite iterator (requires take())
         >>> pc.Iter.unfold(seed=1, generator=lambda s: (s, s * 2)).take(5).into(list)
         [1, 2, 4, 8, 16]
