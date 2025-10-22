@@ -27,6 +27,7 @@ class BaseAgg[T](IterWrapper[T]):
         `Iter.unzip()` consumes the iterator of pairs.
 
         Returns an Unzipped NamedTuple, containing two iterators:
+
         - one from the left elements of the pairs
         - one from the right elements.
         This function is, in some sense, the opposite of zip.

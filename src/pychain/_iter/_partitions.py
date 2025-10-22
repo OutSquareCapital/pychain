@@ -107,6 +107,7 @@ class BasePartitions[T](IterWrapper[T]):
     def batch(self, n: int) -> Iter[tuple[T, ...]]:
         """
         Batch elements into tuples of length n and return a new Iter.
+
         - The last batch may be shorter than n.
         - The data is consumed lazily, just enough to fill a batch.
         - The result is yielded as soon as a batch is full or when the input iterable is exhausted.

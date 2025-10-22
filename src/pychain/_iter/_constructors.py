@@ -49,6 +49,7 @@ class IterConstructors:
     def from_[U](data: Iterable[U]) -> Iter[U]:
         """
         Create an iterator from any Iterable.
+
         - An Iterable is any object capable of returning its members one at a time, permitting it to be iterated over in a for-loop.
         - An Iterator is an object representing a stream of data; returned by calling `iter()` on an Iterable.
         - Once an Iterator is exhausted, it cannot be reused or reset.
@@ -81,8 +82,8 @@ class IterConstructors:
         Create an iterator by repeatedly applying a generator function to an initial state (seed).
 
         The `generator` function takes the current state and must return:
-        - A tuple `(value, new_state)` to emit the `value` and continue with the `new_state`.
-        - `None` to stop the generation.
+            - A tuple `(value, new_state)` to emit the `value` and continue with the `new_state`.
+            - `None` to stop the generation.
 
         This is functionally equivalent to a state-based `while` loop.
 

@@ -150,7 +150,8 @@ class BaseTuples[T](IterWrapper[T]):
         >>> pc.Iter.from_(range(6)).adjacent(lambda x: x == 3).into(list)
         [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
 
-        Set distance to change what counts as adjacent. For example, to find whether items are two places away from a 3:
+        Set distance to change what counts as adjacent.
+        For example, to find whether items are two places away from a 3:
 
         >>> pc.Iter.from_(range(6)).adjacent(lambda x: x == 3, distance=2).into(list)
         [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
@@ -167,9 +168,9 @@ class BaseTuples[T](IterWrapper[T]):
 
     def classify_unique(self) -> Iter[tuple[T, bool, bool]]:
         """
-        Classify each element in terms of its uniqueness.
-
+        Classify each element in terms of its uniqueness.\n
         For each element in the input iterable, return a 3-tuple consisting of:
+
         - The element itself
         - False if the element is equal to the one preceding it in the input, True otherwise (i.e. the equivalent of unique_justseen)
         - False if this element has been seen anywhere in the input before, True otherwise (i.e. the equivalent of unique_everseen)

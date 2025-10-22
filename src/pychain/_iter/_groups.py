@@ -200,8 +200,8 @@ class BaseGroups[T](IterWrapper[T]):
 
         - keyfunc is a function computing a key value for each item in iterable
         - valuefunc is a function that transforms the individual items from iterable after grouping
-
         - reducefunc is a function that transforms each group of items
+
         >>> import pychain as pc
         >>> data = pc.Iter.from_("aAAbBBcCC")
         >>> data.group_by_transform(

@@ -195,6 +195,7 @@ class BaseFilter[T](IterWrapper[T]):
         `Iter.take(n)` yields elements until n elements are yielded or the end of the iterator is reached (whichever happens first).
 
         The returned iterator is either:
+
         - A prefix of length n if the original iterator contains at least n elements
         - All of the (fewer than n) elements of the original iterator if it contains fewer than n elements.
 

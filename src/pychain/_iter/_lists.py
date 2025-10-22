@@ -126,6 +126,7 @@ class BaseList[T](IterWrapper[T]):
         [[1, 2], [3, 4, 5]]
 
         If the sum of sizes is larger than the length of iterable:
+
         - fewer items will be returned in the iteration that overruns the iterable
         - further lists will be empty
 
@@ -141,6 +142,7 @@ class BaseList[T](IterWrapper[T]):
         split_into can be useful for grouping a series of items where the sizes of the groups are not uniform.
 
         An example would be where in a row from a table:
+
         - multiple columns represent elements of the same feature (e.g. a point represented by x,y,z)
         - the format is not the same for all columns.
         """
@@ -177,6 +179,7 @@ class BaseList[T](IterWrapper[T]):
         To use a fill-in value instead, see the :func:`grouper` recipe.
 
         If:
+
         - the length of *iterable* is not divisible by *n*
         - *strict* is `True`
 

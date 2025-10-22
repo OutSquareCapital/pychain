@@ -51,6 +51,7 @@ class BaseBool[T](IterWrapper[T]):
         If they all return false, it returns false.
 
         An empty iterator returns false.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([0, 1]).any()
         True
@@ -70,6 +71,7 @@ class BaseBool[T](IterWrapper[T]):
     def is_distinct(self) -> bool:
         """
         Return True if all items are distinct.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).is_distinct()
         True
@@ -79,11 +81,13 @@ class BaseBool[T](IterWrapper[T]):
     def all_equal[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
         Return True if all items are equal.
+
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 1, 1]).all_equal()
         True
 
         A function that accepts a single argument and returns a transformed version of each input item can be specified with key:
+
         >>> pc.Iter.from_("AaaA").all_equal(key=str.casefold)
         True
         >>> pc.Iter.from_([1, 2, 3]).all_equal(key=lambda x: x < 10)
@@ -124,6 +128,7 @@ class BaseBool[T](IterWrapper[T]):
         Returns True if the items of iterable are in sorted order, and False otherwise.
 
         Key and reverse have the same meaning that they do in the built-in sorted function.
+
         >>> import pychain as pc
         >>> pc.Iter.from_(["1", "2", "3", "4", "5"]).is_sorted(key=int)
         True
@@ -131,6 +136,7 @@ class BaseBool[T](IterWrapper[T]):
         False
 
         If strict, tests for strict sorting, that is, returns False if equal elements are found:
+
         >>> pc.Iter.from_([1, 2, 2]).is_sorted()
         True
         >>> pc.Iter.from_([1, 2, 2]).is_sorted(strict=True)
@@ -156,12 +162,14 @@ class BaseBool[T](IterWrapper[T]):
     ) -> U | T:
         """
         Searches for an element of an iterator that satisfies a `predicate`, by:
+
         - Taking a closure that returns true or false as `predicate` (optional).
         - Using the identity function if no `predicate` is provided.
         - Applying this closure to each element of the iterator.
         - Returning the first element that satisfies the `predicate`.
 
         If all the elements return false, `Iter.find()` returns the default value.
+
         >>> import pychain as pc
         >>> def gt_five(x: int) -> bool:
         ...     return x > 5
