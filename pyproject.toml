@@ -12,13 +12,22 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["cytoolz-stubs", "polars>=1.33.1"]
+dev = [
+    "cytoolz-stubs",
+    "doctester",
+    "furo>=2025.9.25",
+    "polars>=1.33.1",
+    "ruff>=0.14.1",
+    "sphinx>=8.2.3",
+    "sphinx-autodoc-typehints>=3.5.2",
+]
 
 [tool.ruff.format]
 docstring-code-format = true
 
 [tool.uv.sources]
 cytoolz-stubs = { git = "https://github.com/py-stubs/cytoolz-stubs.git" }
+doctester = { git = "https://github.com/OutSquareCapital/doctester.git" }
 
 [build-system]
 build-backend = "uv_build"

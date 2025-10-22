@@ -6,6 +6,12 @@
 
 Manipulate data through composable chains of operations, enhancing readability and reducing boilerplate.
 
+## Installation 🚀
+
+```bash
+uv add git+https://github.com/OutSquareCapital/pychain.git
+```
+
 ## Overview
 
 ### Philosophy ✨
@@ -274,9 +280,3 @@ def generate_palettes_literal() -> None:
 ```
 
 Since I have to reference the literal_content variable in the for loop, This is more reasonnable to use a for loop here rather than a map + reduce approach.
-
-## Installation 🚀
-
-```bash
-uv add git+https://github.com/OutSquareCapital/pychain.git
-```
