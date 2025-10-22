@@ -28,7 +28,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
         ...     "numbers1": [1, 2, 3],
         ...     "numbers2": [4, 5, 6],
         ... }
-        >>> pc.Dict(data).itr(lambda v: v.repeat(5).explode().sum()).unwrap()
+        >>> pc.Dict(data).itr(lambda v: v.repeat(5).flatten().sum()).unwrap()
         {'numbers1': 30, 'numbers2': 75}
         """
         from .._iter import Iter

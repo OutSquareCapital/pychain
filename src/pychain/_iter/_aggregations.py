@@ -69,12 +69,12 @@ class BaseAgg[T](IterWrapper[T]):
         """
         return self.into(cz.itertoolz.last)
 
-    def length(self) -> int:
+    def count(self) -> int:
         """
         Return the length of the sequence.
         Like the builtin len but works on lazy sequences.
         >>> import pychain as pc
-        >>> pc.Iter.from_([1, 2]).length()
+        >>> pc.Iter.from_([1, 2]).count()
         2
         """
         return self.into(cz.itertoolz.count)

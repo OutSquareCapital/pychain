@@ -241,7 +241,7 @@ def perf_test_frame(n: int):
             lambda d: pc.Iter(d.values())
             .pluck("series", "data")
             .map(lambda d: d.values())
-            .explode()
+            .flatten()
             .collect()
             .iter()
             .repeat(20)

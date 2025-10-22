@@ -15,27 +15,27 @@ if TYPE_CHECKING:
 
 class BasePartitions[T](IterWrapper[T]):
     @overload
-    def sliding_window(self, length: Literal[1]) -> Iter[tuple[T]]: ...
+    def windows(self, length: Literal[1]) -> Iter[tuple[T]]: ...
     @overload
-    def sliding_window(self, length: Literal[2]) -> Iter[tuple[T, T]]: ...
+    def windows(self, length: Literal[2]) -> Iter[tuple[T, T]]: ...
     @overload
-    def sliding_window(self, length: Literal[3]) -> Iter[tuple[T, T, T]]: ...
+    def windows(self, length: Literal[3]) -> Iter[tuple[T, T, T]]: ...
     @overload
-    def sliding_window(self, length: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
+    def windows(self, length: Literal[4]) -> Iter[tuple[T, T, T, T]]: ...
     @overload
-    def sliding_window(self, length: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
+    def windows(self, length: Literal[5]) -> Iter[tuple[T, T, T, T, T]]: ...
 
-    def sliding_window(self, length: int) -> Iter[tuple[T, ...]]:
+    def windows(self, length: int) -> Iter[tuple[T, ...]]:
         """
         A sequence of overlapping subsequences of the given length.
         >>> import pychain as pc
-        >>> pc.Iter.from_([1, 2, 3, 4]).sliding_window(2).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4]).windows(2).into(list)
         [(1, 2), (2, 3), (3, 4)]
 
         This function allows you to apply custom function not available in the rolling namespace.
-        >>> pc.Iter.from_([1, 2, 3, 4]).sliding_window(2).map(
-        ...     lambda seq: float(sum(seq)) / len(seq)
-        ... ).into(list)
+        >>> def moving_average(seq: tuple[int, ...]) -> float:
+        ...     return float(sum(seq)) / len(seq)
+        >>> pc.Iter.from_([1, 2, 3, 4]).windows(2).map(moving_average).into(list)
         [1.5, 2.5, 3.5]
         """
         return self.apply(partial(cz.itertoolz.sliding_window, length))

@@ -157,7 +157,7 @@ class BaseList[T](IterWrapper[T]):
         """
         return self.apply(mit.split_when, predicate, max_split)
 
-    def chunked(self, n: int, strict: bool = False) -> Iter[list[T]]:
+    def chunks(self, n: int, strict: bool = False) -> Iter[list[T]]:
         """
         Break iterable into lists of length n.
 
@@ -172,23 +172,23 @@ class BaseList[T](IterWrapper[T]):
         then ``ValueError`` will be raised before the last list is yielded.
 
         >>> import pychain as pc
-        >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).chunked(3).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).chunks(3).into(list)
         [[1, 2, 3], [4, 5, 6]]
-        >>> pc.Iter.from_([1, 2, 3, 4, 5, 6, 7, 8]).chunked(3).into(list)
+        >>> pc.Iter.from_([1, 2, 3, 4, 5, 6, 7, 8]).chunks(3).into(list)
         [[1, 2, 3], [4, 5, 6], [7, 8]]
         """
         return self.apply(mit.chunked, n, strict)
 
-    def chunked_even(self, n: int) -> Iter[list[T]]:
+    def chunks_even(self, n: int) -> Iter[list[T]]:
         """
         Break iterable into lists of approximately length n.
 
         Items are distributed such the lengths of the lists differ by at most 1 item.
         >>> import pychain as pc
         >>> iterable = pc.Seq([1, 2, 3, 4, 5, 6, 7])
-        >>> iterable.iter().chunked_even(3).into(list)  # List lengths: 3, 2, 2
+        >>> iterable.iter().chunks_even(3).into(list)  # List lengths: 3, 2, 2
         [[1, 2, 3], [4, 5], [6, 7]]
-        >>> iterable.iter().chunked(3).into(list)  # List lengths: 3, 3, 1
+        >>> iterable.iter().chunks(3).into(list)  # List lengths: 3, 3, 1
         [[1, 2, 3], [4, 5, 6], [7]]
         """
         return self.apply(mit.chunked_even, n)

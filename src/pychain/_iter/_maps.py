@@ -44,6 +44,35 @@ class BaseMap[T](IterWrapper[T]):
         """
         return self.apply(partial(map, func))
 
+    @overload
+    def flat_map[U, R](
+        self: IterWrapper[Iterable[Iterable[Iterable[U]]]],
+        func: Callable[[T], Iterable[Iterable[R]]],
+    ) -> Iter[Iterable[Iterable[R]]]: ...
+    @overload
+    def flat_map[U, R](
+        self: IterWrapper[Iterable[Iterable[U]]], func: Callable[[T], Iterable[R]]
+    ) -> Iter[Iterable[R]]: ...
+    @overload
+    def flat_map[U, R](
+        self: IterWrapper[Iterable[U]], func: Callable[[T], R]
+    ) -> Iter[R]: ...
+    def flat_map[U: Iterable[Any], R](
+        self: IterWrapper[U], func: Callable[[T], R]
+    ) -> Iter[Any]:
+        """
+        Map each element through func and flatten the result by one level.
+        >>> import pychain as pc
+        >>> data = [[1, 2], [3, 4]]
+        >>> pc.Iter.from_(data).flat_map(lambda x: x + 10).into(list)
+        [11, 12, 13, 14]
+        """
+
+        def _flat_map(data: Iterable[U]) -> map[R]:
+            return map(func, itertools.chain.from_iterable(data))
+
+        return self.apply(_flat_map)
+
     def map_star[U: Iterable[Any], R](
         self: IterWrapper[U], func: Callable[..., R]
     ) -> Iter[R]:
@@ -173,20 +202,20 @@ class BaseMap[T](IterWrapper[T]):
         return self.apply(mit.ichunked, n)
 
     @overload
-    def explode[U](
+    def flatten[U](
         self: IterWrapper[Iterable[Iterable[Iterable[U]]]],
     ) -> Iter[Iterable[Iterable[U]]]: ...
     @overload
-    def explode[U](self: IterWrapper[Iterable[Iterable[U]]]) -> Iter[Iterable[U]]: ...
+    def flatten[U](self: IterWrapper[Iterable[Iterable[U]]]) -> Iter[Iterable[U]]: ...
     @overload
-    def explode[U](self: IterWrapper[Iterable[U]]) -> Iter[U]: ...
-    def explode(self: IterWrapper[Iterable[Any]]) -> Iter[Any]:
+    def flatten[U](self: IterWrapper[Iterable[U]]) -> Iter[U]: ...
+    def flatten(self: IterWrapper[Iterable[Any]]) -> Iter[Any]:
         """
         Flatten one level of nesting and return a new Iterable wrapper.
 
         This is a shortcut for `.apply(itertools.chain.from_iterable)`.
         >>> import pychain as pc
-        >>> pc.Iter.from_([[1, 2], [3]]).explode().into(list)
+        >>> pc.Iter.from_([[1, 2], [3]]).flatten().into(list)
         [1, 2, 3]
         """
         return self.apply(itertools.chain.from_iterable)

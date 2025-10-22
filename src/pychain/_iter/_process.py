@@ -164,7 +164,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         return self.apply(_interleave)
 
-    def concat(self, *others: Iterable[T]) -> Iter[T]:
+    def chain(self, *others: Iterable[T]) -> Iter[T]:
         """
         Concatenate zero or more iterables, any of which may be infinite.
 
@@ -172,14 +172,14 @@ class BaseProcess[T](IterWrapper[T]):
 
         We use chain.from_iterable rather than chain(*seqs) so that seqs can be a generator.
         >>> import pychain as pc
-        >>> pc.Iter.from_([1, 2]).concat([3, 4], [5]).into(list)
+        >>> pc.Iter.from_([1, 2]).chain([3, 4], [5]).into(list)
         [1, 2, 3, 4, 5]
         """
 
-        def _concat(data: Iterable[T]) -> Iterator[T]:
+        def _chain(data: Iterable[T]) -> Iterator[T]:
             return itertools.chain.from_iterable((data, *others))
 
-        return self.apply(_concat)
+        return self.apply(_chain)
 
     def elements(self) -> Iter[T]:
         """

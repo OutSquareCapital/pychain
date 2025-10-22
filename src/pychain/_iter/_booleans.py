@@ -10,11 +10,17 @@ from .._core import IterWrapper
 
 
 class BaseBool[T](IterWrapper[T]):
-    def all(self) -> bool:
+    def all(self, predicate: Callable[[T], bool] = lambda x: bool(x)) -> bool:
         """
-        Return True if bool(x) is True for all values x in the iterable.
+        Tests if every element of the iterator matches a predicate.
 
-        If the iterable is empty, return True.
+        ``Iter.all()`` takes a closure that returns true or false.
+
+        It applies this closure to each element of the iterator, and if they all return true, then so does ``Iter.all()``.
+
+        If any of them return false, it returns false.
+
+        An empty iterator returns true.
         >>> import pychain as pc
         >>> pc.Iter.from_([1, True]).all()
         True
@@ -22,59 +28,43 @@ class BaseBool[T](IterWrapper[T]):
         True
         >>> pc.Iter.from_([1, 0]).all()
         False
-        """
-        return self.into(all)
-
-    def not_all(self) -> bool:
-        """
-        Return True if not all items are truthy.
-
-        If the iterable is empty, return False.
-        >>> import pychain as pc
-        >>> pc.Iter.from_([1, 0]).not_all()
+        >>> def is_even(x: int) -> bool:
+        ...     return x % 2 == 0
+        >>> pc.Iter.from_([2, 4, 6]).all(is_even)
         True
-        >>> pc.Iter.from_([1, True]).not_all()
-        False
-        >>> pc.Iter.from_([]).not_all()
-        False
         """
 
-        def _not_all(data: Iterable[T]) -> bool:
-            return not all(data)
+        def _all(data: Iterable[T]) -> bool:
+            return all(predicate(x) for x in data)
 
-        return self.into(_not_all)
+        return self.into(_all)
 
-    def any(self) -> bool:
+    def any(self, predicate: Callable[[T], bool] = lambda x: bool(x)) -> bool:
         """
-        Return True if bool(x) is True for any x in the iterable.
+        Tests if any element of the iterator matches a predicate.
 
-        If the iterable is empty, return False.
+        ``Iter.any()`` takes a closure that returns true or false.
+
+        It applies this closure to each element of the iterator, and if any of them return true, then so does ``Iter.any()``.
+
+        If they all return false, it returns false.
+
+        An empty iterator returns false.
         >>> import pychain as pc
         >>> pc.Iter.from_([0, 1]).any()
         True
         >>> pc.Iter.from_(range(0)).any()
         False
-        """
-        return self.into(any)
-
-    def not_any(self) -> bool:
-        """
-        Return True if no items are truthy.
-
-        If the iterable is empty, return True.
-        >>> import pychain as pc
-        >>> pc.Iter.from_([0, False]).not_any()
-        True
-        >>> pc.Iter.from_([0, 1]).not_any()
-        False
-        >>> pc.Iter.from_([]).not_any()
+        >>> def is_even(x: int) -> bool:
+        ...     return x % 2 == 0
+        >>> pc.Iter.from_([1, 3, 4]).any(is_even)
         True
         """
 
-        def _not_any(data: Iterable[T]) -> bool:
-            return not any(data)
+        def _any(data: Iterable[T]) -> bool:
+            return any(predicate(x) for x in data)
 
-        return self.into(_not_any)
+        return self.into(_any)
 
     def is_distinct(self) -> bool:
         """

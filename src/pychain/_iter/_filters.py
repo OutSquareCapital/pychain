@@ -144,11 +144,11 @@ class BaseFilter[T](IterWrapper[T]):
         """
         return self.apply(partial(itertools.takewhile, predicate))
 
-    def drop_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
+    def skip_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
         """
         Drop items while predicate holds and return the remainder.
         >>> import pychain as pc
-        >>> pc.Iter.from_([1, 2, 0]).drop_while(lambda x: x > 0).into(list)
+        >>> pc.Iter.from_([1, 2, 0]).skip_while(lambda x: x > 0).into(list)
         [0]
         """
         return self.apply(partial(itertools.dropwhile, predicate))
@@ -187,11 +187,11 @@ class BaseFilter[T](IterWrapper[T]):
 
         return self.apply(partial(cz.itertoolz.take, n))
 
-    def drop_first(self, n: int) -> Iter[T]:
+    def skip(self, n: int) -> Iter[T]:
         """
         Drop first n elements and return the remainder wrapped.
         >>> import pychain as pc
-        >>> pc.Iter.from_([1, 2, 3]).drop_first(1).into(list)
+        >>> pc.Iter.from_([1, 2, 3]).skip(1).into(list)
         [2, 3]
         """
         return self.apply(partial(cz.itertoolz.drop, n))
