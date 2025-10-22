@@ -1,3 +1,3 @@
-from ._main import EagerIter, Iter
+from ._main import Iter, Seq
 
-__all__ = ["Iter", "EagerIter"]
+__all__ = ["Iter", "Seq"]

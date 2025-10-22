@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from functools import partial
 from typing import TYPE_CHECKING
 
@@ -9,7 +9,7 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import EagerIter, Iter
+    from ._main import Iter
 
 
 class BaseTransfos[T](IterWrapper[T]):
@@ -25,11 +25,11 @@ class BaseTransfos[T](IterWrapper[T]):
 
         For example, to find whether items are adjacent to a 3:
         >>> import pychain as pc
-        >>> pc.Iter.from_range(0, 6).adjacent(lambda x: x == 3).into(list)
+        >>> pc.Iter.from_(range(6)).adjacent(lambda x: x == 3).into(list)
         [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
 
         Set distance to change what counts as adjacent. For example, to find whether items are two places away from a 3:
-        >>> pc.Iter.from_range(0, 6).adjacent(lambda x: x == 3, distance=2).into(list)
+        >>> pc.Iter.from_(range(6)).adjacent(lambda x: x == 3, distance=2).into(list)
         [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
 
         This is useful for contextualizing the results of a search function.
@@ -41,24 +41,6 @@ class BaseTransfos[T](IterWrapper[T]):
         See also groupby_transform, which can be used with this function to group ranges of items with the same bool value.
         """
         return self.apply(partial(mit.adjacent, predicate, distance=distance))
-
-    def most_common(self, n: int | None = None) -> EagerIter[tuple[T, int]]:
-        """
-        Return a Sequence over the n most common elements and their counts from the most common to the least.
-
-        If n is None, then all elements are returned.
-        >>> import pychain as pc
-        >>> pc.Iter([1, 1, 2, 3, 3, 3]).most_common(2).into(list)
-        [(3, 3), (1, 2)]
-        """
-        from collections import Counter
-
-        from ._main import EagerIter
-
-        def _most_common(data: Iterable[T]) -> list[tuple[T, int]]:
-            return Counter(data).most_common(n)
-
-        return EagerIter(self.into(_most_common))
 
     def classify_unique(self) -> Iter[tuple[T, bool, bool]]:
         """

@@ -78,20 +78,21 @@ class BaseMap[T](IterWrapper[T]):
         func_else: Callable[[T], R] | None = None,
     ) -> Iter[R]:
         """
-        Evaluate each item from iterable using pred. If the result is equivalent to True, transform the item with func and yield it.
+        Evaluate each item from iterable using pred.
 
-        Otherwise, transform the item with func_else and yield it.
-        Predicate, func, and func_else should each be functions that accept one argument.
+        - If the result is equivalent to True, transform the item with func and yield it.
+        - Otherwise, transform the item with func_else and yield it.
+        - Predicate, func, and func_else should each be functions that accept one argument.
 
         By default, func_else is the identity function.
         >>> import pychain as pc
         >>> from math import sqrt
-        >>> iterable = pc.Iter.from_range(-5, 5)
+        >>> iterable = pc.Iter.from_(range(-5, 5)).collect()
         >>> iterable.into(list)
         [-5, -4, -3, -2, -1, 0, 1, 2, 3, 4]
-        >>> iterable.map_if(lambda x: x > 3, lambda x: "toobig").into(list)
+        >>> iterable.iter().map_if(lambda x: x > 3, lambda x: "toobig").into(list)
         [-5, -4, -3, -2, -1, 0, 1, 2, 3, 'toobig']
-        >>> iterable.map_if(
+        >>> iterable.iter().map_if(
         ...     lambda x: x >= 0,
         ...     lambda x: f"{sqrt(x):.2f}",
         ...     lambda x: None,
@@ -137,11 +138,11 @@ class BaseMap[T](IterWrapper[T]):
         """
         After the iterable is exhausted, keep yielding its last element.
         >>> import pychain as pc
-        >>> pc.Iter.from_range(0, 3).repeat_last().head(5).into(list)
+        >>> pc.Iter.from_(range(3)).repeat_last().head(5).into(list)
         [0, 1, 2, 2, 2]
 
         If the iterable is empty, yield default forever:
-        >>> pc.Iter.from_range(0, 0).repeat_last(42).head(5).into(list)
+        >>> pc.Iter.from_(range(0)).repeat_last(42).head(5).into(list)
         [42, 42, 42, 42, 42]
         """
         return self.apply(mit.repeat_last, default)

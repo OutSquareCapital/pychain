@@ -52,7 +52,7 @@ class BaseBool[T](IterWrapper[T]):
         >>> import pychain as pc
         >>> pc.Iter([0, 1]).any()
         True
-        >>> pc.Iter.from_range(0, 0).any()
+        >>> pc.Iter.from_(range(0)).any()
         False
         """
         return self.into(any)
@@ -176,11 +176,11 @@ class BaseBool[T](IterWrapper[T]):
         >>> def gt_nine(x: int) -> bool:
         ...     return x > 9
         >>>
-        >>> pc.Iter.from_range(0, 10).first_true()
+        >>> pc.Iter.from_(range(10)).first_true()
         1
-        >>> pc.Iter.from_range(0, 10).first_true(predicate=gt_five)
+        >>> pc.Iter.from_(range(10)).first_true(predicate=gt_five)
         6
-        >>> pc.Iter.from_range(0, 10).first_true(default="missing", predicate=gt_nine)
+        >>> pc.Iter.from_(range(10)).first_true(default="missing", predicate=gt_nine)
         'missing'
         """
         return self.into(mit.first_true, default, predicate)

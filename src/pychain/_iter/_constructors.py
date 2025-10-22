@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from typing import TYPE_CHECKING
 
 import cytoolz as cz
@@ -29,20 +29,6 @@ class IterConstructors:
         return Iter(itertools.count(start, step))
 
     @staticmethod
-    def from_range(start: int, stop: int, step: int = 1) -> Iter[int]:
-        """
-        Create an iterator from a range.
-
-        Syntactic sugar for `Iter(range(start, stop, step))`.
-        >>> import pychain as pc
-        >>> pc.Iter.from_range(1, 5).into(list)
-        [1, 2, 3, 4]
-        """
-        from ._main import Iter
-
-        return Iter(range(start, stop, step))
-
-    @staticmethod
     def from_func[U](func: Callable[[U], U], x: U) -> Iter[U]:
         """
         Create an infinite iterator by repeatedly applying a function into an original input x.
@@ -60,16 +46,33 @@ class IterConstructors:
         return Iter(cz.itertoolz.iterate(func, x))
 
     @staticmethod
-    def from_[U](*elements: U) -> Iter[U]:
+    def from_[U](data: Iterable[U]) -> Iter[U]:
         """
-        Create an iterator from the given elements.
+        Create an iterator from any Iterable.
+        - An Iterable is any object capable of returning its members one at a time, permitting it to be iterated over in a for-loop.
+        - An Iterator is an object representing a stream of data; returned by calling `iter()` on an Iterable.
+        - Once an Iterator is exhausted, it cannot be reused or reset.
+
+        If you need to reuse the data, consider collecting it into a list first with `.collect()`.
+
+        In general, avoid intermediate references when dealing with lazy iterators, and prioritize method chaining instead.
         >>> import pychain as pc
-        >>> pc.Iter.from_(1, 2, 3).into(list)
-        [1, 2, 3]
+        >>> data: tuple[int, ...] = (1, 2, 3)
+        >>> iterator = pc.Iter.from_(data)
+        >>> iterator.unwrap().__class__.__name__
+        'tuple_iterator'
+        >>> mapped = iterator.map(lambda x: x * 2)
+        >>> mapped.unwrap().__class__.__name__
+        'map'
+        >>> mapped.collect(tuple).unwrap()
+        (2, 4, 6)
+        >>> # iterator is now exhausted
+        >>> iterator.collect().unwrap()
+        []
         """
         from ._main import Iter
 
-        return Iter(elements)
+        return Iter(iter(data))
 
     @staticmethod
     def unfold[S, V](seed: S, generator: Callable[[S], tuple[V, S] | None]) -> Iter[V]:

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Collection, Iterable, Iterator
 from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 if TYPE_CHECKING:
     from .._dict import Dict
-    from .._iter import EagerIter, Iter
+    from .._iter import Iter, Seq
 
 
 class Pipeable:
@@ -88,7 +88,7 @@ class CommonBase[T](ABC, Pipeable):
         The result is not wrapped.
 
         >>> import pychain as pc
-        >>> pc.Iter.from_range(0, 5).into(list)
+        >>> pc.Iter.from_(range(5)).into(list)
         [0, 1, 2, 3, 4]
 
         This is a core functionality that allows ending the chain whilst keeping the code style consistent.
@@ -101,7 +101,7 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
 
     def apply[**P, R](
         self,
-        func: Callable[Concatenate[Iterable[T], P], Iterable[R]],
+        func: Callable[Concatenate[Iterable[T], P], Iterator[R]],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Iter[R]:
@@ -109,12 +109,10 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
 
         return Iter(self.into(func, *args, **kwargs))
 
-    def collect(
-        self, factory: Callable[[Iterable[T]], Sequence[T] | set[T]] = list
-    ) -> EagerIter[T]:
-        from .._iter import EagerIter
+    def collect(self, factory: Callable[[Iterable[T]], Collection[T]] = list) -> Seq[T]:
+        from .._iter import Seq
 
-        return EagerIter(self.into(factory))
+        return Seq(self.into(factory))
 
 
 class MappingWrapper[K, V](CommonBase[dict[K, V]]):

@@ -1,10 +1,10 @@
-from collections.abc import Iterable, Sized
+from collections.abc import Iterable, Iterator, Sized
 from typing import NamedTuple, Protocol
 
 
 class Peeked[T](NamedTuple):
     value: T | tuple[T, ...]
-    sequence: Iterable[T]
+    sequence: Iterator[T]
 
 
 class SupportsDunderLT[T](Protocol):

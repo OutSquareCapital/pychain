@@ -11,7 +11,7 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import EagerIter, Iter
+    from ._main import Iter
 
 
 class BaseFilter[T](IterWrapper[T]):
@@ -185,15 +185,6 @@ class BaseFilter[T](IterWrapper[T]):
 
         return self.apply(partial(cz.itertoolz.take, n))
 
-    def tail(self, n: int) -> EagerIter[T]:
-        """
-        Return last n elements wrapped.
-        >>> import pychain as pc
-        >>> pc.Iter([1, 2, 3]).tail(2).into(list)
-        [2, 3]
-        """
-        return self.collect(partial(cz.itertoolz.tail, n))
-
     def drop_first(self, n: int) -> Iter[T]:
         """
         Drop first n elements and return the remainder wrapped.
@@ -233,15 +224,6 @@ class BaseFilter[T](IterWrapper[T]):
         The items in iterable must be hashable.
         """
         return self.apply(mit.unique_in_window, n, key=key)
-
-    def top_n(self, n: int, key: Callable[[T], Any] | None = None) -> EagerIter[T]:
-        """
-        Return the top-n items according to key.
-        >>> import pychain as pc
-        >>> pc.Iter([1, 3, 2]).top_n(2).into(list)
-        [3, 2]
-        """
-        return self.collect(partial(cz.itertoolz.topk, n, key=key))
 
     def extract(self, indices: Iterable[int]) -> Iter[T]:
         """
@@ -342,7 +324,6 @@ class BaseFilter[T](IterWrapper[T]):
         """
         Apply func to every element of iterable, yielding only those which are not None.
         >>> import pychain as pc
-        >>>
         >>> def to_int(s: str) -> int | None:
         ...     return int(s) if s.isnumeric() else None
         >>> elems = ["1", "a", "2", "b", "3"]

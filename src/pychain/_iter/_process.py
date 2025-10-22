@@ -72,7 +72,7 @@ class BaseProcess[T](IterWrapper[T]):
         return self.apply(partial(cz.itertoolz.cons, value))
 
     def peekn(self, n: int) -> Iter[T]:
-        """¨
+        """
         Print and return sequence after peeking n items.
         >>> import pychain as pc
         >>> pc.Iter([1, 2, 3]).peekn(2).into(list)
@@ -80,7 +80,7 @@ class BaseProcess[T](IterWrapper[T]):
         [1, 2, 3]
         """
 
-        def _(data: Iterable[T]) -> Iterable[T]:
+        def _(data: Iterable[T]) -> Iterator[T]:
             peeked = Peeked(*cz.itertoolz.peekn(n, data))
             print(f"Peeked {n} values: {peeked.value}")
             return peeked.sequence
@@ -96,7 +96,7 @@ class BaseProcess[T](IterWrapper[T]):
         [1, 2]
         """
 
-        def _(data: Iterable[T]) -> Iterable[T]:
+        def _(data: Iterable[T]) -> Iterator[T]:
             peeked = Peeked(*cz.itertoolz.peek(data))
             print(f"Peeked value: {peeked.value}")
             return peeked.sequence
@@ -239,4 +239,4 @@ class BaseProcess[T](IterWrapper[T]):
         The boss is going to hear about this
         ['a', 'b', 'c', 'd']
         """
-        return self.apply(mit.strictly_n, n, too_short, too_long)
+        return self.apply(mit.strictly_n, n, too_short, too_long)  # type: ignore

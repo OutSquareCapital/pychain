@@ -27,14 +27,16 @@ class IterDict[K, V](MappingWrapper[K, V]):
         ...     "numbers1": [1, 2, 3],
         ...     "numbers2": [4, 5, 6],
         ... }
-        >>> pc.Dict(data).itr(lambda v: v.repeat(5).explode().sum()).unwrap()
+        >>> pc.Dict(data).itr(
+        ...     lambda v: v.repeat(5).explode().sum()
+        ... ).unwrap()  # doctest: +SKIP
         {'numbers1': 30, 'numbers2': 75}
         """
         from .._iter import Iter
 
         return self.apply(
             lambda data: cz.dicttoolz.valmap(
-                lambda v: func(Iter(v), *args, **kwargs), data
+                lambda v: func(Iter.from_(v), *args, **kwargs), data
             )
         )
 
@@ -48,11 +50,11 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return Iter(self.unwrap().keys())
+        return Iter.from_(self.unwrap().keys())
 
     def iter_values(self) -> Iter[V]:
         """
-        Return a Iter of the dict's values.
+        Return an Iter of the dict's values.
 
         >>> import pychain as pc
         >>> pc.Dict({1: 2}).iter_values().into(list)
@@ -60,7 +62,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return Iter(self.unwrap().values())
+        return Iter.from_(self.unwrap().values())
 
     def iter_items(self) -> Iter[tuple[K, V]]:
         """
@@ -72,4 +74,4 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return Iter(self.unwrap().items())
+        return Iter.from_(self.unwrap().items())

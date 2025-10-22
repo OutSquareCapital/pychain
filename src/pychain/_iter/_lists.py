@@ -8,7 +8,7 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import EagerIter, Iter
+    from ._main import Iter
 
 
 class BaseList[T](IterWrapper[T]):
@@ -18,7 +18,7 @@ class BaseList[T](IterWrapper[T]):
 
         Syntactic sugar for `Iter.map(lambda x: [x])`.
         >>> import pychain as pc
-        >>> pc.Iter.from_range(0, 5).implode().into(list)
+        >>> pc.Iter.from_(range(5)).implode().into(list)
         [[0], [1], [2], [3], [4]]
         """
 
@@ -39,13 +39,13 @@ class BaseList[T](IterWrapper[T]):
         >>> import pychain as pc
         >>> pc.Iter("abcdcba").split_at(lambda x: x == "b").into(list)
         [['a'], ['c', 'd', 'c'], ['a']]
-        >>> pc.Iter.from_range(0, 10).split_at(lambda n: n % 2 == 1).into(list)
+        >>> pc.Iter.from_(range(10)).split_at(lambda n: n % 2 == 1).into(list)
         [[0], [2], [4], [6], [8], []]
 
         At most *maxsplit* splits are done.
 
         If *maxsplit* is not specified or -1, then there is no limit on the number of splits:
-        >>> pc.Iter.from_range(0, 10).split_at(lambda n: n % 2 == 1, maxsplit=2).into(
+        >>> pc.Iter.from_(range(10)).split_at(lambda n: n % 2 == 1, maxsplit=2).into(
         ...     list
         ... )
         [[0], [2], [4, 5, 6, 7, 8, 9]]
@@ -75,9 +75,9 @@ class BaseList[T](IterWrapper[T]):
         >>> def cond(n: int) -> bool:
         ...     return n % 3 == 0
         >>>
-        >>> pc.Iter.from_range(0, 10).split_after(cond).into(list)
+        >>> pc.Iter.from_(range(10)).split_after(cond).into(list)
         [[0], [1, 2, 3], [4, 5, 6], [7, 8, 9]]
-        >>> pc.Iter.from_range(0, 10).split_after(cond, max_split=2).into(list)
+        >>> pc.Iter.from_(range(10)).split_after(cond, max_split=2).into(list)
         [[0], [1, 2, 3], [4, 5, 6, 7, 8, 9]]
         """
         return self.apply(mit.split_after, predicate, max_split)
@@ -95,13 +95,13 @@ class BaseList[T](IterWrapper[T]):
         >>> def cond(n: int) -> bool:
         ...     return n % 2 == 1
         >>>
-        >>> pc.Iter.from_range(0, 10).split_before(cond).into(list)
+        >>> pc.Iter.from_(range(10)).split_before(cond).into(list)
         [[0], [1, 2], [3, 4], [5, 6], [7, 8], [9]]
 
         At most *max_split* splits are done.
 
         If *max_split* is not specified or -1, then there is no limit on the number of splits:
-        >>> pc.Iter.from_range(0, 10).split_before(cond, max_split=2).into(list)
+        >>> pc.Iter.from_(range(10)).split_before(cond, max_split=2).into(list)
         [[0], [1, 2], [3, 4, 5, 6, 7, 8, 9]]
         """
         return self.apply(mit.split_before, predicate, max_split)
@@ -191,33 +191,3 @@ class BaseList[T](IterWrapper[T]):
         [[1, 2, 3], [4, 5, 6], [7]]
         """
         return self.apply(mit.chunked_even, n)
-
-    def unique_to_each(self, *others: Iterable[T]) -> EagerIter[list[T]]:
-        """
-        Return the elements from each of the input iterables that aren't in the other input iterables.
-
-        For example, suppose you have a set of packages, each with a set of dependencies:
-
-        **{'pkg_1': {'A', 'B'}, 'pkg_2': {'B', 'C'}, 'pkg_3': {'B', 'D'}}**
-
-        If you remove one package, which dependencies can also be removed?
-
-        If pkg_1 is removed, then A is no longer necessary - it is not associated with pkg_2 or pkg_3.
-
-        Similarly, C is only needed for pkg_2, and D is only needed for pkg_3:
-
-        >>> import pychain as pc
-        >>> pc.Iter({"A", "B"}).unique_to_each({"B", "C"}, {"B", "D"}).unwrap()
-        [['A'], ['C'], ['D']]
-
-        If there are duplicates in one input iterable that aren't in the others they will be duplicated in the output.
-
-        Input order is preserved:
-        >>> pc.Iter("mississippi").unique_to_each("missouri").unwrap()
-        [['p', 'p'], ['o', 'u', 'r']]
-
-        It is assumed that the elements of each iterable are hashable.
-        """
-        from ._main import EagerIter
-
-        return EagerIter(self.into(mit.unique_to_each, *others))

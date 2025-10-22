@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Generator, Iterable, Sequence
+from collections.abc import Callable, Collection, Generator, Iterable, Iterator
 from typing import TYPE_CHECKING, Any, Concatenate
 
-from .._core import SupportsRichComparison
 from ._aggregations import BaseAgg
 from ._booleans import BaseBool
 from ._constructors import IterConstructors
+from ._eager import BaseEager
 from ._filters import BaseFilter
 from ._groups import BaseGroups
 from ._joins import BaseJoins
@@ -35,6 +35,7 @@ class Iter[T](
     BaseTransfos[T],
     BaseJoins[T],
     BaseGroups[T],
+    BaseEager[T],
     IterConstructors,
 ):
     """
@@ -48,6 +49,9 @@ class Iter[T](
     """
 
     __slots__ = ("_data",)
+
+    def __init__(self, data: Iterator[T] | Generator[T, Any, Any]) -> None:
+        self._data = data
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.unwrap().__repr__()})"
@@ -69,13 +73,15 @@ class Iter[T](
         ...     [6, 7, 8, 9],
         ... ]
         >>> pc.Iter(data).itr(
-        ...     lambda x: x.repeat(2).explode().reduce(lambda a, b: a + b)
+        ...     lambda x: x.repeat(2)
+        ...     .explode()
+        ...     .reduce(lambda a, b: a + b)  # doctest: +SKIP
         ... ).into(list)
         [12, 18, 60]
         """
 
         def _itr(data: Iterable[U]) -> Generator[R, None, None]:
-            return (func(Iter(x), *args, **kwargs) for x in data)
+            return (func(Iter.from_(x), *args, **kwargs) for x in data)
 
         return self.apply(_itr)
 
@@ -134,25 +140,6 @@ class Iter[T](
 
         return self.apply(_struct)
 
-    def sort[U: SupportsRichComparison[Any]](
-        self: Iter[U], reverse: bool = False, key: Callable[[U], Any] | None = None
-    ) -> EagerIter[U]:
-        """
-        Sort the elements of the sequence.
-        Note: This method must consume the entire iterable to perform the sort.
-
-        The result is a new iterable over the sorted sequence.
-
-        >>> import pychain as pc
-        >>> pc.Iter([3, 1, 2]).sort().into(list)
-        [1, 2, 3]
-        """
-
-        def _sort(data: Iterable[U]):
-            return sorted(data, reverse=reverse, key=key)
-
-        return self.collect(_sort)
-
     def with_keys[K](self, keys: Iterable[K]) -> Dict[K, T]:
         """
         Create a Dict by zipping the iterable with keys.
@@ -188,8 +175,11 @@ class Iter[T](
         return Dict(dict(zip(self.unwrap(), values)))
 
 
-class EagerIter[T](Iter[T]):
+class Seq[T](BaseAgg[T]):
     __slots__ = ("_data",)
 
-    def __init__(self, data: Sequence[T] | set[T]) -> None:
+    def __init__(self, data: Collection[T]) -> None:
         self._data = data
+
+    def iter(self) -> Iter[T]:
+        return Iter.from_(self.unwrap())

@@ -10,7 +10,7 @@ import more_itertools as mit
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
-    from ._main import EagerIter, Iter
+    from ._main import Iter
 
 
 class BaseJoins[T](IterWrapper[T]):
@@ -136,7 +136,8 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[Any, ...]]:
         """
         Version of zip that "broadcasts" any scalar (i.e., non-iterable) items into output tuples.
-        str and bytes are not treated as iterables.
+
+        ``str`` and ``bytes`` are not treated as iterables.
         >>> import pychain as pc
         >>> data = pc.Iter([1, 2, 3])
         >>> other = ["a", "b", "c"]
@@ -147,8 +148,8 @@ class BaseJoins[T](IterWrapper[T]):
         If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
         """
 
-        def _(data: Iterable[T]) -> Iterable[tuple[T | Any, ...]]:
-            return mit.zip_broadcast(data, *others, strict=strict)
+        def _(data: Iterable[T]) -> Iterator[tuple[T | Any, ...]]:
+            return mit.zip_broadcast(data, *others, strict=strict)  # type: ignore
 
         return self.apply(_)
 
@@ -179,9 +180,9 @@ class BaseJoins[T](IterWrapper[T]):
         """
         ``zip`` the input *iterables* together but raise ``UnequalIterablesError`` if they aren't all the same length.
         >>> import pychain as pc
-        >>> pc.Iter.from_range(0, 3).zip_equal("abc").into(list)
+        >>> pc.Iter.from_(range(3)).zip_equal("abc").into(list)
         [(0, 'a'), (1, 'b'), (2, 'c')]
-        >>> pc.Iter.from_range(0, 3).zip_equal("abcd").into(list)
+        >>> pc.Iter.from_(range(3)).zip_equal("abcd").into(list)
         ... # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
         ...
@@ -241,79 +242,6 @@ class BaseJoins[T](IterWrapper[T]):
         [('blue', 'S'), ('blue', 'M'), ('red', 'S'), ('red', 'M')]
         """
         return self.apply(itertools.product, *others)
-
-    def union(self, *others: Iterable[T]) -> EagerIter[T]:
-        """
-        Return the union of this iterable and 'others' as a new Iter.
-
-        Note:
-            This method consumes inner data and removes duplicates.
-
-        >>> import pychain as pc
-        >>> pc.Iter([1, 2, 2]).union([2, 3], [4]).sort().into(list)
-        [1, 2, 3, 4]
-        """
-
-        def _union(data: Iterable[T]) -> set[T]:
-            return set(data).union(*others)
-
-        return self.collect(_union)
-
-    def intersection(self, *others: Iterable[T]) -> EagerIter[T]:
-        """
-        Return the elements common of this iterable and 'others'.
-
-        Note:
-            This method consumes inner data, unsorts it, and removes duplicates.
-
-        >>> import pychain as pc
-        >>> pc.Iter([1, 2, 2]).intersection([2, 3], [2]).into(list)
-        [2]
-        """
-
-        def _intersection(data: Iterable[T]) -> set[T]:
-            return set(data).intersection(*others)
-
-        return self.collect(_intersection)
-
-    def diff_unique(self, *others: Iterable[T]) -> EagerIter[T]:
-        """
-        Return the difference of this iterable and 'others' as a new Iter.
-
-        (Elements in 'self' but not in 'others').
-
-        Note:
-            This method consumes inner data, unsorts it, and removes duplicates.
-
-        >>> import pychain as pc
-        >>> pc.Iter([1, 2, 2]).diff_unique([2, 3]).into(list)
-        [1]
-        """
-
-        def _difference(data: Iterable[T]) -> set[T]:
-            return set(data).difference(*others)
-
-        return self.collect(_difference)
-
-    def diff_symmetric(self, *others: Iterable[T]) -> EagerIter[T]:
-        """
-        Return the symmetric difference (XOR) of this iterable and 'other'
-        as a new Iter.
-
-        Note:
-            This method consumes inner data, unsorts it, and removes duplicates.
-
-        >>> import pychain as pc
-        >>> pc.Iter([1, 2, 2]).diff_symmetric([2, 3]).sort().into(list)
-        [1, 3]
-        >>> pc.Iter([1, 2, 3]).diff_symmetric([3, 4, 5]).sort().into(list)
-        [1, 2, 4, 5]
-        """
-
-        def _symmetric_difference(data: Iterable[T]) -> set[T]:
-            return set(data).symmetric_difference(*others)
-
-        return self.collect(_symmetric_difference)
 
     def diff_at(
         self,
