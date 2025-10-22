@@ -71,9 +71,7 @@ class Iter[T](
         ...     [6, 7, 8, 9],
         ... ]
         >>> pc.Iter.from_(data).itr(
-        ...     lambda x: x.repeat(2)
-        ...     .explode()
-        ...     .reduce(lambda a, b: a + b)  # doctest: +SKIP
+        ...     lambda x: x.repeat(2).explode().reduce(lambda a, b: a + b)
         ... ).into(list)
         [12, 18, 60]
         """

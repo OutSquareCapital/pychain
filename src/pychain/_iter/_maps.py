@@ -124,10 +124,14 @@ class BaseMap[T](IterWrapper[T]):
         """
         Repeat the entire iterable n times (as elements) and return Iter.
         >>> import pychain as pc
-        >>> pc.Iter.from_([1, 2]).repeat(2).collect().unwrap()  # doctest: +SKIP
-        [[1, 2], [1, 2]]
+        >>> pc.Iter.from_([1, 2]).repeat(2).collect().unwrap()
+        [(1, 2), (1, 2)]
         """
-        return self.apply(partial(itertools.repeat, times=n))
+
+        def _repeat(data: Iterable[T]) -> Iterator[Iterable[T]]:
+            return itertools.repeat(tuple(data), n)
+
+        return self.apply(_repeat)
 
     @overload
     def repeat_last(self, default: T) -> Iter[T]: ...

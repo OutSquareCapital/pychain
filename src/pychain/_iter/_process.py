@@ -190,8 +190,8 @@ class BaseProcess[T](IterWrapper[T]):
 
         Knuth's example for prime factors of 1836:  2**2 * 3**3 * 17**1
         >>> import math
-        >>> pc.Iter.from_({2: 2, 3: 3, 17: 1}).elements().into(math.prod)
-        ... # doctest: +SKIP
+        >>> data = [2, 2, 3, 3, 3, 17]
+        >>> pc.Iter.from_(data).elements().into(math.prod)
         1836
 
         Note, if an element's count has been set to zero or is a negative
