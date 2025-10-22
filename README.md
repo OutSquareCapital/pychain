@@ -1,20 +1,125 @@
-# pychain
+# pychain ⛓️
 
-pychain is a Python library that provides functional-style chaining operations for data structures.
+**_Functional-style method chaining for Python data structures._**
+
+`pychain` brings a fluent, declarative API inspired by Rust's `Iterator` and DataFrame libraries like Polars to your everyday Python iterables and dictionaries.
+
+Manipulate data through composable chains of operations, enhancing readability and reducing boilerplate.
 
 ## Overview
 
-### Primary Goal
+### Philosophy ✨
 
-To provide a fluent, declarative, and functional method-chaining API for data manipulation in Python.
+* **Declarative over Imperative:** Replace explicit `for` and `while` loops with sequences of high-level operations (map, filter, group, join...).
+* **Fluent Chaining:** Each method transforms the data and returns a new wrapper instance, allowing for seamless chaining.
+* **Lazy and Eager:** `Iter` operates lazily for efficiency on large or infinite sequences, while `Seq` represents materialized collections for eager operations.
+* **100% Type-safe:** Extensive use of generics and overloads ensures type safety and improves developer experience.
+* **Documentation-first:** Each method is thoroughly documented with clear explanations, and usage examples. Before any commit is made, each docstring is automatically tested to ensure accuracy. This also allows for a convenient experience in IDEs, where developers can easily access documentation with a simple hover of the mouse.
+* **Functional paradigm:** Design encourages building complex data transformations by composing simple, reusable functions on known buildings blocks, rather than implementing customs classes each time.
 
-### Philosophy
+### Inspirations 💡
 
-Eliminate imperative loops (`for`, `while`) in favor of a sequence of high-level operations.
+* **Rust's language and  Rust `Iterator` Trait:** Emulate naming conventions (`from_()`, `into()`) and leverage concepts from Rust's powerful iterator traits (method chaining, lazy evaluation) to bring similar expressiveness to Python.
+* **Polars API:** The powerful expression API for `pychain.Dict` (`select`, `with_fields`, `key`) mimics the expressive power of Polars for selecting, transforming, and reshaping nested dictionary data.
+* **Python iterators libraries:** Libraries like `rolling`, `cytoolz`, and `more-itertools` provided ideas, inspiration, and implementations for many of the iterator methods.
+* **PyFunctional:** Although not directly used (because I started writing pychain before discovering it), also shares similar goals and ideas.
 
-Each method transforms the data and returns a new wrapper instance, enabling continuous chaining until a terminal method is called to extract the result.
+### Core Components 🧱
 
-### Key Dependencies and credits
+* **`Iter[T]`:** Wraps any Python `Iterable` (`list`, `tuple`, generator...). Most operations are **lazy**, consuming the underlying iterator on demand. Provides a vast array of methods for transformation, filtering, aggregation, joining, etc..
+* **`Seq[T]`:** Wraps a Python `Collection` (`list`, `tuple`, `set`...). Represents **eagerly** evaluated data. Exposes methods requiring the full dataset (e.g., `sort`, `union`) or aggregation methods. Use `.iter()` to switch back to lazy processing.
+* **`Dict[K, V]`:** Wraps a Python `dict`. Provides chainable methods specific to dictionaries (manipulating keys, values, items, nesting, joins, grouping) and includes an **expression API** to facilitate work on nested structures.
+* **`Wrapper[T]`:** A generic wrapper for any Python object, allowing integration into `pychain`'s fluent style using `pipe`, `apply`, and `into`.
+
+### Core Piping Methods 🚰
+
+All wrappers inherit from `CommonBase`:
+
+* `into(func, *args)`: Passes the **unwrapped** data to `func` and returns the raw result (terminal).
+* `apply(func, *args)`: Passes the **unwrapped** data to `func` and **re-wraps** the result for continued chaining.
+* `pipe(func, *args)`: Passes the **wrapped instance** (`self`) to `func` and returns the raw result (can be terminal).
+* `println()`: Prints the unwrapped data and returns `self`.
+
+### Rich Lazy Iteration (`Iter`) 😴
+
+Leverage dozens of methods inspired by Rust's `Iterator`, `itertools`, `cytoolz`, and `more-itertools`.
+
+```python
+import pychain as pc
+
+result = (
+    pc.Iter.from_count(1) # Infinite iterator: 1, 2, 3, ...
+    .filter(lambda x: x % 2 != 0) # Keep odd numbers: 1, 3, 5, ...
+    .map(lambda x: x * x) # Square them: 1, 9, 25, ...
+    .take(5) # Take the first 5: 1, 9, 25, 49, 81
+    .into(list) # Consume into a list
+)
+# result: [1, 9, 25, 49, 81]
+```
+
+### Typing enforcement 🛡️
+
+Each method and class make extensive use of generics, type hints, and overloads (when necessary) to ensure type safety and improve developer experience.
+
+Since there's much less need for intermediate variables, the developper don't have to annotate them as much, whilst still keeping a type-safe codebase.
+
+Target: modern Python 3.13 syntax (PEP 695 generics, updated collections.abc types).
+
+### Expressions for Dict ``pychain.key`` 🗝️
+
+Compute new fields from existing nested data with key() and Expr.apply(), either selecting a new dict or merging into the root.
+
+```python
+import pychain as pc
+
+# Build a compact view
+data = pc.Dict(
+    {
+        "user": {"name": "Alice", "age": 30},
+        "scores": {"math": 18, "eng": 15},
+    }
+)
+
+view = data.select(
+    pc.key("user").key("name"),
+    pc.key("scores").key("math"),
+    pc.key("scores").key("eng"),
+    pc.key("user").key("age").apply(lambda x: x >= 18).alias("is_adult"),
+)
+# {"name": "Alice", "math": 18, "eng": 15, "is_adult": True}
+merged = data.with_fields(
+    pc.key("scores").key("math").apply(lambda x: x * 10).alias("math_x10")
+)
+# {
+#   'user': {'name': 'Alice', 'age': 30},
+#   'scores': {'math': 18, 'eng': 15},
+#   'math_x10': 180
+# }
+
+```
+
+### Convenience mappers: itr and struct 🔄
+
+Operate on iterables of iterables or iterables of dicts without leaving the chain.
+
+```python
+import pychain as pc
+
+nested = pc.Iter.from_([[1, 2, 3], [4, 5]])
+totals = nested.itr(lambda it: it.sum()).into(list)
+# [6, 9]
+
+records = pc.Iter.from_(
+    [
+        {"name": "Alice", "age": 30},
+        {"name": "Bob", "age": 25},
+    ]
+)
+names = records.struct(lambda d: d.pluck("name").unwrap()).into(list)
+# ['Alice', 'Bob']
+```
+
+## Key Dependencies and credits 🔗
 
 Most of the computations are done with implementations from the `cytoolz`, `more-itertools`, and `rolling` libraries.
 
@@ -32,35 +137,9 @@ The stubs used for the developpement, made by the maintainer of pychain, can be 
 
 <https://github.com/py-stubs/cytoolz-stubs>
 
-### Design
+---
 
-Based on wrapper classes that encapsulate native Python data structures or third-party library objects.
-
-- Iter[T]: For any Iterable. Most operations are lazy.
-- Dict[KT, VT]: For dict-like objects.
-- Wrapper[T]: For any object to keep a consistent chaining style when the object itself is not chainable.
-- Pipeable/CommonBase: Shared core for consistent piping:
-  - into(...) passes unwrapped data to a function and returns the raw result (terminal).
-  - apply(...) passes unwrapped data to a function and re-wraps the result for continued chaining (non-terminal).
-  - pipe(...) passes the wrapped instance to a function and returns the raw result (terminal).
-  - println(...) prints the underlying data then returns self.
-
-Note on Wrapper:
-The primary goal of this class is to allow the user of pychain to keep a consistent method-chaining style across their codebase, even when working with objects that do not support this style (eg. numpy arrays, pure functions, ...). It does however not provide any additional functionality beyond the pipe methods family, and the convenience to_iter and to_dict methods.
-
-### Interoperability
-
-Designed to integrate seamlessly with other data manipulation libraries, like `polars`, using the `into` and `unwrap` methods.
-
-### Typing
-
-Each method and class make extensive use of generics, type hints, and overloads (when necessary) to ensure type safety and improve developer experience.
-
-Since there's much less need for intermediate variables, the developper don't have to annotate them as much, whilst still keeping a type-safe codebase.
-
-Target: modern Python 3.13 syntax (PEP 695 generics, updated collections.abc types).
-
-## Real-life simple example
+## Real-life simple example 📚
 
 In one of my project, I have to introspect some modules from plotly to get some lists of colors.
 
@@ -154,61 +233,7 @@ def generate_palettes_literal() -> None:
 
 Since I have to reference the literal_content variable in the for loop, This is more reasonnable to use a for loop here rather than a map + reduce approach.
 
-## Expressions for Dict
-
-Compute new fields from existing nested data with key() and Expr.apply(), either selecting a new dict or merging into the root.
-
-```python
-import pychain as pc
-
-# Build a compact view
-data = pc.Dict(
-    {
-        "user": {"name": "Alice", "age": 30},
-        "scores": {"math": 18, "eng": 15},
-    }
-)
-
-view = data.select(
-    pc.key("user").key("name"),
-    pc.key("scores").key("math"),
-    pc.key("scores").key("eng"),
-    pc.key("user").key("age").apply(lambda x: x >= 18).alias("is_adult"),
-)
-# {"name": "Alice", "math": 18, "eng": 15, "is_adult": True}
-merged = data.with_fields(
-    pc.key("scores").key("math").apply(lambda x: x * 10).alias("math_x10")
-)
-# {
-#   'user': {'name': 'Alice', 'age': 30},
-#   'scores': {'math': 18, 'eng': 15},
-#   'math_x10': 180
-# }
-
-```
-
-## Convenience mappers: itr and struct
-
-Operate on iterables of iterables or iterables of dicts without leaving the chain.
-
-```python
-import pychain as pc
-
-nested = pc.Iter.from_([[1, 2, 3], [4, 5]])
-totals = nested.itr(lambda it: it.sum()).into(list)
-# [6, 9]
-
-records = pc.Iter.from_(
-    [
-        {"name": "Alice", "age": 30},
-        {"name": "Bob", "age": 25},
-    ]
-)
-names = records.struct(lambda d: d.pluck("name").unwrap()).into(list)
-# ['Alice', 'Bob']
-```
-
-## Installation
+## Installation 🚀
 
 ```bash
 uv add git+https://github.com/OutSquareCapital/pychain.git
