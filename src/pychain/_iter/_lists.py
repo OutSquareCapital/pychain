@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 from collections.abc import Callable, Generator, Iterable
 from typing import TYPE_CHECKING
 
@@ -191,3 +192,42 @@ class BaseList[T](IterWrapper[T]):
         [[1, 2, 3], [4, 5, 6], [7]]
         """
         return self.apply(mit.chunked_even, n)
+
+    def unique_to_each(self, *others: Iterable[T]) -> Iter[list[T]]:
+        """
+        Return the elements from each of the input iterables that aren't in the other input iterables.
+
+        For example, suppose you have a set of packages, each with a set of dependencies:
+
+        **{'pkg_1': {'A', 'B'}, 'pkg_2': {'B', 'C'}, 'pkg_3': {'B', 'D'}}**
+
+        If you remove one package, which dependencies can also be removed?
+
+        If pkg_1 is removed, then A is no longer necessary - it is not associated with pkg_2 or pkg_3.
+
+        Similarly, C is only needed for pkg_2, and D is only needed for pkg_3:
+
+        >>> import pychain as pc
+        >>> data = {"A", "B"}
+        >>> pc.Iter(data).unique_to_each({"B", "C"}, {"B", "D"}).collect().unwrap()
+        [['A'], ['C'], ['D']]
+
+        If there are duplicates in one input iterable that aren't in the others they will be duplicated in the output.
+
+        Input order is preserved:
+        >>> pc.Iter("mississippi").unique_to_each("missouri").collect().unwrap()
+        [['p', 'p'], ['o', 'u', 'r']]
+
+        It is assumed that the elements of each iterable are hashable.
+        """
+
+        from collections import Counter
+
+        def _unique_to_each(data: Iterable[T]) -> Generator[list[T], None, None]:
+            """from more_itertools.unique_to_each"""
+            pool: list[Iterable[T]] = [it for it in (data, *others)]
+            counts: Counter[T] = Counter(itertools.chain.from_iterable(map(set, pool)))
+            uniques: set[T] = {element for element in counts if counts[element] == 1}
+            return ((list(filter(uniques.__contains__, it))) for it in pool)
+
+        return self.apply(_unique_to_each)
