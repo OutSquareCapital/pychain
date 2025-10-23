@@ -29,7 +29,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
 
         Syntactic sugar for `map_values(lambda data: func(pc.Dict(data), *args, **kwargs))`
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = {
         ...     "person1": {"name": "Alice", "age": 30, "city": "New York"},
         ...     "person2": {"name": "Bob", "age": 25, "city": "Los Angeles"},
@@ -63,7 +63,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
             sep: Separator to use when concatenating keys
             max_depth: Maximum depth to flatten. If None, flattens completely.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = {
         ...     "config": {"params": {"retries": 3, "timeout": 30}, "mode": "fast"},
         ...     "version": 1.0,
@@ -104,7 +104,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
             *keys: Sequence of keys representing the nested path.
             value: Value to set at the specified nested path.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> purchase = {
         ...     "name": "Alice",
         ...     "order": {"items": ["Apple", "Orange"], "costs": [0.50, 1.25]},
@@ -129,7 +129,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         When the max depth is reached, nested dicts are marked as 'dict'.
         For lists, only the first element is inspected.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> # Depth 2: we see up to level2
         >>> data = {
         ...     "level1": {"level2": {"level3": {"key": "value"}}},
@@ -175,7 +175,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         Args:
             *keys: Sequence of keys to extract values from the nested dictionaries.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = {
         ...     "person1": {"name": "Alice", "age": 30},
         ...     "person2": {"name": "Bob", "age": 25},
@@ -202,7 +202,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
             default: Default value to return if the keys do not exist.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = {"a": {"b": {"c": 1}}}
         >>> pc.Dict(data).get_in("a", "b", "c")
         1

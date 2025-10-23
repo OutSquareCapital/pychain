@@ -44,7 +44,7 @@ class Dict[K, V](
             data: A mapping or object supporting keys and item access to convert into a Dict.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> class MyMapping:
         ...     def __init__(self):
         ...         self._data = {1: "a", 2: "b", 3: "c"}
@@ -71,7 +71,7 @@ class Dict[K, V](
             obj: The object whose `__dict__` attribute will be used to create the Dict.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> class Person:
         ...     def __init__(self, name: str, age: int):
         ...         self.name = name
@@ -88,7 +88,7 @@ class Dict[K, V](
         """
         Select and alias fields from the dict based on expressions and/or strings.
 
-        Navigate nested fields using the `pychain.key` function.
+        Navigate nested fields using the `pyochain.key` function.
 
         - Chain `key.key()` calls to access nested fields.
         - Use `key.apply()` to transform values.
@@ -98,7 +98,7 @@ class Dict[K, V](
             *exprs: Expressions or strings to select and alias fields from the dictionary.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = {
         ...     "name": "Alice",
         ...     "age": 30,
@@ -131,7 +131,7 @@ class Dict[K, V](
             *exprs: Expressions to merge into the root dictionary.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = {
         ...     "name": "Alice",
         ...     "age": 30,
@@ -161,7 +161,7 @@ class Dict[K, V](
             func: Function to apply to each key in the dictionary.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_keys(
         ...     str.lower
         ... ).unwrap()
@@ -182,7 +182,7 @@ class Dict[K, V](
             func: Function to apply to each value in the dictionary.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_values(sum).unwrap()
         {'Alice': 65, 'Bob': 45}
         >>>
@@ -204,7 +204,7 @@ class Dict[K, V](
             func: Function to transform each (key, value) pair into a new (key, value) tuple.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({"Alice": 10, "Bob": 20}).map_items(
         ...     lambda kv: (kv[0].upper(), kv[1] * 2)
         ... ).unwrap()
@@ -225,7 +225,7 @@ class Dict[K, V](
             func: Function to transform each key and value into a new (key, value) tuple.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).unwrap()
         {2: 20}
 
@@ -244,7 +244,7 @@ class Dict[K, V](
         """
         Invert the dictionary, grouping keys by common (and hashable) values.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d = {"a": 1, "b": 2, "c": 1}
         >>> pc.Dict(d).invert().unwrap()
         {1: ['a', 'c'], 2: ['b']}
@@ -265,7 +265,7 @@ class Dict[K, V](
         Nest all the values in lists.
         syntactic sugar for map_values(lambda v: [v])
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({1: 2, 3: 4}).implode().unwrap()
         {1: [2], 3: [4]}
 
@@ -289,7 +289,7 @@ class Dict[K, V](
 
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d1 = pc.Dict({"a": 1, "b": 2})
         >>> d2 = pc.Dict({"a": 1, "b": 2})
         >>> d3 = pc.Dict({"a": 1, "b": 3})

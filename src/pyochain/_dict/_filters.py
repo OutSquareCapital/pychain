@@ -21,7 +21,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
             predicate: Function to determine if a key should be included.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
         >>> pc.Dict(d).filter_keys(lambda x: x % 2 == 0).unwrap()
         {2: 3, 4: 5}
@@ -38,7 +38,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
             predicate: Function to determine if a value should be included.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
         >>> pc.Dict(d).filter_values(lambda x: x % 2 == 0).unwrap()
         {1: 2, 3: 4}
@@ -60,7 +60,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
             predicate: Function to determine if a (key, value) pair should be included.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> def isvalid(item):
         ...     k, v = item
         ...     return k % 2 == 0 and v < 4
@@ -86,7 +86,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
             predicate: Function to determine if a key-value pair should be included.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> def isvalid(key, value):
         ...     return key % 2 == 0 and value < 4
         >>> d = pc.Dict({1: 2, 2: 3, 3: 4, 4: 5})
@@ -117,7 +117,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
             dtype: Optional expected type of the attribute for type hinting.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({"a": "hello", "b": "world", "c": 2, "d": 5}).filter_attr(
         ...     "capitalize", str
         ... ).unwrap()
@@ -142,7 +142,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
             typ: Type to filter values by.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = {"a": "one", "b": "two", "c": 3, "d": 4}
         >>> pc.Dict(data).filter_type(str).unwrap()
         {'a': 'one', 'b': 'two'}
@@ -162,7 +162,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         """
         Filter values that are callable.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> def foo():
         ...     pass
         >>> data = {1: "one", 2: "two", 3: foo, 4: print}
@@ -191,7 +191,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
             keep_parent: Whether to include the parent class itself. Defaults to True.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> class A:
         ...     pass
         >>> class B(A):
@@ -228,7 +228,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
             *others: Other mappings to intersect keys with.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d1 = {"a": 1, "b": 2, "c": 3}
         >>> d2 = {"b": 10, "c": 20}
         >>> d3 = {"c": 30}
@@ -254,7 +254,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
             *others: Other mappings to exclude keys from.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d1 = {"a": 1, "b": 2, "c": 3}
         >>> d2 = {"b": 10, "d": 40}
         >>> d3 = {"c": 30}

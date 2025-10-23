@@ -20,7 +20,7 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
             func: Function to determine the group for each value.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d = {"a": 1, "b": 2, "c": 3, "d": 2}
         >>> pc.Dict(d).group_by_value(lambda v: v % 2).unwrap()
         {1: {'a': 1, 'c': 3}, 0: {'b': 2, 'd': 2}}
@@ -44,7 +44,7 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
             func: Function to determine the group for each key.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d = {"user_1": 10, "user_2": 20, "admin_1": 100}
         >>> pc.Dict(d).group_by_key(lambda k: k.split("_")[0]).unwrap()
         {'user': {'user_1': 10, 'user_2': 20}, 'admin': {'admin_1': 100}}
@@ -75,7 +75,7 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         This avoids materializing intermediate `Dict` objects if you only need
         an aggregated result for each group.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>>
         >>> data = {"user_1": 10, "user_2": 20, "admin_1": 100}
         >>> pc.Dict(data).group_by_key_agg(
@@ -135,7 +135,7 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         This avoids materializing intermediate `Dict` objects if you only need
         an aggregated result for each group.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>>
         >>> data = {"math": "A", "physics": "B", "english": "A"}
         >>> pc.Dict(data).group_by_value_agg(

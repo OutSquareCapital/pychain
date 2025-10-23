@@ -71,7 +71,7 @@ class Iter[T](
             **kwargs: Keyword arguments to pass to the function.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = [
         ...     [1, 2, 3],
         ...     [4, 5],
@@ -107,7 +107,7 @@ class Iter[T](
         Example:
         ```python
         >>> from typing import Any
-        >>> import pychain as pc
+        >>> import pyochain as pc
 
         >>> data: list[dict[str, Any]] = [
         ...     {"name": "Alice", "age": 30, "city": "New York"},
@@ -161,7 +161,7 @@ class Iter[T](
             keys: Iterable of keys to pair with the values.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> keys = ["a", "b", "c"]
         >>> values = [1, 2, 3]
         >>> pc.Iter.from_(values).with_keys(keys).unwrap()
@@ -186,7 +186,7 @@ class Iter[T](
             values: Iterable of values to pair with the keys.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> keys = [1, 2, 3]
         >>> values = ["a", "b", "c"]
         >>> pc.Iter.from_(keys).with_values(values).unwrap()
@@ -206,9 +206,9 @@ class Iter[T](
 
 class Seq[T](BaseAgg[T], BaseEager[T]):
     """
-    pychain.Seq represent an in memory collection.
+    pyochain.Seq represent an in memory collection.
 
-    Provides a subset of pychain.Iter methods with eager evaluation, and is the return type of pychain.Iter.collect().
+    Provides a subset of pyochain.Iter methods with eager evaluation, and is the return type of pyochain.Iter.collect().
     """
 
     __slots__ = ("_data",)

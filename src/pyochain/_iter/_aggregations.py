@@ -32,7 +32,7 @@ class BaseAgg[T](IterWrapper[T]):
         - one from the right elements.
         This function is, in some sense, the opposite of zip.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = [(1, "a"), (2, "b"), (3, "c")]
         >>> unzipped = pc.Iter.from_(data).unzip()
         >>> unzipped.first.into(list)
@@ -63,7 +63,7 @@ class BaseAgg[T](IterWrapper[T]):
 
         It then serves as a default when the iterable is empty.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).reduce(lambda a, b: a + b)
         6
 
@@ -84,7 +84,7 @@ class BaseAgg[T](IterWrapper[T]):
 
         ValueError will be raised if the given element isn't one of the combinations of iterable.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("abcdefg").combination_index("adf")
         10
 
@@ -96,7 +96,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the first element.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([9]).first()
         9
 
@@ -108,7 +108,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the second element.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([9, 8]).second()
         8
 
@@ -120,7 +120,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the last element.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([7, 8, 9]).last()
         9
 
@@ -133,7 +133,7 @@ class BaseAgg[T](IterWrapper[T]):
         Return the length of the sequence.
         Like the builtin len but works on lazy sequences.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).count()
         2
 
@@ -149,7 +149,7 @@ class BaseAgg[T](IterWrapper[T]):
             index: The index of the item to retrieve.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([10, 20]).item(1)
         20
 
@@ -165,7 +165,7 @@ class BaseAgg[T](IterWrapper[T]):
             key: Optional function to determine the value for comparison.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("abcdefghabcd").argmax()
         7
         >>> pc.Iter.from_([0, 1, 2, 3, 3, 2, 1, 0]).argmax()
@@ -196,7 +196,7 @@ class BaseAgg[T](IterWrapper[T]):
             key: Optional function to determine the value for comparison.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("efghabcdijkl").argmin()
         4
         >>> pc.Iter.from_([3, 2, 1, 0, 4, 2, 1, 0]).argmin()
@@ -226,7 +226,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the sum of the sequence.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).sum()
         6
 
@@ -238,7 +238,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the minimum of the sequence.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([3, 1, 2]).min()
         1
 
@@ -250,7 +250,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the maximum of the sequence.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([3, 1, 2]).max()
         3
 
@@ -262,7 +262,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the mean of the sequence.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).mean()
         2
 
@@ -274,7 +274,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the median of the sequence.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 3, 2]).median()
         2
 
@@ -286,7 +286,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the mode of the sequence.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 2, 3]).mode()
         2
 
@@ -300,7 +300,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the standard deviation of the sequence.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).stdev()
         1.0
 
@@ -314,7 +314,7 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Return the variance of the sequence.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3, 7, 8]).variance()
         9.7
 

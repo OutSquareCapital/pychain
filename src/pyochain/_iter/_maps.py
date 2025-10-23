@@ -31,7 +31,7 @@ class BaseMap[T](IterWrapper[T]):
 
         Can be used for side effects such as printing or logging.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).for_each(lambda x: print(x)).collect().unwrap()
         1
         2
@@ -52,7 +52,7 @@ class BaseMap[T](IterWrapper[T]):
             func: Function to apply to each element.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).map(lambda x: x + 1).into(list)
         [2, 3]
 
@@ -83,7 +83,7 @@ class BaseMap[T](IterWrapper[T]):
             func: Function to apply to each element.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = [[1, 2], [3, 4]]
         >>> pc.Iter.from_(data).flat_map(lambda x: x + 10).into(list)
         [11, 12, 13, 14]
@@ -109,7 +109,7 @@ class BaseMap[T](IterWrapper[T]):
 
         In short, for each `element` in the sequence, it computes `func(*element)`.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> def make_sku(color, size):
         ...     return f"{color}-{size}"
         >>> data = pc.Seq(["blue", "red"])
@@ -149,7 +149,7 @@ class BaseMap[T](IterWrapper[T]):
 
         By default, func_else is the identity function.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> from math import sqrt
         >>> iterable = pc.Iter.from_(range(-5, 5)).collect()
         >>> iterable.into(list)
@@ -181,7 +181,7 @@ class BaseMap[T](IterWrapper[T]):
 
         If an exception other than one given by exceptions is raised by function, it is raised like normal.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> iterable = ["1", "2", "three", "4", None]
         >>> pc.Iter.from_(iterable).map_except(int, ValueError, TypeError).into(list)
         [1, 2, 4]
@@ -205,7 +205,7 @@ class BaseMap[T](IterWrapper[T]):
             factory: Factory to create the repeated collection (default: tuple).
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).repeat(2).collect().unwrap()
         [(1, 2), (1, 2)]
         >>> pc.Iter.from_([1, 2]).repeat(3, list).collect().unwrap()
@@ -236,7 +236,7 @@ class BaseMap[T](IterWrapper[T]):
 
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(range(3)).repeat_last().take(5).into(list)
         [0, 1, 2, 2, 2]
 
@@ -263,7 +263,7 @@ class BaseMap[T](IterWrapper[T]):
         If they are read out of order, :func:`itertools.tee` is used to cache
         elements as necessary.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> all_chunks = pc.Iter.from_count().ichunked(4).unwrap()
         >>> c_1, c_2, c_3 = next(all_chunks), next(all_chunks), next(all_chunks)
         >>> list(c_2)  # c_1's elements have been cached; c_3's haven't been
@@ -291,7 +291,7 @@ class BaseMap[T](IterWrapper[T]):
 
         This is a shortcut for `.apply(itertools.chain.from_iterable)`.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([[1, 2], [3]]).flatten().into(list)
         [1, 2, 3]
 
@@ -309,7 +309,7 @@ class BaseMap[T](IterWrapper[T]):
             keys: Nested keys to extract values.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = pc.Seq(
         ...     [
         ...         {"id": 1, "info": {"name": "Alice", "age": 30}},
@@ -345,7 +345,7 @@ class BaseMap[T](IterWrapper[T]):
             ndigits: Number of decimal places to round to.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1.2345, 2.3456, 3.4567]).round(2).into(list)
         [1.23, 2.35, 3.46]
 

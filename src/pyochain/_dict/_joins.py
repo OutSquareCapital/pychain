@@ -21,7 +21,7 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
 
         Only keys present in both mappings are kept.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d1 = {"a": 1, "b": 2}
         >>> d2 = {"b": 10, "c": 20}
         >>> pc.Dict(d1).inner_join(d2).unwrap()
@@ -44,7 +44,7 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
 
         All keys from the left dictionary (self) are kept.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d1 = {"a": 1, "b": 2}
         >>> d2 = {"b": 10, "c": 20}
         >>> pc.Dict(d1).left_join(d2).unwrap()
@@ -68,7 +68,7 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
         The keys of the returned dict are the keys that are not shared or have different values.
         The values are tuples containing the value from self and the value from other.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d1 = {"a": 1, "b": 2, "c": 3}
         >>> d2 = {"b": 2, "c": 4, "d": 5}
         >>> pc.Dict(d1).diff(d2).sort().unwrap()
@@ -99,7 +99,7 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
             *others: One or more mappings to merge into the current dictionary.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({1: "one"}).merge({2: "two"}).unwrap()
         {1: 'one', 2: 'two'}
         >>> # Later dictionaries have precedence
@@ -122,7 +122,7 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
 
         A key may occur in more than one dict, and all values mapped from the key will be passed to the function as a list, such as func([val1, val2, ...]).
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({1: 1, 2: 2}).merge_with({1: 10, 2: 20}, func=sum).unwrap()
         {1: 11, 2: 22}
         >>> pc.Dict({1: 1, 2: 2}).merge_with({2: 20, 3: 30}, func=max).unwrap()

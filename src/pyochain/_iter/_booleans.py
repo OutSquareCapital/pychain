@@ -25,7 +25,7 @@ class BaseBool[T](IterWrapper[T]):
             predicate: Function to evaluate each item. Defaults to checking truthiness.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, True]).all()
         True
         >>> pc.Iter.from_([]).all()
@@ -61,7 +61,7 @@ class BaseBool[T](IterWrapper[T]):
             predicate: Function to evaluate each item. Defaults to checking truthiness.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([0, 1]).any()
         True
         >>> pc.Iter.from_(range(0)).any()
@@ -83,7 +83,7 @@ class BaseBool[T](IterWrapper[T]):
         """
         Return True if all items are distinct.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).is_distinct()
         True
 
@@ -99,7 +99,7 @@ class BaseBool[T](IterWrapper[T]):
             key: Function to transform items before comparison. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 1, 1]).all_equal()
         True
 
@@ -123,7 +123,7 @@ class BaseBool[T](IterWrapper[T]):
             key: Function to transform items before comparison. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("ABCB").all_unique()
         False
 
@@ -158,7 +158,7 @@ class BaseBool[T](IterWrapper[T]):
             strict: Whether to enforce strict sorting (no equal elements). Defaults to False.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(["1", "2", "3", "4", "5"]).is_sorted(key=int)
         True
         >>> pc.Iter.from_([5, 4, 3, 1, 2]).is_sorted(reverse=True)
@@ -205,7 +205,7 @@ class BaseBool[T](IterWrapper[T]):
             predicate: Function to evaluate each item. Defaults to checking truthiness.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> def gt_five(x: int) -> bool:
         ...     return x > 5
         >>>

@@ -29,7 +29,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
 
         Syntactic sugar for `map_values(lambda data: func(Iter(data), *args, **kwargs))`
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = {
         ...     "numbers1": [1, 2, 3],
         ...     "numbers2": [4, 5, 6],
@@ -53,7 +53,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         Return a Iter of the dict's keys.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({1: 2}).iter_keys().into(list)
         [1]
 
@@ -67,7 +67,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         Return an Iter of the dict's values.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({1: 2}).iter_values().into(list)
         [2]
 
@@ -81,7 +81,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         Return a Iter of the dict's items.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({1: 2}).iter_items().into(list)
         [(1, 2)]
 

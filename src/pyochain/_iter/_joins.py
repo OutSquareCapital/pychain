@@ -59,7 +59,7 @@ class BaseJoins[T](IterWrapper[T]):
             strict: Whether to enforce equal lengths of iterables. Defaults to False.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).zip([10, 20]).into(list)
         [(1, 10), (2, 20)]
         >>> pc.Iter.from_(["a", "b"]).zip([1, 2, 3]).into(list)
@@ -86,7 +86,7 @@ class BaseJoins[T](IterWrapper[T]):
             fillvalue: Value to use for missing elements. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = pc.Seq("0123")
         >>> data.iter().zip_offset("abcdef", offsets=(0, 1)).into(list)
         [('0', 'b'), ('1', 'c'), ('2', 'd'), ('3', 'e')]
@@ -167,7 +167,7 @@ class BaseJoins[T](IterWrapper[T]):
             strict: Whether to enforce equal lengths of iterables. Defaults to False.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = pc.Iter.from_([1, 2, 3])
         >>> other = ["a", "b", "c"]
         >>> scalar = "_"
@@ -249,7 +249,7 @@ class BaseJoins[T](IterWrapper[T]):
             *others: Other iterables to zip with.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(range(3)).zip_equal("abc").into(list)
         [(0, 'a'), (1, 'b'), (2, 'c')]
         >>> pc.Iter.from_(range(3)).zip_equal("abcd").into(list)
@@ -278,7 +278,7 @@ class BaseJoins[T](IterWrapper[T]):
             fill_value: Value to use for missing elements. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).zip_longest([10], fill_value=0).into(list)
         [(1, 10), (2, 0)]
 
@@ -320,7 +320,7 @@ class BaseJoins[T](IterWrapper[T]):
             *others: Other iterables to compute the Cartesian product with.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> colors = pc.Iter.from_(["blue", "red"])
         >>> sizes = ["S", "M"]
         >>> colors.product(sizes).into(list)
@@ -347,7 +347,7 @@ class BaseJoins[T](IterWrapper[T]):
             key: Function to apply to each item for comparison. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = pc.Seq([1, 2, 3])
         >>> data.iter().diff_at([1, 2, 10, 100], default=None).into(list)
         [(3, 10), (None, 100)]
@@ -356,7 +356,7 @@ class BaseJoins[T](IterWrapper[T]):
 
         A key function may also be applied to each item to use during comparisons:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(["apples", "bananas"]).diff_at(
         ...     ["Apples", "Oranges"], key=str.lower
         ... ).into(list)
@@ -385,7 +385,7 @@ class BaseJoins[T](IterWrapper[T]):
             right_default: Default value for missing elements in the right iterable. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> colors = pc.Iter.from_(["blue", "red"])
         >>> sizes = ["S", "M"]
         >>> colors.join(sizes, left_on=lambda c: c, right_on=lambda s: s).into(list)

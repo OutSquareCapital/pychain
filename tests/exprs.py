@@ -1,6 +1,6 @@
 from typing import Any
 
-import pychain as pc
+import pyochain as pc
 
 SAMPLE_DATA = {
     "StrategyInfo": {

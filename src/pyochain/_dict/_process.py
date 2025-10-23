@@ -28,7 +28,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         Returns the original Dict unchanged.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({"a": 1, "b": 2}).for_each(
         ...     lambda k, v: print(f"Key: {k}, Value: {v}")
         ... ).unwrap()
@@ -61,7 +61,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         If the path does not exist, it will be created with the default value (if provided) before applying func.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> inc = lambda x: x + 1
         >>> pc.Dict({"a": 0}).update_in("a", func=inc).unwrap()
         {'a': 1}
@@ -92,7 +92,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         Does not modify the initial dictionary.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({"x": 1}).with_key("x", 2).unwrap()
         {'x': 2}
         >>> pc.Dict({"x": 1}).with_key("y", 3).unwrap()
@@ -113,7 +113,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         New dict has d[key] deleted for each supplied key.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({"x": 1, "y": 2}).drop("y").unwrap()
         {'x': 1}
         >>> pc.Dict({"x": 1, "y": 2}).drop("y", "x").unwrap()
@@ -136,7 +136,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         Keys not in the mapping are kept as is.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> d = {"a": 1, "b": 2, "c": 3}
         >>> mapping = {"b": "beta", "c": "gamma"}
         >>> pc.Dict(d).rename(mapping).unwrap()
@@ -158,7 +158,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
             reverse: Whether to sort in descending order. Defaults to False.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Dict({"b": 2, "a": 1}).sort().unwrap()
         {'a': 1, 'b': 2}
 

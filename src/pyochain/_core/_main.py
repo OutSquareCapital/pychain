@@ -77,7 +77,7 @@ class CommonBase[T](ABC, Pipeable):
 
         The result is not wrapped.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(range(5)).into(list)
         [0, 1, 2, 3, 4]
 
@@ -106,7 +106,7 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
 
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> def double(data: Iterable[int]) -> Iterator[int]:
         ...     return (x * 2 for x in data)
         >>> pc.Iter.from_([1, 2, 3]).apply(double).into(list)
@@ -124,7 +124,7 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
 
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(range(5)).collect().unwrap()
         [0, 1, 2, 3, 4]
 
@@ -153,7 +153,7 @@ class MappingWrapper[K, V](CommonBase[dict[K, V]]):
             **kwargs: Keyword arguments to pass to the function.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> def invert_dict(d: dict[K, V]) -> dict[V, K]:
         ...     return {v: k for k, v in d.items()}
         >>> pc.Dict({'a': 1, 'b': 2}).apply(invert_dict).unwrap()

@@ -23,7 +23,7 @@ class BaseFilter[T](IterWrapper[T]):
             func: Function to evaluate each item.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).filter(lambda x: x > 1).into(list)
         [2, 3]
 
@@ -43,7 +43,7 @@ class BaseFilter[T](IterWrapper[T]):
             values: Iterable of values to check membership against.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3, 4]).filter_isin([2, 4, 6]).into(list)
         [2, 4]
 
@@ -64,7 +64,7 @@ class BaseFilter[T](IterWrapper[T]):
             values: Iterable of values to exclude.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3, 4]).filter_notin([2, 4, 6]).into(list)
         [1, 3]
 
@@ -89,7 +89,7 @@ class BaseFilter[T](IterWrapper[T]):
             format: Optional function to preprocess each element before checking. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>>
         >>> data = pc.Seq(["apple", "banana", "cherry", "date"])
         >>> data.iter().filter_contain("ana").into(list)
@@ -120,7 +120,7 @@ class BaseFilter[T](IterWrapper[T]):
             dtype: Expected type of the attribute. Defaults to object.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(["hello", "world", 2, 5]).filter_attr("capitalize", str).into(
         ...     list
         ... )
@@ -145,7 +145,7 @@ class BaseFilter[T](IterWrapper[T]):
             func: Function to evaluate each item.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).filter_false(lambda x: x > 1).into(list)
         [1]
 
@@ -170,7 +170,7 @@ class BaseFilter[T](IterWrapper[T]):
             exceptions: Exceptions to catch and ignore.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> iterable = ["1", "2", "three", "4", None]
         >>> pc.Iter.from_(iterable).filter_except(int, ValueError, TypeError).into(list)
         ['1', '2', '4']
@@ -191,7 +191,7 @@ class BaseFilter[T](IterWrapper[T]):
             predicate: Function to evaluate each item.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 0]).take_while(lambda x: x > 0).into(list)
         [1, 2]
 
@@ -207,7 +207,7 @@ class BaseFilter[T](IterWrapper[T]):
             predicate: Function to evaluate each item.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 0]).skip_while(lambda x: x > 0).into(list)
         [0]
 
@@ -223,7 +223,7 @@ class BaseFilter[T](IterWrapper[T]):
             selectors: Boolean values indicating which elements to keep.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("ABCDEF").compress(1, 0, 1, 0, 1, 1).into(list)
         ['A', 'C', 'E', 'F']
 
@@ -239,7 +239,7 @@ class BaseFilter[T](IterWrapper[T]):
             key: Function to transform items before comparison. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).unique().into(list)
         [1, 2, 3]
         >>> pc.Iter.from_([1, 2, 1, 3]).unique().into(list)
@@ -270,7 +270,7 @@ class BaseFilter[T](IterWrapper[T]):
             n: Number of elements to take.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = [1, 2, 3]
         >>> pc.Iter.from_(data).take(2).into(list)
         [1, 2]
@@ -290,7 +290,7 @@ class BaseFilter[T](IterWrapper[T]):
             n: Number of elements to skip.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).skip(1).into(list)
         [2, 3]
 
@@ -306,7 +306,7 @@ class BaseFilter[T](IterWrapper[T]):
             key: Function to transform items before comparison. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("AAAABBBCCDAABBB").unique_justseen().into(list)
         ['A', 'B', 'C', 'D', 'A', 'B']
         >>> pc.Iter.from_("ABBCcAD").unique_justseen(str.lower).into(list)
@@ -328,7 +328,7 @@ class BaseFilter[T](IterWrapper[T]):
             key: Function to transform items before comparison. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> iterable = [0, 1, 0, 2, 3, 0]
         >>> n = 3
         >>> pc.Iter.from_(iterable).unique_in_window(n).into(list)
@@ -357,7 +357,7 @@ class BaseFilter[T](IterWrapper[T]):
             indices: Iterable of indices to extract values from.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> text = "abcdefghijklmnopqrstuvwxyz"
         >>> pc.Iter.from_(text).extract([7, 4, 11, 11, 14]).into(list)
         ['h', 'e', 'l', 'l', 'o']
@@ -374,7 +374,7 @@ class BaseFilter[T](IterWrapper[T]):
             index: Step size for selecting items.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([10, 20, 30, 40]).every(2).into(list)
         [10, 30]
 
@@ -391,7 +391,7 @@ class BaseFilter[T](IterWrapper[T]):
             stop: Ending index of the slice. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5]).slice(1, 4).into(list)
         [2, 3, 4]
 
@@ -414,7 +414,7 @@ class BaseFilter[T](IterWrapper[T]):
             keep_parent: Whether to include the parent class itself. Defaults to True.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> class A:
         ...     pass
         >>> class B(A):
@@ -451,7 +451,7 @@ class BaseFilter[T](IterWrapper[T]):
             typ: Type to check against.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
         [1, 5]
 
@@ -469,7 +469,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([len, 42, str, None, list]).filter_callable().into(list)
         [<built-in function len>, <class 'str'>, <class 'list'>]
 
@@ -491,7 +491,7 @@ class BaseFilter[T](IterWrapper[T]):
             func: Function to apply to each item.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> def to_int(s: str) -> int | None:
         ...     return int(s) if s.isnumeric() else None
         >>> elems = ["1", "a", "2", "b", "3"]

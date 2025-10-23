@@ -28,7 +28,7 @@ class BaseEager[T](IterWrapper[T]):
             key: Function to extract a comparison key from each element. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([3, 1, 2]).sort().into(list)
         [1, 2, 3]
 
@@ -48,7 +48,7 @@ class BaseEager[T](IterWrapper[T]):
             n: Number of elements to return.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).tail(2).unwrap()
         (2, 3)
 
@@ -65,7 +65,7 @@ class BaseEager[T](IterWrapper[T]):
             key: Function to extract a comparison key from each element. Defaults to None.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 3, 2]).top_n(2).unwrap()
         (3, 2)
 
@@ -84,7 +84,7 @@ class BaseEager[T](IterWrapper[T]):
             *others: Other iterables to include in the union.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 2]).union([2, 3], [4]).iter().sort().unwrap()
         [1, 2, 3, 4]
 
@@ -107,7 +107,7 @@ class BaseEager[T](IterWrapper[T]):
             *others: Other iterables to intersect with.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 2]).intersection([2, 3], [2]).unwrap()
         {2}
 
@@ -131,7 +131,7 @@ class BaseEager[T](IterWrapper[T]):
             *others: Other iterables to subtract from this iterable.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 2]).diff_unique([2, 3]).unwrap()
         {1}
 
@@ -154,7 +154,7 @@ class BaseEager[T](IterWrapper[T]):
             *others: Other iterables to compute the symmetric difference with.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 2]).diff_symmetric([2, 3]).iter().sort().unwrap()
         [1, 3]
         >>> pc.Iter.from_([1, 2, 3]).diff_symmetric([3, 4, 5]).iter().sort().unwrap()
@@ -179,7 +179,7 @@ class BaseEager[T](IterWrapper[T]):
 
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 1, 2, 3, 3, 3]).most_common(2).unwrap()
         [(3, 3), (1, 2)]
 

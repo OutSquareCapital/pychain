@@ -56,7 +56,7 @@ class Expr(Pipeable):
             name: The key to access.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> expr = pc.key("a").key("b").key("c")
         >>> expr.__tokens__
         ['a', 'b', 'c']

@@ -25,7 +25,7 @@ class IterConstructors:
             step: Difference between consecutive values. Defaults to 1.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_count(10, 2).take(3).into(list)
         [10, 12, 14]
 
@@ -50,7 +50,7 @@ class IterConstructors:
 
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_func(lambda x: x + 1, 0).take(3).into(list)
         [0, 1, 2]
 
@@ -76,7 +76,7 @@ class IterConstructors:
             data: Iterable to convert into an iterator.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data: tuple[int, ...] = (1, 2, 3)
         >>> iterator = pc.Iter.from_(data)
         >>> iterator.unwrap().__class__.__name__
@@ -117,7 +117,7 @@ class IterConstructors:
 
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> # Example 1: Simple counter up to 5
         >>> def counter_generator(state: int) -> tuple[int, int] | None:
         ...     if state < 5:

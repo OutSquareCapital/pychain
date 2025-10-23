@@ -40,7 +40,7 @@ class BaseProcess[T](IterWrapper[T]):
         ```python
 
         Example:
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).cycle().take(5).into(list)
         [1, 2, 1, 2, 1]
 
@@ -57,7 +57,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).interpose(0).into(list)
         [1, 0, 2]
 
@@ -81,7 +81,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         See below how the first time it returned 13 items and the next time it returned 6 items.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = pc.Seq(list(range(100)))
         >>> data.iter().random_sample(0.1).into(list)  # doctest: +SKIP
         [6, 9, 19, 35, 45, 50, 58, 62, 68, 72, 78, 86, 95]
@@ -120,7 +120,7 @@ class BaseProcess[T](IterWrapper[T]):
             func: A binary function to apply cumulatively.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
         [1, 3, 6]
 
@@ -136,7 +136,7 @@ class BaseProcess[T](IterWrapper[T]):
             value: The value to prepend.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([2, 3]).insert_left(1).into(list)
         [1, 2, 3]
 
@@ -152,7 +152,7 @@ class BaseProcess[T](IterWrapper[T]):
             n: Number of items to peek.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).peekn(2).into(list)
         Peeked 2 values: (1, 2)
         [1, 2, 3]
@@ -171,7 +171,7 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Print and return sequence after peeking first item.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).peek().into(list)
         Peeked value: 1
         [1, 2]
@@ -197,7 +197,7 @@ class BaseProcess[T](IterWrapper[T]):
             sort_on: Optional key function for sorting.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 3]).merge_sorted([2, 4]).into(list)
         [1, 2, 3, 4]
 
@@ -213,7 +213,7 @@ class BaseProcess[T](IterWrapper[T]):
             others: Other iterables to interleave.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).interleave([3, 4]).into(list)
         [1, 3, 2, 4]
 
@@ -236,7 +236,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         We use chain.from_iterable rather than chain(*seqs) so that seqs can be a generator.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).chain([3, 4], [5]).into(list)
         [1, 2, 3, 4, 5]
 
@@ -256,7 +256,7 @@ class BaseProcess[T](IterWrapper[T]):
             if an element's count has been set to zero or is a negative
             number, elements() will ignore it.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("ABCABC").elements().sort().unwrap()
         ['A', 'A', 'B', 'B', 'C', 'C']
 
@@ -286,7 +286,7 @@ class BaseProcess[T](IterWrapper[T]):
         Note:
             This method must consume the entire iterable to perform the reversal.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).reverse().into(list)
         [3, 2, 1]
 
@@ -316,7 +316,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         If it has more than *n* items, call function *too_long* with the number `n + 1`.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> iterable = ["a", "b", "c", "d"]
         >>> n = 4
         >>> pc.Iter.from_(iterable).is_strictly_n(n).into(list)

@@ -19,7 +19,7 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Return a Iter of (index, value) pairs.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(["a", "b"]).enumerate().into(list)
         [(0, 'a'), (1, 'b')]
 
@@ -43,7 +43,7 @@ class BaseTuples[T](IterWrapper[T]):
             r: Length of each combination.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).combinations(2).into(list)
         [(1, 2), (1, 3), (2, 3)]
 
@@ -67,7 +67,7 @@ class BaseTuples[T](IterWrapper[T]):
             r: Length of each permutation. Defaults to the length of the iterable.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).permutations(2).into(list)
         [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]
 
@@ -95,7 +95,7 @@ class BaseTuples[T](IterWrapper[T]):
             r: Length of each combination.
 
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).combinations_with_replacement(2).into(list)
         [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
 
@@ -107,7 +107,7 @@ class BaseTuples[T](IterWrapper[T]):
         """
         Return an iterator over pairs of consecutive elements.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).pairwise().into(list)
         [(1, 2), (2, 3)]
 
@@ -145,7 +145,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         Returns a new Iter where each item is a tuple of the results of applying each function to the original item.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> def is_even(n: int) -> bool:
         ...     return n % 2 == 0
         >>> def is_positive(n: int) -> bool:
@@ -174,7 +174,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         For example, to find whether items are adjacent to a 3:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(range(6)).adjacent(lambda x: x == 3).into(list)
         [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
 
@@ -206,7 +206,7 @@ class BaseTuples[T](IterWrapper[T]):
         - False if the element is equal to the one preceding it in the input, True otherwise (i.e. the equivalent of unique_justseen)
         - False if this element has been seen anywhere in the input before, True otherwise (i.e. the equivalent of unique_everseen)
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("otto").classify_unique().into(list)
         ... # doctest: +NORMALIZE_WHITESPACE
         [('o', True,  True),

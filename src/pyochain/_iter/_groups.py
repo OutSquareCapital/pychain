@@ -27,7 +27,7 @@ class BaseGroups[T](IterWrapper[T]):
         Example:
         ```python
         >>> from collections.abc import Iterable
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> from operator import add, mul
         >>>
         >>> def is_even(x: int) -> bool:
@@ -68,7 +68,7 @@ class BaseGroups[T](IterWrapper[T]):
             on: Function to compute the key for grouping.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> names = [
         ...     "Alice",
         ...     "Bob",
@@ -123,7 +123,7 @@ class BaseGroups[T](IterWrapper[T]):
         """
         Find number of occurrences of each value in the iterable.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = ["cat", "cat", "ox", "pig", "pig", "cat"]
         >>> pc.Iter.from_(data).frequencies().unwrap()
         {'cat': 3, 'ox': 1, 'pig': 2}
@@ -142,7 +142,7 @@ class BaseGroups[T](IterWrapper[T]):
             key: Function to compute the key for counting.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(["cat", "mouse", "dog"]).count_by(len).unwrap()
         {3: 2, 5: 1}
         >>> def iseven(x):
@@ -228,7 +228,7 @@ class BaseGroups[T](IterWrapper[T]):
 
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = pc.Iter.from_("aAAbBBcCC")
         >>> data.group_by_transform(
         ...     lambda k: k.upper(), lambda v: v.lower(), lambda g: "".join(g)

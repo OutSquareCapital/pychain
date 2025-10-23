@@ -19,7 +19,7 @@ class BaseList[T](IterWrapper[T]):
 
         Syntactic sugar for `Iter.map(lambda x: [x])`.
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_(range(5)).implode().into(list)
         [[0], [1], [2], [3], [4]]
 
@@ -46,7 +46,7 @@ class BaseList[T](IterWrapper[T]):
             keep_separator: Whether to include the separator in the output. Defaults to False.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("abcdcba").split_at(lambda x: x == "b").into(list)
         [['a'], ['c', 'd', 'c'], ['a']]
         >>> pc.Iter.from_(range(10)).split_at(lambda n: n % 2 == 1).into(list)
@@ -86,7 +86,7 @@ class BaseList[T](IterWrapper[T]):
             max_split: Maximum number of splits to perform. Defaults to -1 (no limit).
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("one1two2").split_after(str.isdigit).into(list)
         [['o', 'n', 'e', '1'], ['t', 'w', 'o', '2']]
 
@@ -113,7 +113,7 @@ class BaseList[T](IterWrapper[T]):
             max_split: Maximum number of splits to perform. Defaults to -1 (no limit).
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_("abcdcba").split_before(lambda x: x == "b").into(list)
         [['a'], ['b', 'c', 'd', 'c'], ['b', 'a']]
         >>>
@@ -143,7 +143,7 @@ class BaseList[T](IterWrapper[T]):
             sizes: Iterable of integers specifying the sizes of each chunk. Use None for the remainder.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).split_into([1, 2, 3]).into(list)
         [[1], [2, 3], [4, 5, 6]]
 
@@ -193,7 +193,7 @@ class BaseList[T](IterWrapper[T]):
 
         For example, to find runs of increasing numbers, split the iterable when element i is larger than element i + 1:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = pc.Seq([1, 2, 3, 3, 2, 5, 2, 4, 2])
         >>> data.iter().split_when(lambda x, y: x > y).into(list)
         [[1, 2, 3, 3], [2, 5], [2, 4], [2]]
@@ -230,7 +230,7 @@ class BaseList[T](IterWrapper[T]):
             strict: Whether to raise an error if the last chunk is smaller than n. Defaults to False.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).chunks(3).into(list)
         [[1, 2, 3], [4, 5, 6]]
         >>> pc.Iter.from_([1, 2, 3, 4, 5, 6, 7, 8]).chunks(3).into(list)
@@ -249,7 +249,7 @@ class BaseList[T](IterWrapper[T]):
             n: Approximate number of elements in each chunk.
         Example:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> iterable = pc.Seq([1, 2, 3, 4, 5, 6, 7])
         >>> iterable.iter().chunks_even(3).into(list)  # List lengths: 3, 2, 2
         [[1, 2, 3], [4, 5], [6, 7]]
@@ -274,7 +274,7 @@ class BaseList[T](IterWrapper[T]):
 
         Similarly, C is only needed for pkg_2, and D is only needed for pkg_3:
         ```python
-        >>> import pychain as pc
+        >>> import pyochain as pc
         >>> data = ({"A", "B"}, {"B", "C"}, {"B", "D"})
         >>> pc.Iter.from_(data).unique_to_each().collect().unwrap()
         [['A'], ['C'], ['D']]
