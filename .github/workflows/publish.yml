@@ -1,8 +1,8 @@
 name: Publish Package to PyPI
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [master]
 
 permissions:
   contents: read
@@ -11,10 +11,6 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/pyochain
-    
     steps:
       - uses: actions/checkout@v4
       
