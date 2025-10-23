@@ -15,11 +15,13 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
     def group_by_value[G](self, func: Callable[[V], G]) -> Dict[G, dict[K, V]]:
         """
         Group dict items into sub-dictionaries based on a function of the value.
-
+        ```python
         >>> import pychain as pc
         >>> d = {"a": 1, "b": 2, "c": 3, "d": 2}
         >>> pc.Dict(d).group_by_value(lambda v: v % 2).unwrap()
         {1: {'a': 1, 'c': 3}, 0: {'b': 2, 'd': 2}}
+
+        ```
         """
 
         def _group_by_value(data: dict[K, V]) -> dict[G, dict[K, V]]:
@@ -33,11 +35,13 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
     def group_by_key[G](self, func: Callable[[K], G]) -> Dict[G, dict[K, V]]:
         """
         Group dict items into sub-dictionaries based on a function of the key.
-
+        ```python
         >>> import pychain as pc
         >>> d = {"user_1": 10, "user_2": 20, "admin_1": 100}
         >>> pc.Dict(d).group_by_key(lambda k: k.split("_")[0]).unwrap()
         {'user': {'user_1': 10, 'user_2': 20}, 'admin': {'admin_1': 100}}
+
+        ```
         """
 
         def _group_by_key(data: dict[K, V]) -> dict[G, dict[K, V]]:
@@ -58,7 +62,7 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
 
         This avoids materializing intermediate `Dict` objects if you only need
         an aggregated result for each group.
-
+        ```python
         >>> import pychain as pc
         >>>
         >>> data = {"user_1": 10, "user_2": 20, "admin_1": 100}
@@ -87,6 +91,8 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         ...     key_func=lambda k: k.split(".")[-1], agg_func=get_stats
         ... ).sort().unwrap()
         {'log': {'count': 2, 'total_size': 25, 'max_size': 20, 'files': ['file_b.log', 'file_d.log']}, 'txt': {'count': 2, 'total_size': 150, 'max_size': 100, 'files': ['file_a.txt', 'file_c.txt']}}
+
+        ```
         """
         from ._main import Dict
 
@@ -112,7 +118,7 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
 
         This avoids materializing intermediate `Dict` objects if you only need
         an aggregated result for each group.
-
+        ```python
         >>> import pychain as pc
         >>>
         >>> data = {"math": "A", "physics": "B", "english": "A"}
@@ -136,6 +142,8 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         ...     agg_func=lambda d: d.iter_keys().sort().first(),
         ... ).sort().unwrap()
         {'Clothing': 'store_4', 'Electronics': 'store_1', 'Groceries': 'store_2'}
+
+        ```
         """
         from ._main import Dict
 

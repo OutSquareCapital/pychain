@@ -23,7 +23,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         Apply a function to each value after wrapping it in a Dict.
 
         Syntactic sugar for `map_values(lambda data: func(pc.Dict(data), *args, **kwargs))`
-
+        ```python
         >>> import pychain as pc
         >>> data = {
         ...     "person1": {"name": "Alice", "age": 30, "city": "New York"},
@@ -35,6 +35,8 @@ class NestedDict[K, V](MappingWrapper[K, V]):
             'person1': {'NAME': 'Alice', 'CITY': 'New York'},
             'person2': {'NAME': 'Bob', 'CITY': 'Los Angeles'}
         })
+
+        ```
         """
         from ._main import Dict
 
@@ -55,7 +57,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         Args:
             sep: Separator to use when concatenating keys
             max_depth: Maximum depth to flatten. If None, flattens completely.
-
+        ```python
         >>> import pychain as pc
         >>> data = {
         ...     "config": {"params": {"retries": 3, "timeout": 30}, "mode": "fast"},
@@ -67,6 +69,8 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         {'config_params_retries': 3, 'config_params_timeout': 30, 'config_mode': 'fast', 'version': 1.0}
         >>> pc.Dict(data).flatten(max_depth=1).unwrap()
         {'config.params': {'retries': 3, 'timeout': 30}, 'config.mode': 'fast', 'version': 1.0}
+
+        ```
         """
 
         def _flatten(
@@ -90,7 +94,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
     def with_nested_key(self, *keys: K, value: V) -> Dict[K, V]:
         """
         Set a nested key path and return a new Dict with new, potentially nested, key value pair.
-
+        ```python
         >>> import pychain as pc
         >>> purchase = {
         ...     "name": "Alice",
@@ -101,6 +105,8 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         ...     "order", "costs", value=[0.25, 1.00]
         ... ).unwrap()
         {'name': 'Alice', 'order': {'items': ['Apple', 'Orange'], 'costs': [0.25, 1.0]}, 'credit card': '5555-1234-1234-1234'}
+
+        ```
         """
         return self.apply(cz.dicttoolz.assoc_in, keys, value=value)
 
@@ -109,7 +115,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         Return the schema of the dictionary up to a maximum depth.
         When the max depth is reached, nested dicts are marked as 'dict'.
         For lists, only the first element is inspected.
-
+        ```python
         >>> import pychain as pc
         >>> # Depth 2: we see up to level2
         >>> data = {
@@ -125,6 +131,8 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         >>> # Depth 3: we see up to level3
         >>> pc.Dict(data).schema(max_depth=3).unwrap()
         {'level1': {'level2': {'level3': 'dict'}}, 'other_key': 'int', 'list_key': {'sub_key': 'str'}}
+
+        ```
         """
 
         def _schema(data: dict[Any, Any]) -> Any:
@@ -150,7 +158,7 @@ class NestedDict[K, V](MappingWrapper[K, V]):
     def pluck[U: str | int](self: NestedDict[U, Any], *keys: str) -> Dict[U, Any]:
         """
         Extract values from nested dictionaries using a sequence of keys.
-
+        ```python
         >>> import pychain as pc
         >>> data = {
         ...     "person1": {"name": "Alice", "age": 30},
@@ -158,6 +166,8 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         ... }
         >>> pc.Dict(data).pluck("name").unwrap()
         {'person1': 'Alice', 'person2': 'Bob'}
+
+        ```
         """
 
         getter = partial(cz.dicttoolz.get_in, keys)
@@ -170,13 +180,15 @@ class NestedDict[K, V](MappingWrapper[K, V]):
     def get_in(self, *keys: K, default: Any = None) -> Any:
         """
         Retrieve a value from a nested dictionary structure.
-
+        ```python
         >>> import pychain as pc
         >>> data = {"a": {"b": {"c": 1}}}
         >>> pc.Dict(data).get_in("a", "b", "c")
         1
         >>> pc.Dict(data).get_in("a", "x", default="Not Found")
         'Not Found'
+
+        ```
         """
 
         def _get_in(data: Mapping[K, V]) -> Any:

@@ -20,7 +20,7 @@ class BaseGroups[T](IterWrapper[T]):
     ) -> Dict[K, T]:
         """
         Perform a simultaneous groupby and reduction
-
+        ```python
         >>> from collections.abc import Iterable
         >>> import pychain as pc
         >>> from operator import add, mul
@@ -37,16 +37,19 @@ class BaseGroups[T](IterWrapper[T]):
         >>> data.iter().group_by(is_even).map_values(group_reduce).unwrap()
         {False: 9, True: 6}
 
+        ```
         But the former does not build the intermediate groups, allowing it to operate in much less space.
 
         This makes it suitable for larger datasets that do not fit comfortably in memory
 
         Simple Examples:
-
+        ```python
         >>> pc.Iter.from_([1, 2, 3, 4, 5]).reduce_by(is_even, add).unwrap()
         {False: 9, True: 6}
         >>> pc.Iter.from_([1, 2, 3, 4, 5]).reduce_by(is_even, mul).unwrap()
         {False: 15, True: 8}
+
+        ```
         """
         from .._dict import Dict
 
@@ -55,7 +58,7 @@ class BaseGroups[T](IterWrapper[T]):
     def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
         """
         Group elements by key function and return a Dict result.
-
+        ```python
         >>> import pychain as pc
         >>> names = [
         ...     "Alice",
@@ -81,8 +84,9 @@ class BaseGroups[T](IterWrapper[T]):
             True: [2, 4, 6, 8]
         })
 
+        ```
         Non-callable keys imply grouping on a member.
-
+        ```python
         >>> data = [
         ...     {"name": "Alice", "gender": "F"},
         ...     {"name": "Bob", "gender": "M"},
@@ -99,6 +103,8 @@ class BaseGroups[T](IterWrapper[T]):
                 {'name': 'Charlie', 'gender': 'M'}
             ]
         })
+
+        ```
         """
         from .._dict import Dict
 
@@ -107,11 +113,13 @@ class BaseGroups[T](IterWrapper[T]):
     def frequencies(self) -> Dict[T, int]:
         """
         Find number of occurrences of each value in the iterable.
-
+        ```python
         >>> import pychain as pc
         >>> data = ["cat", "cat", "ox", "pig", "pig", "cat"]
         >>> pc.Iter.from_(data).frequencies().unwrap()
         {'cat': 3, 'ox': 1, 'pig': 2}
+
+        ```
         """
         from .._dict import Dict
 
@@ -120,7 +128,7 @@ class BaseGroups[T](IterWrapper[T]):
     def count_by[K](self, key: Callable[[T], K]) -> Dict[K, int]:
         """
         Count elements of a collection by a key function
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(["cat", "mouse", "dog"]).count_by(len).unwrap()
         {3: 2, 5: 1}
@@ -128,6 +136,8 @@ class BaseGroups[T](IterWrapper[T]):
         ...     return x % 2 == 0
         >>> pc.Iter.from_([1, 2, 3]).count_by(iseven).unwrap()
         {False: 2, True: 1}
+
+        ```
         """
         from .._dict import Dict
 
@@ -201,7 +211,7 @@ class BaseGroups[T](IterWrapper[T]):
         - keyfunc is a function computing a key value for each item in iterable
         - valuefunc is a function that transforms the individual items from iterable after grouping
         - reducefunc is a function that transforms each group of items
-
+        ```python
         >>> import pychain as pc
         >>> data = pc.Iter.from_("aAAbBBcCC")
         >>> data.group_by_transform(
@@ -209,18 +219,21 @@ class BaseGroups[T](IterWrapper[T]):
         ... ).into(list)
         [('A', 'aaa'), ('B', 'bbb'), ('C', 'ccc')]
 
+        ```
         Each optional argument defaults to an identity function if not specified.
 
         group_by_transform is useful when grouping elements of an iterable using a separate iterable as the key.
 
         To do this, zip the iterables and pass a keyfunc that extracts the first element and a valuefunc that extracts the second element:
-
+        ```python
         >>> from operator import itemgetter
         >>> data = pc.Iter.from_([0, 0, 1, 1, 1, 2, 2, 2, 3])
         >>> data.zip("abcdefghi").group_by_transform(itemgetter(0), itemgetter(1)).map(
         ...     lambda kv: (kv[0], "".join(kv[1]))
         ... ).into(list)
         [(0, 'ab'), (1, 'cde'), (2, 'fgh'), (3, 'i')]
+
+        ```
 
         Note that the order of items in the iterable is significant.
 

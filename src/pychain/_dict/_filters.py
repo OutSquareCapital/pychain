@@ -16,24 +16,28 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     def filter_keys(self, predicate: Callable[[K], bool]) -> Self:
         """
         Return a new Dict containing keys that satisfy predicate.
-
+        ```python
         >>> import pychain as pc
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
         >>> pc.Dict(d).filter_keys(lambda x: x % 2 == 0).unwrap()
         {2: 3, 4: 5}
+
+        ```
         """
         return self._new(partial(cz.dicttoolz.keyfilter, predicate))
 
     def filter_values(self, predicate: Callable[[V], bool]) -> Self:
         """
         Return a new Dict containing items whose values satisfy predicate.
-
+        ```python
         >>> import pychain as pc
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
         >>> pc.Dict(d).filter_values(lambda x: x % 2 == 0).unwrap()
         {1: 2, 3: 4}
         >>> pc.Dict(d).filter_values(lambda x: not x > 3).unwrap()
         {1: 2, 2: 3}
+
+        ```
         """
         return self._new(partial(cz.dicttoolz.valfilter, predicate))
 
@@ -43,7 +47,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     ) -> Self:
         """
         Filter items by predicate applied to (key, value) tuples.
-
+        ```python
         >>> import pychain as pc
         >>> def isvalid(item):
         ...     k, v = item
@@ -54,6 +58,8 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {2: 3}
         >>> d.filter_items(lambda kv: not isvalid(kv)).unwrap()
         {1: 2, 3: 4, 4: 5}
+
+        ```
         """
         return self._new(partial(cz.dicttoolz.itemfilter, predicate))
 
@@ -63,7 +69,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     ) -> Self:
         """
         Filter items by predicate applied to unpacked (key, value) tuples.
-
+        ```python
         >>> import pychain as pc
         >>> def isvalid(key, value):
         ...     return key % 2 == 0 and value < 4
@@ -73,6 +79,8 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {2: 3}
         >>> d.filter_kv(lambda k, v: not isvalid(k, v)).unwrap()
         {1: 2, 3: 4, 4: 5}
+
+        ```
         """
 
         def _filter_kv(data: dict[K, V]) -> dict[K, V]:
@@ -90,12 +98,14 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         Optionally, specify the expected type of the attribute for better type hinting.
 
         This does not enforce type checking at runtime for performance considerations.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Dict({"a": "hello", "b": "world", "c": 2, "d": 5}).filter_attr(
         ...     "capitalize", str
         ... ).unwrap()
         {'a': 'hello', 'b': 'world'}
+
+        ```
         """
 
         def _filter_attr(data: dict[K, V]) -> dict[K, U]:
@@ -109,11 +119,13 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     def filter_type[R](self, typ: type[R]) -> Dict[K, R]:
         """
         Filter values by type.
-
+        ```python
         >>> import pychain as pc
         >>> data = {"a": "one", "b": "two", "c": 3, "d": 4}
         >>> pc.Dict(data).filter_type(str).unwrap()
         {'a': 'one', 'b': 'two'}
+
+        ```
         """
 
         def _filter_type(data: dict[K, V]) -> dict[K, R]:
@@ -127,13 +139,15 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     def filter_callable(self) -> Dict[K, Callable[..., Any]]:
         """
         Filter values that are callable.
-
+        ```python
         >>> import pychain as pc
         >>> def foo():
         ...     pass
         >>> data = {1: "one", 2: "two", 3: foo, 4: print}
         >>> pc.Dict(data).filter_callable().map_values(lambda x: x.__name__).unwrap()
         {3: 'foo', 4: 'print'}
+
+        ```
         """
 
         def _filter_callable(data: dict[K, V]) -> dict[K, Callable[..., Any]]:
@@ -151,7 +165,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         Filter values that are subclasses of a given parent class.
 
         By default, the parent class itself is included. To exclude it, set *keep_parent* to `False`.
-
+        ```python
         >>> import pychain as pc
         >>> class A:
         ...     pass
@@ -166,6 +180,8 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         {'first': 'A', 'second': 'B'}
         >>> data.filter_subclass(A, keep_parent=False).map_values(name).unwrap()
         {'second': 'B'}
+
+        ```
         """
 
         def _filter_subclass(data: dict[K, U]) -> dict[K, type[R]]:
@@ -182,13 +198,15 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     def intersect_keys(self, *others: Mapping[K, V]) -> Self:
         """
         Return a new Dict keeping only keys present in self and all others.
-
+        ```python
         >>> import pychain as pc
         >>> d1 = {"a": 1, "b": 2, "c": 3}
         >>> d2 = {"b": 10, "c": 20}
         >>> d3 = {"c": 30}
         >>> pc.Dict(d1).intersect_keys(d2, d3).unwrap()
         {'c': 3}
+
+        ```
         """
 
         def _intersect_keys(data: dict[K, V]) -> dict[K, V]:
@@ -202,13 +220,15 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     def diff_keys(self, *others: Mapping[K, V]) -> Self:
         """
         Return a new Dict keeping only keys present in self but not in others.
-
+        ```python
         >>> import pychain as pc
         >>> d1 = {"a": 1, "b": 2, "c": 3}
         >>> d2 = {"b": 10, "d": 40}
         >>> d3 = {"c": 30}
         >>> pc.Dict(d1).diff_keys(d2, d3).unwrap()
         {'a': 1}
+
+        ```
         """
 
         def _diff_keys(data: dict[K, V]) -> dict[K, V]:

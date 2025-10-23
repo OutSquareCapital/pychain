@@ -21,7 +21,7 @@ class BaseBool[T](IterWrapper[T]):
         If any of them return false, it returns false.
 
         An empty iterator returns true.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, True]).all()
         True
@@ -33,6 +33,8 @@ class BaseBool[T](IterWrapper[T]):
         ...     return x % 2 == 0
         >>> pc.Iter.from_([2, 4, 6]).all(is_even)
         True
+
+        ```
         """
 
         def _all(data: Iterable[T]) -> bool:
@@ -51,7 +53,7 @@ class BaseBool[T](IterWrapper[T]):
         If they all return false, it returns false.
 
         An empty iterator returns false.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([0, 1]).any()
         True
@@ -61,6 +63,8 @@ class BaseBool[T](IterWrapper[T]):
         ...     return x % 2 == 0
         >>> pc.Iter.from_([1, 3, 4]).any(is_even)
         True
+
+        ```
         """
 
         def _any(data: Iterable[T]) -> bool:
@@ -71,46 +75,52 @@ class BaseBool[T](IterWrapper[T]):
     def is_distinct(self) -> bool:
         """
         Return True if all items are distinct.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).is_distinct()
         True
+
+        ```
         """
         return self.into(cz.itertoolz.isdistinct)
 
     def all_equal[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
         Return True if all items are equal.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 1, 1]).all_equal()
         True
 
+        ```
         A function that accepts a single argument and returns a transformed version of each input item can be specified with key:
-
+        ```python
         >>> pc.Iter.from_("AaaA").all_equal(key=str.casefold)
         True
         >>> pc.Iter.from_([1, 2, 3]).all_equal(key=lambda x: x < 10)
         True
+
+        ```
         """
         return self.into(mit.all_equal, key=key)
 
     def all_unique[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
         Returns True if all the elements of iterable are unique (no two elements are equal).
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("ABCB").all_unique()
         False
 
+        ```
         If a key function is specified, it will be used to make comparisons.
-
+        ```python
         >>> pc.Iter.from_("ABCb").all_unique()
         True
-
         >>> pc.Iter.from_("ABCb").all_unique(str.lower)
         False
 
+        ```
         The function returns as soon as the first non-unique element is encountered.
 
         Iterables with a mix of hashable and unhashable items can be used, but the function will be slower for unhashable items
@@ -128,7 +138,7 @@ class BaseBool[T](IterWrapper[T]):
         Returns True if the items of iterable are in sorted order, and False otherwise.
 
         Key and reverse have the same meaning that they do in the built-in sorted function.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(["1", "2", "3", "4", "5"]).is_sorted(key=int)
         True
@@ -136,11 +146,13 @@ class BaseBool[T](IterWrapper[T]):
         False
 
         If strict, tests for strict sorting, that is, returns False if equal elements are found:
-
+        ```python
         >>> pc.Iter.from_([1, 2, 2]).is_sorted()
         True
         >>> pc.Iter.from_([1, 2, 2]).is_sorted(strict=True)
         False
+
+        ```
 
         The function returns False after encountering the first out-of-order item.
 
@@ -169,7 +181,7 @@ class BaseBool[T](IterWrapper[T]):
         - Returning the first element that satisfies the `predicate`.
 
         If all the elements return false, `Iter.find()` returns the default value.
-
+        ```python
         >>> import pychain as pc
         >>> def gt_five(x: int) -> bool:
         ...     return x > 5
@@ -183,5 +195,7 @@ class BaseBool[T](IterWrapper[T]):
         6
         >>> pc.Iter.from_(range(10)).find(default="missing", predicate=gt_nine)
         'missing'
+
+        ```
         """
         return self.into(mit.first_true, default, predicate)

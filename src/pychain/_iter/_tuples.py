@@ -18,10 +18,12 @@ class BaseTuples[T](IterWrapper[T]):
     def enumerate(self) -> Iter[tuple[int, T]]:
         """
         Return a Iter of (index, value) pairs.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(["a", "b"]).enumerate().into(list)
         [(0, 'a'), (1, 'b')]
+
+        ```
         """
         return self.apply(enumerate)
 
@@ -36,10 +38,12 @@ class BaseTuples[T](IterWrapper[T]):
     def combinations(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations of length r.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).combinations(2).into(list)
         [(1, 2), (1, 3), (2, 3)]
+
+        ```
         """
         return self.apply(itertools.combinations, r)
 
@@ -54,10 +58,12 @@ class BaseTuples[T](IterWrapper[T]):
     def permutations(self, r: int | None = None) -> Iter[tuple[T, ...]]:
         """
         Return all permutations of length r.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).permutations(2).into(list)
         [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]
+
+        ```
         """
         return self.apply(itertools.permutations, r)
 
@@ -76,20 +82,24 @@ class BaseTuples[T](IterWrapper[T]):
     def combinations_with_replacement(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations with replacement of length r.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).combinations_with_replacement(2).into(list)
         [(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3)]
+
+        ```
         """
         return self.apply(itertools.combinations_with_replacement, r)
 
     def pairwise(self) -> Iter[tuple[T, T]]:
         """
         Return an iterator over pairs of consecutive elements.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).pairwise().into(list)
         [(1, 2), (2, 3)]
+
+        ```
         """
         return self.apply(itertools.pairwise)
 
@@ -122,7 +132,7 @@ class BaseTuples[T](IterWrapper[T]):
         Apply several functions to each item.
 
         Returns a new Iter where each item is a tuple of the results of applying each function to the original item.
-
+        ```python
         >>> import pychain as pc
         >>> def is_even(n: int) -> bool:
         ...     return n % 2 == 0
@@ -131,6 +141,8 @@ class BaseTuples[T](IterWrapper[T]):
         >>>
         >>> pc.Iter.from_([1, -2, 3]).map_juxt(is_even, is_positive).into(list)
         [(False, True), (True, False), (False, True)]
+
+        ```
         """
         return self.apply(partial(map, cz.functoolz.juxt(*funcs)))
 
@@ -145,16 +157,19 @@ class BaseTuples[T](IterWrapper[T]):
         The bool indicates whether that item satisfies the predicate or is adjacent to an item that does.
 
         For example, to find whether items are adjacent to a 3:
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(range(6)).adjacent(lambda x: x == 3).into(list)
         [(False, 0), (False, 1), (True, 2), (True, 3), (True, 4), (False, 5)]
 
+        ```
         Set distance to change what counts as adjacent.
         For example, to find whether items are two places away from a 3:
-
+        ```python
         >>> pc.Iter.from_(range(6)).adjacent(lambda x: x == 3, distance=2).into(list)
         [(False, 0), (True, 1), (True, 2), (True, 3), (True, 4), (True, 5)]
+
+        ```
 
         This is useful for contextualizing the results of a search function.
 
@@ -174,7 +189,7 @@ class BaseTuples[T](IterWrapper[T]):
         - The element itself
         - False if the element is equal to the one preceding it in the input, True otherwise (i.e. the equivalent of unique_justseen)
         - False if this element has been seen anywhere in the input before, True otherwise (i.e. the equivalent of unique_everseen)
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("otto").classify_unique().into(list)
         ... # doctest: +NORMALIZE_WHITESPACE
@@ -182,6 +197,8 @@ class BaseTuples[T](IterWrapper[T]):
         ('t', True,  True),
         ('t', False, False),
         ('o', True,  False)]
+
+        ```
 
         This function is analogous to unique_everseen and is subject to the same performance considerations.
         """

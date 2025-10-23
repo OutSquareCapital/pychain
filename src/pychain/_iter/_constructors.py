@@ -19,10 +19,12 @@ class IterConstructors:
         **Warning** ⚠️
             This creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_count(10, 2).take(3).into(list)
         [10, 12, 14]
+
+        ```
         """
         from ._main import Iter
 
@@ -36,10 +38,12 @@ class IterConstructors:
         **Warning** ⚠️
             This creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_func(lambda x: x + 1, 0).take(3).into(list)
         [0, 1, 2]
+
+        ```
         """
         from ._main import Iter
 
@@ -57,7 +61,7 @@ class IterConstructors:
         If you need to reuse the data, consider collecting it into a list first with `.collect()`.
 
         In general, avoid intermediate references when dealing with lazy iterators, and prioritize method chaining instead.
-
+        ```python
         >>> import pychain as pc
         >>> data: tuple[int, ...] = (1, 2, 3)
         >>> iterator = pc.Iter.from_(data)
@@ -71,6 +75,8 @@ class IterConstructors:
         >>> # iterator is now exhausted
         >>> iterator.collect().unwrap()
         []
+
+        ```
         """
         from ._main import Iter
 
@@ -90,7 +96,7 @@ class IterConstructors:
         **Warning** ⚠️
             If the `generator` function never returns `None`, it creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken if necessary.
-
+        ```python
         >>> import pychain as pc
         >>> # Example 1: Simple counter up to 5
         >>> def counter_generator(state: int) -> tuple[int, int] | None:
@@ -111,6 +117,8 @@ class IterConstructors:
         >>> # Example 3: Infinite iterator (requires take())
         >>> pc.Iter.unfold(seed=1, generator=lambda s: (s, s * 2)).take(5).into(list)
         [1, 2, 4, 8, 16]
+
+        ```
         """
         from ._main import Iter
 

@@ -16,12 +16,14 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
         """
         Performs an inner join with another mapping based on keys.
         Only keys present in both mappings are kept.
-
+        ```python
         >>> import pychain as pc
         >>> d1 = {"a": 1, "b": 2}
         >>> d2 = {"b": 10, "c": 20}
         >>> pc.Dict(d1).inner_join(d2).unwrap()
         {'b': (2, 10)}
+
+        ```
         """
 
         def _inner_join(data: Mapping[K, V]) -> dict[K, tuple[V, W]]:
@@ -33,12 +35,14 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
         """
         Performs a left join with another mapping based on keys.
         All keys from the left dictionary (self) are kept.
-
+        ```python
         >>> import pychain as pc
         >>> d1 = {"a": 1, "b": 2}
         >>> d2 = {"b": 10, "c": 20}
         >>> pc.Dict(d1).left_join(d2).unwrap()
         {'a': (1, None), 'b': (2, 10)}
+
+        ```
         """
 
         def _left_join(data: Mapping[K, V]) -> dict[K, tuple[V, W | None]]:
@@ -52,12 +56,14 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
 
         The keys of the returned dict are the keys that are not shared or have different values.
         The values are tuples containing the value from self and the value from other.
-
+        ```python
         >>> import pychain as pc
         >>> d1 = {"a": 1, "b": 2, "c": 3}
         >>> d2 = {"b": 2, "c": 4, "d": 5}
         >>> pc.Dict(d1).diff(d2).sort().unwrap()
         {'a': (1, None), 'c': (3, 4), 'd': (None, 5)}
+
+        ```
         """
 
         def _diff(
@@ -77,15 +83,15 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
     def merge(self, *others: Mapping[K, V]) -> Self:
         """
         Merge other dicts into this one and return a new Dict.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Dict({1: "one"}).merge({2: "two"}).unwrap()
         {1: 'one', 2: 'two'}
-
-        Later dictionaries have precedence
-
+        >>> # Later dictionaries have precedence
         >>> pc.Dict({1: 2, 3: 4}).merge({3: 3, 4: 4}).unwrap()
         {1: 2, 3: 3, 4: 4}
+
+        ```
         """
         return self._new(cz.dicttoolz.merge, *others)
 
@@ -96,13 +102,14 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
         Merge dicts using a function to combine values for duplicate keys.
 
         A key may occur in more than one dict, and all values mapped from the key will be passed to the function as a list, such as func([val1, val2, ...]).
-
+        ```python
         >>> import pychain as pc
         >>> pc.Dict({1: 1, 2: 2}).merge_with({1: 10, 2: 20}, func=sum).unwrap()
         {1: 11, 2: 22}
         >>> pc.Dict({1: 1, 2: 2}).merge_with({2: 20, 3: 30}, func=max).unwrap()
         {1: 1, 2: 20, 3: 30}
 
+        ```
         """
 
         def _merge_with(data: Mapping[K, V]) -> dict[K, V]:

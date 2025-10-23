@@ -19,7 +19,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         Apply a function to each key-value pair in the dict for side effects.
 
         Returns the original Dict unchanged.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Dict({"a": 1, "b": 2}).for_each(
         ...     lambda k, v: print(f"Key: {k}, Value: {v}")
@@ -27,6 +27,8 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         Key: a, Value: 1
         Key: b, Value: 2
         {'a': 1, 'b': 2}
+
+        ```
         """
         for k, v in self.unwrap().items():
             func(k, v, *args, **kwargs)
@@ -41,7 +43,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         Applies the func to the value at the path specified by keys, returning a new Dict with the updated value.
 
         If the path does not exist, it will be created with the default value (if provided) before applying func.
-
+        ```python
         >>> import pychain as pc
         >>> inc = lambda x: x + 1
         >>> pc.Dict({"a": 0}).update_in("a", func=inc).unwrap()
@@ -58,6 +60,8 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         {1: {2: {3: 'bar'}}}
         >>> pc.Dict({1: "foo"}).update_in(2, 3, 4, func=inc, default=0).unwrap()
         {1: 'foo', 2: {3: {4: 1}}}
+
+        ```
         """
         return self._new(cz.dicttoolz.update_in, keys, func, default=default)
 
@@ -66,7 +70,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         Return a new Dict with key set to value.
 
         Does not modify the initial dictionary.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Dict({"x": 1}).with_key("x", 2).unwrap()
         {'x': 2}
@@ -74,6 +78,8 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         {'x': 1, 'y': 3}
         >>> pc.Dict({}).with_key("x", 1).unwrap()
         {'x': 1}
+
+        ```
         """
         return self._new(cz.dicttoolz.assoc, key, value)
 
@@ -82,7 +88,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         Return a new Dict with given keys removed.
 
         New dict has d[key] deleted for each supplied key.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Dict({"x": 1, "y": 2}).drop("y").unwrap()
         {'x': 1}
@@ -92,6 +98,8 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         {'x': 1}
         >>> pc.Dict({1: 2, 3: 4}).drop(1).unwrap()
         {3: 4}
+
+        ```
         """
         return self._new(cz.dicttoolz.dissoc, *keys)
 
@@ -100,12 +108,14 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         Return a new Dict with keys renamed according to the mapping.
 
         Keys not in the mapping are kept as is.
-
+        ```python
         >>> import pychain as pc
         >>> d = {"a": 1, "b": 2, "c": 3}
         >>> mapping = {"b": "beta", "c": "gamma"}
         >>> pc.Dict(d).rename(mapping).unwrap()
         {'a': 1, 'beta': 2, 'gamma': 3}
+
+        ```
         """
 
         def _rename(data: dict[K, V]) -> dict[K, V]:
@@ -116,10 +126,12 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
     def sort(self, reverse: bool = False) -> Self:
         """
         Sort the dictionary by its keys and return a new Dict.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Dict({"b": 2, "a": 1}).sort().unwrap()
         {'a': 1, 'b': 2}
+
+        ```
         """
 
         def _sort(data: dict[K, V]) -> dict[K, V]:

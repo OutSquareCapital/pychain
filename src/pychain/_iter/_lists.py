@@ -18,10 +18,12 @@ class BaseList[T](IterWrapper[T]):
         Wrap each element in the iterable into a list.
 
         Syntactic sugar for `Iter.map(lambda x: [x])`.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(range(5)).implode().into(list)
         [[0], [1], [2], [3], [4]]
+
+        ```
         """
 
         def _implode(data: Iterable[T]) -> Generator[list[T], None, None]:
@@ -37,7 +39,7 @@ class BaseList[T](IterWrapper[T]):
     ) -> Iter[list[T]]:
         """
         Yield lists of items from iterable, where each list is delimited by an item where callable pred returns True.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("abcdcba").split_at(lambda x: x == "b").into(list)
         [['a'], ['c', 'd', 'c'], ['a']]
@@ -47,20 +49,23 @@ class BaseList[T](IterWrapper[T]):
         At most *maxsplit* splits are done.
 
         If *maxsplit* is not specified or -1, then there is no limit on the number of splits:
-
+        ```python
         >>> pc.Iter.from_(range(10)).split_at(lambda n: n % 2 == 1, maxsplit=2).into(
         ...     list
         ... )
         [[0], [2], [4, 5, 6, 7, 8, 9]]
 
+        ```
         By default, the delimiting items are not included in the output.
 
         To include them, set *keep_separator* to `True`.
-
+        ```python
         >>> def cond(x: str) -> bool:
         ...     return x == "b"
         >>> pc.Iter.from_("abcdcba").split_at(cond, keep_separator=True).into(list)
         [['a'], ['b'], ['c', 'd', 'c'], ['b'], ['a']]
+
+        ```
         """
         return self.apply(mit.split_at, pred, maxsplit, keep_separator)
 
@@ -72,7 +77,7 @@ class BaseList[T](IterWrapper[T]):
         At most maxsplit splits are done.
 
         If maxsplit is not specified or -1, then there is no limit on the number of splits:
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("one1two2").split_after(str.isdigit).into(list)
         [['o', 'n', 'e', '1'], ['t', 'w', 'o', '2']]
@@ -84,6 +89,8 @@ class BaseList[T](IterWrapper[T]):
         [[0], [1, 2, 3], [4, 5, 6], [7, 8, 9]]
         >>> pc.Iter.from_(range(10)).split_after(cond, max_split=2).into(list)
         [[0], [1, 2, 3], [4, 5, 6, 7, 8, 9]]
+
+        ```
         """
         return self.apply(mit.split_after, predicate, max_split)
 
@@ -92,7 +99,7 @@ class BaseList[T](IterWrapper[T]):
     ) -> Iter[list[T]]:
         """
         Yield lists of items from iterable, where each list ends with an item where callable pred returns True.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("abcdcba").split_before(lambda x: x == "b").into(list)
         [['a'], ['b', 'c', 'd', 'c'], ['b', 'a']]
@@ -103,41 +110,50 @@ class BaseList[T](IterWrapper[T]):
         >>> pc.Iter.from_(range(10)).split_before(cond).into(list)
         [[0], [1, 2], [3, 4], [5, 6], [7, 8], [9]]
 
+        ```
         At most *max_split* splits are done.
 
         If *max_split* is not specified or -1, then there is no limit on the number of splits:
-
+        ```python
         >>> pc.Iter.from_(range(10)).split_before(cond, max_split=2).into(list)
         [[0], [1, 2], [3, 4, 5, 6, 7, 8, 9]]
+
+        ```
         """
         return self.apply(mit.split_before, predicate, max_split)
 
     def split_into(self, sizes: Iterable[int | None]) -> Iter[list[T]]:
         """
         Yield a list of sequential items from iterable of length 'n' for each integer 'n' in sizes.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).split_into([1, 2, 3]).into(list)
         [[1], [2, 3], [4, 5, 6]]
 
         If the sum of sizes is smaller than the length of iterable, then the remaining items of iterable will not be returned.
-
+        ```python
         >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).split_into([2, 3]).into(list)
         [[1, 2], [3, 4, 5]]
+
+        ```
 
         If the sum of sizes is larger than the length of iterable:
 
         - fewer items will be returned in the iteration that overruns the iterable
         - further lists will be empty
-
+        ```python
         >>> pc.Iter.from_([1, 2, 3, 4]).split_into([1, 2, 3, 4]).into(list)
         [[1], [2, 3], [4], []]
 
-        When a None object is encountered in sizes, the returned list will contain items up to the end of iterable the same way that itertools.slice does:
+        ```
 
+        When a None object is encountered in sizes, the returned list will contain items up to the end of iterable the same way that itertools.slice does:
+        ```python
         >>> data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
         >>> pc.Iter.from_(data).split_into([2, 3, None]).into(list)
         [[1, 2], [3, 4, 5], [6, 7, 8, 9, 0]]
+
+        ```
 
         split_into can be useful for grouping a series of items where the sizes of the groups are not uniform.
 
@@ -155,18 +171,22 @@ class BaseList[T](IterWrapper[T]):
         Split iterable into pieces based on the output of pred. pred should be a function that takes successive pairs of items and returns True if the iterable should be split in between them.
 
         For example, to find runs of increasing numbers, split the iterable when element i is larger than element i + 1:
-
+        ```python
         >>> import pychain as pc
         >>> data = pc.Seq([1, 2, 3, 3, 2, 5, 2, 4, 2])
         >>> data.iter().split_when(lambda x, y: x > y).into(list)
         [[1, 2, 3, 3], [2, 5], [2, 4], [2]]
 
+        ```
+
         At most max_split splits are done.
 
         If max_split is not specified or -1, then there is no limit on the number of splits:
-
+        ```python
         >>> data.iter().split_when(lambda x, y: x > y, max_split=2).into(list)
         [[1, 2, 3, 3], [2, 5], [2, 4, 2]]
+
+        ```
         """
         return self.apply(mit.split_when, predicate, max_split)
 
@@ -184,12 +204,14 @@ class BaseList[T](IterWrapper[T]):
         - *strict* is `True`
 
         then `ValueError` will be raised before the last list is yielded.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).chunks(3).into(list)
         [[1, 2, 3], [4, 5, 6]]
         >>> pc.Iter.from_([1, 2, 3, 4, 5, 6, 7, 8]).chunks(3).into(list)
         [[1, 2, 3], [4, 5, 6], [7, 8]]
+
+        ```
         """
         return self.apply(mit.chunked, n, strict)
 
@@ -198,13 +220,15 @@ class BaseList[T](IterWrapper[T]):
         Break iterable into lists of approximately length n.
 
         Items are distributed such the lengths of the lists differ by at most 1 item.
-
+        ```python
         >>> import pychain as pc
         >>> iterable = pc.Seq([1, 2, 3, 4, 5, 6, 7])
         >>> iterable.iter().chunks_even(3).into(list)  # List lengths: 3, 2, 2
         [[1, 2, 3], [4, 5], [6, 7]]
         >>> iterable.iter().chunks(3).into(list)  # List lengths: 3, 3, 1
         [[1, 2, 3], [4, 5, 6], [7]]
+
+        ```
         """
         return self.apply(mit.chunked_even, n)
 
@@ -221,19 +245,23 @@ class BaseList[T](IterWrapper[T]):
         If pkg_1 is removed, then A is no longer necessary - it is not associated with pkg_2 or pkg_3.
 
         Similarly, C is only needed for pkg_2, and D is only needed for pkg_3:
-
+        ```python
         >>> import pychain as pc
         >>> data = ({"A", "B"}, {"B", "C"}, {"B", "D"})
         >>> pc.Iter.from_(data).unique_to_each().collect().unwrap()
         [['A'], ['C'], ['D']]
 
+        ```
+
         If there are duplicates in one input iterable that aren't in the others they will be duplicated in the output.
 
         Input order is preserved:
-
+        ```python
         >>> data = ("mississippi", "missouri")
         >>> pc.Iter.from_(data).unique_to_each().collect().unwrap()
         [['p', 'p'], ['o', 'u', 'r']]
+
+        ```
 
         It is assumed that the elements of each iterable are hashable.
         """

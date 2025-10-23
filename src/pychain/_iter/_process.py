@@ -37,20 +37,24 @@ class BaseProcess[T](IterWrapper[T]):
         **Warning** ⚠️
             This creates an infinite iterator.
             Be sure to use Iter.take() or Iter.slice() to limit the number of items taken.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).cycle().take(5).into(list)
         [1, 2, 1, 2, 1]
+
+        ```
         """
         return self.apply(itertools.cycle)
 
     def interpose(self, element: T) -> Iter[T]:
         """
         Interpose element between items and return a new Iterable wrapper.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).interpose(0).into(list)
         [1, 0, 2]
+
+        ```
         """
         return self.apply(partial(cz.itertoolz.interpose, element))
 
@@ -65,29 +69,32 @@ class BaseProcess[T](IterWrapper[T]):
         random_sample considers each item independently and without replacement.
 
         See below how the first time it returned 13 items and the next time it returned 6 items.
-
+        ```python
         >>> import pychain as pc
         >>> data = pc.Seq(list(range(100)))
         >>> data.iter().random_sample(0.1).into(list)  # doctest: +SKIP
         [6, 9, 19, 35, 45, 50, 58, 62, 68, 72, 78, 86, 95]
         >>> data.iter().random_sample(0.1).into(list)  # doctest: +SKIP
         [6, 44, 54, 61, 69, 94]
-
+        ```
         Providing an integer seed for random_state will result in deterministic sampling.
 
         Given the same seed it will return the same sample every time.
-
+        ```python
         >>> data.iter().random_sample(0.1, state=2016).into(list)
         [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
         >>> data.iter().random_sample(0.1, state=2016).into(list)
         [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
 
+        ```
         random_state can also be any object with a method random that returns floats between 0.0 and 1.0 (exclusive).
-
+        ```python
         >>> from random import Random
         >>> randobj = Random(2016)
         >>> data.iter().random_sample(0.1, state=randobj).into(list)
         [7, 9, 19, 25, 30, 32, 34, 48, 59, 60, 81, 98]
+
+        ```
         """
 
         return self.apply(
@@ -97,31 +104,37 @@ class BaseProcess[T](IterWrapper[T]):
     def accumulate(self, func: Callable[[T, T], T]) -> Iter[T]:
         """
         Return cumulative application of binary op provided by the function.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
         [1, 3, 6]
+
+        ```
         """
         return self.apply(partial(cz.itertoolz.accumulate, func))
 
     def insert_left(self, value: T) -> Iter[T]:
         """
         Prepend value to the sequence and return a new Iterable wrapper.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([2, 3]).insert_left(1).into(list)
         [1, 2, 3]
+
+        ```
         """
         return self.apply(partial(cz.itertoolz.cons, value))
 
     def peekn(self, n: int) -> Iter[T]:
         """
         Print and return sequence after peeking n items.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).peekn(2).into(list)
         Peeked 2 values: (1, 2)
         [1, 2, 3]
+
+        ```
         """
 
         def _peekn(data: Iterable[T]) -> Iterator[T]:
@@ -134,11 +147,13 @@ class BaseProcess[T](IterWrapper[T]):
     def peek(self) -> Iter[T]:
         """
         Print and return sequence after peeking first item.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).peek().into(list)
         Peeked value: 1
         [1, 2]
+
+        ```
         """
 
         def _peek(data: Iterable[T]) -> Iterator[T]:
@@ -153,20 +168,24 @@ class BaseProcess[T](IterWrapper[T]):
     ) -> Iter[T]:
         """
         Merge already-sorted sequences.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 3]).merge_sorted([2, 4]).into(list)
         [1, 2, 3, 4]
+
+        ```
         """
         return self.apply(cz.itertoolz.merge_sorted, *others, key=sort_on)
 
     def interleave(self, *others: Iterable[T]) -> Iter[T]:
         """
         Interleave multiple sequences element-wise.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).interleave([3, 4]).into(list)
         [1, 3, 2, 4]
+
+        ```
         """
 
         def _interleave(data: Iterable[T]) -> Iterator[T]:
@@ -181,10 +200,12 @@ class BaseProcess[T](IterWrapper[T]):
         An infinite sequence will prevent the rest of the arguments from being included.
 
         We use chain.from_iterable rather than chain(*seqs) so that seqs can be a generator.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).chain([3, 4], [5]).into(list)
         [1, 2, 3, 4, 5]
+
+        ```
         """
 
         def _chain(data: Iterable[T]) -> Iterator[T]:
@@ -196,20 +217,24 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Iterator over elements repeating each as many times as its count.
 
+
+        Note:
+            if an element's count has been set to zero or is a negative
+            number, elements() will ignore it.
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("ABCABC").elements().sort().unwrap()
         ['A', 'A', 'B', 'B', 'C', 'C']
 
+        ```
         Knuth's example for prime factors of 1836:  2**2 * 3**3 * 17**1
-
+        ```python
         >>> import math
         >>> data = [2, 2, 3, 3, 3, 17]
         >>> pc.Iter.from_(data).elements().into(math.prod)
         1836
 
-        Note, if an element's count has been set to zero or is a negative
-        number, elements() will ignore it.
-
+        ```
         """
         from collections import Counter
 
@@ -222,13 +247,15 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Return a new Iterable wrapper with elements in reverse order.
 
+        The result is a new iterable over the reversed sequence.
+        Note:
+            This method must consume the entire iterable to perform the reversal.
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).reverse().into(list)
         [3, 2, 1]
 
-        Note: This method must consume the entire iterable to perform the reversal.
-
-        The result is a new iterable over the reversed sequence.
+        ```
         """
 
         def _reverse(data: Iterable[T]) -> Iterator[T]:
@@ -248,18 +275,19 @@ class BaseProcess[T](IterWrapper[T]):
         If it has fewer than *n* items, call function *too_short* with the actual number of items.
 
         If it has more than *n* items, call function *too_long* with the number `n + 1`.
-
+        ```python
         >>> import pychain as pc
         >>> iterable = ["a", "b", "c", "d"]
         >>> n = 4
         >>> pc.Iter.from_(iterable).is_strictly_n(n).into(list)
         ['a', 'b', 'c', 'd']
 
+        ```
         Note that the returned iterable must be consumed in order for the check to
         be made.
 
         By default, *too_short* and *too_long* are functions that raise`ValueError`.
-
+        ```python
         >>> pc.Iter.from_("ab").is_strictly_n(3).into(
         ...     list
         ... )  # doctest: +IGNORE_EXCEPTION_DETAIL
@@ -274,24 +302,26 @@ class BaseProcess[T](IterWrapper[T]):
         ...
         ValueError: too many items in iterable (got at least 3)
 
+        ```
         You can instead supply functions that do something else.
 
         *too_short* will be called with the number of items in *iterable*.
 
         *too_long* will be called with `n + 1`.
-
+        ```python
         >>> def too_short(item_count):
         ...     raise RuntimeError
         >>> pc.Iter.from_("abcd").is_strictly_n(6, too_short=too_short).into(list)
         Traceback (most recent call last):
         ...
         RuntimeError
-
         >>> def too_long(item_count):
         ...     print("The boss is going to hear about this")
         >>> pc.Iter.from_("abcdef").is_strictly_n(4, too_long=too_long).into(list)
         The boss is going to hear about this
         ['a', 'b', 'c', 'd']
+
+        ```
         """
 
         def strictly_n_(iterable: Iterable[T]) -> Generator[T, Any, None]:

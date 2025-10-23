@@ -22,10 +22,12 @@ class BaseEager[T](IterWrapper[T]):
         Note:
             This method must consume the entire iterable to perform the sort.
             The result is a new iterable over the sorted sequence.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([3, 1, 2]).sort().into(list)
         [1, 2, 3]
+
+        ```
         """
 
         def _sort(data: Iterable[U]) -> list[U]:
@@ -36,20 +38,24 @@ class BaseEager[T](IterWrapper[T]):
     def tail(self, n: int) -> Seq[T]:
         """
         Return a tuple of the last n elements.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).tail(2).unwrap()
         (2, 3)
+
+        ```
         """
         return self.collect(partial(cz.itertoolz.tail, n))
 
     def top_n(self, n: int, key: Callable[[T], Any] | None = None) -> Seq[T]:
         """
         Return a tuple of the top-n items according to key.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 3, 2]).top_n(2).unwrap()
         (3, 2)
+
+        ```
         """
         return self.collect(partial(cz.itertoolz.topk, n, key=key))
 
@@ -59,10 +65,12 @@ class BaseEager[T](IterWrapper[T]):
 
         Note:
             This method consumes inner data and removes duplicates.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 2]).union([2, 3], [4]).iter().sort().unwrap()
         [1, 2, 3, 4]
+
+        ```
         """
 
         def _union(data: Iterable[T]) -> set[T]:
@@ -76,10 +84,12 @@ class BaseEager[T](IterWrapper[T]):
 
         Note:
             This method consumes inner data, unsorts it, and removes duplicates.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 2]).intersection([2, 3], [2]).unwrap()
         {2}
+
+        ```
         """
 
         def _intersection(data: Iterable[T]) -> set[T]:
@@ -95,10 +105,12 @@ class BaseEager[T](IterWrapper[T]):
 
         Note:
             This method consumes inner data, unsorts it, and removes duplicates.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 2]).diff_unique([2, 3]).unwrap()
         {1}
+
+        ```
         """
 
         def _difference(data: Iterable[T]) -> set[T]:
@@ -113,12 +125,14 @@ class BaseEager[T](IterWrapper[T]):
 
         Note:
             This method consumes inner data, unsorts it, and removes duplicates.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 2]).diff_symmetric([2, 3]).iter().sort().unwrap()
         [1, 3]
         >>> pc.Iter.from_([1, 2, 3]).diff_symmetric([3, 4, 5]).iter().sort().unwrap()
         [1, 2, 4, 5]
+
+        ```
         """
 
         def _symmetric_difference(data: Iterable[T]) -> set[T]:
@@ -131,10 +145,12 @@ class BaseEager[T](IterWrapper[T]):
         Return a Sequence over the n most common elements and their counts from the most common to the least.
 
         If n is None, then all elements are returned.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 1, 2, 3, 3, 3]).most_common(2).unwrap()
         [(3, 3), (1, 2)]
+
+        ```
         """
         from collections import Counter
 

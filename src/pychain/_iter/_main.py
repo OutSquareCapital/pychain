@@ -64,7 +64,7 @@ class Iter[T](
         Apply a function to each element after wrapping it in an Iter.
 
         This is a convenience method for the common pattern of mapping a function over an iterable of iterables.
-
+        ```python
         >>> import pychain as pc
         >>> data = [
         ...     [1, 2, 3],
@@ -75,6 +75,8 @@ class Iter[T](
         ...     lambda x: x.repeat(2).flatten().reduce(lambda a, b: a + b)
         ... ).into(list)
         [12, 18, 60]
+
+        ```
         """
 
         def _itr(data: Iterable[U]) -> Generator[R, None, None]:
@@ -92,7 +94,7 @@ class Iter[T](
         Apply a function to each element after wrapping it in a Dict.
 
         This is a convenience method for the common pattern of mapping a function over an iterable of dictionaries.
-
+        ```python
         >>> from typing import Any
         >>> import pychain as pc
 
@@ -130,6 +132,8 @@ class Iter[T](
             {'Name': 'David', 'City': 'Paris'}
         ]
         })
+
+        ```
         """
         from .._dict import Dict
 
@@ -141,19 +145,19 @@ class Iter[T](
     def with_keys[K](self, keys: Iterable[K]) -> Dict[K, T]:
         """
         Create a Dict by zipping the iterable with keys.
-
+        ```python
         >>> import pychain as pc
         >>> keys = ["a", "b", "c"]
         >>> values = [1, 2, 3]
         >>> pc.Iter.from_(values).with_keys(keys).unwrap()
         {'a': 1, 'b': 2, 'c': 3}
-
-        This is equivalent to:
-
+        >>> # This is equivalent to:
         >>> pc.Iter.from_(keys).zip(values).pipe(
         ...     lambda x: pc.Dict(x.into(dict)).unwrap()
         ... )
         {'a': 1, 'b': 2, 'c': 3}
+
+        ```
         """
         from .._dict import Dict
 
@@ -162,19 +166,19 @@ class Iter[T](
     def with_values[V](self, values: Iterable[V]) -> Dict[T, V]:
         """
         Create a Dict by zipping the iterable with values.
-
+        ```python
         >>> import pychain as pc
         >>> keys = [1, 2, 3]
         >>> values = ["a", "b", "c"]
         >>> pc.Iter.from_(keys).with_values(values).unwrap()
         {1: 'a', 2: 'b', 3: 'c'}
-
-        This is equivalent to:
-
+        >>> # This is equivalent to:
         >>> pc.Iter.from_(keys).zip(values).pipe(
         ...     lambda x: pc.Dict(x.into(dict)).unwrap()
         ... )
         {1: 'a', 2: 'b', 3: 'c'}
+
+        ```
         """
         from .._dict import Dict
 

@@ -23,7 +23,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
         Apply a function to each value after wrapping it in an Iter.
 
         Syntactic sugar for `map_values(lambda data: func(Iter(data), *args, **kwargs))`
-
+        ```python
         >>> import pychain as pc
         >>> data = {
         ...     "numbers1": [1, 2, 3],
@@ -31,6 +31,8 @@ class IterDict[K, V](MappingWrapper[K, V]):
         ... }
         >>> pc.Dict(data).itr(lambda v: v.repeat(5).flatten().sum()).unwrap()
         {'numbers1': 30, 'numbers2': 75}
+
+        ```
         """
         from .._iter import Iter
 
@@ -45,10 +47,12 @@ class IterDict[K, V](MappingWrapper[K, V]):
     def iter_keys(self) -> Iter[K]:
         """
         Return a Iter of the dict's keys.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Dict({1: 2}).iter_keys().into(list)
         [1]
+
+        ```
         """
         from .._iter import Iter
 
@@ -57,10 +61,12 @@ class IterDict[K, V](MappingWrapper[K, V]):
     def iter_values(self) -> Iter[V]:
         """
         Return an Iter of the dict's values.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Dict({1: 2}).iter_values().into(list)
         [2]
+
+        ```
         """
         from .._iter import Iter
 
@@ -69,10 +75,12 @@ class IterDict[K, V](MappingWrapper[K, V]):
     def iter_items(self) -> Iter[tuple[K, V]]:
         """
         Return a Iter of the dict's items.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Dict({1: 2}).iter_items().into(list)
         [(1, 2)]
+
+        ```
         """
         from .._iter import Iter
 

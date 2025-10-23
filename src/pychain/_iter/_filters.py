@@ -18,10 +18,12 @@ class BaseFilter[T](IterWrapper[T]):
     def filter(self, func: Callable[[T], bool]) -> Iter[T]:
         """
         Return an iterator yielding those items of iterable for which function is true.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).filter(lambda x: x > 1).into(list)
         [2, 3]
+
+        ```
         """
 
         def _filter(data: Iterable[T]) -> Iterator[T]:
@@ -32,10 +34,12 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_isin(self, values: Iterable[T]) -> Iter[T]:
         """
         Return elements that are in the given values iterable.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4]).filter_isin([2, 4, 6]).into(list)
         [2, 4]
+
+        ```
         """
 
         def _filter_isin(data: Iterable[T]) -> Generator[T, None, None]:
@@ -47,10 +51,12 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_notin(self, values: Iterable[T]) -> Iter[T]:
         """
         Return elements that are not in the given values iterable.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4]).filter_notin([2, 4, 6]).into(list)
         [1, 3]
+
+        ```
         """
 
         def _filter_notin(data: Iterable[T]) -> Generator[T, None, None]:
@@ -66,7 +72,7 @@ class BaseFilter[T](IterWrapper[T]):
         Return elements that contain the given text.
 
         Optionally, a format function can be provided to preprocess each element before checking for the substring.
-
+        ```python
         >>> import pychain as pc
         >>>
         >>> data = pc.Seq(["apple", "banana", "cherry", "date"])
@@ -74,6 +80,8 @@ class BaseFilter[T](IterWrapper[T]):
         ['banana']
         >>> data.iter().map(str.upper).filter_contain("ana", str.lower).into(list)
         ['BANANA']
+
+        ```
         """
 
         def _filter_contain(data: Iterable[str]) -> Generator[str, None, None]:
@@ -92,12 +100,14 @@ class BaseFilter[T](IterWrapper[T]):
         Optionally, specify the expected type of the attribute for better type hinting.
 
         This does not enforce type checking at runtime for performance considerations.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(["hello", "world", 2, 5]).filter_attr("capitalize", str).into(
         ...     list
         ... )
         ['hello', 'world']
+
+        ```
         """
 
         def check(data: Iterable[Any]) -> Generator[U, None, None]:
@@ -111,10 +121,12 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_false(self, func: Callable[[T], bool]) -> Iter[T]:
         """
         Return elements for which func is false.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).filter_false(lambda x: x > 1).into(list)
         [1]
+
+        ```
         """
         return self.apply(partial(itertools.filterfalse, func))
 
@@ -129,11 +141,13 @@ class BaseFilter[T](IterWrapper[T]):
         It should be a function that accepts one argument and raises an exception if that item is not valid.
 
         If an exception other than one given by exceptions is raised by validator, it is raised like normal.
-
+        ```python
         >>> import pychain as pc
         >>> iterable = ["1", "2", "three", "4", None]
         >>> pc.Iter.from_(iterable).filter_except(int, ValueError, TypeError).into(list)
         ['1', '2', '4']
+
+        ```
         """
 
         def _filter_except(data: Iterable[T]) -> Iterator[T]:
@@ -144,47 +158,56 @@ class BaseFilter[T](IterWrapper[T]):
     def take_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
         """
         Take items while predicate holds and return a new Iterable wrapper.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 0]).take_while(lambda x: x > 0).into(list)
         [1, 2]
+
+        ```
         """
         return self.apply(partial(itertools.takewhile, predicate))
 
     def skip_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
         """
         Drop items while predicate holds and return the remainder.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 0]).skip_while(lambda x: x > 0).into(list)
         [0]
+
+        ```
         """
         return self.apply(partial(itertools.dropwhile, predicate))
 
     def compress(self, *selectors: bool) -> Iter[T]:
         """
         Filter elements using a boolean selector iterable.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("ABCDEF").compress(1, 0, 1, 0, 1, 1).into(list)
         ['A', 'C', 'E', 'F']
+
+        ```
         """
         return self.apply(itertools.compress, selectors)
 
     def unique(self, key: Callable[[T], Any] | None = None) -> Iter[T]:
         """
         Return only unique elements of a sequence
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).unique().into(list)
         [1, 2, 3]
         >>> pc.Iter.from_([1, 2, 1, 3]).unique().into(list)
         [1, 2, 3]
 
+        ```
         Uniqueness can be defined by key keyword
-
+        ```python
         >>> pc.Iter.from_(["cat", "mouse", "dog", "hen"]).unique(key=len).into(list)
         ['cat', 'mouse']
+
+        ```
         """
         return self.apply(cz.itertoolz.unique, key=key)
 
@@ -198,13 +221,15 @@ class BaseFilter[T](IterWrapper[T]):
 
         - A prefix of length n if the original iterator contains at least n elements
         - All of the (fewer than n) elements of the original iterator if it contains fewer than n elements.
-
+        ```python
         >>> import pychain as pc
         >>> data = [1, 2, 3]
         >>> pc.Iter.from_(data).take(2).into(list)
         [1, 2]
         >>> pc.Iter.from_(data).take(5).into(list)
         [1, 2, 3]
+
+        ```
         """
 
         return self.apply(partial(cz.itertoolz.take, n))
@@ -212,22 +237,26 @@ class BaseFilter[T](IterWrapper[T]):
     def skip(self, n: int) -> Iter[T]:
         """
         Drop first n elements and return the remainder wrapped.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).skip(1).into(list)
         [2, 3]
+
+        ```
         """
         return self.apply(partial(cz.itertoolz.drop, n))
 
     def unique_justseen(self, key: Callable[[T], Any] | None = None) -> Iter[T]:
         """
         Yields elements in order, ignoring serial duplicates
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("AAAABBBCCDAABBB").unique_justseen().into(list)
         ['A', 'B', 'C', 'D', 'A', 'B']
         >>> pc.Iter.from_("ABBCcAD").unique_justseen(str.lower).into(list)
         ['A', 'B', 'C', 'A', 'D']
+
+        ```
         """
         return self.apply(mit.unique_justseen, key=key)
 
@@ -237,18 +266,21 @@ class BaseFilter[T](IterWrapper[T]):
         """
         Yield the items from iterable that haven't been seen recently. n is the size of the lookback window.
 
+        The items in iterable must be hashable.
+        ```python
         >>> import pychain as pc
         >>> iterable = [0, 1, 0, 2, 3, 0]
         >>> n = 3
         >>> pc.Iter.from_(iterable).unique_in_window(n).into(list)
         [0, 1, 2, 3, 0]
 
+        ```
         The key function, if provided, will be used to determine uniqueness:
-
+        ```python
         >>> pc.Iter.from_("abAcda").unique_in_window(3, key=str.lower).into(list)
         ['a', 'b', 'c', 'd', 'a']
 
-        The items in iterable must be hashable.
+        ```
         """
         return self.apply(mit.unique_in_window, n, key=key)
 
@@ -256,38 +288,41 @@ class BaseFilter[T](IterWrapper[T]):
         """
         Yield values at the specified indices.
 
+        - The iterable is consumed lazily and can be infinite.
+        - The indices are consumed immediately and must be finite.
+        - Raises IndexError if an index lies beyond the iterable.
+        - Raises ValueError for negative indices.
+        ```python
         >>> import pychain as pc
         >>> text = "abcdefghijklmnopqrstuvwxyz"
         >>> pc.Iter.from_(text).extract([7, 4, 11, 11, 14]).into(list)
         ['h', 'e', 'l', 'l', 'o']
 
-        The iterable is consumed lazily and can be infinite.
-
-        The indices are consumed immediately and must be finite.
-
-        Raises IndexError if an index lies beyond the iterable.
-
-        Raises ValueError for negative indices.
+        ```
         """
         return self.apply(mit.extract, indices)
 
     def every(self, index: int) -> Iter[T]:
         """
         Return every nth item starting from first.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([10, 20, 30, 40]).every(2).into(list)
         [10, 30]
+
+        ```
         """
         return self.apply(partial(cz.itertoolz.take_nth, index))
 
     def slice(self, start: int | None = None, stop: int | None = None) -> Iter[T]:
         """
         Return a slice of the iterable.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5]).slice(1, 4).into(list)
         [2, 3, 4]
+
+        ```
         """
 
         def _slice(data: Iterable[T]) -> Iterator[T]:
@@ -300,7 +335,7 @@ class BaseFilter[T](IterWrapper[T]):
     ) -> Iter[type[R]]:
         """
         Return elements that are subclasses of the given class, optionally excluding the parent class itself.
-
+        ```python
         >>> import pychain as pc
         >>> class A:
         ...     pass
@@ -316,6 +351,8 @@ class BaseFilter[T](IterWrapper[T]):
         ['A', 'B']
         >>> data.iter().filter_subclass(A, keep_parent=False).map(name).into(list)
         ['B']
+
+        ```
         """
 
         def _filter_subclass(
@@ -331,10 +368,12 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_type[R](self, typ: type[R]) -> Iter[R]:
         """
         Return elements that are instances of the given type.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
         [1, 5]
+
+        ```
         """
 
         def _filter_type(data: Iterable[T]) -> Generator[R, None, None]:
@@ -345,10 +384,12 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_callable(self) -> Iter[Callable[..., Any]]:
         """
         Return only elements that are callable.
-
+        ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([len, 42, str, None, list]).filter_callable().into(list)
         [<built-in function len>, <class 'str'>, <class 'list'>]
+
+        ```
         """
 
         def _filter_callable(
@@ -361,12 +402,14 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
         Apply func to every element of iterable, yielding only those which are not None.
-
+        ```python
         >>> import pychain as pc
         >>> def to_int(s: str) -> int | None:
         ...     return int(s) if s.isnumeric() else None
         >>> elems = ["1", "a", "2", "b", "3"]
         >>> pc.Iter.from_(elems).filter_map(to_int).into(list)
         [1, 2, 3]
+
+        ```
         """
         return self.apply(partial(mit.filter_map, func))
