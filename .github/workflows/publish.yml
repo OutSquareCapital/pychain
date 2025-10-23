@@ -1,12 +1,12 @@
 name: Publish Package to PyPI
 
 on:
-  push:
-    branches: [master]
+  release:
+    types: [published]
 
 permissions:
   contents: read
-  id-token: write # Indispensable pour l'authentification OIDC
+  id-token: write
 
 jobs:
   deploy:
