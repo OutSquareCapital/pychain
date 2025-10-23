@@ -19,12 +19,17 @@ plugins:
             docstring_style: google
             show_if_no_docstring: true
             show_source: true
-            show_overloads: true 
+            show_overloads: true
+            filters:
+              exclude:
+                - "^__.*__$"  # Exclude dunder methods
 nav:
   - Home: index.md
   - Reference:
       - Iter: reference/iter.md
       - Dict: reference/dict.md
+      - Seq: reference/seq.md
+      - Key: reference/key.md
 
 theme:
   name: material

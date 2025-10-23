@@ -36,7 +36,6 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
         Args:
             predicate: Function to determine if a value should be included.
-
         Example:
         ```python
         >>> import pychain as pc
@@ -59,7 +58,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
         Args:
             predicate: Function to determine if a (key, value) pair should be included.
-
+        Example:
         ```python
         >>> import pychain as pc
         >>> def isvalid(item):
@@ -85,7 +84,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
         Args:
             predicate: Function to determine if a key-value pair should be included.
-
+        Example:
         ```python
         >>> import pychain as pc
         >>> def isvalid(key, value):
@@ -112,11 +111,11 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         """
         Filter values that have a given attribute.
 
+        This does not enforce type checking at runtime for performance considerations.
         Args:
             attr: Attribute name to check for.
             dtype: Optional expected type of the attribute for type hinting.
-
-        This does not enforce type checking at runtime for performance considerations.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Dict({"a": "hello", "b": "world", "c": 2, "d": 5}).filter_attr(
@@ -141,7 +140,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
         Args:
             typ: Type to filter values by.
-
+        Example:
         ```python
         >>> import pychain as pc
         >>> data = {"a": "one", "b": "two", "c": 3, "d": 4}

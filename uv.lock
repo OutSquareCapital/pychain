@@ -236,8 +236,8 @@ source = { git = "https://github.com/py-stubs/cytoolz-stubs.git#2b07a765490701af
 
 [[package]]
 name = "doctester"
-version = "0.1.0"
-source = { git = "https://github.com/OutSquareCapital/doctester.git#921b4c390b7cea5aede5701db2fcb70e27561d9a" }
+version = "0.1.1"
+source = { git = "https://github.com/OutSquareCapital/doctester.git#a0845bcf168af77a07602e0d064e28ee19814cac" }
 
 [[package]]
 name = "ghp-import"
