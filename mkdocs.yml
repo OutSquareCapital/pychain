@@ -29,7 +29,7 @@ nav:
       - Iter: reference/iter.md
       - Dict: reference/dict.md
       - Seq: reference/seq.md
-      - Key: reference/key.md
+      - Key: reference/expr.md
 
 theme:
   name: material

@@ -1,4 +1,4 @@
-from ._exprs import key
+from ._exprs import Expr, key
 from ._main import Dict
 
-__all__ = ["Dict", "key"]
+__all__ = ["Dict", "key", "Expr"]
