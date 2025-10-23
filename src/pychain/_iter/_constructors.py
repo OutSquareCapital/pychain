@@ -19,6 +19,7 @@ class IterConstructors:
         **Warning** ⚠️
             This creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken.
+
         Args:
             start: Starting value of the sequence. Defaults to 0.
             step: Difference between consecutive values. Defaults to 1.
@@ -42,6 +43,7 @@ class IterConstructors:
         **Warning** ⚠️
             This creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken.
+
         Args:
             func: Function to apply repeatedly.
             input: Initial value to start the iteration.
@@ -108,9 +110,11 @@ class IterConstructors:
         **Warning** ⚠️
             If the `generator` function never returns `None`, it creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken if necessary.
+
         Args:
             seed: Initial state for the generator.
             generator: Function that generates the next value and state.
+
         Example:
         ```python
         >>> import pychain as pc

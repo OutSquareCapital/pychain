@@ -88,14 +88,15 @@ class Dict[K, V](
         """
         Select and alias fields from the dict based on expressions and/or strings.
 
-        Args:
-            *exprs: Expressions or strings to select and alias fields from the dictionary.
-
         Navigate nested fields using the `pychain.key` function.
 
         - Chain `key.key()` calls to access nested fields.
         - Use `key.apply()` to transform values.
         - Use `key.alias()` to rename fields in the resulting dict.
+
+        Args:
+            *exprs: Expressions or strings to select and alias fields from the dictionary.
+
         ```python
         >>> import pychain as pc
         >>> data = {
@@ -285,6 +286,19 @@ class Dict[K, V](
 
         Args:
             other: Another Dict or mapping to compare against.
+
+        Example:
+        ```python
+        >>> import pychain as pc
+        >>> d1 = pc.Dict({"a": 1, "b": 2})
+        >>> d2 = pc.Dict({"a": 1, "b": 2})
+        >>> d3 = pc.Dict({"a": 1, "b": 3})
+        >>> d1.equals_to(d2)
+        True
+        >>> d1.equals_to(d3)
+        False
+
+        ```
         """
         return (
             self.unwrap() == other.unwrap()

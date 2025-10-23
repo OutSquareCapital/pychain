@@ -19,7 +19,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
         Args:
             predicate: Function to determine if a key should be included.
-
+        Example:
         ```python
         >>> import pychain as pc
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
@@ -37,6 +37,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         Args:
             predicate: Function to determine if a value should be included.
 
+        Example:
         ```python
         >>> import pychain as pc
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}

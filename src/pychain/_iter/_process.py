@@ -38,6 +38,8 @@ class BaseProcess[T](IterWrapper[T]):
             This creates an infinite iterator.
             Be sure to use Iter.take() or Iter.slice() to limit the number of items taken.
         ```python
+
+        Example:
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).cycle().take(5).into(list)
         [1, 2, 1, 2, 1]
@@ -53,6 +55,7 @@ class BaseProcess[T](IterWrapper[T]):
         Args:
             element: The element to interpose between items.
 
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).interpose(0).into(list)
@@ -279,6 +282,7 @@ class BaseProcess[T](IterWrapper[T]):
         Return a new Iterable wrapper with elements in reverse order.
 
         The result is a new iterable over the reversed sequence.
+
         Note:
             This method must consume the entire iterable to perform the reversal.
         ```python

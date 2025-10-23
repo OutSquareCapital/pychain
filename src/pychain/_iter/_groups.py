@@ -225,6 +225,7 @@ class BaseGroups[T](IterWrapper[T]):
             keyfunc: Function to compute the key for grouping. Defaults to None.
             valuefunc: Function to transform individual items after grouping. Defaults to None.
             reducefunc: Function to transform each group of items. Defaults to None.
+
         Example:
         ```python
         >>> import pychain as pc
@@ -240,6 +241,12 @@ class BaseGroups[T](IterWrapper[T]):
         group_by_transform is useful when grouping elements of an iterable using a separate iterable as the key.
 
         To do this, zip the iterables and pass a keyfunc that extracts the first element and a valuefunc that extracts the second element:
+
+        Note that the order of items in the iterable is significant.
+
+        Only adjacent items are grouped together, so if you don't want any duplicate groups, you should sort the iterable by the key function.
+
+        Example:
         ```python
         >>> from operator import itemgetter
         >>> data = pc.Iter.from_([0, 0, 1, 1, 1, 2, 2, 2, 3])
@@ -249,10 +256,6 @@ class BaseGroups[T](IterWrapper[T]):
         [(0, 'ab'), (1, 'cde'), (2, 'fgh'), (3, 'i')]
 
         ```
-
-        Note that the order of items in the iterable is significant.
-
-        Only adjacent items are grouped together, so if you don't want any duplicate groups, you should sort the iterable by the key function.
         """
 
         def _group_by_transform(data: Iterable[T]) -> Iterator[tuple[Any, ...]]:

@@ -222,12 +222,14 @@ class BaseMap[T](IterWrapper[T]):
         """
         After the iterable is exhausted, keep yielding its last element.
 
-        Args:
-            default: Value to yield if the iterable is empty.
-
         **Warning** ⚠️
             This creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken.
+
+        Args:
+            default: Value to yield if the iterable is empty.
+
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(range(3)).repeat_last().take(5).into(list)

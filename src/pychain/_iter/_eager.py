@@ -22,6 +22,7 @@ class BaseEager[T](IterWrapper[T]):
         Note:
             This method must consume the entire iterable to perform the sort.
             The result is a new iterable over the sorted sequence.
+
         Args:
             reverse: Whether to sort in descending order. Defaults to False.
             key: Function to extract a comparison key from each element. Defaults to None.
@@ -78,6 +79,7 @@ class BaseEager[T](IterWrapper[T]):
 
         Note:
             This method consumes inner data and removes duplicates.
+
         Args:
             *others: Other iterables to include in the union.
         Example:
@@ -100,6 +102,7 @@ class BaseEager[T](IterWrapper[T]):
 
         Note:
             This method consumes inner data, unsorts it, and removes duplicates.
+
         Args:
             *others: Other iterables to intersect with.
         Example:
@@ -123,6 +126,7 @@ class BaseEager[T](IterWrapper[T]):
 
         Note:
             This method consumes inner data, unsorts it, and removes duplicates.
+
         Args:
             *others: Other iterables to subtract from this iterable.
         Example:
@@ -145,6 +149,7 @@ class BaseEager[T](IterWrapper[T]):
 
         Note:
             This method consumes inner data, unsorts it, and removes duplicates.
+
         Args:
             *others: Other iterables to compute the symmetric difference with.
         Example:
@@ -171,6 +176,7 @@ class BaseEager[T](IterWrapper[T]):
 
         Args:
             n: Number of most common elements to return. Defaults to None (all elements).
+
         Example:
         ```python
         >>> import pychain as pc
