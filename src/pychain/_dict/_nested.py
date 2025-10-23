@@ -22,6 +22,11 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         """
         Apply a function to each value after wrapping it in a Dict.
 
+        Args:
+            func: Function to apply to each value after wrapping it in a Dict.
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+
         Syntactic sugar for `map_values(lambda data: func(pc.Dict(data), *args, **kwargs))`
         ```python
         >>> import pychain as pc
@@ -94,6 +99,10 @@ class NestedDict[K, V](MappingWrapper[K, V]):
     def with_nested_key(self, *keys: K, value: V) -> Dict[K, V]:
         """
         Set a nested key path and return a new Dict with new, potentially nested, key value pair.
+
+        Args:
+            *keys: Sequence of keys representing the nested path.
+            value: Value to set at the specified nested path.
         ```python
         >>> import pychain as pc
         >>> purchase = {
@@ -113,6 +122,10 @@ class NestedDict[K, V](MappingWrapper[K, V]):
     def schema(self, max_depth: int = 1) -> Dict[str, Any]:
         """
         Return the schema of the dictionary up to a maximum depth.
+
+        Args:
+            max_depth: Maximum depth to inspect. Nested dicts beyond this depth are marked as 'dict'.
+
         When the max depth is reached, nested dicts are marked as 'dict'.
         For lists, only the first element is inspected.
         ```python
@@ -158,6 +171,9 @@ class NestedDict[K, V](MappingWrapper[K, V]):
     def pluck[U: str | int](self: NestedDict[U, Any], *keys: str) -> Dict[U, Any]:
         """
         Extract values from nested dictionaries using a sequence of keys.
+
+        Args:
+            *keys: Sequence of keys to extract values from the nested dictionaries.
         ```python
         >>> import pychain as pc
         >>> data = {
@@ -180,6 +196,11 @@ class NestedDict[K, V](MappingWrapper[K, V]):
     def get_in(self, *keys: K, default: Any = None) -> Any:
         """
         Retrieve a value from a nested dictionary structure.
+
+        Args:
+            *keys: Sequence of keys representing the nested path to retrieve the value.
+            default: Default value to return if the keys do not exist.
+
         ```python
         >>> import pychain as pc
         >>> data = {"a": {"b": {"c": 1}}}

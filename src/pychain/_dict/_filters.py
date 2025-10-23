@@ -16,6 +16,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     def filter_keys(self, predicate: Callable[[K], bool]) -> Self:
         """
         Return a new Dict containing keys that satisfy predicate.
+
+        Args:
+            predicate: Function to determine if a key should be included.
+
         ```python
         >>> import pychain as pc
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
@@ -29,6 +33,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     def filter_values(self, predicate: Callable[[V], bool]) -> Self:
         """
         Return a new Dict containing items whose values satisfy predicate.
+
+        Args:
+            predicate: Function to determine if a value should be included.
+
         ```python
         >>> import pychain as pc
         >>> d = {1: 2, 2: 3, 3: 4, 4: 5}
@@ -47,6 +55,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     ) -> Self:
         """
         Filter items by predicate applied to (key, value) tuples.
+
+        Args:
+            predicate: Function to determine if a (key, value) pair should be included.
+
         ```python
         >>> import pychain as pc
         >>> def isvalid(item):
@@ -69,6 +81,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     ) -> Self:
         """
         Filter items by predicate applied to unpacked (key, value) tuples.
+
+        Args:
+            predicate: Function to determine if a key-value pair should be included.
+
         ```python
         >>> import pychain as pc
         >>> def isvalid(key, value):
@@ -95,7 +111,9 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         """
         Filter values that have a given attribute.
 
-        Optionally, specify the expected type of the attribute for better type hinting.
+        Args:
+            attr: Attribute name to check for.
+            dtype: Optional expected type of the attribute for type hinting.
 
         This does not enforce type checking at runtime for performance considerations.
         ```python
@@ -119,6 +137,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     def filter_type[R](self, typ: type[R]) -> Dict[K, R]:
         """
         Filter values by type.
+
+        Args:
+            typ: Type to filter values by.
+
         ```python
         >>> import pychain as pc
         >>> data = {"a": "one", "b": "two", "c": 3, "d": 4}
@@ -164,7 +186,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         """
         Filter values that are subclasses of a given parent class.
 
-        By default, the parent class itself is included. To exclude it, set *keep_parent* to `False`.
+        Args:
+            parent: Parent class to check against.
+            keep_parent: Whether to include the parent class itself. Defaults to True.
+
         ```python
         >>> import pychain as pc
         >>> class A:
@@ -198,6 +223,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     def intersect_keys(self, *others: Mapping[K, V]) -> Self:
         """
         Return a new Dict keeping only keys present in self and all others.
+
+        Args:
+            *others: Other mappings to intersect keys with.
+
         ```python
         >>> import pychain as pc
         >>> d1 = {"a": 1, "b": 2, "c": 3}
@@ -220,6 +249,10 @@ class FilterDict[K, V](MappingWrapper[K, V]):
     def diff_keys(self, *others: Mapping[K, V]) -> Self:
         """
         Return a new Dict keeping only keys present in self but not in others.
+
+        Args:
+            *others: Other mappings to exclude keys from.
+
         ```python
         >>> import pychain as pc
         >>> d1 = {"a": 1, "b": 2, "c": 3}

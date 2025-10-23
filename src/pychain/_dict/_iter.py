@@ -22,6 +22,11 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         Apply a function to each value after wrapping it in an Iter.
 
+        Args:
+            func: Function to apply to each value after wrapping it in an Iter.
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+
         Syntactic sugar for `map_values(lambda data: func(Iter(data), *args, **kwargs))`
         ```python
         >>> import pychain as pc

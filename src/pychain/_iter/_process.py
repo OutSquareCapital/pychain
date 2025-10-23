@@ -49,6 +49,10 @@ class BaseProcess[T](IterWrapper[T]):
     def interpose(self, element: T) -> Iter[T]:
         """
         Interpose element between items and return a new Iterable wrapper.
+
+        Args:
+            element: The element to interpose between items.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).interpose(0).into(list)
@@ -62,7 +66,11 @@ class BaseProcess[T](IterWrapper[T]):
         self, probability: float, state: Random | int | None = None
     ) -> Iter[T]:
         """
-        Return elements from a sequence with probability of prob
+        Return elements from a sequence with probability of prob.
+
+        Args:
+            probability: The probability of including each element.
+            state: Random state or seed for deterministic sampling.
 
         Returns a lazy iterator of random items from seq.
 
@@ -104,6 +112,10 @@ class BaseProcess[T](IterWrapper[T]):
     def accumulate(self, func: Callable[[T, T], T]) -> Iter[T]:
         """
         Return cumulative application of binary op provided by the function.
+
+        Args:
+            func: A binary function to apply cumulatively.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
@@ -116,6 +128,10 @@ class BaseProcess[T](IterWrapper[T]):
     def insert_left(self, value: T) -> Iter[T]:
         """
         Prepend value to the sequence and return a new Iterable wrapper.
+
+        Args:
+            value: The value to prepend.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([2, 3]).insert_left(1).into(list)
@@ -128,6 +144,10 @@ class BaseProcess[T](IterWrapper[T]):
     def peekn(self, n: int) -> Iter[T]:
         """
         Print and return sequence after peeking n items.
+
+        Args:
+            n: Number of items to peek.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).peekn(2).into(list)
@@ -168,6 +188,11 @@ class BaseProcess[T](IterWrapper[T]):
     ) -> Iter[T]:
         """
         Merge already-sorted sequences.
+
+        Args:
+            others: Other sorted iterables to merge.
+            sort_on: Optional key function for sorting.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 3]).merge_sorted([2, 4]).into(list)
@@ -180,6 +205,10 @@ class BaseProcess[T](IterWrapper[T]):
     def interleave(self, *others: Iterable[T]) -> Iter[T]:
         """
         Interleave multiple sequences element-wise.
+
+        Args:
+            others: Other iterables to interleave.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).interleave([3, 4]).into(list)
@@ -196,6 +225,9 @@ class BaseProcess[T](IterWrapper[T]):
     def chain(self, *others: Iterable[T]) -> Iter[T]:
         """
         Concatenate zero or more iterables, any of which may be infinite.
+
+        Args:
+            others: Other iterables to concatenate.
 
         An infinite sequence will prevent the rest of the arguments from being included.
 
@@ -216,7 +248,6 @@ class BaseProcess[T](IterWrapper[T]):
     def elements(self) -> Iter[T]:
         """
         Iterator over elements repeating each as many times as its count.
-
 
         Note:
             if an element's count has been set to zero or is a negative
@@ -271,6 +302,11 @@ class BaseProcess[T](IterWrapper[T]):
     ) -> Iter[T]:
         """
         Validate that *iterable* has exactly *n* items and return them if it does.
+
+        Args:
+            n: The exact number of items expected.
+            too_short: Function to call if there are too few items.
+            too_long: Function to call if there are too many items.
 
         If it has fewer than *n* items, call function *too_short* with the actual number of items.
 

@@ -54,6 +54,9 @@ class BaseAgg[T](IterWrapper[T]):
         """
         Apply a function of two arguments cumulatively to the items of an iterable, from left to right.
 
+        Args:
+            func: Function to apply cumulatively to the items of the iterable.
+
         This effectively reduces the iterable to a single value.
 
         If initial is present, it is placed before the items of the iterable in the calculation.
@@ -70,7 +73,10 @@ class BaseAgg[T](IterWrapper[T]):
 
     def combination_index(self, r: Iterable[T]) -> int:
         """
-        Equivalent to list(combinations(iterable, r)).index(element)
+        Equivalent to list(combinations(iterable, r)).index(element).
+
+        Args:
+            r: The combination to find the index of.
 
         The subsequences of iterable that are of length r can be ordered lexicographically.
 
@@ -138,6 +144,10 @@ class BaseAgg[T](IterWrapper[T]):
     def item(self, index: int) -> T:
         """
         Return item at index.
+
+        Args:
+            index: The index of the item to retrieve.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([10, 20]).item(1)
@@ -150,6 +160,10 @@ class BaseAgg[T](IterWrapper[T]):
     def argmax[U](self, key: Callable[[T], U] | None = None) -> int:
         """
         Index of the first occurrence of a maximum value in an iterable.
+
+        Args:
+            key: Optional function to determine the value for comparison.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("abcdefghabcd").argmax()
@@ -177,6 +191,10 @@ class BaseAgg[T](IterWrapper[T]):
     def argmin[U](self, key: Callable[[T], U] | None = None) -> int:
         """
         Index of the first occurrence of a minimum value in an iterable.
+
+        Args:
+            key: Optional function to determine the value for comparison.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("efghabcdijkl").argmin()

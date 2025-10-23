@@ -28,6 +28,10 @@ class BasePartitions[T](IterWrapper[T]):
     def windows(self, length: int) -> Iter[tuple[T, ...]]:
         """
         A sequence of overlapping subsequences of the given length.
+
+        Args:
+            length: The length of each window.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4]).windows(2).into(list)
@@ -61,7 +65,12 @@ class BasePartitions[T](IterWrapper[T]):
     def partition(self, n: int, pad: int) -> Iter[tuple[T, ...]]: ...
     def partition(self, n: int, pad: int | None = None) -> Iter[tuple[T, ...]]:
         """
-        Partition sequence into tuples of length n
+        Partition sequence into tuples of length n.
+
+        Args:
+            n: Length of each partition.
+            pad: Value to pad the last partition if needed.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4]).partition(2).into(list)
@@ -80,7 +89,10 @@ class BasePartitions[T](IterWrapper[T]):
 
     def partition_all(self, n: int) -> Iter[tuple[T, ...]]:
         """
-        Partition all elements of sequence into tuples of length at most n
+        Partition all elements of sequence into tuples of length at most n.
+
+        Args:
+            n: Maximum length of each partition.
 
         The final tuple may be shorter to accommodate extra elements.
         ```python
@@ -97,6 +109,9 @@ class BasePartitions[T](IterWrapper[T]):
     def partition_by(self, predicate: Callable[[T], bool]) -> Iter[tuple[T, ...]]:
         """
         Partition the `iterable` into a sequence of `tuples` according to a predicate function.
+
+        Args:
+            predicate: Function to determine partition boundaries.
 
         Every time the output of `predicate` changes, a new `tuple` is started,
         and subsequent items are collected into that `tuple`.
@@ -116,6 +131,9 @@ class BasePartitions[T](IterWrapper[T]):
     def batch(self, n: int) -> Iter[tuple[T, ...]]:
         """
         Batch elements into tuples of length n and return a new Iter.
+
+        Args:
+            n: Number of elements in each batch.
 
         - The last batch may be shorter than n.
         - The data is consumed lazily, just enough to fill a batch.

@@ -15,6 +15,10 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
     def inner_join[W](self, other: Mapping[K, W]) -> Dict[K, tuple[V, W]]:
         """
         Performs an inner join with another mapping based on keys.
+
+        Args:
+            other: The mapping to join with.
+
         Only keys present in both mappings are kept.
         ```python
         >>> import pychain as pc
@@ -34,6 +38,10 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
     def left_join[W](self, other: Mapping[K, W]) -> Dict[K, tuple[V, W | None]]:
         """
         Performs a left join with another mapping based on keys.
+
+        Args:
+            other: The mapping to join with.
+
         All keys from the left dictionary (self) are kept.
         ```python
         >>> import pychain as pc
@@ -53,6 +61,9 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
     def diff(self, other: Mapping[K, V]) -> Dict[K, tuple[V | None, V | None]]:
         """
         Returns a dict of the differences between this dict and another.
+
+        Args:
+            other: The mapping to compare against.
 
         The keys of the returned dict are the keys that are not shared or have different values.
         The values are tuples containing the value from self and the value from other.
@@ -83,6 +94,10 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
     def merge(self, *others: Mapping[K, V]) -> Self:
         """
         Merge other dicts into this one and return a new Dict.
+
+        Args:
+            *others: One or more mappings to merge into the current dictionary.
+
         ```python
         >>> import pychain as pc
         >>> pc.Dict({1: "one"}).merge({2: "two"}).unwrap()
@@ -100,6 +115,10 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
     ) -> Self:
         """
         Merge dicts using a function to combine values for duplicate keys.
+
+        Args:
+            *others: One or more mappings to merge into the current dictionary.
+            func: Function to combine values for duplicate keys.
 
         A key may occur in more than one dict, and all values mapped from the key will be passed to the function as a list, such as func([val1, val2, ...]).
         ```python

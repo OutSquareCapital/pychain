@@ -38,6 +38,10 @@ class BaseTuples[T](IterWrapper[T]):
     def combinations(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations of length r.
+
+        Args:
+            r: Length of each combination.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).combinations(2).into(list)
@@ -58,6 +62,10 @@ class BaseTuples[T](IterWrapper[T]):
     def permutations(self, r: int | None = None) -> Iter[tuple[T, ...]]:
         """
         Return all permutations of length r.
+
+        Args:
+            r: Length of each permutation. Defaults to the length of the iterable.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).permutations(2).into(list)
@@ -82,6 +90,10 @@ class BaseTuples[T](IterWrapper[T]):
     def combinations_with_replacement(self, r: int) -> Iter[tuple[T, ...]]:
         """
         Return all combinations with replacement of length r.
+
+        Args:
+            r: Length of each combination.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).combinations_with_replacement(2).into(list)
@@ -151,6 +163,10 @@ class BaseTuples[T](IterWrapper[T]):
     ) -> Iter[tuple[bool, T]]:
         """
         Return an iterable over (bool, item) tuples.
+
+        Args:
+            predicate: Function to determine if an item satisfies the condition.
+            distance: Number of places to consider as adjacent. Defaults to 1.
 
         The output is a sequence of tuples where the item is drawn from iterable.
 

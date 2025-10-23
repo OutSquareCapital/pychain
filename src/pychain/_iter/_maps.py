@@ -23,6 +23,12 @@ class BaseMap[T](IterWrapper[T]):
     ) -> Self:
         """
         Apply a function to each element in the iterable.
+
+        Args:
+            func: Function to apply to each element.
+            args: Positional arguments for the function.
+            kwargs: Keyword arguments for the function.
+
         Can be used for side effects such as printing or logging.
         ```python
         >>> import pychain as pc
@@ -41,6 +47,10 @@ class BaseMap[T](IterWrapper[T]):
     def map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
         Map each element through func and return a Iter of results.
+
+        Args:
+            func: Function to apply to each element.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).map(lambda x: x + 1).into(list)
@@ -68,6 +78,10 @@ class BaseMap[T](IterWrapper[T]):
     ) -> Iter[Any]:
         """
         Map each element through func and flatten the result by one level.
+
+        Args:
+            func: Function to apply to each element.
+
         ```python
         >>> import pychain as pc
         >>> data = [[1, 2], [3, 4]]
@@ -87,6 +101,9 @@ class BaseMap[T](IterWrapper[T]):
     ) -> Iter[R]:
         """
         Applies a function to each element, where each element is an iterable.
+
+        Args:
+            func: Function to apply to unpacked elements.
 
         Unlike `.map()`, which passes each element as a single argument, `.starmap()` unpacks each element into positional arguments for the function.
 
@@ -121,6 +138,11 @@ class BaseMap[T](IterWrapper[T]):
         """
         Evaluate each item from iterable using pred.
 
+        Args:
+            predicate: Function to evaluate each item.
+            func: Function to apply if predicate is True.
+            func_else: Function to apply if predicate is False.
+
         - If the result is equivalent to True, transform the item with func and yield it.
         - Otherwise, transform the item with func_else and yield it.
         - Predicate, func, and func_else should each be functions that accept one argument.
@@ -151,6 +173,10 @@ class BaseMap[T](IterWrapper[T]):
         """
         Transform each item from iterable with function and yield the result, unless function raises one of the specified exceptions.
 
+        Args:
+            func: Function to apply to each item.
+            exceptions: Exceptions to catch and ignore.
+
         The function is called to transform each item in iterable
 
         If an exception other than one given by exceptions is raised by function, it is raised like normal.
@@ -171,6 +197,10 @@ class BaseMap[T](IterWrapper[T]):
     def repeat(self, n: int) -> Iter[Iterable[T]]:
         """
         Repeat the entire iterable n times (as elements) and return Iter.
+
+        Args:
+            n: Number of repetitions.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).repeat(2).collect().unwrap()
@@ -191,6 +221,10 @@ class BaseMap[T](IterWrapper[T]):
     def repeat_last[U](self, default: U = None) -> Iter[T | U]:
         """
         After the iterable is exhausted, keep yielding its last element.
+
+        Args:
+            default: Value to yield if the iterable is empty.
+
         **Warning** ⚠️
             This creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken.
@@ -212,6 +246,9 @@ class BaseMap[T](IterWrapper[T]):
         """
 
         Break *iterable* into sub-iterables with *n* elements each.
+
+        Args:
+            n: Number of elements in each chunk.
 
         If the sub-iterables are read in order, the elements of *iterable*
         won't be stored in memory.
@@ -245,6 +282,9 @@ class BaseMap[T](IterWrapper[T]):
         """
         Flatten one level of nesting and return a new Iterable wrapper.
 
+        Args:
+            None
+
         This is a shortcut for `.apply(itertools.chain.from_iterable)`.
         ```python
         >>> import pychain as pc
@@ -260,6 +300,10 @@ class BaseMap[T](IterWrapper[T]):
     ) -> Iter[Any]:
         """
         Get an element from each item in a sequence using a nested key path.
+
+        Args:
+            keys: Nested keys to extract values.
+
         ```python
         >>> import pychain as pc
         >>> data = pc.Seq(
@@ -292,6 +336,10 @@ class BaseMap[T](IterWrapper[T]):
     ) -> Iter[float]:
         """
         Round each element in the iterable to the given number of decimal places and return Iter.
+
+        Args:
+            ndigits: Number of decimal places to round to.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1.2345, 2.3456, 3.4567]).round(2).into(list)

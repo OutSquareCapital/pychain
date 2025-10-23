@@ -39,6 +39,10 @@ class Dict[K, V](
     def from_(data: Mapping[K, V] | SupportsKeysAndGetItem[K, V]) -> Dict[K, V]:
         """
         Create a Dict from a mapping or SupportsKeysAndGetItem.
+
+        Args:
+            data: A mapping or object supporting keys and item access to convert into a Dict.
+
         ```python
         >>> import pychain as pc
         >>> class MyMapping:
@@ -62,6 +66,10 @@ class Dict[K, V](
     def from_object(obj: object) -> Dict[str, Any]:
         """
         Create a Dict from an object's __dict__ attribute.
+
+        Args:
+            obj: The object whose `__dict__` attribute will be used to create the Dict.
+
         ```python
         >>> import pychain as pc
         >>> class Person:
@@ -79,6 +87,9 @@ class Dict[K, V](
     def select(self: Dict[str, Any], *exprs: IntoExpr) -> Dict[str, Any]:
         """
         Select and alias fields from the dict based on expressions and/or strings.
+
+        Args:
+            *exprs: Expressions or strings to select and alias fields from the dictionary.
 
         Navigate nested fields using the `pychain.key` function.
 
@@ -114,6 +125,10 @@ class Dict[K, V](
     def with_fields(self: Dict[str, Any], *exprs: IntoExpr) -> Dict[str, Any]:
         """
         Merge aliased expressions into the root dict (overwrite on collision).
+
+        Args:
+            *exprs: Expressions to merge into the root dictionary.
+
         ```python
         >>> import pychain as pc
         >>> data = {
@@ -140,6 +155,10 @@ class Dict[K, V](
     def map_keys[T](self, func: Callable[[K], T]) -> Dict[T, V]:
         """
         Return a Dict with keys transformed by func.
+
+        Args:
+            func: Function to apply to each key in the dictionary.
+
         ```python
         >>> import pychain as pc
         >>> pc.Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_keys(
@@ -157,6 +176,10 @@ class Dict[K, V](
     def map_values[T](self, func: Callable[[V], T]) -> Dict[K, T]:
         """
         Return a Dict with values transformed by func.
+
+        Args:
+            func: Function to apply to each value in the dictionary.
+
         ```python
         >>> import pychain as pc
         >>> pc.Dict({"Alice": [20, 15, 30], "Bob": [10, 35]}).map_values(sum).unwrap()
@@ -175,6 +198,10 @@ class Dict[K, V](
     ) -> Dict[KR, VR]:
         """
         Transform (key, value) pairs using a function that takes a (key, value) tuple.
+
+        Args:
+            func: Function to transform each (key, value) pair into a new (key, value) tuple.
+
         ```python
         >>> import pychain as pc
         >>> pc.Dict({"Alice": 10, "Bob": 20}).map_items(
@@ -192,6 +219,10 @@ class Dict[K, V](
     ) -> Dict[KR, VR]:
         """
         Transform (key, value) pairs using a function that takes key and value as separate arguments.
+
+        Args:
+            func: Function to transform each key and value into a new (key, value) tuple.
+
         ```python
         >>> import pychain as pc
         >>> pc.Dict({1: 2}).map_kv(lambda k, v: (k + 1, v * 10)).unwrap()
@@ -251,6 +282,9 @@ class Dict[K, V](
     def equals_to(self, other: Self | Mapping[Any, Any]) -> bool:
         """
         Check if two records are equal based on their data.
+
+        Args:
+            other: Another Dict or mapping to compare against.
         """
         return (
             self.unwrap() == other.unwrap()

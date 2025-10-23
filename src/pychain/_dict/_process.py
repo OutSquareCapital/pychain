@@ -18,6 +18,11 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         """
         Apply a function to each key-value pair in the dict for side effects.
 
+        Args:
+            func: Function to apply to each key-value pair.
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+
         Returns the original Dict unchanged.
         ```python
         >>> import pychain as pc
@@ -39,6 +44,11 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
     ) -> Self:
         """
         Update value in a (potentially) nested dictionary.
+
+        Args:
+            *keys: Sequence of keys representing the nested path to update.
+            func: Function to apply to the value at the specified path.
+            default: Default value to use if the path does not exist, by default None
 
         Applies the func to the value at the path specified by keys, returning a new Dict with the updated value.
 
@@ -69,6 +79,10 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         """
         Return a new Dict with key set to value.
 
+        Args:
+            key: Key to set in the dictionary.
+            value: Value to associate with the specified key.
+
         Does not modify the initial dictionary.
         ```python
         >>> import pychain as pc
@@ -86,6 +100,9 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
     def drop(self, *keys: K) -> Self:
         """
         Return a new Dict with given keys removed.
+
+        Args:
+            *keys: Sequence of keys to remove from the dictionary.
 
         New dict has d[key] deleted for each supplied key.
         ```python
@@ -107,6 +124,9 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         """
         Return a new Dict with keys renamed according to the mapping.
 
+        Args:
+            mapping: A dictionary mapping old keys to new keys.
+
         Keys not in the mapping are kept as is.
         ```python
         >>> import pychain as pc
@@ -126,6 +146,10 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
     def sort(self, reverse: bool = False) -> Self:
         """
         Sort the dictionary by its keys and return a new Dict.
+
+        Args:
+            reverse: Whether to sort in descending order. Defaults to False.
+
         ```python
         >>> import pychain as pc
         >>> pc.Dict({"b": 2, "a": 1}).sort().unwrap()

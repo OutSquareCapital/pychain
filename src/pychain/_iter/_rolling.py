@@ -15,6 +15,10 @@ class BaseRolling[T](IterWrapper[T]):
     def rolling_mean(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling mean.
+
+        Args:
+            window_size: Size of the rolling window.
+
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5]).rolling_mean(3).into(list)
@@ -27,6 +31,9 @@ class BaseRolling[T](IterWrapper[T]):
     def rolling_median(self, window_size: int) -> Iter[T]:
         """
         Compute the rolling median.
+
+        Args:
+            window_size: Size of the rolling window.
 
         ```python
         >>> import pychain as pc
@@ -41,6 +48,9 @@ class BaseRolling[T](IterWrapper[T]):
         """
         Compute the rolling sum.
 
+        Args:
+            window_size: Size of the rolling window.
+
         Will return integers if the input is integers, floats if the input is floats or mixed.
         ```python
         >>> import pychain as pc
@@ -54,6 +64,9 @@ class BaseRolling[T](IterWrapper[T]):
     def rolling_min(self, window_size: int) -> Iter[T]:
         """
         Compute the rolling minimum.
+
+        Args:
+            window_size: Size of the rolling window.
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([3, 1, 4, 1, 5, 9, 2]).rolling_min(3).into(list)
@@ -66,6 +79,9 @@ class BaseRolling[T](IterWrapper[T]):
     def rolling_max(self, window_size: int) -> Iter[T]:
         """
         Compute the rolling maximum.
+
+        Args:
+            window_size: Size of the rolling window.
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([3, 1, 4, 1, 5, 9, 2]).rolling_max(3).into(list)
@@ -78,6 +94,9 @@ class BaseRolling[T](IterWrapper[T]):
     def rolling_var(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling variance.
+
+        Args:
+            window_size: Size of the rolling window.
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 4, 1, 4]).rolling_var(3).round(2).into(list)
@@ -90,6 +109,9 @@ class BaseRolling[T](IterWrapper[T]):
     def rolling_std(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling standard deviation.
+
+        Args:
+            window_size: Size of the rolling window.
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 4, 1, 4]).rolling_std(3).round(2).into(list)
@@ -102,6 +124,9 @@ class BaseRolling[T](IterWrapper[T]):
     def rolling_kurtosis(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling kurtosis.
+
+        Args:
+            window_size: Size of the rolling window.
 
         The windows must have at least 4 observations.
         ```python
@@ -117,6 +142,9 @@ class BaseRolling[T](IterWrapper[T]):
         """
         Compute the rolling skewness.
 
+        Args:
+            window_size: Size of the rolling window.
+
         The windows must have at least 3 observations.
         ```python
         >>> import pychain as pc
@@ -130,6 +158,9 @@ class BaseRolling[T](IterWrapper[T]):
     def rolling_all(self, window_size: int) -> Iter[bool]:
         """
         Compute whether all values in the window evaluate to True.
+
+        Args:
+            window_size: Size of the rolling window.
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([True, True, False, True, True]).rolling_all(2).into(list)
@@ -142,6 +173,9 @@ class BaseRolling[T](IterWrapper[T]):
     def rolling_any(self, window_size: int) -> Iter[bool]:
         """
         Compute whether any value in the window evaluates to True.
+
+        Args:
+            window_size: Size of the rolling window.
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([True, True, False, True, True]).rolling_any(2).into(list)
@@ -154,6 +188,9 @@ class BaseRolling[T](IterWrapper[T]):
     def rolling_product(self, window_size: int) -> Iter[float]:
         """
         Compute the rolling product.
+
+        Args:
+            window_size: Size of the rolling window.
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5]).rolling_product(3).into(list)
@@ -168,6 +205,10 @@ class BaseRolling[T](IterWrapper[T]):
     ) -> Iter[R]:
         """
         Apply a custom function to each rolling window.
+
+        Args:
+            func: Function to apply to each rolling window.
+            window_size: Size of the rolling window.
 
         The function should accept an iterable and return a single value.
         ```python
@@ -186,6 +227,11 @@ class BaseRolling[T](IterWrapper[T]):
     ) -> Iter[R]:
         """
         Apply a custom pairwise function to each rolling window of size 2.
+
+        Args:
+            other: Second iterable to apply the pairwise function.
+            func: Function to apply to each pair of elements.
+            window_size: Size of the rolling window.
 
         The function should accept two arguments and return a single value.
         ```python
