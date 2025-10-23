@@ -12,6 +12,11 @@ Manipulate data through composable chains of operations, enhancing readability a
 uv add git+https://github.com/OutSquareCapital/pychain.git
 ```
 
+## API Reference 📖
+
+The full API reference can be found at:
+<https://outsquarecapital.github.io/pychain/>
+
 ## Overview
 
 ### Philosophy ✨
