@@ -1,6 +1,6 @@
 # Iter
 
-::: pychain._iter._main.Iter
+::: pyochain._iter._main.Iter
     options:
       members: true
       inherited_members: true

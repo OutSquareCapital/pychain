@@ -1,6 +1,6 @@
 # Seq
 
-::: pychain._iter._main.Seq
+::: pyochain._iter._main.Seq
     options:
       members: true
       inherited_members: true

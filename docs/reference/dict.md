@@ -1,6 +1,6 @@
 # Dict
 
-::: pychain._dict._main.Dict
+::: pyochain._dict._main.Dict
     options:
       members: true
       inherited_members: true

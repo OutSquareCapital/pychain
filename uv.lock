@@ -563,7 +563,7 @@ wheels = [
 ]
 
 [[package]]
-name = "pychain"
+name = "pyochain"
 version = "0.4.1"
 source = { editable = "." }
 dependencies = [

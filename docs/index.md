@@ -1,15 +1,15 @@
-# pychain ⛓️
+# pyochain ⛓️
 
 **_Functional-style method chaining for Python data structures._**
 
-`pychain` brings a fluent, declarative API inspired by Rust's `Iterator` and DataFrame libraries like Polars to your everyday Python iterables and dictionaries.
+`pyochain` brings a fluent, declarative API inspired by Rust's `Iterator` and DataFrame libraries like Polars to your everyday Python iterables and dictionaries.
 
 Manipulate data through composable chains of operations, enhancing readability and reducing boilerplate.
 
 ## Installation 🚀
 
 ```bash
-uv add git+https://github.com/OutSquareCapital/pychain.git
+uv add git+https://github.com/OutSquareCapital/pyochain.git
 ```
 
 ## Overview
@@ -40,7 +40,7 @@ Wraps a Python `dict` with chainable methods specific to dictionaries.
 ## Quick Examples
 
 ```python
-import pychain as pc
+import pyochain as pc
 
 # Chain operations on iterables
 result = (
@@ -55,8 +55,8 @@ result = (
 
 ## Contributing
 
-See [CONTRIBUTING.md](https://github.com/OutSquareCapital/pychain/blob/master/CONTRIBUTING.md)
+See [CONTRIBUTING.md](https://github.com/OutSquareCapital/pyochain/blob/master/CONTRIBUTING.md)
 
 ## License
 
-MIT License - see [LICENSE.md](https://github.com/OutSquareCapital/pychain/blob/master/LICENSE.md)
+MIT License - see [LICENSE.md](https://github.com/OutSquareCapital/pyochain/blob/master/LICENSE.md)

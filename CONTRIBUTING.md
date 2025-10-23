@@ -1,8 +1,8 @@
-# Contributing to pychain
+# Contributing to pyochain
 
 ## type-checking
 
-pychain has been developped with pylance strict type-checking mode and Ruff for formatting.
+pyochain has been developped with pylance strict type-checking mode and Ruff for formatting.
 No errors should be existing before committing new code.
 
 ## Architecture

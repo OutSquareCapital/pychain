@@ -1,21 +1,21 @@
-# pychain ⛓️
+# pyochain ⛓️
 
 **_Functional-style method chaining for Python data structures._**
 
-`pychain` brings a fluent, declarative API inspired by Rust's `Iterator` and DataFrame libraries like Polars to your everyday Python iterables and dictionaries.
+`pyochain` brings a fluent, declarative API inspired by Rust's `Iterator` and DataFrame libraries like Polars to your everyday Python iterables and dictionaries.
 
 Manipulate data through composable chains of operations, enhancing readability and reducing boilerplate.
 
 ## Installation
 
 ```bash
-uv add git+https://github.com/OutSquareCapital/pychain.git
+uv add git+https://github.com/OutSquareCapital/pyochain.git
 ```
 
 ## API Reference 📖
 
 The full API reference can be found at:
-<https://outsquarecapital.github.io/pychain/>
+<https://outsquarecapital.github.io/pyochain/>
 
 ## Overview
 
@@ -31,9 +31,9 @@ The full API reference can be found at:
 ### Inspirations
 
 * **Rust's language and  Rust `Iterator` Trait:** Emulate naming conventions (`from_()`, `into()`) and leverage concepts from Rust's powerful iterator traits (method chaining, lazy evaluation) to bring similar expressiveness to Python.
-* **Polars API:** The powerful expression API for `pychain.Dict` (`select`, `with_fields`, `key`) mimics the expressive power of Polars for selecting, transforming, and reshaping nested dictionary data.
+* **Polars API:** The powerful expression API for `pyochain.Dict` (`select`, `with_fields`, `key`) mimics the expressive power of Polars for selecting, transforming, and reshaping nested dictionary data.
 * **Python iterators libraries:** Libraries like `rolling`, `cytoolz`, and `more-itertools` provided ideas, inspiration, and implementations for many of the iterator methods.
-* **PyFunctional:** Although not directly used (because I started writing pychain before discovering it), also shares similar goals and ideas.
+* **PyFunctional:** Although not directly used (because I started writing pyochain before discovering it), also shares similar goals and ideas.
 
 ### Core Components
 
@@ -68,11 +68,11 @@ But `Dict` can work also as well as on "irregular" structures (e.g., `dict[Any, 
 * `pluck` to extract multiple fields at once.
 * `flatten` to collapse nested structures into a single level.
 * `schema` to infer the structure of the data by recursively analyzing keys and value types.
-* `pychain.key` expressions to compute/retrieve/select/create new fields from existing nested data in a declarative way.
+* `pyochain.key` expressions to compute/retrieve/select/create new fields from existing nested data in a declarative way.
 
 #### `Wrapper[T]`
 
-A generic wrapper for any Python object, allowing integration into `pychain`'s fluent style using `pipe`, `apply`, and `into`.
+A generic wrapper for any Python object, allowing integration into `pyochain`'s fluent style using `pipe`, `apply`, and `into`.
 
 Can be for example used to wrap numpy arrays, json outputs from requests, or any custom class instance, as a way to integrate them into a chain of operations, rather than breaking the chain to reference intermediate variables.
 
@@ -94,7 +94,7 @@ All wrappers inherit from `CommonBase`:
 Leverage dozens of methods inspired by Rust's `Iterator`, `itertools`, `cytoolz`, and `more-itertools`.
 
 ```python
-import pychain as pc
+import pyochain as pc
 
 result = (
     pc.Iter.from_count(1) # Infinite iterator: 1, 2, 3, ...
@@ -114,12 +114,12 @@ Since there's much less need for intermediate variables, the developper don't ha
 
 Target: modern Python 3.13 syntax (PEP 695 generics, updated collections.abc types).
 
-### Expressions for Dict ``pychain.key``
+### Expressions for Dict ``pyochain.key``
 
 Compute new fields from existing nested data with key() and Expr.apply(), either selecting a new dict or merging into the root.
 
 ```python
-import pychain as pc
+import pyochain as pc
 
 # Build a compact view
 data = pc.Dict(
@@ -152,7 +152,7 @@ merged = data.with_fields(
 Operate on iterables of iterables or iterables of dicts without leaving the chain.
 
 ```python
-import pychain as pc
+import pyochain as pc
 
 nested = pc.Iter.from_([[1, 2, 3], [4, 5]])
 totals = nested.itr(lambda it: it.sum()).into(list)
@@ -174,7 +174,7 @@ Most of the computations are done with implementations from the `cytoolz`, `more
 
 An extensive use of the `itertools` stdlib module is also to be noted.
 
-pychain acts as a unifying API layer over these powerful tools.
+pyochain acts as a unifying API layer over these powerful tools.
 
 <https://github.com/pytoolz/cytoolz>
 
@@ -182,7 +182,7 @@ pychain acts as a unifying API layer over these powerful tools.
 
 <https://github.com/ajcr/rolling>
 
-The stubs used for the developpement, made by the maintainer of pychain, can be found here:
+The stubs used for the developpement, made by the maintainer of pyochain, can be found here:
 
 <https://github.com/py-stubs/cytoolz-stubs>
 
@@ -193,18 +193,18 @@ The stubs used for the developpement, made by the maintainer of pychain, can be 
 In one of my project, I have to introspect some modules from plotly to get some lists of colors.
 
 I want to check wether the colors are in hex format or not, and I want to get a dictionary of palettes.
-We can see here that pychain allow to keep the same style than polars, with method chaining, but for plain python objects.
+We can see here that pyochain allow to keep the same style than polars, with method chaining, but for plain python objects.
 
 Due to the freedom of python, multiple paradigms are implemented across libraries.
 
-If you like the fluent, functional, chainable style, pychain can help you to keep it across your codebase, rather than mixing object().method().method() and then another where it's [[... for ... in ...] ... ].
+If you like the fluent, functional, chainable style, pyochain can help you to keep it across your codebase, rather than mixing object().method().method() and then another where it's [[... for ... in ...] ... ].
 
 ```python
 
 from types import ModuleType
 
 import polars as pl
-import pychain as pc
+import pyochain as pc
 from plotly.express.colors import cyclical, qualitative, sequential
 
 
