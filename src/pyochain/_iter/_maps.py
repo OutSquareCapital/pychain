@@ -343,7 +343,6 @@ class BaseMap[T](IterWrapper[T]):
 
         Args:
             ndigits: Number of decimal places to round to.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1.2345, 2.3456, 3.4567]).round(2).into(list)

@@ -1,5 +1,42 @@
 # Contributing to pyochain
 
+## Documentation
+
+Each function/method should have a clear docstring, full type hints, with overloads and generics as needed.
+
+This can be deconstructed into:
+
+- A brief description of what the function does.
+- A description of each argument in the Args section.
+- A blank line.
+- An example usage in a code block.
+- After the expected return, a blank line.
+- The triple backticks to close the code block.
+- This can be repeated (explanation, code block, blank line, return, blank line) as needed for more complex functions.
+- The closing triple quotes.
+
+Example:
+
+```python
+def my_function(param1: int, param2: str) -> bool:
+    """
+    Brief description of what the function does.
+
+    Args:
+        param1: Description of param1.
+        param2: Description of param2.
+    
+    ```python
+    >>> # Example usage
+    >>> my_function(5, "test")
+    True
+
+    ```
+
+    """
+    ...
+```
+
 ## type-checking
 
 pyochain has been developped with pylance strict type-checking mode and Ruff for formatting.

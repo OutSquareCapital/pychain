@@ -162,6 +162,7 @@ class BaseJoins[T](IterWrapper[T]):
         `str` and `bytes` are not treated as iterables.
 
         If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
+
         Args:
             *others: Other iterables or scalars to zip with.
             strict: Whether to enforce equal lengths of iterables. Defaults to False.
@@ -341,6 +342,7 @@ class BaseJoins[T](IterWrapper[T]):
         Each output item is a tuple where the i-th element is from the i-th input iterable.
 
         If an input iterable is exhausted before others, then the corresponding output items will be filled with *default*.
+
         Args:
             *others: Other iterables to compare with.
             default: Value to use for missing elements. Defaults to None.

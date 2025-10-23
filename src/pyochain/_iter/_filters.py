@@ -84,6 +84,7 @@ class BaseFilter[T](IterWrapper[T]):
         Return elements that contain the given text.
 
         Optionally, a format function can be provided to preprocess each element before checking for the substring.
+
         Args:
             text: Substring to check for.
             format: Optional function to preprocess each element before checking. Defaults to None.
@@ -323,6 +324,7 @@ class BaseFilter[T](IterWrapper[T]):
         Yield the items from iterable that haven't been seen recently.
 
         The items in iterable must be hashable.
+
         Args:
             n: Size of the lookback window.
             key: Function to transform items before comparison. Defaults to None.

@@ -99,6 +99,7 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
         """
         Apply a function to the underlying iterable and return an Iter of the result.
         Allow to pass user defined functions that transform the iterable while retaining the Iter wrapper.
+
         Args:
             func: Function to apply to the underlying iterable.
             *args: Positional arguments to pass to the function.
@@ -111,6 +112,8 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
         ...     return (x * 2 for x in data)
         >>> pc.Iter.from_([1, 2, 3]).apply(double).into(list)
         [2, 4, 6]
+
+        ```
         """
         from .._iter import Iter
 
@@ -119,6 +122,7 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
     def collect(self, factory: Callable[[Iterable[T]], Collection[T]] = list) -> Seq[T]:
         """
         Collect the elements into a sequence.
+
         Args:
             factory: A callable that takes an iterable and returns a collection. Defaults to list.
 
@@ -147,6 +151,7 @@ class MappingWrapper[K, V](CommonBase[dict[K, V]]):
         """
         Apply a function to the underlying dict and return a Dict of the result.
         Allow to pass user defined functions that transform the dict while retaining the Dict wrapper.
+
         Args:
             func: Function to apply to the underlying dict.
             *args: Positional arguments to pass to the function.

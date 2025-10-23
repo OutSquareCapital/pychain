@@ -21,6 +21,7 @@ class BaseBool[T](IterWrapper[T]):
         If any of them return false, it returns false.
 
         An empty iterator returns true.
+
         Args:
             predicate: Function to evaluate each item. Defaults to checking truthiness.
         Example:
@@ -57,6 +58,7 @@ class BaseBool[T](IterWrapper[T]):
         If they all return false, it returns false.
 
         An empty iterator returns false.
+
         Args:
             predicate: Function to evaluate each item. Defaults to checking truthiness.
         Example:
@@ -200,6 +202,7 @@ class BaseBool[T](IterWrapper[T]):
         - Returning the first element that satisfies the `predicate`.
 
         If all the elements return false, `Iter.find()` returns the default value.
+
         Args:
             default: Value to return if no element satisfies the predicate. Defaults to None.
             predicate: Function to evaluate each item. Defaults to checking truthiness.

@@ -72,6 +72,7 @@ class IterConstructors:
         If you need to reuse the data, consider collecting it into a list first with `.collect()`.
 
         In general, avoid intermediate references when dealing with lazy iterators, and prioritize method chaining instead.
+
         Args:
             data: Iterable to convert into an iterator.
         Example:

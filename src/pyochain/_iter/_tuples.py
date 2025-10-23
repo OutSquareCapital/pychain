@@ -41,7 +41,6 @@ class BaseTuples[T](IterWrapper[T]):
 
         Args:
             r: Length of each combination.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).combinations(2).into(list)
@@ -65,7 +64,6 @@ class BaseTuples[T](IterWrapper[T]):
 
         Args:
             r: Length of each permutation. Defaults to the length of the iterable.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).permutations(2).into(list)
@@ -93,7 +91,6 @@ class BaseTuples[T](IterWrapper[T]):
 
         Args:
             r: Length of each combination.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).combinations_with_replacement(2).into(list)
@@ -205,6 +202,9 @@ class BaseTuples[T](IterWrapper[T]):
         - The element itself
         - False if the element is equal to the one preceding it in the input, True otherwise (i.e. the equivalent of unique_justseen)
         - False if this element has been seen anywhere in the input before, True otherwise (i.e. the equivalent of unique_everseen)
+
+        This function is analogous to unique_everseen and is subject to the same performance considerations.
+
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_("otto").classify_unique().into(list)
@@ -215,7 +215,5 @@ class BaseTuples[T](IterWrapper[T]):
         ('o', True,  False)]
 
         ```
-
-        This function is analogous to unique_everseen and is subject to the same performance considerations.
         """
         return self.apply(mit.classify_unique)

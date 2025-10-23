@@ -100,6 +100,7 @@ class Iter[T](
         Apply a function to each element after wrapping it in a Dict.
 
         This is a convenience method for the common pattern of mapping a function over an iterable of dictionaries.
+
         Args:
             func: Function to apply to each wrapped dictionary.
             *args: Positional arguments to pass to the function.

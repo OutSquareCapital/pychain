@@ -54,7 +54,6 @@ class BaseProcess[T](IterWrapper[T]):
 
         Args:
             element: The element to interpose between items.
-
         Example:
         ```python
         >>> import pyochain as pc
@@ -71,15 +70,15 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Return elements from a sequence with probability of prob.
 
-        Args:
-            probability: The probability of including each element.
-            state: Random state or seed for deterministic sampling.
-
         Returns a lazy iterator of random items from seq.
 
         random_sample considers each item independently and without replacement.
 
         See below how the first time it returned 13 items and the next time it returned 6 items.
+
+        Args:
+            probability: The probability of including each element.
+            state: Random state or seed for deterministic sampling.
         ```python
         >>> import pyochain as pc
         >>> data = pc.Seq(list(range(100)))
@@ -118,7 +117,6 @@ class BaseProcess[T](IterWrapper[T]):
 
         Args:
             func: A binary function to apply cumulatively.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).accumulate(lambda a, b: a + b).into(list)
@@ -134,7 +132,6 @@ class BaseProcess[T](IterWrapper[T]):
 
         Args:
             value: The value to prepend.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([2, 3]).insert_left(1).into(list)
@@ -150,7 +147,6 @@ class BaseProcess[T](IterWrapper[T]):
 
         Args:
             n: Number of items to peek.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3]).peekn(2).into(list)
@@ -195,7 +191,6 @@ class BaseProcess[T](IterWrapper[T]):
         Args:
             others: Other sorted iterables to merge.
             sort_on: Optional key function for sorting.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 3]).merge_sorted([2, 4]).into(list)
@@ -211,7 +206,6 @@ class BaseProcess[T](IterWrapper[T]):
 
         Args:
             others: Other iterables to interleave.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).interleave([3, 4]).into(list)
@@ -229,12 +223,12 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Concatenate zero or more iterables, any of which may be infinite.
 
-        Args:
-            others: Other iterables to concatenate.
-
         An infinite sequence will prevent the rest of the arguments from being included.
 
         We use chain.from_iterable rather than chain(*seqs) so that seqs can be a generator.
+
+        Args:
+            others: Other iterables to concatenate.
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2]).chain([3, 4], [5]).into(list)
@@ -244,7 +238,7 @@ class BaseProcess[T](IterWrapper[T]):
         """
 
         def _chain(data: Iterable[T]) -> Iterator[T]:
-            return itertools.chain.from_iterable((data, *others))
+            return cz.itertoolz.concat((data, *others))
 
         return self.apply(_chain)
 
@@ -307,14 +301,14 @@ class BaseProcess[T](IterWrapper[T]):
         """
         Validate that *iterable* has exactly *n* items and return them if it does.
 
+        If it has fewer than *n* items, call function *too_short* with the actual number of items.
+
+        If it has more than *n* items, call function *too_long* with the number `n + 1`.
+
         Args:
             n: The exact number of items expected.
             too_short: Function to call if there are too few items.
             too_long: Function to call if there are too many items.
-
-        If it has fewer than *n* items, call function *too_short* with the actual number of items.
-
-        If it has more than *n* items, call function *too_long* with the number `n + 1`.
         ```python
         >>> import pyochain as pc
         >>> iterable = ["a", "b", "c", "d"]

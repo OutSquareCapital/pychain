@@ -18,7 +18,6 @@ class BaseRolling[T](IterWrapper[T]):
 
         Args:
             window_size: Size of the rolling window.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5]).rolling_mean(3).into(list)
@@ -34,7 +33,6 @@ class BaseRolling[T](IterWrapper[T]):
 
         Args:
             window_size: Size of the rolling window.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 3, 2, 5, 4]).rolling_median(3).into(list)
@@ -48,10 +46,10 @@ class BaseRolling[T](IterWrapper[T]):
         """
         Compute the rolling sum.
 
+        Will return integers if the input is integers, floats if the input is floats or mixed.
+
         Args:
             window_size: Size of the rolling window.
-
-        Will return integers if the input is integers, floats if the input is floats or mixed.
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1.0, 2, 3, 4, 5]).rolling_sum(3).into(list)
@@ -126,9 +124,7 @@ class BaseRolling[T](IterWrapper[T]):
         Compute the rolling kurtosis.
 
         Args:
-            window_size: Size of the rolling window.
-
-        The windows must have at least 4 observations.
+            window_size: Size of the rolling window. Must be at least 4.
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 4, 1, 4]).rolling_kurtosis(4).into(list)
@@ -143,9 +139,7 @@ class BaseRolling[T](IterWrapper[T]):
         Compute the rolling skewness.
 
         Args:
-            window_size: Size of the rolling window.
-
-        The windows must have at least 3 observations.
+            window_size: Size of the rolling window. Must be at least 3.
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 4, 1, 4]).rolling_skew(3).round(2).into(list)
@@ -206,11 +200,11 @@ class BaseRolling[T](IterWrapper[T]):
         """
         Apply a custom function to each rolling window.
 
+        The function should accept an iterable and return a single value.
+
         Args:
             func: Function to apply to each rolling window.
             window_size: Size of the rolling window.
-
-        The function should accept an iterable and return a single value.
         ```python
         >>> import pyochain as pc
         >>> def range_func(window):
@@ -228,12 +222,12 @@ class BaseRolling[T](IterWrapper[T]):
         """
         Apply a custom pairwise function to each rolling window of size 2.
 
+        The function should accept two arguments and return a single value.
+
         Args:
             other: Second iterable to apply the pairwise function.
             func: Function to apply to each pair of elements.
             window_size: Size of the rolling window.
-
-        The function should accept two arguments and return a single value.
         ```python
         >>> import pyochain as pc
         >>> from statistics import correlation as corr

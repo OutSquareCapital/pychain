@@ -225,6 +225,7 @@ class BaseList[T](IterWrapper[T]):
         - *strict* is `True`
 
         then `ValueError` will be raised before the last list is yielded.
+
         Args:
             n: Number of elements in each chunk.
             strict: Whether to raise an error if the last chunk is smaller than n. Defaults to False.
@@ -245,6 +246,7 @@ class BaseList[T](IterWrapper[T]):
         Break iterable into lists of approximately length n.
 
         Items are distributed such the lengths of the lists differ by at most 1 item.
+
         Args:
             n: Approximate number of elements in each chunk.
         Example:

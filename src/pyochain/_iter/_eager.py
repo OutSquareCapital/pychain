@@ -176,7 +176,6 @@ class BaseEager[T](IterWrapper[T]):
 
         Args:
             n: Number of most common elements to return. Defaults to None (all elements).
-
         Example:
         ```python
         >>> import pyochain as pc

@@ -112,6 +112,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
         Filter values that have a given attribute.
 
         This does not enforce type checking at runtime for performance considerations.
+
         Args:
             attr: Attribute name to check for.
             dtype: Optional expected type of the attribute for type hinting.

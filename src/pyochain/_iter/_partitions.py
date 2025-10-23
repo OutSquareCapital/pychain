@@ -31,7 +31,6 @@ class BasePartitions[T](IterWrapper[T]):
 
         Args:
             length: The length of each window.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3, 4]).windows(2).into(list)
@@ -70,7 +69,6 @@ class BasePartitions[T](IterWrapper[T]):
         Args:
             n: Length of each partition.
             pad: Value to pad the last partition if needed.
-
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3, 4]).partition(2).into(list)
@@ -93,7 +91,6 @@ class BasePartitions[T](IterWrapper[T]):
 
         Args:
             n: Maximum length of each partition.
-
         The final tuple may be shorter to accommodate extra elements.
         ```python
         >>> import pyochain as pc
@@ -110,11 +107,11 @@ class BasePartitions[T](IterWrapper[T]):
         """
         Partition the `iterable` into a sequence of `tuples` according to a predicate function.
 
-        Args:
-            predicate: Function to determine partition boundaries.
-
         Every time the output of `predicate` changes, a new `tuple` is started,
         and subsequent items are collected into that `tuple`.
+
+        Args:
+            predicate: Function to determine partition boundaries.
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_("I have space").partition_by(lambda c: c == " ").into(list)
@@ -132,12 +129,12 @@ class BasePartitions[T](IterWrapper[T]):
         """
         Batch elements into tuples of length n and return a new Iter.
 
-        Args:
-            n: Number of elements in each batch.
-
         - The last batch may be shorter than n.
         - The data is consumed lazily, just enough to fill a batch.
         - The result is yielded as soon as a batch is full or when the input iterable is exhausted.
+
+        Args:
+            n: Number of elements in each batch.
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_("ABCDEFG").batch(3).into(list)
