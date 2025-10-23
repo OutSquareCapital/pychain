@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING
 
 import cytoolz as cz
 
@@ -91,7 +91,7 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
 
         return self.apply(_diff, other)
 
-    def merge(self, *others: Mapping[K, V]) -> Self:
+    def merge(self, *others: Mapping[K, V]) -> Dict[K, V]:
         """
         Merge other dicts into this one and return a new Dict.
 
@@ -108,11 +108,11 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
 
         ```
         """
-        return self._new(cz.dicttoolz.merge, *others)
+        return self.apply(cz.dicttoolz.merge, *others)
 
     def merge_with(
         self, *others: Mapping[K, V], func: Callable[[Iterable[V]], V]
-    ) -> Self:
+    ) -> Dict[K, V]:
         """
         Merge dicts using a function to combine values for duplicate keys.
 
@@ -134,4 +134,4 @@ class JoinsDict[K, V](MappingWrapper[K, V]):
         def _merge_with(data: Mapping[K, V]) -> dict[K, V]:
             return cz.dicttoolz.merge_with(func, data, *others)
 
-        return self._new(_merge_with)
+        return self.apply(_merge_with)

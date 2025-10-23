@@ -205,10 +205,20 @@ class Iter[T](
 
 
 class Seq[T](BaseAgg[T], BaseEager[T]):
+    """
+    pychain.Seq represent an in memory collection.
+
+    Provides a subset of pychain.Iter methods with eager evaluation, and is the return type of pychain.Iter.collect().
+    """
+
     __slots__ = ("_data",)
 
     def __init__(self, data: Collection[T]) -> None:
         self._data = data
 
     def iter(self) -> Iter[T]:
+        """
+        Get an iterator over the sequence.
+        Call this to switch to lazy evaluation.
+        """
         return Iter.from_(self.unwrap())

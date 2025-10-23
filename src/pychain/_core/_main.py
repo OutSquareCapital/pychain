@@ -41,23 +41,6 @@ class CommonBase[T](ABC, Pipeable):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Any:
-        """
-        Pipe the underlying data into a function, then wrap the result in the same wrapper type.
-
-        Each pychain class implement this method to allow chaining of functions that transform the
-        underlying data and return a new wrapped instance of the same subclass.
-
-        Use this to keep the chainable API after applying a transformation to the data.
-        ```python
-        >>> import pychain as pc
-        >>> from collections.abc import Iterable, Iterator
-        >>> def add_one(data: Iterable[int]) -> Iterator[int]:
-        ...     return (x + 1 for x in data)
-        >>> pc.Iter.from_([1, 2, 3, 4]).apply(add_one).collect().unwrap()
-        [2, 3, 4, 5]
-
-        ```
-        """
         raise NotImplementedError
 
     def println(self, pretty: bool = True) -> Self:
@@ -113,11 +96,40 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Iter[R]:
+        """
+        Apply a function to the underlying iterable and return an Iter of the result.
+        Allow to pass user defined functions that transform the iterable while retaining the Iter wrapper.
+        Args:
+            func: Function to apply to the underlying iterable.
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+
+        Example:
+        ```python
+        >>> import pychain as pc
+        >>> def double(data: Iterable[int]) -> Iterator[int]:
+        ...     return (x * 2 for x in data)
+        >>> pc.Iter.from_([1, 2, 3]).apply(double).into(list)
+        [2, 4, 6]
+        """
         from .._iter import Iter
 
         return Iter(self.into(func, *args, **kwargs))
 
     def collect(self, factory: Callable[[Iterable[T]], Collection[T]] = list) -> Seq[T]:
+        """
+        Collect the elements into a sequence.
+        Args:
+            factory: A callable that takes an iterable and returns a collection. Defaults to list.
+
+        Example:
+        ```python
+        >>> import pychain as pc
+        >>> pc.Iter.from_(range(5)).collect().unwrap()
+        [0, 1, 2, 3, 4]
+
+        ```
+        """
         from .._iter import Seq
 
         return Seq(self.into(factory))
@@ -126,20 +138,29 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
 class MappingWrapper[K, V](CommonBase[dict[K, V]]):
     _data: dict[K, V]
 
-    def _new[**P](
-        self,
-        func: Callable[Concatenate[dict[K, V], P], dict[K, V]],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Self:
-        return self.__class__(self.into(func, *args, **kwargs))
-
     def apply[**P, KU, VU](
         self,
         func: Callable[Concatenate[dict[K, V], P], dict[KU, VU]],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Dict[KU, VU]:
+        """
+        Apply a function to the underlying dict and return a Dict of the result.
+        Allow to pass user defined functions that transform the dict while retaining the Dict wrapper.
+        Args:
+            func: Function to apply to the underlying dict.
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+        Example:
+        ```python
+        >>> import pychain as pc
+        >>> def invert_dict(d: dict[K, V]) -> dict[V, K]:
+        ...     return {v: k for k, v in d.items()}
+        >>> pc.Dict({'a': 1, 'b': 2}).apply(invert_dict).unwrap()
+        {1: 'a', 2: 'b'}
+
+        ```
+        """
         from .._dict import Dict
 
         return Dict(self.into(func, *args, **kwargs))

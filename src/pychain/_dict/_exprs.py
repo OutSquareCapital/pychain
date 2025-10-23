@@ -11,6 +11,17 @@ from .._core import Pipeable
 
 @dataclass(slots=True)
 class Expr(Pipeable):
+    """
+    Represents an expression in the pipeline.
+
+    An Expr encapsulates a sequence of operations to be applied to keys on a python dict.
+
+    Each Expr instance maintains:
+    - A list of tokens representing the keys to access in the dict (the first being the input given to the `key` function),
+    - A tuple of operations to apply to the accessed data
+    - An alias for the expression (default to the last token).
+    """
+
     __tokens__: list[str]
     __ops__: tuple[Callable[[object], object], ...]
     _alias: str
@@ -36,6 +47,25 @@ class Expr(Pipeable):
         )
 
     def key(self, name: str) -> Self:
+        """
+        Add a key to the expression.
+
+        Allow to access nested keys in a dict.
+
+        Args:
+            name: The key to access.
+        Example:
+        ```python
+        >>> import pychain as pc
+        >>> expr = pc.key("a").key("b").key("c")
+        >>> expr.__tokens__
+        ['a', 'b', 'c']
+        >>> data = {"a": {"b": {"c": 42}}}
+        >>> pc.Dict(data).select(expr).unwrap()
+        {'c': 42}
+
+        ```
+        """
         return self.__class__(
             self.__tokens__ + [name],
             self.__ops__,

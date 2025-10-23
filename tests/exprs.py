@@ -201,11 +201,11 @@ def perf_test_pure(n: int) -> dict[Any, Any]:
                 for instr in data["StrategyInfo"]["instruments"]  # type: ignore[index]
             ],
             "series_dates": [
-                [
+                tuple(
                     v
                     for instr in data["StrategyPNL"]["id"].values()  # type: ignore[index]
                     for v in list(instr["series"]["data"].values())  # type: ignore[index]
-                ]
+                )
                 for _ in range(20)
             ][:5],
         }
@@ -242,8 +242,6 @@ def perf_test_frame(n: int):
             .pluck("series", "data")
             .map(lambda d: d.values())
             .flatten()
-            .collect()
-            .iter()
             .repeat(20)
             .take(n=5)
             .into(list)

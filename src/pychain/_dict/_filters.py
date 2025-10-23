@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 from functools import partial
-from typing import TYPE_CHECKING, Any, Self, TypeGuard
+from typing import TYPE_CHECKING, Any, TypeGuard
 
 import cytoolz as cz
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class FilterDict[K, V](MappingWrapper[K, V]):
-    def filter_keys(self, predicate: Callable[[K], bool]) -> Self:
+    def filter_keys(self, predicate: Callable[[K], bool]) -> Dict[K, V]:
         """
         Return a new Dict containing keys that satisfy predicate.
 
@@ -28,9 +28,9 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
         ```
         """
-        return self._new(partial(cz.dicttoolz.keyfilter, predicate))
+        return self.apply(partial(cz.dicttoolz.keyfilter, predicate))
 
-    def filter_values(self, predicate: Callable[[V], bool]) -> Self:
+    def filter_values(self, predicate: Callable[[V], bool]) -> Dict[K, V]:
         """
         Return a new Dict containing items whose values satisfy predicate.
 
@@ -47,12 +47,12 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
         ```
         """
-        return self._new(partial(cz.dicttoolz.valfilter, predicate))
+        return self.apply(partial(cz.dicttoolz.valfilter, predicate))
 
     def filter_items(
         self,
         predicate: Callable[[tuple[K, V]], bool],
-    ) -> Self:
+    ) -> Dict[K, V]:
         """
         Filter items by predicate applied to (key, value) tuples.
 
@@ -73,12 +73,12 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
         ```
         """
-        return self._new(partial(cz.dicttoolz.itemfilter, predicate))
+        return self.apply(partial(cz.dicttoolz.itemfilter, predicate))
 
     def filter_kv(
         self,
         predicate: Callable[[K, V], bool],
-    ) -> Self:
+    ) -> Dict[K, V]:
         """
         Filter items by predicate applied to unpacked (key, value) tuples.
 
@@ -105,7 +105,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
             return cz.dicttoolz.itemfilter(_, data)
 
-        return self._new(_filter_kv)
+        return self.apply(_filter_kv)
 
     def filter_attr[U](self, attr: str, dtype: type[U] = object) -> Dict[K, U]:
         """
@@ -220,7 +220,7 @@ class FilterDict[K, V](MappingWrapper[K, V]):
 
         return self.apply(_filter_subclass)
 
-    def intersect_keys(self, *others: Mapping[K, V]) -> Self:
+    def intersect_keys(self, *others: Mapping[K, V]) -> Dict[K, V]:
         """
         Return a new Dict keeping only keys present in self and all others.
 
@@ -244,9 +244,9 @@ class FilterDict[K, V](MappingWrapper[K, V]):
                 self_keys.intersection_update(other.keys())
             return {k: data[k] for k in self_keys}
 
-        return self._new(_intersect_keys)
+        return self.apply(_intersect_keys)
 
-    def diff_keys(self, *others: Mapping[K, V]) -> Self:
+    def diff_keys(self, *others: Mapping[K, V]) -> Dict[K, V]:
         """
         Return a new Dict keeping only keys present in self but not in others.
 
@@ -270,4 +270,4 @@ class FilterDict[K, V](MappingWrapper[K, V]):
                 self_keys.difference_update(other.keys())
             return {k: data[k] for k in self_keys}
 
-        return self._new(_diff_keys)
+        return self.apply(_diff_keys)

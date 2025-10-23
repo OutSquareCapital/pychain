@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping
-from typing import Any, Concatenate, Self
+from typing import TYPE_CHECKING, Any, Concatenate
 
 import cytoolz as cz
 
 from .._core import MappingWrapper
+
+if TYPE_CHECKING:
+    from ._main import Dict
 
 
 class ProcessDict[K, V](MappingWrapper[K, V]):
@@ -14,7 +17,7 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         func: Callable[Concatenate[K, V, P], Any],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Self:
+    ) -> Dict[K, V]:
         """
         Apply a function to each key-value pair in the dict for side effects.
 
@@ -35,13 +38,17 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         ```
         """
-        for k, v in self.unwrap().items():
-            func(k, v, *args, **kwargs)
-        return self
+
+        def _for_each(data: dict[K, V]) -> dict[K, V]:
+            for k, v in data.items():
+                func(k, v, *args, **kwargs)
+            return data
+
+        return self.apply(_for_each)
 
     def update_in(
         self, *keys: K, func: Callable[[V], V], default: V | None = None
-    ) -> Self:
+    ) -> Dict[K, V]:
         """
         Update value in a (potentially) nested dictionary.
 
@@ -73,9 +80,9 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         ```
         """
-        return self._new(cz.dicttoolz.update_in, keys, func, default=default)
+        return self.apply(cz.dicttoolz.update_in, keys, func, default=default)
 
-    def with_key(self, key: K, value: V) -> Self:
+    def with_key(self, key: K, value: V) -> Dict[K, V]:
         """
         Return a new Dict with key set to value.
 
@@ -95,9 +102,9 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         ```
         """
-        return self._new(cz.dicttoolz.assoc, key, value)
+        return self.apply(cz.dicttoolz.assoc, key, value)
 
-    def drop(self, *keys: K) -> Self:
+    def drop(self, *keys: K) -> Dict[K, V]:
         """
         Return a new Dict with given keys removed.
 
@@ -118,9 +125,9 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
 
         ```
         """
-        return self._new(cz.dicttoolz.dissoc, *keys)
+        return self.apply(cz.dicttoolz.dissoc, *keys)
 
-    def rename(self, mapping: Mapping[K, K]) -> Self:
+    def rename(self, mapping: Mapping[K, K]) -> Dict[K, V]:
         """
         Return a new Dict with keys renamed according to the mapping.
 
@@ -141,9 +148,9 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         def _rename(data: dict[K, V]) -> dict[K, V]:
             return {mapping.get(k, k): v for k, v in data.items()}
 
-        return self._new(_rename)
+        return self.apply(_rename)
 
-    def sort(self, reverse: bool = False) -> Self:
+    def sort(self, reverse: bool = False) -> Dict[K, V]:
         """
         Sort the dictionary by its keys and return a new Dict.
 
@@ -161,4 +168,4 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
         def _sort(data: dict[K, V]) -> dict[K, V]:
             return dict(sorted(data.items(), reverse=reverse))
 
-        return self._new(_sort)
+        return self.apply(_sort)
