@@ -21,6 +21,9 @@ class BaseBool[T](IterWrapper[T]):
         If any of them return false, it returns false.
 
         An empty iterator returns true.
+        Args:
+            predicate: Function to evaluate each item. Defaults to checking truthiness.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, True]).all()
@@ -46,6 +49,7 @@ class BaseBool[T](IterWrapper[T]):
         """
         Tests if any element of the iterator matches a predicate.
 
+
         `Iter.any()` takes a closure that returns true or false.
 
         It applies this closure to each element of the iterator, and if any of them return true, then so does `Iter.any()`.
@@ -53,6 +57,9 @@ class BaseBool[T](IterWrapper[T]):
         If they all return false, it returns false.
 
         An empty iterator returns false.
+        Args:
+            predicate: Function to evaluate each item. Defaults to checking truthiness.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([0, 1]).any()
@@ -87,6 +94,10 @@ class BaseBool[T](IterWrapper[T]):
     def all_equal[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
         Return True if all items are equal.
+
+        Args:
+            key: Function to transform items before comparison. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 1, 1]).all_equal()
@@ -106,7 +117,11 @@ class BaseBool[T](IterWrapper[T]):
 
     def all_unique[U](self, key: Callable[[T], U] | None = None) -> bool:
         """
-        Returns True if all the elements of iterable are unique (no two elements are equal).
+        Returns True if all the elements of iterable are unique.
+
+        Args:
+            key: Function to transform items before comparison. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("ABCB").all_unique()
@@ -135,9 +150,13 @@ class BaseBool[T](IterWrapper[T]):
         strict: bool = False,
     ) -> bool:
         """
-        Returns True if the items of iterable are in sorted order, and False otherwise.
+        Returns True if the items of iterable are in sorted order.
 
-        Key and reverse have the same meaning that they do in the built-in sorted function.
+        Args:
+            key: Function to transform items before comparison. Defaults to None.
+            reverse: Whether to check for descending order. Defaults to False.
+            strict: Whether to enforce strict sorting (no equal elements). Defaults to False.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(["1", "2", "3", "4", "5"]).is_sorted(key=int)
@@ -181,6 +200,10 @@ class BaseBool[T](IterWrapper[T]):
         - Returning the first element that satisfies the `predicate`.
 
         If all the elements return false, `Iter.find()` returns the default value.
+        Args:
+            default: Value to return if no element satisfies the predicate. Defaults to None.
+            predicate: Function to evaluate each item. Defaults to checking truthiness.
+        Example:
         ```python
         >>> import pychain as pc
         >>> def gt_five(x: int) -> bool:

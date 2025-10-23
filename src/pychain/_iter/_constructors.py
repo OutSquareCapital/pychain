@@ -19,6 +19,10 @@ class IterConstructors:
         **Warning** ⚠️
             This creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken.
+        Args:
+            start: Starting value of the sequence. Defaults to 0.
+            step: Difference between consecutive values. Defaults to 1.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_count(10, 2).take(3).into(list)
@@ -33,11 +37,16 @@ class IterConstructors:
     @staticmethod
     def from_func[U](func: Callable[[U], U], input: U) -> Iter[U]:
         """
-        Create an infinite iterator by repeatedly applying a function into an original `input`.
+        Create an infinite iterator by repeatedly applying a function on an original input.
 
         **Warning** ⚠️
             This creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken.
+        Args:
+            func: Function to apply repeatedly.
+            input: Initial value to start the iteration.
+
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_func(lambda x: x + 1, 0).take(3).into(list)
@@ -61,6 +70,9 @@ class IterConstructors:
         If you need to reuse the data, consider collecting it into a list first with `.collect()`.
 
         In general, avoid intermediate references when dealing with lazy iterators, and prioritize method chaining instead.
+        Args:
+            data: Iterable to convert into an iterator.
+        Example:
         ```python
         >>> import pychain as pc
         >>> data: tuple[int, ...] = (1, 2, 3)
@@ -85,7 +97,7 @@ class IterConstructors:
     @staticmethod
     def unfold[S, V](seed: S, generator: Callable[[S], tuple[V, S] | None]) -> Iter[V]:
         """
-        Create an iterator by repeatedly applying a generator function to an initial state (seed).
+        Create an iterator by repeatedly applying a generator function to an initial state.
 
         The `generator` function takes the current state and must return:
             - A tuple `(value, new_state)` to emit the `value` and continue with the `new_state`.
@@ -96,6 +108,10 @@ class IterConstructors:
         **Warning** ⚠️
             If the `generator` function never returns `None`, it creates an infinite iterator.
             Be sure to use `Iter.take()` or `Iter.slice()` to limit the number of items taken if necessary.
+        Args:
+            seed: Initial state for the generator.
+            generator: Function that generates the next value and state.
+        Example:
         ```python
         >>> import pychain as pc
         >>> # Example 1: Simple counter up to 5

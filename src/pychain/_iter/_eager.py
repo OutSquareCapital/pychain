@@ -22,6 +22,10 @@ class BaseEager[T](IterWrapper[T]):
         Note:
             This method must consume the entire iterable to perform the sort.
             The result is a new iterable over the sorted sequence.
+        Args:
+            reverse: Whether to sort in descending order. Defaults to False.
+            key: Function to extract a comparison key from each element. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([3, 1, 2]).sort().into(list)
@@ -38,6 +42,10 @@ class BaseEager[T](IterWrapper[T]):
     def tail(self, n: int) -> Seq[T]:
         """
         Return a tuple of the last n elements.
+
+        Args:
+            n: Number of elements to return.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).tail(2).unwrap()
@@ -50,6 +58,11 @@ class BaseEager[T](IterWrapper[T]):
     def top_n(self, n: int, key: Callable[[T], Any] | None = None) -> Seq[T]:
         """
         Return a tuple of the top-n items according to key.
+
+        Args:
+            n: Number of top elements to return.
+            key: Function to extract a comparison key from each element. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 3, 2]).top_n(2).unwrap()
@@ -61,10 +74,13 @@ class BaseEager[T](IterWrapper[T]):
 
     def union(self, *others: Iterable[T]) -> Seq[T]:
         """
-        Return the union of this iterable and 'others' as a new Iter.
+        Return the union of this iterable and 'others'.
 
         Note:
             This method consumes inner data and removes duplicates.
+        Args:
+            *others: Other iterables to include in the union.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 2]).union([2, 3], [4]).iter().sort().unwrap()
@@ -80,10 +96,13 @@ class BaseEager[T](IterWrapper[T]):
 
     def intersection(self, *others: Iterable[T]) -> Seq[T]:
         """
-        Return the elements common of this iterable and 'others'.
+        Return the elements common to this iterable and 'others'.
 
         Note:
             This method consumes inner data, unsorts it, and removes duplicates.
+        Args:
+            *others: Other iterables to intersect with.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 2]).intersection([2, 3], [2]).unwrap()
@@ -99,12 +118,14 @@ class BaseEager[T](IterWrapper[T]):
 
     def diff_unique(self, *others: Iterable[T]) -> Seq[T]:
         """
-        Return the difference of this iterable and 'others' as a new Iter.
-
+        Return the difference of this iterable and 'others'.
         (Elements in 'self' but not in 'others').
 
         Note:
             This method consumes inner data, unsorts it, and removes duplicates.
+        Args:
+            *others: Other iterables to subtract from this iterable.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 2]).diff_unique([2, 3]).unwrap()
@@ -120,11 +141,13 @@ class BaseEager[T](IterWrapper[T]):
 
     def diff_symmetric(self, *others: Iterable[T]) -> Seq[T]:
         """
-        Return the symmetric difference (XOR) of this iterable and 'other'
-        as a new Iter.
+        Return the symmetric difference (XOR) of this iterable and 'others'.
 
         Note:
             This method consumes inner data, unsorts it, and removes duplicates.
+        Args:
+            *others: Other iterables to compute the symmetric difference with.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 2]).diff_symmetric([2, 3]).iter().sort().unwrap()
@@ -142,9 +165,13 @@ class BaseEager[T](IterWrapper[T]):
 
     def most_common(self, n: int | None = None) -> Seq[tuple[T, int]]:
         """
-        Return a Sequence over the n most common elements and their counts from the most common to the least.
+        Return the n most common elements and their counts.
 
         If n is None, then all elements are returned.
+
+        Args:
+            n: Number of most common elements to return. Defaults to None (all elements).
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 1, 2, 3, 3, 3]).most_common(2).unwrap()

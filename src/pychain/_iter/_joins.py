@@ -53,6 +53,11 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[Any, ...]]:
         """
         Zip with other iterables, optionally strict.
+
+        Args:
+            *others: Other iterables to zip with.
+            strict: Whether to enforce equal lengths of iterables. Defaults to False.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).zip([10, 20]).into(list)
@@ -73,6 +78,13 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[T | U, ...]]:
         """
         Zip the input iterables together, but offset the i-th iterable by the i-th item in offsets.
+
+        Args:
+            *others: Other iterables to zip with.
+            offsets: List of integers specifying the offsets for each iterable.
+            longest: Whether to continue until the longest iterable is exhausted. Defaults to False.
+            fillvalue: Value to use for missing elements. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> data = pc.Seq("0123")
@@ -150,6 +162,10 @@ class BaseJoins[T](IterWrapper[T]):
         `str` and `bytes` are not treated as iterables.
 
         If the strict keyword argument is True, then UnequalIterablesError will be raised if any of the iterables have different lengths.
+        Args:
+            *others: Other iterables or scalars to zip with.
+            strict: Whether to enforce equal lengths of iterables. Defaults to False.
+        Example:
         ```python
         >>> import pychain as pc
         >>> data = pc.Iter.from_([1, 2, 3])
@@ -228,6 +244,10 @@ class BaseJoins[T](IterWrapper[T]):
     def zip_equal(self, *others: Iterable[Any]) -> Iter[tuple[Any, ...]]:
         """
         `zip` the input *iterables* together but raise `UnequalIterablesError` if they aren't all the same length.
+
+        Args:
+            *others: Other iterables to zip with.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(range(3)).zip_equal("abc").into(list)
@@ -252,6 +272,11 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[U | T, ...]]:
         """
         Zip with other iterables, filling missing values.
+
+        Args:
+            *others: Other iterables to zip with.
+            fill_value: Value to use for missing elements. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2]).zip_longest([10], fill_value=0).into(list)
@@ -290,6 +315,10 @@ class BaseJoins[T](IterWrapper[T]):
 
         It pairs every element from the source iterable with every element from the
         other iterable.
+
+        Args:
+            *others: Other iterables to compute the Cartesian product with.
+        Example:
         ```python
         >>> import pychain as pc
         >>> colors = pc.Iter.from_(["blue", "red"])
@@ -309,10 +338,14 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[T, ...]]:
         """
         Return those items that differ between iterables.
-
         Each output item is a tuple where the i-th element is from the i-th input iterable.
 
         If an input iterable is exhausted before others, then the corresponding output items will be filled with *default*.
+        Args:
+            *others: Other iterables to compare with.
+            default: Value to use for missing elements. Defaults to None.
+            key: Function to apply to each item for comparison. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> data = pc.Seq([1, 2, 3])
@@ -343,6 +376,14 @@ class BaseJoins[T](IterWrapper[T]):
     ) -> Iter[tuple[T, R]]:
         """
         Perform a relational join with another iterable.
+
+        Args:
+            other: Iterable to join with.
+            left_on: Function to extract the join key from the left iterable.
+            right_on: Function to extract the join key from the right iterable.
+            left_default: Default value for missing elements in the left iterable. Defaults to None.
+            right_default: Default value for missing elements in the right iterable. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> colors = pc.Iter.from_(["blue", "red"])

@@ -6,7 +6,7 @@
 
 Manipulate data through composable chains of operations, enhancing readability and reducing boilerplate.
 
-## Installation 🚀
+## Installation
 
 ```bash
 uv add git+https://github.com/OutSquareCapital/pychain.git
@@ -19,7 +19,7 @@ The full API reference can be found at:
 
 ## Overview
 
-### Philosophy ✨
+### Philosophy
 
 * **Declarative over Imperative:** Replace explicit `for` and `while` loops with sequences of high-level operations (map, filter, group, join...).
 * **Fluent Chaining:** Each method transforms the data and returns a new wrapper instance, allowing for seamless chaining.
@@ -28,14 +28,14 @@ The full API reference can be found at:
 * **Documentation-first:** Each method is thoroughly documented with clear explanations, and usage examples. Before any commit is made, each docstring is automatically tested to ensure accuracy. This also allows for a convenient experience in IDEs, where developers can easily access documentation with a simple hover of the mouse.
 * **Functional paradigm:** Design encourages building complex data transformations by composing simple, reusable functions on known buildings blocks, rather than implementing customs classes each time.
 
-### Inspirations 💡
+### Inspirations
 
 * **Rust's language and  Rust `Iterator` Trait:** Emulate naming conventions (`from_()`, `into()`) and leverage concepts from Rust's powerful iterator traits (method chaining, lazy evaluation) to bring similar expressiveness to Python.
 * **Polars API:** The powerful expression API for `pychain.Dict` (`select`, `with_fields`, `key`) mimics the expressive power of Polars for selecting, transforming, and reshaping nested dictionary data.
 * **Python iterators libraries:** Libraries like `rolling`, `cytoolz`, and `more-itertools` provided ideas, inspiration, and implementations for many of the iterator methods.
 * **PyFunctional:** Although not directly used (because I started writing pychain before discovering it), also shares similar goals and ideas.
 
-### Core Components 🧱
+### Core Components
 
 #### `Iter[T]`
 
@@ -61,11 +61,9 @@ Wraps a Python `dict` (or any Mapping via ``Dict.from_``) and provides chainable
 
 Promote immutability by returning new `Dict` instances on each operation, and avoiding in-place modifications.
 
-Can work as easily on known data structure (e.g `dict[str, int]`), with methods like `map_values`, `filter_keys`, etc., who works on the whole `dict` in a performant way, mostly thanks to `cytoolz` functions.
+Can work easily on known data structure (e.g `dict[str, int]`), with methods like `map_values`, `filter_keys`, etc., who works on the whole `dict` in a performant way, mostly thanks to `cytoolz` functions.
 
-But `Dict` can work also as well as on "irregular" structures (e.g., `dict[Any, Any]`, TypedDict, etc..), with methods like `schema`, `pluck`, `flatten`, etc., to explore and manipulate nested data.
-
-To help with this, `Dict` provides a set of utilities for working with nested data, including:
+But `Dict` can work also as well as on "irregular" structures (e.g., `dict[Any, Any]`, TypedDict, etc..), by providing a set of utilities for working with nested data, including:
 
 * `pluck` to extract multiple fields at once.
 * `flatten` to collapse nested structures into a single level.
@@ -78,20 +76,20 @@ A generic wrapper for any Python object, allowing integration into `pychain`'s f
 
 Can be for example used to wrap numpy arrays, json outputs from requests, or any custom class instance, as a way to integrate them into a chain of operations, rather than breaking the chain to reference intermediate variables.
 
-### Core Piping Methods 🚰
+### Core Piping Methods
 
 All wrappers inherit from `CommonBase`:
 
-* `into[**P, R](func: Callable, *args: P.args, **kwargs: P.kwargs) -> R`
+* `into[**P, R](func: Callable[Concatenate[T, P]], *args: P.args, **kwargs: P.kwargs) -> R`
     Passes the **unwrapped** data to `func` and returns the raw result (terminal).
-* `apply[**P, R](func: Callable, *args: P.args, **kwargs: P.kwargs) -> "CurrentWrapper"[R]`
+* `apply[**P, R](func: Callable[Concatenate[T, P]], *args: P.args, **kwargs: P.kwargs) -> "CurrentWrapper"[R]`
     Passes the **unwrapped** data to`func` and **re-wraps** the result for continued chaining.
-* `pipe[**P, R](func: Callable, *args: P.args, **kwargs: P.kwargs) -> R`
+* `pipe[**P, R](func: Callable[Concatenate[Self, P]], *args: P.args, **kwargs: P.kwargs) -> R`
     Passes the **wrapped instance** (`self`) to `func` and returns the raw result (can be terminal).
 * `println()`
     Prints the unwrapped data and returns `self`.
 
-### Rich Lazy Iteration (`Iter`) 😴
+### Rich Lazy Iteration (`Iter`)
 
 Leverage dozens of methods inspired by Rust's `Iterator`, `itertools`, `cytoolz`, and `more-itertools`.
 
@@ -108,7 +106,7 @@ result = (
 # result: [1, 9, 25, 49, 81]
 ```
 
-### Typing enforcement 🛡️
+### Typing enforcement
 
 Each method and class make extensive use of generics, type hints, and overloads (when necessary) to ensure type safety and improve developer experience.
 
@@ -116,7 +114,7 @@ Since there's much less need for intermediate variables, the developper don't ha
 
 Target: modern Python 3.13 syntax (PEP 695 generics, updated collections.abc types).
 
-### Expressions for Dict ``pychain.key`` 🗝️
+### Expressions for Dict ``pychain.key``
 
 Compute new fields from existing nested data with key() and Expr.apply(), either selecting a new dict or merging into the root.
 
@@ -149,7 +147,7 @@ merged = data.with_fields(
 
 ```
 
-### Convenience mappers: itr and struct 🔄
+### Convenience mappers: itr and struct
 
 Operate on iterables of iterables or iterables of dicts without leaving the chain.
 
@@ -170,7 +168,7 @@ names = records.struct(lambda d: d.pluck("name").unwrap()).into(list)
 # ['Alice', 'Bob']
 ```
 
-## Key Dependencies and credits 🔗
+## Key Dependencies and credits
 
 Most of the computations are done with implementations from the `cytoolz`, `more-itertools`, and `rolling` libraries.
 
@@ -190,7 +188,7 @@ The stubs used for the developpement, made by the maintainer of pychain, can be 
 
 ---
 
-## Real-life simple example 📚
+## Real-life simple example
 
 In one of my project, I have to introspect some modules from plotly to get some lists of colors.
 

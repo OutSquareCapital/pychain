@@ -64,6 +64,12 @@ class Iter[T](
         Apply a function to each element after wrapping it in an Iter.
 
         This is a convenience method for the common pattern of mapping a function over an iterable of iterables.
+
+        Args:
+            func: Function to apply to each wrapped element.
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+        Example:
         ```python
         >>> import pychain as pc
         >>> data = [
@@ -94,6 +100,11 @@ class Iter[T](
         Apply a function to each element after wrapping it in a Dict.
 
         This is a convenience method for the common pattern of mapping a function over an iterable of dictionaries.
+        Args:
+            func: Function to apply to each wrapped dictionary.
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+        Example:
         ```python
         >>> from typing import Any
         >>> import pychain as pc
@@ -145,6 +156,10 @@ class Iter[T](
     def with_keys[K](self, keys: Iterable[K]) -> Dict[K, T]:
         """
         Create a Dict by zipping the iterable with keys.
+
+        Args:
+            keys: Iterable of keys to pair with the values.
+        Example:
         ```python
         >>> import pychain as pc
         >>> keys = ["a", "b", "c"]
@@ -166,6 +181,10 @@ class Iter[T](
     def with_values[V](self, values: Iterable[V]) -> Dict[T, V]:
         """
         Create a Dict by zipping the iterable with values.
+
+        Args:
+            values: Iterable of values to pair with the keys.
+        Example:
         ```python
         >>> import pychain as pc
         >>> keys = [1, 2, 3]

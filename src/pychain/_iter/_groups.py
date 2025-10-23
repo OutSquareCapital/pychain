@@ -19,7 +19,12 @@ class BaseGroups[T](IterWrapper[T]):
         self, key: Callable[[T], K], binop: Callable[[T, T], T]
     ) -> Dict[K, T]:
         """
-        Perform a simultaneous groupby and reduction
+        Perform a simultaneous groupby and reduction.
+
+        Args:
+            key: Function to compute the key for grouping.
+            binop: Binary operation to reduce the grouped elements.
+        Example:
         ```python
         >>> from collections.abc import Iterable
         >>> import pychain as pc
@@ -58,6 +63,10 @@ class BaseGroups[T](IterWrapper[T]):
     def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
         """
         Group elements by key function and return a Dict result.
+
+        Args:
+            on: Function to compute the key for grouping.
+        Example:
         ```python
         >>> import pychain as pc
         >>> names = [
@@ -127,7 +136,11 @@ class BaseGroups[T](IterWrapper[T]):
 
     def count_by[K](self, key: Callable[[T], K]) -> Dict[K, int]:
         """
-        Count elements of a collection by a key function
+        Count elements of a collection by a key function.
+
+        Args:
+            key: Function to compute the key for counting.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(["cat", "mouse", "dog"]).count_by(len).unwrap()
@@ -208,9 +221,11 @@ class BaseGroups[T](IterWrapper[T]):
         """
         An extension of itertools.groupby that can apply transformations to the grouped data.
 
-        - keyfunc is a function computing a key value for each item in iterable
-        - valuefunc is a function that transforms the individual items from iterable after grouping
-        - reducefunc is a function that transforms each group of items
+        Args:
+            keyfunc: Function to compute the key for grouping. Defaults to None.
+            valuefunc: Function to transform individual items after grouping. Defaults to None.
+            reducefunc: Function to transform each group of items. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> data = pc.Iter.from_("aAAbBBcCC")

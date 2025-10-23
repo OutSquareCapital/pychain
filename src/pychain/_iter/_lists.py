@@ -39,6 +39,12 @@ class BaseList[T](IterWrapper[T]):
     ) -> Iter[list[T]]:
         """
         Yield lists of items from iterable, where each list is delimited by an item where callable pred returns True.
+
+        Args:
+            pred: Function to determine the split points.
+            maxsplit: Maximum number of splits to perform. Defaults to -1 (no limit).
+            keep_separator: Whether to include the separator in the output. Defaults to False.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("abcdcba").split_at(lambda x: x == "b").into(list)
@@ -73,10 +79,12 @@ class BaseList[T](IterWrapper[T]):
         self, predicate: Callable[[T], bool], max_split: int = -1
     ) -> Iter[list[T]]:
         """
-        Yield lists of items from iterable, where each list ends with an item where callable pred returns True:
-        At most maxsplit splits are done.
+        Yield lists of items from iterable, where each list ends with an item where callable pred returns True.
 
-        If maxsplit is not specified or -1, then there is no limit on the number of splits:
+        Args:
+            predicate: Function to determine the split points.
+            max_split: Maximum number of splits to perform. Defaults to -1 (no limit).
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("one1two2").split_after(str.isdigit).into(list)
@@ -99,6 +107,11 @@ class BaseList[T](IterWrapper[T]):
     ) -> Iter[list[T]]:
         """
         Yield lists of items from iterable, where each list ends with an item where callable pred returns True.
+
+        Args:
+            predicate: Function to determine the split points.
+            max_split: Maximum number of splits to perform. Defaults to -1 (no limit).
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("abcdcba").split_before(lambda x: x == "b").into(list)
@@ -125,6 +138,10 @@ class BaseList[T](IterWrapper[T]):
     def split_into(self, sizes: Iterable[int | None]) -> Iter[list[T]]:
         """
         Yield a list of sequential items from iterable of length 'n' for each integer 'n' in sizes.
+
+        Args:
+            sizes: Iterable of integers specifying the sizes of each chunk. Use None for the remainder.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).split_into([1, 2, 3]).into(list)
@@ -168,7 +185,11 @@ class BaseList[T](IterWrapper[T]):
         self, predicate: Callable[[T, T], bool], max_split: int = -1
     ) -> Iter[list[T]]:
         """
-        Split iterable into pieces based on the output of pred. pred should be a function that takes successive pairs of items and returns True if the iterable should be split in between them.
+        Split iterable into pieces based on the output of a predicate function.
+
+        Args:
+            predicate: Function that takes successive pairs of items and returns True if the iterable should be split.
+            max_split: Maximum number of splits to perform. Defaults to -1 (no limit).
 
         For example, to find runs of increasing numbers, split the iterable when element i is larger than element i + 1:
         ```python
@@ -204,6 +225,10 @@ class BaseList[T](IterWrapper[T]):
         - *strict* is `True`
 
         then `ValueError` will be raised before the last list is yielded.
+        Args:
+            n: Number of elements in each chunk.
+            strict: Whether to raise an error if the last chunk is smaller than n. Defaults to False.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5, 6]).chunks(3).into(list)
@@ -220,6 +245,9 @@ class BaseList[T](IterWrapper[T]):
         Break iterable into lists of approximately length n.
 
         Items are distributed such the lengths of the lists differ by at most 1 item.
+        Args:
+            n: Approximate number of elements in each chunk.
+        Example:
         ```python
         >>> import pychain as pc
         >>> iterable = pc.Seq([1, 2, 3, 4, 5, 6, 7])

@@ -18,6 +18,10 @@ class BaseFilter[T](IterWrapper[T]):
     def filter(self, func: Callable[[T], bool]) -> Iter[T]:
         """
         Return an iterator yielding those items of iterable for which function is true.
+
+        Args:
+            func: Function to evaluate each item.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).filter(lambda x: x > 1).into(list)
@@ -34,6 +38,10 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_isin(self, values: Iterable[T]) -> Iter[T]:
         """
         Return elements that are in the given values iterable.
+
+        Args:
+            values: Iterable of values to check membership against.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4]).filter_isin([2, 4, 6]).into(list)
@@ -51,6 +59,10 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_notin(self, values: Iterable[T]) -> Iter[T]:
         """
         Return elements that are not in the given values iterable.
+
+        Args:
+            values: Iterable of values to exclude.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4]).filter_notin([2, 4, 6]).into(list)
@@ -72,6 +84,10 @@ class BaseFilter[T](IterWrapper[T]):
         Return elements that contain the given text.
 
         Optionally, a format function can be provided to preprocess each element before checking for the substring.
+        Args:
+            text: Substring to check for.
+            format: Optional function to preprocess each element before checking. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>>
@@ -97,9 +113,12 @@ class BaseFilter[T](IterWrapper[T]):
         """
         Return elements that have the given attribute.
 
-        Optionally, specify the expected type of the attribute for better type hinting.
+        The provided dtype is not checked at runtime for performance considerations.
 
-        This does not enforce type checking at runtime for performance considerations.
+        Args:
+            attr: Name of the attribute to check for.
+            dtype: Expected type of the attribute. Defaults to object.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_(["hello", "world", 2, 5]).filter_attr("capitalize", str).into(
@@ -121,6 +140,10 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_false(self, func: Callable[[T], bool]) -> Iter[T]:
         """
         Return elements for which func is false.
+
+        Args:
+            func: Function to evaluate each item.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).filter_false(lambda x: x > 1).into(list)
@@ -141,6 +164,11 @@ class BaseFilter[T](IterWrapper[T]):
         It should be a function that accepts one argument and raises an exception if that item is not valid.
 
         If an exception other than one given by exceptions is raised by validator, it is raised like normal.
+
+        Args:
+            func: Validator function to apply to each item.
+            exceptions: Exceptions to catch and ignore.
+        Example:
         ```python
         >>> import pychain as pc
         >>> iterable = ["1", "2", "three", "4", None]
@@ -157,7 +185,11 @@ class BaseFilter[T](IterWrapper[T]):
 
     def take_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
         """
-        Take items while predicate holds and return a new Iterable wrapper.
+        Take items while predicate holds.
+
+        Args:
+            predicate: Function to evaluate each item.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 0]).take_while(lambda x: x > 0).into(list)
@@ -169,7 +201,11 @@ class BaseFilter[T](IterWrapper[T]):
 
     def skip_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
         """
-        Drop items while predicate holds and return the remainder.
+        Drop items while predicate holds.
+
+        Args:
+            predicate: Function to evaluate each item.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 0]).skip_while(lambda x: x > 0).into(list)
@@ -182,6 +218,10 @@ class BaseFilter[T](IterWrapper[T]):
     def compress(self, *selectors: bool) -> Iter[T]:
         """
         Filter elements using a boolean selector iterable.
+
+        Args:
+            selectors: Boolean values indicating which elements to keep.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("ABCDEF").compress(1, 0, 1, 0, 1, 1).into(list)
@@ -193,7 +233,11 @@ class BaseFilter[T](IterWrapper[T]):
 
     def unique(self, key: Callable[[T], Any] | None = None) -> Iter[T]:
         """
-        Return only unique elements of a sequence
+        Return only unique elements of the iterable.
+
+        Args:
+            key: Function to transform items before comparison. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).unique().into(list)
@@ -221,6 +265,10 @@ class BaseFilter[T](IterWrapper[T]):
 
         - A prefix of length n if the original iterator contains at least n elements
         - All of the (fewer than n) elements of the original iterator if it contains fewer than n elements.
+
+        Args:
+            n: Number of elements to take.
+        Example:
         ```python
         >>> import pychain as pc
         >>> data = [1, 2, 3]
@@ -236,7 +284,11 @@ class BaseFilter[T](IterWrapper[T]):
 
     def skip(self, n: int) -> Iter[T]:
         """
-        Drop first n elements and return the remainder wrapped.
+        Drop first n elements.
+
+        Args:
+            n: Number of elements to skip.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3]).skip(1).into(list)
@@ -248,7 +300,11 @@ class BaseFilter[T](IterWrapper[T]):
 
     def unique_justseen(self, key: Callable[[T], Any] | None = None) -> Iter[T]:
         """
-        Yields elements in order, ignoring serial duplicates
+        Yields elements in order, ignoring serial duplicates.
+
+        Args:
+            key: Function to transform items before comparison. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_("AAAABBBCCDAABBB").unique_justseen().into(list)
@@ -264,9 +320,13 @@ class BaseFilter[T](IterWrapper[T]):
         self, n: int, key: Callable[[T], Any] | None = None
     ) -> Iter[T]:
         """
-        Yield the items from iterable that haven't been seen recently. n is the size of the lookback window.
+        Yield the items from iterable that haven't been seen recently.
 
         The items in iterable must be hashable.
+        Args:
+            n: Size of the lookback window.
+            key: Function to transform items before comparison. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> iterable = [0, 1, 0, 2, 3, 0]
@@ -292,6 +352,10 @@ class BaseFilter[T](IterWrapper[T]):
         - The indices are consumed immediately and must be finite.
         - Raises IndexError if an index lies beyond the iterable.
         - Raises ValueError for negative indices.
+
+        Args:
+            indices: Iterable of indices to extract values from.
+        Example:
         ```python
         >>> import pychain as pc
         >>> text = "abcdefghijklmnopqrstuvwxyz"
@@ -305,6 +369,10 @@ class BaseFilter[T](IterWrapper[T]):
     def every(self, index: int) -> Iter[T]:
         """
         Return every nth item starting from first.
+
+        Args:
+            index: Step size for selecting items.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([10, 20, 30, 40]).every(2).into(list)
@@ -317,6 +385,11 @@ class BaseFilter[T](IterWrapper[T]):
     def slice(self, start: int | None = None, stop: int | None = None) -> Iter[T]:
         """
         Return a slice of the iterable.
+
+        Args:
+            start: Starting index of the slice. Defaults to None.
+            stop: Ending index of the slice. Defaults to None.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5]).slice(1, 4).into(list)
@@ -335,6 +408,11 @@ class BaseFilter[T](IterWrapper[T]):
     ) -> Iter[type[R]]:
         """
         Return elements that are subclasses of the given class, optionally excluding the parent class itself.
+
+        Args:
+            parent: Parent class to check against.
+            keep_parent: Whether to include the parent class itself. Defaults to True.
+        Example:
         ```python
         >>> import pychain as pc
         >>> class A:
@@ -368,6 +446,10 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_type[R](self, typ: type[R]) -> Iter[R]:
         """
         Return elements that are instances of the given type.
+
+        Args:
+            typ: Type to check against.
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([1, "two", 3.0, "four", 5]).filter_type(int).into(list)
@@ -384,6 +466,8 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_callable(self) -> Iter[Callable[..., Any]]:
         """
         Return only elements that are callable.
+
+        Example:
         ```python
         >>> import pychain as pc
         >>> pc.Iter.from_([len, 42, str, None, list]).filter_callable().into(list)
@@ -402,6 +486,10 @@ class BaseFilter[T](IterWrapper[T]):
     def filter_map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
         Apply func to every element of iterable, yielding only those which are not None.
+
+        Args:
+            func: Function to apply to each item.
+        Example:
         ```python
         >>> import pychain as pc
         >>> def to_int(s: str) -> int | None:
