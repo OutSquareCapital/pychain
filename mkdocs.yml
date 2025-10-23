@@ -8,38 +8,24 @@ plugins:
       default_handler: python
       handlers:
         python:
-          # IMPORTANT: résout tes imports sans bidouiller PYTHONPATH
           paths: ["src"]
           options:
-            # ---- RENDU DES MEMBRES ----
-            members_order: source          # respecte l’ordre dans tes fichiers
-            inherited_members: true        # <- affiche les méthodes des mixins
-            show_inheritance: true         # affiche "Bases: ..."
-
-            # ---- RENDU DES SIGNATURES ----
+            members_order: source
+            inherited_members: true
+            show_inheritance: true
             show_signature_annotations: true
-            separate_signature: true       # signature sur sa propre ligne (moins “étiré”)
-            line_length: 88                # wrap raisonnable
-
-            # ---- RENDU DES DOCSTRINGS ----
-            docstring_style: google        # (ou "numpy"/"sphinx" si tu préfères)
+            separate_signature: true
+            line_length: 88
+            docstring_style: google
             show_if_no_docstring: true
-            show_source: true              # lien "Source code in ..."
-            show_overloads: true           # <-- rend les @overload
-
-            # Si des bases venaient d’un package externe, décommente :
-            # preload_modules:
-            #   - some_external_pkg
-
+            show_source: true
+            show_overloads: true 
 nav:
   - Home: index.md
   - Reference:
       - Iter: reference/iter.md
       - Dict: reference/dict.md
 
-# Live-reload quand tu modifies le code
-watch:
-  - src
 theme:
   name: material
   palette:

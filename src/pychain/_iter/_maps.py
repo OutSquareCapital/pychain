@@ -282,9 +282,6 @@ class BaseMap[T](IterWrapper[T]):
         """
         Flatten one level of nesting and return a new Iterable wrapper.
 
-        Args:
-            None
-
         This is a shortcut for `.apply(itertools.chain.from_iterable)`.
         ```python
         >>> import pychain as pc
