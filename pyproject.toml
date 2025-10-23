@@ -5,11 +5,7 @@ readme          = "README.md"
 requires-python = ">=3.12"
 version         = "0.5.0"
 
-dependencies = [
-    "cytoolz>=1.0.1",
-    "more-itertools>=10.8.0",
-    "rolling @ git+https://github.com/OutSquareCapital/rolling.git@add-type-stubs",
-]
+dependencies = ["cytoolz>=1.0.1", "more-itertools>=10.8.0", "rolling>=0.5.0"]
 
 [dependency-groups]
 dev = [
@@ -24,6 +20,7 @@ dev = [
     "mkdocstrings-python>=1.18.2",
     "polars>=1.33.1",
     "ruff>=0.14.1",
+    "rolling @ git+https://github.com/OutSquareCapital/rolling.git@add-type-stubs",
 ]
 
 [tool.ruff.format]

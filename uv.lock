@@ -563,53 +563,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyochain"
-version = "0.4.1"
-source = { editable = "." }
-dependencies = [
-    { name = "cytoolz" },
-    { name = "more-itertools" },
-    { name = "rolling" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "cytoolz-stubs" },
-    { name = "doctester" },
-    { name = "griffe" },
-    { name = "mkdocs" },
-    { name = "mkdocs-autorefs" },
-    { name = "mkdocs-material" },
-    { name = "mkdocs-simple-hooks" },
-    { name = "mkdocstrings" },
-    { name = "mkdocstrings-python" },
-    { name = "polars" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "cytoolz", specifier = ">=1.0.1" },
-    { name = "more-itertools", specifier = ">=10.8.0" },
-    { name = "rolling", git = "https://github.com/OutSquareCapital/rolling.git?rev=add-type-stubs" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "cytoolz-stubs", git = "https://github.com/py-stubs/cytoolz-stubs.git" },
-    { name = "doctester", git = "https://github.com/OutSquareCapital/doctester.git" },
-    { name = "griffe", specifier = ">=1.14.0" },
-    { name = "mkdocs", specifier = ">=1.6.1" },
-    { name = "mkdocs-autorefs", specifier = ">=1.4.3" },
-    { name = "mkdocs-material", specifier = ">=9.6.22" },
-    { name = "mkdocs-simple-hooks", specifier = ">=0.1.5" },
-    { name = "mkdocstrings", specifier = ">=0.30.1" },
-    { name = "mkdocstrings-python", specifier = ">=1.18.2" },
-    { name = "polars", specifier = ">=1.33.1" },
-    { name = "ruff", specifier = ">=0.14.1" },
-]
-
-[[package]]
 name = "pygments"
 version = "2.19.2"
 source = { registry = "https://pypi.org/simple" }
@@ -629,6 +582,55 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/55/b3/6d2b3f149bc5413b0a29761c2c5832d8ce904a1d7f621e86616d96f505cc/pymdown_extensions-10.16.1.tar.gz", hash = "sha256:aace82bcccba3efc03e25d584e6a22d27a8e17caa3f4dd9f207e49b787aa9a91", size = 853277, upload-time = "2025-07-28T16:19:34.167Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e4/06/43084e6cbd4b3bc0e80f6be743b2e79fbc6eed8de9ad8c629939fa55d972/pymdown_extensions-10.16.1-py3-none-any.whl", hash = "sha256:d6ba157a6c03146a7fb122b2b9a121300056384eafeec9c9f9e584adfdb2a32d", size = 266178, upload-time = "2025-07-28T16:19:31.401Z" },
+]
+
+[[package]]
+name = "pyochain"
+version = "0.5.0"
+source = { editable = "." }
+dependencies = [
+    { name = "cytoolz" },
+    { name = "more-itertools" },
+    { name = "rolling" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "cytoolz-stubs" },
+    { name = "doctester" },
+    { name = "griffe" },
+    { name = "mkdocs" },
+    { name = "mkdocs-autorefs" },
+    { name = "mkdocs-material" },
+    { name = "mkdocs-simple-hooks" },
+    { name = "mkdocstrings" },
+    { name = "mkdocstrings-python" },
+    { name = "polars" },
+    { name = "rolling" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "cytoolz", specifier = ">=1.0.1" },
+    { name = "more-itertools", specifier = ">=10.8.0" },
+    { name = "rolling", specifier = ">=0.5.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "cytoolz-stubs", git = "https://github.com/py-stubs/cytoolz-stubs.git" },
+    { name = "doctester", git = "https://github.com/OutSquareCapital/doctester.git" },
+    { name = "griffe", specifier = ">=1.14.0" },
+    { name = "mkdocs", specifier = ">=1.6.1" },
+    { name = "mkdocs-autorefs", specifier = ">=1.4.3" },
+    { name = "mkdocs-material", specifier = ">=9.6.22" },
+    { name = "mkdocs-simple-hooks", specifier = ">=0.1.5" },
+    { name = "mkdocstrings", specifier = ">=0.30.1" },
+    { name = "mkdocstrings-python", specifier = ">=1.18.2" },
+    { name = "polars", specifier = ">=1.33.1" },
+    { name = "rolling", git = "https://github.com/OutSquareCapital/rolling.git?rev=add-type-stubs" },
+    { name = "ruff", specifier = ">=0.14.1" },
 ]
 
 [[package]]
