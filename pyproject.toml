@@ -15,7 +15,15 @@ dependencies = [
 dev = [
     "cytoolz-stubs",
     "doctester",
+    "griffe>=1.14.0",
+    "mkdocs>=1.6.1",
+    "mkdocs-autorefs>=1.4.3",
+    "mkdocs-material>=9.6.22",
+    "mkdocs-simple-hooks>=0.1.5",
+    "mkdocstrings>=0.30.1",
+    "mkdocstrings-python>=1.18.2",
     "polars>=1.33.1",
+    "ruff>=0.14.1",
 ]
 
 [tool.ruff.format]
@@ -23,7 +31,7 @@ docstring-code-format = true
 
 [tool.uv.sources]
 cytoolz-stubs = { git = "https://github.com/py-stubs/cytoolz-stubs.git" }
-doctester = { git = "https://github.com/OutSquareCapital/doctester.git" }
+doctester     = { git = "https://github.com/OutSquareCapital/doctester.git" }
 
 [build-system]
 build-backend = "uv_build"
