@@ -36,7 +36,7 @@ class Dict[K, V](
         return f"{self.__class__.__name__}({dict_repr(self.unwrap())})"
 
     @staticmethod
-    def from_(data: Mapping[K, V] | SupportsKeysAndGetItem[K, V]) -> Dict[K, V]:
+    def from_[G, I](data: Mapping[G, I] | SupportsKeysAndGetItem[G, I]) -> Dict[G, I]:
         """
         Create a Dict from a mapping or SupportsKeysAndGetItem.
 
