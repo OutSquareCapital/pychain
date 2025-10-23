@@ -9,3 +9,4 @@
 ::: pychain._dict._exprs.key
     options:
       show_overloads: true
+      filters: public

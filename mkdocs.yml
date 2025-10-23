@@ -20,9 +20,6 @@ plugins:
             show_if_no_docstring: true
             show_source: true
             show_overloads: true
-            filters:
-              exclude:
-                - "^__.*__$"  # Exclude dunder methods
 nav:
   - Home: index.md
   - Reference:
