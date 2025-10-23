@@ -5,6 +5,11 @@
 pyochain has been developped with pylance strict type-checking mode and Ruff for formatting.
 No errors should be existing before committing new code.
 
+## Linting and Formatting
+
+pyochain uses Ruff for linting and formatting, with the VSCode extension.
+Or you can simply run Ruff at the root.
+
 ## Architecture
 
 The codebase is organized into several modules, each responsible for different aspects of the library:

@@ -9,7 +9,7 @@ Manipulate data through composable chains of operations, enhancing readability a
 ## Installation
 
 ```bash
-uv add git+https://github.com/OutSquareCapital/pyochain.git
+uv add pyochain
 ```
 
 ## API Reference 📖
