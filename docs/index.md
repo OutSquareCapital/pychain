@@ -6,7 +6,7 @@
 
 Manipulate data through composable chains of operations, enhancing readability and reducing boilerplate.
 
-## Installation 🚀
+## Installation
 
 ```bash
 uv add git+https://github.com/OutSquareCapital/pyochain.git
@@ -14,7 +14,7 @@ uv add git+https://github.com/OutSquareCapital/pyochain.git
 
 ## Overview
 
-### Philosophy ✨
+### Philosophy
 
 * **Declarative over Imperative:** Replace explicit `for` and `while` loops with sequences of high-level operations (map, filter, group, join...).
 * **Fluent Chaining:** Each method transforms the data and returns a new wrapper instance, allowing for seamless chaining.
@@ -23,7 +23,7 @@ uv add git+https://github.com/OutSquareCapital/pyochain.git
 * **Documentation-first:** Each method is thoroughly documented with clear explanations, and usage examples.
 * **Functional paradigm:** Design encourages building complex data transformations by composing simple, reusable functions.
 
-### Core Components 🧱
+### Core Components
 
 #### `Iter[T]`
 
