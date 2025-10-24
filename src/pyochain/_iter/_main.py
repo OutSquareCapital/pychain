@@ -36,13 +36,12 @@ class Iter[T](
     IterConstructors,
 ):
     """
-    A wrapper around Python's built-in iterable types, providing a rich set of functional programming tools.
+    A wrapper around Python's built-in Iterators/Generators types, providing a rich set of functional programming tools.
 
-    It supports lazy evaluation, allowing for efficient processing of large datasets.
+    It's designed around lazy evaluation, allowing for efficient processing of large datasets.
 
-    It is not a collection itself, but a wrapper that provides additional methods for working with iterables.
-
-    It can be constructed from any iterable, including `lists`, `tuples`, `sets`, and `generators`.
+    - To instantiate from a lazy Iterator/Generator, simply pass it to the standard constructor.
+    - To instantiate from an eager Collection (like a list or set), use the `from_` class method.
     """
 
     __slots__ = ("_data",)

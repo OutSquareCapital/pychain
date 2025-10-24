@@ -53,9 +53,9 @@ class CommonBase[T](ABC, Pipeable):
         from pprint import pprint
 
         if pretty:
-            pprint(self.unwrap(), sort_dicts=False)
+            self.into(pprint, sort_dicts=False)
         else:
-            print(self.unwrap())
+            self.into(print)
         return self
 
     def unwrap(self) -> T:
