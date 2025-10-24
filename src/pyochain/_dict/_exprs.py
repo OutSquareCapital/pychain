@@ -17,6 +17,7 @@ class Expr(Pipeable):
     An Expr encapsulates a sequence of operations to be applied to keys on a python dict.
 
     Each Expr instance maintains:
+
     - A list of tokens representing the keys to access in the dict (the first being the input given to the `key` function),
     - A tuple of operations to apply to the accessed data
     - An alias for the expression (default to the last token).

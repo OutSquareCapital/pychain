@@ -122,6 +122,7 @@ class BaseMap[T](IterWrapper[T]):
         ['blue-S', 'blue-M', 'red-S', 'red-M']
 
         ```
+
         - Use map_star when the performance matters (it is faster).
         - Use map with unpacking when readability matters (the types can be inferred).
         """

@@ -143,8 +143,7 @@ class GroupsDict[K, V](MappingWrapper[K, V]):
         ...     agg_func=lambda d: d.iter_keys().count(),
         ... ).unwrap()
         {'A': 2, 'B': 1}
-        >>>
-        >>> # --- Exemple 2: Agrégation plus complexe ---
+        >>> # Second example
         >>> sales_data = {
         ...     "store_1": "Electronics",
         ...     "store_2": "Groceries",
