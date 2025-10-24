@@ -104,4 +104,4 @@ class Seq[T](BaseAgg[T], BaseEager[T]):
         Get an iterator over the sequence.
         Call this to switch to lazy evaluation.
         """
-        return Iter.from_(self.unwrap())
+        return self.into(Iter.from_)

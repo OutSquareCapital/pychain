@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Iterator
-from functools import partial
 from typing import TYPE_CHECKING, Any, overload
 
 import cytoolz as cz
@@ -58,7 +57,10 @@ class BaseGroups[T](IterWrapper[T]):
         """
         from .._dict import Dict
 
-        return Dict(self.into(partial(cz.itertoolz.reduceby, key, binop)))
+        def _reduce_by(data: Iterable[T]) -> Dict[K, T]:
+            return Dict(cz.itertoolz.reduceby(key, binop, data))
+
+        return self.into(_reduce_by)
 
     def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
         """
@@ -117,7 +119,10 @@ class BaseGroups[T](IterWrapper[T]):
         """
         from .._dict import Dict
 
-        return Dict(self.into(partial(cz.itertoolz.groupby, on)))
+        def _group_by(data: Iterable[T]) -> Dict[K, list[T]]:
+            return Dict(cz.itertoolz.groupby(on, data))
+
+        return self.into(_group_by)
 
     def frequencies(self) -> Dict[T, int]:
         """
@@ -132,7 +137,10 @@ class BaseGroups[T](IterWrapper[T]):
         """
         from .._dict import Dict
 
-        return Dict(self.into(cz.itertoolz.frequencies))
+        def _frequencies(data: Iterable[T]) -> Dict[T, int]:
+            return Dict(cz.itertoolz.frequencies(data))
+
+        return self.into(_frequencies)
 
     def count_by[K](self, key: Callable[[T], K]) -> Dict[K, int]:
         """
@@ -154,7 +162,10 @@ class BaseGroups[T](IterWrapper[T]):
         """
         from .._dict import Dict
 
-        return Dict(self.into(partial(cz.recipes.countby, key)))
+        def _count_by(data: Iterable[T]) -> Dict[K, int]:
+            return Dict(cz.recipes.countby(key, data))
+
+        return self.into(_count_by)
 
     @overload
     def group_by_transform(

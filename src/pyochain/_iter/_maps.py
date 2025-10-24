@@ -3,7 +3,7 @@ from __future__ import annotations
 import itertools
 from collections.abc import Callable, Collection, Generator, Iterable, Iterator, Mapping
 from functools import partial
-from typing import TYPE_CHECKING, Any, Concatenate, Self, overload
+from typing import TYPE_CHECKING, Any, Concatenate, overload
 
 import cytoolz as cz
 import more_itertools as mit
@@ -20,29 +20,28 @@ class BaseMap[T](IterWrapper[T]):
         func: Callable[Concatenate[T, P], Any],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> Self:
+    ) -> None:
         """
-        Apply a function to each element in the iterable.
+        Consume the Iterator by applying a function to each element in the iterable.
 
         Args:
             func: Function to apply to each element.
             args: Positional arguments for the function.
             kwargs: Keyword arguments for the function.
 
-        Can be used for side effects such as printing or logging.
+        Is a terminal operation, and is useful for functions that have side effects, or when you want to force evaluation of a lazy iterable.
         ```python
         >>> import pyochain as pc
-        >>> pc.Iter.from_([1, 2, 3]).for_each(lambda x: print(x)).collect().unwrap()
+        >>> pc.Iter.from_([1, 2, 3]).for_each(lambda x: print(x))
         1
         2
         3
-        []
 
         ```
         """
         for v in self.unwrap():
             func(v, *args, **kwargs)
-        return self
+        return
 
     def map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
