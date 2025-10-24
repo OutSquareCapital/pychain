@@ -20,6 +20,8 @@ plugins:
             show_if_no_docstring: true
             show_source: true
             show_overloads: true
+            filters:
+              - "!^_"
 nav:
   - Home: index.md
   - Reference:

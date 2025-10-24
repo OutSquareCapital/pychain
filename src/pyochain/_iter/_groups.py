@@ -219,7 +219,7 @@ class BaseGroups[T](IterWrapper[T]):
         reducefunc: Any = None,
     ) -> Iter[tuple[Any, ...]]:
         """
-        An extension of itertools.groupby that can apply transformations to the grouped data.
+        An extension of ``Iter.groupby`` that can apply transformations to the grouped data.
 
         Args:
             keyfunc: Function to compute the key for grouping. Defaults to None.
