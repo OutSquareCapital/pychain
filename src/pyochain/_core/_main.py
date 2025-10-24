@@ -90,6 +90,9 @@ class CommonBase[T](ABC, Pipeable):
 class IterWrapper[T](CommonBase[Iterable[T]]):
     _data: Iterable[T]
 
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.unwrap().__repr__()})"
+
     def apply[**P, R](
         self,
         func: Callable[Concatenate[Iterable[T], P], Iterator[R]],
