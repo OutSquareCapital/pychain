@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Collection, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from typing import TYPE_CHECKING, Any, Concatenate, Self
 
 if TYPE_CHECKING:
@@ -95,7 +95,7 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
 
     def _eager[**P, U](
         self,
-        factory: Callable[Concatenate[Iterable[T], P], Collection[U]],
+        factory: Callable[Concatenate[Iterable[T], P], Sequence[U]],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Seq[U]:

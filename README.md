@@ -23,7 +23,7 @@ The full API reference can be found at:
 
 * **Declarative over Imperative:** Replace explicit `for` and `while` loops with sequences of high-level operations (map, filter, group, join...).
 * **Fluent Chaining:** Each method transforms the data and returns a new wrapper instance, allowing for seamless chaining.
-* **Lazy and Eager:** `Iter` operates lazily for efficiency on large or infinite sequences, while `Seq` represents materialized collections for eager operations.
+* **Lazy and Eager:** `Iter` operates lazily for efficiency on large or infinite sequences, while `Seq` represents materialized sequences for eager operations.
 * **100% Type-safe:** Extensive use of generics and overloads ensures type safety and improves developer experience.
 * **Documentation-first:** Each method is thoroughly documented with clear explanations, and usage examples. Before any commit is made, each docstring is automatically tested to ensure accuracy. This also allows for a convenient experience in IDEs, where developers can easily access documentation with a simple hover of the mouse.
 * **Functional paradigm:** Design encourages building complex data transformations by composing simple, reusable functions on known buildings blocks, rather than implementing customs classes each time.
@@ -47,7 +47,7 @@ Provides a vast array of methods for transformation, filtering, aggregation, joi
 
 #### `Seq[T]`
 
-Wraps a Python `Collection` (`list`, `tuple`, `set`...), and represents **eagerly** evaluated data.
+Wraps a Python `Sequence` (`list`, `tuple`...), and represents **eagerly** evaluated data.
 
 Exposes a subset of the `Iter` methods who operate on the full dataset (e.g., `sort`, `union`) or who aggregate it.
 
@@ -111,8 +111,6 @@ result = (
 Each method and class make extensive use of generics, type hints, and overloads (when necessary) to ensure type safety and improve developer experience.
 
 Since there's much less need for intermediate variables, the developper don't have to annotate them as much, whilst still keeping a type-safe codebase.
-
-Target: modern Python 3.13 syntax (PEP 695 generics, updated collections.abc types).
 
 ### Expressions for Dict ``pyochain.key``
 

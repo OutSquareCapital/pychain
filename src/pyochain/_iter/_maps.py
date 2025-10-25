@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Collection, Generator, Iterable, Iterator, Mapping
+from collections.abc import Callable, Generator, Iterable, Iterator, Mapping, Sequence
 from functools import partial
 from typing import TYPE_CHECKING, Any, Concatenate, overload
 
@@ -198,14 +198,14 @@ class BaseMap[T](IterWrapper[T]):
         return self._lazy(_map_except)
 
     def repeat(
-        self, n: int, factory: Callable[[Iterable[T]], Collection[T]] = tuple
+        self, n: int, factory: Callable[[Iterable[T]], Sequence[T]] = tuple
     ) -> Iter[Iterable[T]]:
         """
         Repeat the entire iterable n times (as elements).
 
         Args:
             n: Number of repetitions.
-            factory: Factory to create the repeated collection (default: tuple).
+            factory: Factory to create the repeated Sequence (default: tuple).
 
         ```python
         >>> import pyochain as pc

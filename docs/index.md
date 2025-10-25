@@ -18,7 +18,7 @@ uv add pyochain
 
 * **Declarative over Imperative:** Replace explicit `for` and `while` loops with sequences of high-level operations (map, filter, group, join...).
 * **Fluent Chaining:** Each method transforms the data and returns a new wrapper instance, allowing for seamless chaining.
-* **Lazy and Eager:** `Iter` operates lazily for efficiency on large or infinite sequences, while `Seq` represents materialized collections for eager operations.
+* **Lazy and Eager:** `Iter` operates lazily for efficiency on large or infinite sequences, while `Seq` represents materialized Sequences for eager operations.
 * **100% Type-safe:** Extensive use of generics and overloads ensures type safety and improves developer experience.
 * **Documentation-first:** Each method is thoroughly documented with clear explanations, and usage examples.
 * **Functional paradigm:** Design encourages building complex data transformations by composing simple, reusable functions.

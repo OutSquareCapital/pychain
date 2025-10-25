@@ -91,8 +91,8 @@ class BaseEager[T](IterWrapper[T]):
         ```
         """
 
-        def _union(data: Iterable[T]) -> set[T]:
-            return set(data).union(*others)
+        def _union(data: Iterable[T]) -> list[T]:
+            return list(set(data).union(*others))
 
         return self._eager(_union)
 
@@ -109,13 +109,13 @@ class BaseEager[T](IterWrapper[T]):
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 2]).intersection([2, 3], [2]).unwrap()
-        {2}
+        [2]
 
         ```
         """
 
-        def _intersection(data: Iterable[T]) -> set[T]:
-            return set(data).intersection(*others)
+        def _intersection(data: Iterable[T]) -> list[T]:
+            return list(set(data).intersection(*others))
 
         return self._eager(_intersection)
 
@@ -133,13 +133,13 @@ class BaseEager[T](IterWrapper[T]):
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 2]).diff_unique([2, 3]).unwrap()
-        {1}
+        [1]
 
         ```
         """
 
-        def _difference(data: Iterable[T]) -> set[T]:
-            return set(data).difference(*others)
+        def _difference(data: Iterable[T]) -> list[T]:
+            return list(set(data).difference(*others))
 
         return self._eager(_difference)
 
@@ -163,8 +163,8 @@ class BaseEager[T](IterWrapper[T]):
         ```
         """
 
-        def _symmetric_difference(data: Iterable[T]) -> set[T]:
-            return set(data).symmetric_difference(*others)
+        def _symmetric_difference(data: Iterable[T]) -> list[T]:
+            return list(set(data).symmetric_difference(*others))
 
         return self._eager(_symmetric_difference)
 

@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 import itertools
-from collections.abc import Callable, Collection, Generator, Iterable, Iterator
+from collections.abc import (
+    Callable,
+    Generator,
+    Iterable,
+    Iterator,
+    Sequence,
+)
 from typing import TYPE_CHECKING, Any, Concatenate, overload, override
 
 import cytoolz as cz
@@ -45,7 +51,7 @@ class Iter[T](
     It's designed around lazy evaluation, allowing for efficient processing of large datasets.
 
     - To instantiate from a lazy Iterator/Generator, simply pass it to the standard constructor.
-    - To instantiate from an eager Collection (like a list or set), use the `from_` class method.
+    - To instantiate from an eager Sequence (like a list or set), use the `from_` class method.
     """
 
     __slots__ = ("_data",)
@@ -336,12 +342,12 @@ class Iter[T](
         """
         return self._lazy(func, *args, **kwargs)
 
-    def collect(self, factory: Callable[[Iterable[T]], Collection[T]] = list) -> Seq[T]:
+    def collect(self, factory: Callable[[Iterable[T]], Sequence[T]] = list) -> Seq[T]:
         """
         Collect the elements into a sequence, using the provided factory.
 
         Args:
-            factory: A callable that takes an iterable and returns a collection. Defaults to list.
+            factory: A callable that takes an iterable and returns a Sequence. Defaults to list.
 
         Example:
         ```python
@@ -372,30 +378,30 @@ class Iter[T](
 
 class Seq[T](CommonMethods[T]):
     """
-    pyochain.Seq represent an in memory collection.
+    pyochain.Seq represent an in memory Sequence.
 
     Provides a subset of pyochain.Iter methods with eager evaluation, and is the return type of pyochain.Iter.collect().
     """
 
     __slots__ = ("_data",)
 
-    def __init__(self, data: Collection[T]) -> None:
+    def __init__(self, data: Sequence[T]) -> None:
         self._data = data
 
     @overload
     @staticmethod
-    def from_[U](data: Collection[U]) -> Seq[U]: ...
+    def from_[U](data: Sequence[U]) -> Seq[U]: ...
     @overload
     @staticmethod
     def from_[U](data: U, *more_data: U) -> Seq[U]: ...
     @staticmethod
-    def from_[U](data: Collection[U] | U, *more_data: U) -> Seq[U]:
+    def from_[U](data: Sequence[U] | U, *more_data: U) -> Seq[U]:
         """
-        Create a Seq from a collection or unpacked values.
+        Create a Seq from a Sequence or unpacked values.
 
         Args:
-            data: Collection of items or a single item.
-            more_data: Additional item to include if 'data' is not a collection.
+            data: Sequence of items or a single item.
+            more_data: Additional item to include if 'data' is not a Sequence.
 
         Example:
         ```python
@@ -422,24 +428,24 @@ class Seq[T](CommonMethods[T]):
 
     def apply[**P, R](
         self,
-        func: Callable[Concatenate[Iterable[T], P], Collection[R]],
+        func: Callable[Concatenate[Iterable[T], P], Sequence[R]],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Seq[R]:
         """
-        Apply a function to the underlying Collection and return a Seq instance.
+        Apply a function to the underlying Sequence and return a Seq instance.
 
-        Allow to pass user defined functions that transform the Collection while retaining the Seq wrapper.
+        Allow to pass user defined functions that transform the Sequence while retaining the Seq wrapper.
 
         Args:
-            func: Function to apply to the underlying Collection.
+            func: Function to apply to the underlying Sequence.
             *args: Positional arguments to pass to the function.
             **kwargs: Keyword arguments to pass to the function.
 
         Example:
         ```python
         >>> import pyochain as pc
-        >>> def double(data: Iterable[int]) -> Collection[int]:
+        >>> def double(data: Iterable[int]) -> Sequence[int]:
         ...     return [x * 2 for x in data]
         >>> pc.Seq([1, 2, 3]).apply(double).into(list)
         [2, 4, 6]
@@ -449,9 +455,9 @@ class Seq[T](CommonMethods[T]):
         return self._eager(func, *args, **kwargs)
 
     @override
-    def unwrap(self) -> Collection[T]:
+    def unwrap(self) -> Sequence[T]:
         """
-        Unwrap and return the underlying Collection.
+        Unwrap and return the underlying Sequence.
 
         ```python
         >>> import pyochain as pc
