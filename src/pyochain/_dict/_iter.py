@@ -61,7 +61,10 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return Iter(iter(self.unwrap().keys()))
+        def _keys(data: dict[K, V]) -> Iter[K]:
+            return Iter(iter(data.keys()))
+
+        return self.into(_keys)
 
     def iter_values(self) -> Iter[V]:
         """
@@ -75,7 +78,10 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return Iter(iter(self.unwrap().values()))
+        def _values(data: dict[K, V]) -> Iter[V]:
+            return Iter(iter(data.values()))
+
+        return self.into(_values)
 
     def iter_items(self) -> Iter[tuple[K, V]]:
         """
@@ -89,4 +95,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return Iter(iter(self.unwrap().items()))
+        def _items(data: dict[K, V]) -> Iter[tuple[K, V]]:
+            return Iter(iter(data.items()))
+
+        return self.into(_items)

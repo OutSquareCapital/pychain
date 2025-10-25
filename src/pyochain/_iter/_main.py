@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 from collections.abc import Callable, Collection, Generator, Iterable, Iterator
-from typing import Any, Concatenate
+from typing import Any, Concatenate, override
 
 import cytoolz as cz
 
@@ -21,8 +21,11 @@ from ._rolling import BaseRolling
 from ._tuples import BaseTuples
 
 
+class CommonMethods[T](BaseAgg[T], BaseEager[T]):
+    pass
+
+
 class Iter[T](
-    BaseAgg[T],
     BaseBool[T],
     BaseFilter[T],
     BaseProcess[T],
@@ -33,8 +36,8 @@ class Iter[T](
     BasePartitions[T],
     BaseJoins[T],
     BaseGroups[T],
-    BaseEager[T],
     BaseDict[T],
+    CommonMethods[T],
 ):
     """
     A wrapper around Python's built-in Iterators/Generators types, providing a rich set of functional programming tools.
@@ -261,7 +264,7 @@ class Iter[T](
 
         ```
         """
-        return Iter(self.into(func, *args, **kwargs))
+        return self._lazy(func, *args, **kwargs)
 
     def collect[R](
         self, factory: Callable[[Iterable[T]], Collection[R]] = list
@@ -280,10 +283,26 @@ class Iter[T](
 
         ```
         """
-        return Seq(self.into(factory))
+        return self._eager(factory)
+
+    @override
+    def unwrap(self) -> Iterator[T]:
+        """
+        Unwrap and return the underlying Iterator.
+
+        ```python
+        >>> import pyochain as pc
+        >>> iterator = pc.Iter.from_([1, 2, 3])
+        >>> unwrapped = iterator.unwrap()
+        >>> list(unwrapped)
+        [1, 2, 3]
+
+        ```
+        """
+        return self._data  # type: ignore[return-value]
 
 
-class Seq[T](BaseAgg[T], BaseEager[T]):
+class Seq[T](CommonMethods[T]):
     """
     pyochain.Seq represent an in memory collection.
 
@@ -303,6 +322,7 @@ class Seq[T](BaseAgg[T], BaseEager[T]):
         Args:
             data: Collection of items or a single item.
             more_data: Additional item to include if 'data' is not a collection.
+
         Example:
         ```python
         >>> import pyochain as pc
@@ -324,7 +344,7 @@ class Seq[T](BaseAgg[T], BaseEager[T]):
         Get an iterator over the sequence.
         Call this to switch to lazy evaluation.
         """
-        return Iter(iter(self.unwrap()))
+        return self._lazy(iter)
 
     def apply[**P, R](
         self,
@@ -352,5 +372,18 @@ class Seq[T](BaseAgg[T], BaseEager[T]):
 
         ```
         """
+        return self._eager(func, *args, **kwargs)
 
-        return Seq(self.into(func, *args, **kwargs))
+    @override
+    def unwrap(self) -> Collection[T]:
+        """
+        Unwrap and return the underlying Collection.
+
+        ```python
+        >>> import pyochain as pc
+        >>> pc.Seq([1, 2, 3]).unwrap()
+        [1, 2, 3]
+
+        ```
+        """
+        return self._data  # type: ignore[return-value]
