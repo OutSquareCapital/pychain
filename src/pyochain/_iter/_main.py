@@ -235,6 +235,53 @@ class Iter[T](
 
         return self.apply(_itr)
 
+    def apply[**P, R](
+        self,
+        func: Callable[Concatenate[Iterable[T], P], Iterator[R]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Iter[R]:
+        """
+        Apply a function to the underlying Iterator and return a new Iter instance.
+
+        Allow to pass user defined functions that transform the iterable while retaining the Iter wrapper.
+
+        Args:
+            func: Function to apply to the underlying iterable.
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> def double(data: Iterable[int]) -> Iterator[int]:
+        ...     return (x * 2 for x in data)
+        >>> pc.Iter.from_([1, 2, 3]).apply(double).into(list)
+        [2, 4, 6]
+
+        ```
+        """
+        return Iter(self.into(func, *args, **kwargs))
+
+    def collect[R](
+        self, factory: Callable[[Iterable[T]], Collection[R]] = list
+    ) -> Seq[R]:
+        """
+        Collect the elements into a sequence, using the provided factory.
+
+        Args:
+            factory: A callable that takes an iterable and returns a collection. Defaults to list.
+
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> pc.Iter.from_(range(5)).collect().unwrap()
+        [0, 1, 2, 3, 4]
+
+        ```
+        """
+        return Seq(self.into(factory))
+
 
 class Seq[T](BaseAgg[T], BaseEager[T]):
     """
@@ -278,3 +325,32 @@ class Seq[T](BaseAgg[T], BaseEager[T]):
         Call this to switch to lazy evaluation.
         """
         return Iter(iter(self.unwrap()))
+
+    def apply[**P, R](
+        self,
+        func: Callable[Concatenate[Iterable[T], P], Collection[R]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Seq[R]:
+        """
+        Apply a function to the underlying Collection and return a Seq instance.
+
+        Allow to pass user defined functions that transform the Collection while retaining the Seq wrapper.
+
+        Args:
+            func: Function to apply to the underlying Collection.
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> def double(data: Iterable[int]) -> Collection[int]:
+        ...     return [x * 2 for x in data]
+        >>> pc.Seq([1, 2, 3]).apply(double).into(list)
+        [2, 4, 6]
+
+        ```
+        """
+
+        return Seq(self.into(func, *args, **kwargs))

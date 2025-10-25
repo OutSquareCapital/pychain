@@ -38,7 +38,7 @@ class BaseEager[T](IterWrapper[T]):
         def _sort(data: Iterable[U]) -> list[U]:
             return sorted(data, reverse=reverse, key=key)
 
-        return self.collect(_sort)
+        return self._eager(_sort)
 
     def tail(self, n: int) -> Seq[T]:
         """
@@ -54,7 +54,7 @@ class BaseEager[T](IterWrapper[T]):
 
         ```
         """
-        return self.collect(partial(cz.itertoolz.tail, n))
+        return self._eager(partial(cz.itertoolz.tail, n))
 
     def top_n(self, n: int, key: Callable[[T], Any] | None = None) -> Seq[T]:
         """
@@ -71,7 +71,7 @@ class BaseEager[T](IterWrapper[T]):
 
         ```
         """
-        return self.collect(partial(cz.itertoolz.topk, n, key=key))
+        return self._eager(partial(cz.itertoolz.topk, n, key=key))
 
     def union(self, *others: Iterable[T]) -> Seq[T]:
         """
@@ -94,7 +94,7 @@ class BaseEager[T](IterWrapper[T]):
         def _union(data: Iterable[T]) -> set[T]:
             return set(data).union(*others)
 
-        return self.collect(_union)
+        return self._eager(_union)
 
     def intersection(self, *others: Iterable[T]) -> Seq[T]:
         """
@@ -117,7 +117,7 @@ class BaseEager[T](IterWrapper[T]):
         def _intersection(data: Iterable[T]) -> set[T]:
             return set(data).intersection(*others)
 
-        return self.collect(_intersection)
+        return self._eager(_intersection)
 
     def diff_unique(self, *others: Iterable[T]) -> Seq[T]:
         """
@@ -141,7 +141,7 @@ class BaseEager[T](IterWrapper[T]):
         def _difference(data: Iterable[T]) -> set[T]:
             return set(data).difference(*others)
 
-        return self.collect(_difference)
+        return self._eager(_difference)
 
     def diff_symmetric(self, *others: Iterable[T]) -> Seq[T]:
         """
@@ -166,7 +166,7 @@ class BaseEager[T](IterWrapper[T]):
         def _symmetric_difference(data: Iterable[T]) -> set[T]:
             return set(data).symmetric_difference(*others)
 
-        return self.collect(_symmetric_difference)
+        return self._eager(_symmetric_difference)
 
     def most_common(self, n: int | None = None) -> Seq[tuple[T, int]]:
         """
@@ -186,9 +186,7 @@ class BaseEager[T](IterWrapper[T]):
         """
         from collections import Counter
 
-        from ._main import Seq
-
         def _most_common(data: Iterable[T]) -> list[tuple[T, int]]:
             return Counter(data).most_common(n)
 
-        return Seq(self.into(_most_common))
+        return self._eager(_most_common)

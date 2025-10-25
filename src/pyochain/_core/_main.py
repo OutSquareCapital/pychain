@@ -93,53 +93,15 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.unwrap().__repr__()})"
 
-    def apply[**P, R](
-        self,
-        func: Callable[Concatenate[Iterable[T], P], Iterator[R]],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Iter[R]:
-        """
-        Apply a function to the underlying iterable and return an Iter of the result.
-        Allow to pass user defined functions that transform the iterable while retaining the Iter wrapper.
-
-        Args:
-            func: Function to apply to the underlying iterable.
-            *args: Positional arguments to pass to the function.
-            **kwargs: Keyword arguments to pass to the function.
-
-        Example:
-        ```python
-        >>> import pyochain as pc
-        >>> def double(data: Iterable[int]) -> Iterator[int]:
-        ...     return (x * 2 for x in data)
-        >>> pc.Iter.from_([1, 2, 3]).apply(double).into(list)
-        [2, 4, 6]
-
-        ```
-        """
-        from .._iter import Iter
-
-        return Iter(self.into(func, *args, **kwargs))
-
-    def collect(self, factory: Callable[[Iterable[T]], Collection[T]] = list) -> Seq[T]:
-        """
-        Collect the elements into a sequence.
-
-        Args:
-            factory: A callable that takes an iterable and returns a collection. Defaults to list.
-
-        Example:
-        ```python
-        >>> import pyochain as pc
-        >>> pc.Iter.from_(range(5)).collect().unwrap()
-        [0, 1, 2, 3, 4]
-
-        ```
-        """
+    def _eager[U](self, factory: Callable[[Iterable[T]], Collection[U]]) -> Seq[U]:
         from .._iter import Seq
 
-        return Seq(self.into(factory))
+        return Seq(factory(self.unwrap()))
+
+    def _lazy[U](self, factory: Callable[[Iterable[T]], Iterator[U]]) -> Iter[U]:
+        from .._iter import Iter
+
+        return Iter(factory(self.unwrap()))
 
 
 class MappingWrapper[K, V](CommonBase[dict[K, V]]):
