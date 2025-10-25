@@ -1,0 +1,1089 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../seq/">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+    
+    
+      
+        <title>Key - pyochain</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.84d31ad4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#expr" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="pyochain" class="md-header__button md-logo" aria-label="pyochain" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pyochain
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Key
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Passer en mode sombre"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Passer en mode sombre" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="pyochain" class="md-nav__button md-logo" aria-label="pyochain" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    pyochain
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../iter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Iter
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dict/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Dict
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../seq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Seq
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Key
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Key
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr" class="md-nav__link">
+    <span class="md-ellipsis">
+      Expr
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr.name" class="md-nav__link">
+    <span class="md-ellipsis">
+      name
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr.alias" class="md-nav__link">
+    <span class="md-ellipsis">
+      alias
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr.apply" class="md-nav__link">
+    <span class="md-ellipsis">
+      apply
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr.key" class="md-nav__link">
+    <span class="md-ellipsis">
+      key
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr.pipe" class="md-nav__link">
+    <span class="md-ellipsis">
+      pipe
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.key" class="md-nav__link">
+    <span class="md-ellipsis">
+      key
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr" class="md-nav__link">
+    <span class="md-ellipsis">
+      Expr
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr.name" class="md-nav__link">
+    <span class="md-ellipsis">
+      name
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr.alias" class="md-nav__link">
+    <span class="md-ellipsis">
+      alias
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr.apply" class="md-nav__link">
+    <span class="md-ellipsis">
+      apply
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr.key" class="md-nav__link">
+    <span class="md-ellipsis">
+      key
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.Expr.pipe" class="md-nav__link">
+    <span class="md-ellipsis">
+      pipe
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pyochain._dict._exprs.key" class="md-nav__link">
+    <span class="md-ellipsis">
+      key
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="expr">Expr<a class="headerlink" href="#expr" title="Permanent link">&para;</a></h1>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<a id="pyochain._dict._exprs.Expr"></a>
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pyochain._core.Pipeable">Pipeable</span></code></p>
+
+
+        <p>Represents an expression in the pipeline.</p>
+<p>An Expr encapsulates a sequence of operations to be applied to keys on a python dict.</p>
+<p>Each Expr instance maintains:</p>
+<ul>
+<li>A list of tokens representing the keys to access in the dict (the first being the input given to the <code>key</code> function),</li>
+<li>A tuple of operations to apply to the accessed data</li>
+<li>An alias for the expression (default to the last token).</li>
+</ul>
+
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>src/pyochain/_dict/_exprs.py</code></summary>
+                <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span>
+<span class="normal">82</span>
+<span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-12"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">slots</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-0-13"><span class="k">class</span><span class="w"> </span><span class="nc">Expr</span><span class="p">(</span><span class="n">Pipeable</span><span class="p">):</span>
+</span><span id="__span-0-14"><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-15"><span class="sd">    Represents an expression in the pipeline.</span>
+</span><span id="__span-0-16">
+</span><span id="__span-0-17"><span class="sd">    An Expr encapsulates a sequence of operations to be applied to keys on a python dict.</span>
+</span><span id="__span-0-18">
+</span><span id="__span-0-19"><span class="sd">    Each Expr instance maintains:</span>
+</span><span id="__span-0-20">
+</span><span id="__span-0-21"><span class="sd">    - A list of tokens representing the keys to access in the dict (the first being the input given to the `key` function),</span>
+</span><span id="__span-0-22"><span class="sd">    - A tuple of operations to apply to the accessed data</span>
+</span><span id="__span-0-23"><span class="sd">    - An alias for the expression (default to the last token).</span>
+</span><span id="__span-0-24"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-25">
+</span><span id="__span-0-26">    <span class="n">__tokens__</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</span><span id="__span-0-27">    <span class="n">__ops__</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">object</span><span class="p">],</span> <span class="nb">object</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span>
+</span><span id="__span-0-28">    <span class="n">_alias</span><span class="p">:</span> <span class="nb">str</span>
+</span><span id="__span-0-29">
+</span><span id="__span-0-30">    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-0-31">        <span class="n">parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-0-32">        <span class="n">s_parts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-0-33">        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__tokens__</span><span class="p">:</span>
+</span><span id="__span-0-34">            <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;field(</span><span class="si">{</span><span class="n">t</span><span class="si">!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</span><span id="__span-0-35">            <span class="k">if</span> <span class="n">s_parts</span><span class="p">:</span>
+</span><span id="__span-0-36">                <span class="n">s_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+</span><span id="__span-0-37">            <span class="n">s_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+</span><span id="__span-0-38">        <span class="n">symbolic</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="k">if</span> <span class="n">parts</span> <span class="k">else</span> <span class="s2">&quot;&lt;root&gt;&quot;</span>
+</span><span id="__span-0-39">        <span class="n">lowered</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">s_parts</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&lt;root&gt;&quot;</span>
+</span><span id="__span-0-40">        <span class="n">base</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Expr(</span><span class="si">{</span><span class="n">symbolic</span><span class="si">}</span><span class="s2"> -&gt; </span><span class="si">{</span><span class="n">lowered</span><span class="si">}</span><span class="s2">)&quot;</span>
+</span><span id="__span-0-41">        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">.alias(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_alias</span><span class="si">!r}</span><span class="s2">)&quot;</span>
+</span><span id="__span-0-42">
+</span><span id="__span-0-43">    <span class="k">def</span><span class="w"> </span><span class="nf">_to_expr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">op</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+</span><span id="__span-0-44">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+</span><span id="__span-0-45">            <span class="bp">self</span><span class="o">.</span><span class="n">__tokens__</span><span class="p">,</span>
+</span><span id="__span-0-46">            <span class="bp">self</span><span class="o">.</span><span class="n">__ops__</span> <span class="o">+</span> <span class="p">(</span><span class="n">op</span><span class="p">,),</span>
+</span><span id="__span-0-47">            <span class="bp">self</span><span class="o">.</span><span class="n">_alias</span><span class="p">,</span>
+</span><span id="__span-0-48">        <span class="p">)</span>
+</span><span id="__span-0-49">
+</span><span id="__span-0-50">    <span class="k">def</span><span class="w"> </span><span class="nf">key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+</span><span id="__span-0-51"><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-52"><span class="sd">        Add a key to the expression.</span>
+</span><span id="__span-0-53">
+</span><span id="__span-0-54"><span class="sd">        Allow to access nested keys in a dict.</span>
+</span><span id="__span-0-55">
+</span><span id="__span-0-56"><span class="sd">        Args:</span>
+</span><span id="__span-0-57"><span class="sd">            name: The key to access.</span>
+</span><span id="__span-0-58"><span class="sd">        Example:</span>
+</span><span id="__span-0-59"><span class="sd">        ```python</span>
+</span><span id="__span-0-60"><span class="sd">        &gt;&gt;&gt; import pyochain as pc</span>
+</span><span id="__span-0-61"><span class="sd">        &gt;&gt;&gt; expr = pc.key(&quot;a&quot;).key(&quot;b&quot;).key(&quot;c&quot;)</span>
+</span><span id="__span-0-62"><span class="sd">        &gt;&gt;&gt; expr.__tokens__</span>
+</span><span id="__span-0-63"><span class="sd">        [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+</span><span id="__span-0-64"><span class="sd">        &gt;&gt;&gt; data = {&quot;a&quot;: {&quot;b&quot;: {&quot;c&quot;: 42}}}</span>
+</span><span id="__span-0-65"><span class="sd">        &gt;&gt;&gt; pc.Dict(data).select(expr).unwrap()</span>
+</span><span id="__span-0-66"><span class="sd">        {&#39;c&#39;: 42}</span>
+</span><span id="__span-0-67">
+</span><span id="__span-0-68"><span class="sd">        ```</span>
+</span><span id="__span-0-69"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-70">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+</span><span id="__span-0-71">            <span class="bp">self</span><span class="o">.</span><span class="n">__tokens__</span> <span class="o">+</span> <span class="p">[</span><span class="n">name</span><span class="p">],</span>
+</span><span id="__span-0-72">            <span class="bp">self</span><span class="o">.</span><span class="n">__ops__</span><span class="p">,</span>
+</span><span id="__span-0-73">            <span class="n">name</span><span class="p">,</span>
+</span><span id="__span-0-74">        <span class="p">)</span>
+</span><span id="__span-0-75">
+</span><span id="__span-0-76">    <span class="k">def</span><span class="w"> </span><span class="nf">alias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+</span><span id="__span-0-77">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tokens__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ops__</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span><span id="__span-0-78">
+</span><span id="__span-0-79">    <span class="nd">@property</span>
+</span><span id="__span-0-80">    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span id="__span-0-81">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alias</span>
+</span><span id="__span-0-82">
+</span><span id="__span-0-83">    <span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+</span><span id="__span-0-84"><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-85"><span class="sd">        Applies the given function fn to the data within the current Expr instance</span>
+</span><span id="__span-0-86"><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-87">
+</span><span id="__span-0-88">        <span class="k">def</span><span class="w"> </span><span class="nf">_apply</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span id="__span-0-89">            <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-0-90">
+</span><span id="__span-0-91">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_expr</span><span class="p">(</span><span class="n">_apply</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h2 id="pyochain._dict._exprs.Expr.name" class="doc doc-heading">
+            <span class="doc doc-object-name doc-attribute-name">name</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#pyochain._dict._exprs.Expr.name" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+    </div>
+
+</div>
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pyochain._dict._exprs.Expr.alias" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">alias</span>
+
+
+<a href="#pyochain._dict._exprs.Expr.alias" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">alias</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/pyochain/_dict/_exprs.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">76</span>
+<span class="normal">77</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-76"><span class="k">def</span><span class="w"> </span><span class="nf">alias</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+</span><span id="__span-0-77">    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__tokens__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ops__</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pyochain._dict._exprs.Expr.apply" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">apply</span>
+
+
+<a href="#pyochain._dict._exprs.Expr.apply" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">apply</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Applies the given function fn to the data within the current Expr instance</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/pyochain/_dict/_exprs.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">83</span>
+<span class="normal">84</span>
+<span class="normal">85</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span>
+<span class="normal">89</span>
+<span class="normal">90</span>
+<span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-83"><span class="k">def</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+</span><span id="__span-0-84"><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-85"><span class="sd">    Applies the given function fn to the data within the current Expr instance</span>
+</span><span id="__span-0-86"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-87">
+</span><span id="__span-0-88">    <span class="k">def</span><span class="w"> </span><span class="nf">_apply</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+</span><span id="__span-0-89">        <span class="k">return</span> <span class="n">fn</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</span><span id="__span-0-90">
+</span><span id="__span-0-91">    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_expr</span><span class="p">(</span><span class="n">_apply</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pyochain._dict._exprs.Expr.key" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">key</span>
+
+
+<a href="#pyochain._dict._exprs.Expr.key" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">key</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Add a key to the expression.</p>
+<p>Allow to access nested keys in a dict.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The key to access.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+        <p>Example:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyochain</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pc</span>
+</span><span id="__span-0-2"><span class="o">&gt;&gt;&gt;</span> <span class="n">expr</span> <span class="o">=</span> <span class="n">pc</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">key</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">)</span>
+</span><span id="__span-0-3"><span class="o">&gt;&gt;&gt;</span> <span class="n">expr</span><span class="o">.</span><span class="n">__tokens__</span>
+</span><span id="__span-0-4"><span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
+</span><span id="__span-0-5"><span class="o">&gt;&gt;&gt;</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}}}</span>
+</span><span id="__span-0-6"><span class="o">&gt;&gt;&gt;</span> <span class="n">pc</span><span class="o">.</span><span class="n">Dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">expr</span><span class="p">)</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span>
+</span><span id="__span-0-7"><span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">}</span>
+</span></code></pre></div></p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/pyochain/_dict/_exprs.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-50"><span class="k">def</span><span class="w"> </span><span class="nf">key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+</span><span id="__span-0-51"><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-52"><span class="sd">    Add a key to the expression.</span>
+</span><span id="__span-0-53">
+</span><span id="__span-0-54"><span class="sd">    Allow to access nested keys in a dict.</span>
+</span><span id="__span-0-55">
+</span><span id="__span-0-56"><span class="sd">    Args:</span>
+</span><span id="__span-0-57"><span class="sd">        name: The key to access.</span>
+</span><span id="__span-0-58"><span class="sd">    Example:</span>
+</span><span id="__span-0-59"><span class="sd">    ```python</span>
+</span><span id="__span-0-60"><span class="sd">    &gt;&gt;&gt; import pyochain as pc</span>
+</span><span id="__span-0-61"><span class="sd">    &gt;&gt;&gt; expr = pc.key(&quot;a&quot;).key(&quot;b&quot;).key(&quot;c&quot;)</span>
+</span><span id="__span-0-62"><span class="sd">    &gt;&gt;&gt; expr.__tokens__</span>
+</span><span id="__span-0-63"><span class="sd">    [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;]</span>
+</span><span id="__span-0-64"><span class="sd">    &gt;&gt;&gt; data = {&quot;a&quot;: {&quot;b&quot;: {&quot;c&quot;: 42}}}</span>
+</span><span id="__span-0-65"><span class="sd">    &gt;&gt;&gt; pc.Dict(data).select(expr).unwrap()</span>
+</span><span id="__span-0-66"><span class="sd">    {&#39;c&#39;: 42}</span>
+</span><span id="__span-0-67">
+</span><span id="__span-0-68"><span class="sd">    ```</span>
+</span><span id="__span-0-69"><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-70">    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+</span><span id="__span-0-71">        <span class="bp">self</span><span class="o">.</span><span class="n">__tokens__</span> <span class="o">+</span> <span class="p">[</span><span class="n">name</span><span class="p">],</span>
+</span><span id="__span-0-72">        <span class="bp">self</span><span class="o">.</span><span class="n">__ops__</span><span class="p">,</span>
+</span><span id="__span-0-73">        <span class="n">name</span><span class="p">,</span>
+</span><span id="__span-0-74">    <span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pyochain._dict._exprs.Expr.pipe" class="doc doc-heading">
+            <span class="doc doc-object-name doc-function-name">pipe</span>
+
+
+<a href="#pyochain._dict._exprs.Expr.pipe" class="headerlink" title="Permanent link">&para;</a></h2>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><span class="nf">pipe</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">Concatenate</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">P</span><span class="p">],</span> <span class="n">R</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Pipe the instance in the function and return the result.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/pyochain/_core/_main.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-13"><span class="k">def</span><span class="w"> </span><span class="nf">pipe</span><span class="p">[</span><span class="o">**</span><span class="n">P</span><span class="p">,</span> <span class="n">R</span><span class="p">](</span>
+</span><span id="__span-0-14">    <span class="bp">self</span><span class="p">,</span>
+</span><span id="__span-0-15">    <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">Concatenate</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">P</span><span class="p">],</span> <span class="n">R</span><span class="p">],</span>
+</span><span id="__span-0-16">    <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
+</span><span id="__span-0-17">    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">,</span>
+</span><span id="__span-0-18"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="p">:</span>
+</span><span id="__span-0-19"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Pipe the instance in the function and return the result.&quot;&quot;&quot;</span>
+</span><span id="__span-0-20">    <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+
+<a id="pyochain._dict._exprs.key"></a>
+    <div class="doc doc-contents first">
+
+        <p>Create an Expr that accesses the given key.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>src/pyochain/_dict/_exprs.py</code></summary>
+              <div class="language-python highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">94</span>
+<span class="normal">95</span>
+<span class="normal">96</span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-94"><span class="k">def</span><span class="w"> </span><span class="nf">key</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+</span><span id="__span-0-95"><span class="w">    </span><span class="sd">&quot;&quot;&quot;Create an Expr that accesses the given key.&quot;&quot;&quot;</span>
+</span><span id="__span-0-96">    <span class="k">return</span> <span class="n">Expr</span><span class="p">([</span><span class="n">name</span><span class="p">],</span> <span class="p">(),</span> <span class="n">name</span><span class="p">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>
