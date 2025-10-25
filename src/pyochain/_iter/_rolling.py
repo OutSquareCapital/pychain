@@ -25,7 +25,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Mean, window_size)
+        return self._lazy(rolling.Mean, window_size)
 
     def rolling_median(self, window_size: int) -> Iter[T]:
         """
@@ -40,7 +40,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Median, window_size)
+        return self._lazy(rolling.Median, window_size)
 
     def rolling_sum(self, window_size: int) -> Iter[T]:
         """
@@ -57,7 +57,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Sum, window_size)
+        return self._lazy(rolling.Sum, window_size)
 
     def rolling_min(self, window_size: int) -> Iter[T]:
         """
@@ -72,7 +72,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Min, window_size)
+        return self._lazy(rolling.Min, window_size)
 
     def rolling_max(self, window_size: int) -> Iter[T]:
         """
@@ -87,7 +87,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Max, window_size)
+        return self._lazy(rolling.Max, window_size)
 
     def rolling_var(self, window_size: int) -> Iter[float]:
         """
@@ -102,7 +102,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Var, window_size)
+        return self._lazy(rolling.Var, window_size)
 
     def rolling_std(self, window_size: int) -> Iter[float]:
         """
@@ -117,7 +117,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Std, window_size)
+        return self._lazy(rolling.Std, window_size)
 
     def rolling_kurtosis(self, window_size: int) -> Iter[float]:
         """
@@ -132,7 +132,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Kurtosis, window_size)
+        return self._lazy(rolling.Kurtosis, window_size)
 
     def rolling_skew(self, window_size: int) -> Iter[float]:
         """
@@ -147,7 +147,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Skew, window_size)
+        return self._lazy(rolling.Skew, window_size)
 
     def rolling_all(self, window_size: int) -> Iter[bool]:
         """
@@ -162,7 +162,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.All, window_size)
+        return self._lazy(rolling.All, window_size)
 
     def rolling_any(self, window_size: int) -> Iter[bool]:
         """
@@ -177,7 +177,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Any, window_size)
+        return self._lazy(rolling.Any, window_size)
 
     def rolling_product(self, window_size: int) -> Iter[float]:
         """
@@ -192,7 +192,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Product, window_size)
+        return self._lazy(rolling.Product, window_size)
 
     def rolling_apply[R](
         self, func: Callable[[Iterable[T]], R], window_size: int
@@ -214,7 +214,7 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.Apply, window_size, "fixed", func)
+        return self._lazy(rolling.Apply, window_size, "fixed", func)
 
     def rolling_apply_pairwise[R](
         self, other: Iterable[T], func: Callable[[T, T], R], window_size: int
@@ -238,4 +238,4 @@ class BaseRolling[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(rolling.ApplyPairwise, other, window_size, func)
+        return self._lazy(rolling.ApplyPairwise, other, window_size, func)

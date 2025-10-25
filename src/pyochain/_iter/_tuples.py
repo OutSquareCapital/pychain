@@ -25,7 +25,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(enumerate)
+        return self._lazy(enumerate)
 
     @overload
     def combinations(self, r: Literal[2]) -> Iter[tuple[T, T]]: ...
@@ -48,7 +48,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(itertools.combinations, r)
+        return self._lazy(itertools.combinations, r)
 
     @overload
     def permutations(self, r: Literal[2]) -> Iter[tuple[T, T]]: ...
@@ -71,7 +71,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(itertools.permutations, r)
+        return self._lazy(itertools.permutations, r)
 
     @overload
     def combinations_with_replacement(self, r: Literal[2]) -> Iter[tuple[T, T]]: ...
@@ -98,7 +98,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(itertools.combinations_with_replacement, r)
+        return self._lazy(itertools.combinations_with_replacement, r)
 
     def pairwise(self) -> Iter[tuple[T, T]]:
         """
@@ -110,7 +110,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(itertools.pairwise)
+        return self._lazy(itertools.pairwise)
 
     @overload
     def map_juxt[R1, R2](
@@ -153,7 +153,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(map, cz.functoolz.juxt(*funcs)))
+        return self._lazy(partial(map, cz.functoolz.juxt(*funcs)))
 
     def adjacent(
         self, predicate: Callable[[T], bool], distance: int = 1
@@ -192,7 +192,7 @@ class BaseTuples[T](IterWrapper[T]):
 
         See also groupby_transform, which can be used with this function to group ranges of items with the same bool value.
         """
-        return self.apply(partial(mit.adjacent, predicate, distance=distance))
+        return self._lazy(partial(mit.adjacent, predicate, distance=distance))
 
     def classify_unique(self) -> Iter[tuple[T, bool, bool]]:
         """
@@ -216,4 +216,4 @@ class BaseTuples[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.classify_unique)
+        return self._lazy(mit.classify_unique)

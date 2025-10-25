@@ -272,4 +272,4 @@ class BaseGroups[T](IterWrapper[T]):
         def _group_by_transform(data: Iterable[T]) -> Iterator[tuple[Any, ...]]:
             return mit.groupby_transform(data, keyfunc, valuefunc, reducefunc)
 
-        return self.apply(_group_by_transform)
+        return self._lazy(_group_by_transform)

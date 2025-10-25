@@ -93,15 +93,25 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.unwrap().__repr__()})"
 
-    def _eager[U](self, factory: Callable[[Iterable[T]], Collection[U]]) -> Seq[U]:
+    def _eager[**P, U](
+        self,
+        factory: Callable[Concatenate[Iterable[T], P], Collection[U]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Seq[U]:
         from .._iter import Seq
 
-        return Seq(factory(self.unwrap()))
+        return Seq(factory(self.unwrap(), *args, **kwargs))
 
-    def _lazy[U](self, factory: Callable[[Iterable[T]], Iterator[U]]) -> Iter[U]:
+    def _lazy[**P, U](
+        self,
+        factory: Callable[Concatenate[Iterable[T], P], Iterator[U]],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Iter[U]:
         from .._iter import Iter
 
-        return Iter(factory(self.unwrap()))
+        return Iter(factory(self.unwrap(), *args, **kwargs))
 
 
 class MappingWrapper[K, V](CommonBase[dict[K, V]]):

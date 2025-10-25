@@ -46,7 +46,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(itertools.cycle)
+        return self._lazy(itertools.cycle)
 
     def interpose(self, element: T) -> Iter[T]:
         """
@@ -62,7 +62,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(cz.itertoolz.interpose, element))
+        return self._lazy(partial(cz.itertoolz.interpose, element))
 
     def random_sample(
         self, probability: float, state: Random | int | None = None
@@ -107,7 +107,7 @@ class BaseProcess[T](IterWrapper[T]):
         ```
         """
 
-        return self.apply(
+        return self._lazy(
             partial(cz.itertoolz.random_sample, probability, random_state=state)
         )
 
@@ -124,7 +124,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(cz.itertoolz.accumulate, func))
+        return self._lazy(partial(cz.itertoolz.accumulate, func))
 
     def insert_left(self, value: T) -> Iter[T]:
         """
@@ -139,7 +139,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(cz.itertoolz.cons, value))
+        return self._lazy(partial(cz.itertoolz.cons, value))
 
     def peekn(self, n: int) -> Iter[T]:
         """
@@ -161,7 +161,7 @@ class BaseProcess[T](IterWrapper[T]):
             print(f"Peeked {n} values: {peeked.value}")
             return peeked.sequence
 
-        return self.apply(_peekn)
+        return self._lazy(_peekn)
 
     def peek(self) -> Iter[T]:
         """
@@ -180,7 +180,7 @@ class BaseProcess[T](IterWrapper[T]):
             print(f"Peeked value: {peeked.value}")
             return peeked.sequence
 
-        return self.apply(_peek)
+        return self._lazy(_peek)
 
     def merge_sorted(
         self, *others: Iterable[T], sort_on: Callable[[T], Any] | None = None
@@ -198,7 +198,7 @@ class BaseProcess[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(cz.itertoolz.merge_sorted, *others, key=sort_on)
+        return self._lazy(cz.itertoolz.merge_sorted, *others, key=sort_on)
 
     def interleave(self, *others: Iterable[T]) -> Iter[T]:
         """
@@ -217,7 +217,7 @@ class BaseProcess[T](IterWrapper[T]):
         def _interleave(data: Iterable[T]) -> Iterator[T]:
             return cz.itertoolz.interleave((data, *others))
 
-        return self.apply(_interleave)
+        return self._lazy(_interleave)
 
     def chain(self, *others: Iterable[T]) -> Iter[T]:
         """
@@ -240,7 +240,7 @@ class BaseProcess[T](IterWrapper[T]):
         def _chain(data: Iterable[T]) -> Iterator[T]:
             return cz.itertoolz.concat((data, *others))
 
-        return self.apply(_chain)
+        return self._lazy(_chain)
 
     def elements(self) -> Iter[T]:
         """
@@ -269,7 +269,7 @@ class BaseProcess[T](IterWrapper[T]):
         def _elements(data: Iterable[T]) -> Iterator[T]:
             return Counter(data).elements()
 
-        return self.apply(_elements)
+        return self._lazy(_elements)
 
     def reverse(self) -> Iter[T]:
         """
@@ -290,7 +290,7 @@ class BaseProcess[T](IterWrapper[T]):
         def _reverse(data: Iterable[T]) -> Iterator[T]:
             return reversed(list(data))
 
-        return self.apply(_reverse)
+        return self._lazy(_reverse)
 
     def is_strictly_n(
         self,
@@ -375,4 +375,4 @@ class BaseProcess[T](IterWrapper[T]):
                 too_long(n + 1)
                 return
 
-        return self.apply(strictly_n_)
+        return self._lazy(strictly_n_)

@@ -57,7 +57,7 @@ class BaseMap[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(map, func))
+        return self._lazy(partial(map, func))
 
     @overload
     def flat_map[U, R](
@@ -93,7 +93,7 @@ class BaseMap[T](IterWrapper[T]):
         def _flat_map(data: Iterable[U]) -> map[R]:
             return map(func, itertools.chain.from_iterable(data))
 
-        return self.apply(_flat_map)
+        return self._lazy(_flat_map)
 
     def map_star[U: Iterable[Any], R](
         self: IterWrapper[U], func: Callable[..., R]
@@ -127,7 +127,7 @@ class BaseMap[T](IterWrapper[T]):
         - Use map with unpacking when readability matters (the types can be inferred).
         """
 
-        return self.apply(partial(itertools.starmap, func))
+        return self._lazy(partial(itertools.starmap, func))
 
     def map_if[R](
         self,
@@ -165,7 +165,7 @@ class BaseMap[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.map_if, predicate, func, func_else=func_else)
+        return self._lazy(mit.map_if, predicate, func, func_else=func_else)
 
     def map_except[R](
         self, func: Callable[[T], R], *exceptions: type[BaseException]
@@ -192,7 +192,7 @@ class BaseMap[T](IterWrapper[T]):
         def _map_except(data: Iterable[T]) -> Iterator[R]:
             return mit.map_except(func, data, *exceptions)
 
-        return self.apply(_map_except)
+        return self._lazy(_map_except)
 
     def repeat(
         self, n: int, factory: Callable[[Iterable[T]], Collection[T]] = tuple
@@ -217,7 +217,7 @@ class BaseMap[T](IterWrapper[T]):
         def _repeat(data: Iterable[T]) -> Iterator[Iterable[T]]:
             return itertools.repeat(factory(data), n)
 
-        return self.apply(_repeat)
+        return self._lazy(_repeat)
 
     @overload
     def repeat_last(self, default: T) -> Iter[T]: ...
@@ -247,7 +247,7 @@ class BaseMap[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.repeat_last, default)
+        return self._lazy(mit.repeat_last, default)
 
     def ichunked(self, n: int) -> Iter[Iterator[T]]:
         """
@@ -275,7 +275,7 @@ class BaseMap[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.ichunked, n)
+        return self._lazy(mit.ichunked, n)
 
     @overload
     def flatten[U](
@@ -297,7 +297,7 @@ class BaseMap[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(itertools.chain.from_iterable)
+        return self._lazy(itertools.chain.from_iterable)
 
     def pluck[U: Mapping[Any, Any]](
         self: IterWrapper[U], *keys: str | int
@@ -333,7 +333,7 @@ class BaseMap[T](IterWrapper[T]):
         """
 
         getter = partial(cz.dicttoolz.get_in, keys)
-        return self.apply(partial(map, getter))
+        return self._lazy(partial(map, getter))
 
     def round[U: float | int](
         self: IterWrapper[U], ndigits: int | None = None
@@ -354,4 +354,4 @@ class BaseMap[T](IterWrapper[T]):
         def _round(data: Iterable[U]) -> Generator[float | int, None, None]:
             return (round(x, ndigits) for x in data)
 
-        return self.apply(_round)
+        return self._lazy(_round)

@@ -67,7 +67,7 @@ class BaseJoins[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(zip, *others, strict=strict)
+        return self._lazy(zip, *others, strict=strict)
 
     def zip_offset[U](
         self,
@@ -113,7 +113,7 @@ class BaseJoins[T](IterWrapper[T]):
                 fillvalue=fillvalue,
             )
 
-        return self.apply(_zip_offset)
+        return self._lazy(_zip_offset)
 
     @overload
     def zip_broadcast[T1](
@@ -217,7 +217,7 @@ class BaseJoins[T](IterWrapper[T]):
                     pass
                 yield tuple(new_item)
 
-        return self.apply(_zip_broadcast, *others)
+        return self._lazy(_zip_broadcast, *others)
 
     @overload
     def zip_equal(self) -> Iter[tuple[T]]: ...
@@ -266,7 +266,7 @@ class BaseJoins[T](IterWrapper[T]):
         def _zip_equal(data: Iterable[T]) -> Iterator[tuple[Any, ...]]:
             return mit.zip_equal(data, *others)
 
-        return self.apply(_zip_equal)
+        return self._lazy(_zip_equal)
 
     def zip_longest[U](
         self, *others: Iterable[T], fill_value: U = None
@@ -285,7 +285,7 @@ class BaseJoins[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(itertools.zip_longest, *others, fillvalue=fill_value)
+        return self._lazy(itertools.zip_longest, *others, fillvalue=fill_value)
 
     @overload
     def product(self) -> Iter[tuple[T]]: ...
@@ -329,7 +329,7 @@ class BaseJoins[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(itertools.product, *others)
+        return self._lazy(itertools.product, *others)
 
     def diff_at(
         self,
@@ -366,7 +366,7 @@ class BaseJoins[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(cz.itertoolz.diff, *others, default=default, key=key)
+        return self._lazy(cz.itertoolz.diff, *others, default=default, key=key)
 
     def join[R, K](
         self,
@@ -406,4 +406,4 @@ class BaseJoins[T](IterWrapper[T]):
                 right_default=right_default,
             )
 
-        return self.apply(_join)
+        return self._lazy(_join)

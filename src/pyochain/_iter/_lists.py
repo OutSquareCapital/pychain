@@ -29,7 +29,7 @@ class BaseList[T](IterWrapper[T]):
         def _implode(data: Iterable[T]) -> Generator[list[T], None, None]:
             return ([x] for x in data)
 
-        return self.apply(_implode)
+        return self._lazy(_implode)
 
     def split_at(
         self,
@@ -73,7 +73,7 @@ class BaseList[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.split_at, pred, maxsplit, keep_separator)
+        return self._lazy(mit.split_at, pred, maxsplit, keep_separator)
 
     def split_after(
         self, predicate: Callable[[T], bool], max_split: int = -1
@@ -100,7 +100,7 @@ class BaseList[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.split_after, predicate, max_split)
+        return self._lazy(mit.split_after, predicate, max_split)
 
     def split_before(
         self, predicate: Callable[[T], bool], max_split: int = -1
@@ -133,7 +133,7 @@ class BaseList[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.split_before, predicate, max_split)
+        return self._lazy(mit.split_before, predicate, max_split)
 
     def split_into(self, sizes: Iterable[int | None]) -> Iter[list[T]]:
         """
@@ -179,7 +179,7 @@ class BaseList[T](IterWrapper[T]):
         - multiple columns represent elements of the same feature (e.g. a point represented by x,y,z)
         - the format is not the same for all columns.
         """
-        return self.apply(mit.split_into, sizes)
+        return self._lazy(mit.split_into, sizes)
 
     def split_when(
         self, predicate: Callable[[T, T], bool], max_split: int = -1
@@ -209,7 +209,7 @@ class BaseList[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.split_when, predicate, max_split)
+        return self._lazy(mit.split_when, predicate, max_split)
 
     def chunks(self, n: int, strict: bool = False) -> Iter[list[T]]:
         """
@@ -239,7 +239,7 @@ class BaseList[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.chunked, n, strict)
+        return self._lazy(mit.chunked, n, strict)
 
     def chunks_even(self, n: int) -> Iter[list[T]]:
         """
@@ -260,7 +260,7 @@ class BaseList[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.chunked_even, n)
+        return self._lazy(mit.chunked_even, n)
 
     def unique_to_each[U: Iterable[Any]](self: IterWrapper[U]) -> Iter[list[U]]:
         """
@@ -305,4 +305,4 @@ class BaseList[T](IterWrapper[T]):
             uniques: set[U] = {element for element in counts if counts[element] == 1}
             return ((list(filter(uniques.__contains__, it))) for it in pool)
 
-        return self.apply(_unique_to_each)
+        return self._lazy(_unique_to_each)

@@ -33,7 +33,7 @@ class BaseFilter[T](IterWrapper[T]):
         def _filter(data: Iterable[T]) -> Iterator[T]:
             return (x for x in data if func(x))
 
-        return self.apply(_filter)
+        return self._lazy(_filter)
 
     def filter_isin(self, values: Iterable[T]) -> Iter[T]:
         """
@@ -54,7 +54,7 @@ class BaseFilter[T](IterWrapper[T]):
             value_set: set[T] = set(values)
             return (x for x in data if x in value_set)
 
-        return self.apply(_filter_isin)
+        return self._lazy(_filter_isin)
 
     def filter_notin(self, values: Iterable[T]) -> Iter[T]:
         """
@@ -75,7 +75,7 @@ class BaseFilter[T](IterWrapper[T]):
             value_set: set[T] = set(values)
             return (x for x in data if x not in value_set)
 
-        return self.apply(_filter_notin)
+        return self._lazy(_filter_notin)
 
     def filter_contain(
         self: IterWrapper[str], text: str, format: Callable[[str], str] | None = None
@@ -108,7 +108,7 @@ class BaseFilter[T](IterWrapper[T]):
 
             return (x for x in data if _(x))
 
-        return self.apply(_filter_contain)
+        return self._lazy(_filter_contain)
 
     def filter_attr[U](self, attr: str, dtype: type[U] = object) -> Iter[U]:
         """
@@ -136,7 +136,7 @@ class BaseFilter[T](IterWrapper[T]):
 
             return (x for x in data if _(x))
 
-        return self.apply(check)
+        return self._lazy(check)
 
     def filter_false(self, func: Callable[[T], bool]) -> Iter[T]:
         """
@@ -152,7 +152,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(itertools.filterfalse, func))
+        return self._lazy(partial(itertools.filterfalse, func))
 
     def filter_except(
         self, func: Callable[[T], object], *exceptions: type[BaseException]
@@ -182,7 +182,7 @@ class BaseFilter[T](IterWrapper[T]):
         def _filter_except(data: Iterable[T]) -> Iterator[T]:
             return mit.filter_except(func, data, *exceptions)
 
-        return self.apply(_filter_except)
+        return self._lazy(_filter_except)
 
     def take_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
         """
@@ -198,7 +198,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(itertools.takewhile, predicate))
+        return self._lazy(partial(itertools.takewhile, predicate))
 
     def skip_while(self, predicate: Callable[[T], bool]) -> Iter[T]:
         """
@@ -214,7 +214,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(itertools.dropwhile, predicate))
+        return self._lazy(partial(itertools.dropwhile, predicate))
 
     def compress(self, *selectors: bool) -> Iter[T]:
         """
@@ -230,7 +230,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(itertools.compress, selectors)
+        return self._lazy(itertools.compress, selectors)
 
     def unique(self, key: Callable[[T], Any] | None = None) -> Iter[T]:
         """
@@ -254,7 +254,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(cz.itertoolz.unique, key=key)
+        return self._lazy(cz.itertoolz.unique, key=key)
 
     def take(self, n: int) -> Iter[T]:
         """
@@ -281,7 +281,7 @@ class BaseFilter[T](IterWrapper[T]):
         ```
         """
 
-        return self.apply(partial(cz.itertoolz.take, n))
+        return self._lazy(partial(cz.itertoolz.take, n))
 
     def skip(self, n: int) -> Iter[T]:
         """
@@ -297,7 +297,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(cz.itertoolz.drop, n))
+        return self._lazy(partial(cz.itertoolz.drop, n))
 
     def unique_justseen(self, key: Callable[[T], Any] | None = None) -> Iter[T]:
         """
@@ -315,7 +315,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.unique_justseen, key=key)
+        return self._lazy(mit.unique_justseen, key=key)
 
     def unique_in_window(
         self, n: int, key: Callable[[T], Any] | None = None
@@ -344,7 +344,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.unique_in_window, n, key=key)
+        return self._lazy(mit.unique_in_window, n, key=key)
 
     def extract(self, indices: Iterable[int]) -> Iter[T]:
         """
@@ -366,7 +366,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(mit.extract, indices)
+        return self._lazy(mit.extract, indices)
 
     def every(self, index: int) -> Iter[T]:
         """
@@ -382,7 +382,7 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(cz.itertoolz.take_nth, index))
+        return self._lazy(partial(cz.itertoolz.take_nth, index))
 
     def slice(self, start: int | None = None, stop: int | None = None) -> Iter[T]:
         """
@@ -403,7 +403,7 @@ class BaseFilter[T](IterWrapper[T]):
         def _slice(data: Iterable[T]) -> Iterator[T]:
             return itertools.islice(data, start, stop)
 
-        return self.apply(_slice)
+        return self._lazy(_slice)
 
     def filter_subclass[U: type[Any], R](
         self: IterWrapper[U], parent: type[R], keep_parent: bool = True
@@ -443,7 +443,7 @@ class BaseFilter[T](IterWrapper[T]):
             else:
                 return (x for x in data if issubclass(x, parent) and x is not parent)
 
-        return self.apply(_filter_subclass)
+        return self._lazy(_filter_subclass)
 
     def filter_type[R](self, typ: type[R]) -> Iter[R]:
         """
@@ -463,7 +463,7 @@ class BaseFilter[T](IterWrapper[T]):
         def _filter_type(data: Iterable[T]) -> Generator[R, None, None]:
             return (x for x in data if isinstance(x, typ))
 
-        return self.apply(_filter_type)
+        return self._lazy(_filter_type)
 
     def filter_callable(self) -> Iter[Callable[..., Any]]:
         """
@@ -483,7 +483,7 @@ class BaseFilter[T](IterWrapper[T]):
         ) -> Generator[Callable[..., Any], None, None]:
             return (x for x in data if callable(x))
 
-        return self.apply(_filter_callable)
+        return self._lazy(_filter_callable)
 
     def filter_map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
@@ -502,4 +502,4 @@ class BaseFilter[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(mit.filter_map, func))
+        return self._lazy(partial(mit.filter_map, func))

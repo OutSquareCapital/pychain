@@ -46,7 +46,7 @@ class BasePartitions[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(cz.itertoolz.sliding_window, length))
+        return self._lazy(partial(cz.itertoolz.sliding_window, length))
 
     @overload
     def partition(self, n: Literal[1], pad: None = None) -> Iter[tuple[T]]: ...
@@ -83,7 +83,7 @@ class BasePartitions[T](IterWrapper[T]):
         ```
         """
 
-        return self.apply(partial(cz.itertoolz.partition, n, pad=pad))
+        return self._lazy(partial(cz.itertoolz.partition, n, pad=pad))
 
     def partition_all(self, n: int) -> Iter[tuple[T, ...]]:
         """
@@ -101,7 +101,7 @@ class BasePartitions[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(cz.itertoolz.partition_all, n))
+        return self._lazy(partial(cz.itertoolz.partition_all, n))
 
     def partition_by(self, predicate: Callable[[T], bool]) -> Iter[tuple[T, ...]]:
         """
@@ -123,7 +123,7 @@ class BasePartitions[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(partial(cz.recipes.partitionby, predicate))
+        return self._lazy(partial(cz.recipes.partitionby, predicate))
 
     def batch(self, n: int) -> Iter[tuple[T, ...]]:
         """
@@ -142,4 +142,4 @@ class BasePartitions[T](IterWrapper[T]):
 
         ```
         """
-        return self.apply(itertools.batched, n)
+        return self._lazy(itertools.batched, n)

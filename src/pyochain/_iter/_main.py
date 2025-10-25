@@ -233,7 +233,7 @@ class Iter[T](
         def _itr(data: Iterable[U]) -> Generator[R, None, None]:
             return (func(Iter(iter(x)), *args, **kwargs) for x in data)
 
-        return self.apply(_itr)
+        return self._lazy(_itr)
 
     def apply[**P, R](
         self,
