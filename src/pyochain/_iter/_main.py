@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 from collections.abc import Callable, Collection, Generator, Iterable, Iterator
-from typing import TYPE_CHECKING, Any, Concatenate, override
+from typing import TYPE_CHECKING, Any, Concatenate, overload, override
 
 import cytoolz as cz
 
@@ -100,6 +100,12 @@ class Iter[T](
 
         return Iter(cz.itertoolz.iterate(func, input))
 
+    @overload
+    @staticmethod
+    def from_[U](data: Iterable[U]) -> Iter[U]: ...
+    @overload
+    @staticmethod
+    def from_[U](data: U, *more_data: U) -> Iter[U]: ...
     @staticmethod
     def from_[U](data: Iterable[U] | U, *more_data: U) -> Iter[U]:
         """
@@ -330,9 +336,7 @@ class Iter[T](
         """
         return self._lazy(func, *args, **kwargs)
 
-    def collect[R](
-        self, factory: Callable[[Iterable[T]], Collection[R]] = list
-    ) -> Seq[R]:
+    def collect(self, factory: Callable[[Iterable[T]], Collection[T]] = list) -> Seq[T]:
         """
         Collect the elements into a sequence, using the provided factory.
 
@@ -378,6 +382,12 @@ class Seq[T](CommonMethods[T]):
     def __init__(self, data: Collection[T]) -> None:
         self._data = data
 
+    @overload
+    @staticmethod
+    def from_[U](data: Collection[U]) -> Seq[U]: ...
+    @overload
+    @staticmethod
+    def from_[U](data: U, *more_data: U) -> Seq[U]: ...
     @staticmethod
     def from_[U](data: Collection[U] | U, *more_data: U) -> Seq[U]:
         """

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Concatenate
 
 import cytoolz as cz
 
-from .._core import MappingWrapper
+from .._core import MappingWrapper, SupportsRichComparison
 
 if TYPE_CHECKING:
     from ._main import Dict
@@ -169,3 +169,24 @@ class ProcessDict[K, V](MappingWrapper[K, V]):
             return dict(sorted(data.items(), reverse=reverse))
 
         return self.apply(_sort)
+
+    def sort_values[U: SupportsRichComparison[Any]](
+        self: ProcessDict[K, U], reverse: bool = False
+    ) -> Dict[K, U]:
+        """
+        Sort the dictionary by its values and return a new Dict.
+
+        Args:
+            reverse: Whether to sort in descending order. Defaults to False.
+        ```python
+        >>> import pyochain as pc
+        >>> pc.Dict({"a": 2, "b": 1}).sort_values().unwrap()
+        {'b': 1, 'a': 2}
+
+        ```
+        """
+
+        def _sort_values(data: dict[K, U]) -> dict[K, U]:
+            return dict(sorted(data.items(), key=lambda item: item[1], reverse=reverse))
+
+        return self.apply(_sort_values)
