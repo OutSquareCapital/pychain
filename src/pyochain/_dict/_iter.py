@@ -43,7 +43,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
 
         def _itr(data: Mapping[K, Iterable[U]]) -> dict[K, R]:
             def _(v: Iterable[U]) -> R:
-                return func(Iter.from_(v), *args, **kwargs)
+                return func(Iter(iter(v)), *args, **kwargs)
 
             return cz.dicttoolz.valmap(_, data)
 
@@ -61,7 +61,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return Iter.from_(self.unwrap().keys())
+        return Iter(iter(self.unwrap().keys()))
 
     def iter_values(self) -> Iter[V]:
         """
@@ -75,7 +75,7 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return Iter.from_(self.unwrap().values())
+        return Iter(iter(self.unwrap().values()))
 
     def iter_items(self) -> Iter[tuple[K, V]]:
         """
@@ -89,4 +89,4 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Iter
 
-        return Iter.from_(self.unwrap().items())
+        return Iter(iter(self.unwrap().items()))

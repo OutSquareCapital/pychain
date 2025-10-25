@@ -98,9 +98,9 @@ class Iter[T](
         return Iter(cz.itertoolz.iterate(func, input))
 
     @staticmethod
-    def from_[U](data: Iterable[U]) -> Iter[U]:
+    def from_[U](data: Iterable[U] | U, *more_data: U) -> Iter[U]:
         """
-        Create an iterator from any Iterable.
+        Create an iterator from any Iterable, or from unpacked values.
 
         - An Iterable is any object capable of returning its members one at a time, permitting it to be iterated over in a for-loop.
         - An Iterator is an object representing a stream of data; returned by calling `iter()` on an Iterable.
@@ -111,7 +111,8 @@ class Iter[T](
         In general, avoid intermediate references when dealing with lazy iterators, and prioritize method chaining instead.
 
         Args:
-            data: Iterable to convert into an iterator.
+            data: Iterable to convert into an iterator, or a single value.
+            more_data: Additional values to include if 'data' is not an Iterable.
         Example:
         ```python
         >>> import pyochain as pc
@@ -127,10 +128,17 @@ class Iter[T](
         >>> # iterator is now exhausted
         >>> iterator.collect().unwrap()
         []
+        >>> # Creating from unpacked values
+        >>> pc.Iter.from_(1, 2, 3).collect(tuple).unwrap()
+        (1, 2, 3)
 
         ```
         """
-        return Iter(iter(data))
+        if cz.itertoolz.isiterable(data):
+            return Iter(iter(data))
+        else:
+            d: Iterable[U] = (data, *more_data)  # type: ignore[assignment]
+            return Iter(iter(d))
 
     @staticmethod
     def unfold[S, V](seed: S, generator: Callable[[S], tuple[V, S] | None]) -> Iter[V]:
@@ -223,7 +231,7 @@ class Iter[T](
         """
 
         def _itr(data: Iterable[U]) -> Generator[R, None, None]:
-            return (func(Iter.from_(x), *args, **kwargs) for x in data)
+            return (func(Iter(iter(x)), *args, **kwargs) for x in data)
 
         return self.apply(_itr)
 
@@ -240,9 +248,33 @@ class Seq[T](BaseAgg[T], BaseEager[T]):
     def __init__(self, data: Collection[T]) -> None:
         self._data = data
 
+    @staticmethod
+    def from_[U](data: Collection[U] | U, *more_data: U) -> Seq[U]:
+        """
+        Create a Seq from a collection or unpacked values.
+
+        Args:
+            data: Collection of items or a single item.
+            more_data: Additional item to include if 'data' is not a collection.
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> pc.Seq.from_([1, 2, 3]).unwrap()
+        [1, 2, 3]
+        >>> pc.Seq.from_(1, 2).unwrap()
+        (1, 2)
+
+        ```
+
+        """
+        if cz.itertoolz.isiterable(data):
+            return Seq(data)
+        else:
+            return Seq((data, *more_data))
+
     def iter(self) -> Iter[T]:
         """
         Get an iterator over the sequence.
         Call this to switch to lazy evaluation.
         """
-        return self.into(Iter.from_)
+        return Iter(iter(self.unwrap()))
