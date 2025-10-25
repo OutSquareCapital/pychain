@@ -39,9 +39,12 @@ class BaseMap[T](IterWrapper[T]):
 
         ```
         """
-        for v in self.unwrap():
-            func(v, *args, **kwargs)
-        return
+
+        def _for_each(data: Iterable[T]) -> None:
+            for v in data:
+                func(v, *args, **kwargs)
+
+        return self.into(_for_each)
 
     def map[R](self, func: Callable[[T], R]) -> Iter[R]:
         """
@@ -198,7 +201,7 @@ class BaseMap[T](IterWrapper[T]):
         self, n: int, factory: Callable[[Iterable[T]], Collection[T]] = tuple
     ) -> Iter[Iterable[T]]:
         """
-        Repeat the entire iterable n times (as elements) and return Iter.
+        Repeat the entire iterable n times (as elements).
 
         Args:
             n: Number of repetitions.
@@ -339,7 +342,7 @@ class BaseMap[T](IterWrapper[T]):
         self: IterWrapper[U], ndigits: int | None = None
     ) -> Iter[float]:
         """
-        Round each element in the iterable to the given number of decimal places and return Iter.
+        Round each element in the iterable to the given number of decimal places.
 
         Args:
             ndigits: Number of decimal places to round to.

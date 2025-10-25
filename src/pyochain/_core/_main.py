@@ -101,7 +101,10 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
     ) -> Seq[U]:
         from .._iter import Seq
 
-        return Seq(factory(self.unwrap(), *args, **kwargs))
+        def _(data: Iterable[T]):
+            return Seq(factory(data, *args, **kwargs))
+
+        return self.into(_)
 
     def _lazy[**P, U](
         self,
@@ -111,7 +114,10 @@ class IterWrapper[T](CommonBase[Iterable[T]]):
     ) -> Iter[U]:
         from .._iter import Iter
 
-        return Iter(factory(self.unwrap(), *args, **kwargs))
+        def _(data: Iterable[T]):
+            return Iter(factory(data, *args, **kwargs))
+
+        return self.into(_)
 
 
 class MappingWrapper[K, V](CommonBase[dict[K, V]]):

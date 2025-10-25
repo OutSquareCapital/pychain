@@ -300,7 +300,7 @@ class Iter[T](
         def _struct(data: Iterable[dict[K, V]]) -> Generator[R, None, None]:
             return (func(Dict(x), *args, **kwargs) for x in data)
 
-        return self.apply(_struct)
+        return self._lazy(_struct)
 
     def apply[**P, R](
         self,

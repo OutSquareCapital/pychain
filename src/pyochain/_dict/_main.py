@@ -300,8 +300,5 @@ class Dict[K, V](
 
         ```
         """
-        return (
-            self.unwrap() == other.unwrap()
-            if isinstance(other, Dict)
-            else self.unwrap() == other
-        )
+        other_data = other.unwrap() if isinstance(other, Dict) else other
+        return self.unwrap() == other_data
