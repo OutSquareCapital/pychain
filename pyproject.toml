@@ -1,15 +1,14 @@
 [project]
-description     = "Add your description here"
+description     = "Method chaining for iterables and dictionaries in Python."
 name            = "pyochain"
 readme          = "README.md"
 requires-python = ">=3.12"
-version         = "0.5.1"
+version         = "0.5.2"
 
 dependencies = ["cytoolz>=1.0.1", "more-itertools>=10.8.0", "rolling>=0.5.0"]
 
 [dependency-groups]
 dev = [
-    "cytoolz-stubs",
     "doctester",
     "griffe>=1.14.0",
     "mkdocs>=1.6.1",
@@ -21,13 +20,14 @@ dev = [
     "polars>=1.33.1",
     "ruff>=0.14.1",
     "rolling @ git+https://github.com/OutSquareCapital/rolling.git@add-type-stubs",
+    "cytoolz-stubs",
 ]
 
 [tool.ruff.format]
 docstring-code-format = true
 
 [tool.uv.sources]
-cytoolz-stubs = { git = "https://github.com/py-stubs/cytoolz-stubs.git" }
+cytoolz-stubs = { git = "https://github.com/OutSquareCapital/cytoolz-stubs.git" }
 doctester     = { git = "https://github.com/OutSquareCapital/doctester.git" }
 
 [build-system]
