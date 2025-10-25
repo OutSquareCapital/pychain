@@ -384,24 +384,29 @@ class BaseFilter[T](IterWrapper[T]):
         """
         return self._lazy(partial(cz.itertoolz.take_nth, index))
 
-    def slice(self, start: int | None = None, stop: int | None = None) -> Iter[T]:
+    def slice(
+        self, start: int | None = None, stop: int | None = None, step: int | None = None
+    ) -> Iter[T]:
         """
         Return a slice of the iterable.
 
         Args:
             start: Starting index of the slice. Defaults to None.
             stop: Ending index of the slice. Defaults to None.
+            step: Step size for the slice. Defaults to None.
         Example:
         ```python
         >>> import pyochain as pc
         >>> pc.Iter.from_([1, 2, 3, 4, 5]).slice(1, 4).into(list)
         [2, 3, 4]
+        >>> pc.Iter.from_([1, 2, 3, 4, 5]).slice(step=2).into(list)
+        [1, 3, 5]
 
         ```
         """
 
         def _slice(data: Iterable[T]) -> Iterator[T]:
-            return itertools.islice(data, start, stop)
+            return itertools.islice(data, start, stop, step)
 
         return self._lazy(_slice)
 
