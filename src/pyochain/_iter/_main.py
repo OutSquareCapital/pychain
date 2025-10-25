@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 from collections.abc import Callable, Collection, Generator, Iterable, Iterator
-from typing import Any, Concatenate, override
+from typing import TYPE_CHECKING, Any, Concatenate, override
 
 import cytoolz as cz
 
@@ -11,7 +11,6 @@ from ._booleans import BaseBool
 from ._dicts import BaseDict
 from ._eager import BaseEager
 from ._filters import BaseFilter
-from ._groups import BaseGroups
 from ._joins import BaseJoins
 from ._lists import BaseList
 from ._maps import BaseMap
@@ -20,8 +19,11 @@ from ._process import BaseProcess
 from ._rolling import BaseRolling
 from ._tuples import BaseTuples
 
+if TYPE_CHECKING:
+    from .._dict import Dict
 
-class CommonMethods[T](BaseAgg[T], BaseEager[T]):
+
+class CommonMethods[T](BaseAgg[T], BaseEager[T], BaseDict[T]):
     pass
 
 
@@ -35,8 +37,6 @@ class Iter[T](
     BaseTuples[T],
     BasePartitions[T],
     BaseJoins[T],
-    BaseGroups[T],
-    BaseDict[T],
     CommonMethods[T],
 ):
     """
@@ -237,6 +237,70 @@ class Iter[T](
             return (func(Iter(iter(x)), *args, **kwargs) for x in data)
 
         return self._lazy(_itr)
+
+    def struct[**P, R, K, V](
+        self: Iter[dict[K, V]],
+        func: Callable[Concatenate[Dict[K, V], P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Iter[R]:
+        """
+        Apply a function to each element after wrapping it in a Dict.
+
+        This is a convenience method for the common pattern of mapping a function over an iterable of dictionaries.
+
+        Args:
+            func: Function to apply to each wrapped dictionary.
+            *args: Positional arguments to pass to the function.
+            **kwargs: Keyword arguments to pass to the function.
+        Example:
+        ```python
+        >>> from typing import Any
+        >>> import pyochain as pc
+
+        >>> data: list[dict[str, Any]] = [
+        ...     {"name": "Alice", "age": 30, "city": "New York"},
+        ...     {"name": "Bob", "age": 25, "city": "Los Angeles"},
+        ...     {"name": "Charlie", "age": 35, "city": "New York"},
+        ...     {"name": "David", "age": 40, "city": "Paris"},
+        ... ]
+        >>>
+        >>> def to_title(d: pc.Dict[str, Any]) -> pc.Dict[str, Any]:
+        ...     return d.map_keys(lambda k: k.title())
+        >>> def is_young(d: pc.Dict[str, Any]) -> bool:
+        ...     return d.unwrap().get("Age", 0) < 30
+        >>> def set_continent(d: pc.Dict[str, Any], value: str) -> dict[str, Any]:
+        ...     return d.with_key("Continent", value).unwrap()
+        >>>
+        >>> pc.Iter.from_(data).struct(to_title).filter_false(is_young).map(
+        ...     lambda d: d.drop("Age").with_key("Continent", "NA")
+        ... ).map_if(
+        ...     lambda d: d.unwrap().get("City") == "Paris",
+        ...     lambda d: set_continent(d, "Europe"),
+        ...     lambda d: set_continent(d, "America"),
+        ... ).group_by(lambda d: d.get("Continent")).map_values(
+        ...     lambda d: pc.Iter.from_(d)
+        ...     .struct(lambda d: d.drop("Continent").unwrap())
+        ...     .into(list)
+        ... )  # doctest: +NORMALIZE_WHITESPACE
+        Dict({
+        'America': [
+            {'Name': 'Alice', 'City': 'New York'},
+            {'Name': 'Charlie', 'City': 'New York'}
+        ],
+        'Europe': [
+            {'Name': 'David', 'City': 'Paris'}
+        ]
+        })
+
+        ```
+        """
+        from .._dict import Dict
+
+        def _struct(data: Iterable[dict[K, V]]) -> Generator[R, None, None]:
+            return (func(Dict(x), *args, **kwargs) for x in data)
+
+        return self.apply(_struct)
 
     def apply[**P, R](
         self,

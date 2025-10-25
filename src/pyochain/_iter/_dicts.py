@@ -1,80 +1,17 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Generator, Iterable
-from typing import TYPE_CHECKING, Concatenate
+from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING
+
+import cytoolz as cz
 
 from .._core import IterWrapper
 
 if TYPE_CHECKING:
     from .._dict import Dict
-    from ._main import Iter
 
 
 class BaseDict[T](IterWrapper[T]):
-    def struct[**P, R, K, V](
-        self: IterWrapper[dict[K, V]],
-        func: Callable[Concatenate[Dict[K, V], P], R],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Iter[R]:
-        """
-        Apply a function to each element after wrapping it in a Dict.
-
-        This is a convenience method for the common pattern of mapping a function over an iterable of dictionaries.
-
-        Args:
-            func: Function to apply to each wrapped dictionary.
-            *args: Positional arguments to pass to the function.
-            **kwargs: Keyword arguments to pass to the function.
-        Example:
-        ```python
-        >>> from typing import Any
-        >>> import pyochain as pc
-
-        >>> data: list[dict[str, Any]] = [
-        ...     {"name": "Alice", "age": 30, "city": "New York"},
-        ...     {"name": "Bob", "age": 25, "city": "Los Angeles"},
-        ...     {"name": "Charlie", "age": 35, "city": "New York"},
-        ...     {"name": "David", "age": 40, "city": "Paris"},
-        ... ]
-        >>>
-        >>> def to_title(d: pc.Dict[str, Any]) -> pc.Dict[str, Any]:
-        ...     return d.map_keys(lambda k: k.title())
-        >>> def is_young(d: pc.Dict[str, Any]) -> bool:
-        ...     return d.unwrap().get("Age", 0) < 30
-        >>> def set_continent(d: pc.Dict[str, Any], value: str) -> dict[str, Any]:
-        ...     return d.with_key("Continent", value).unwrap()
-        >>>
-        >>> pc.Iter.from_(data).struct(to_title).filter_false(is_young).map(
-        ...     lambda d: d.drop("Age").with_key("Continent", "NA")
-        ... ).map_if(
-        ...     lambda d: d.unwrap().get("City") == "Paris",
-        ...     lambda d: set_continent(d, "Europe"),
-        ...     lambda d: set_continent(d, "America"),
-        ... ).group_by(lambda d: d.get("Continent")).map_values(
-        ...     lambda d: pc.Iter.from_(d)
-        ...     .struct(lambda d: d.drop("Continent").unwrap())
-        ...     .into(list)
-        ... )  # doctest: +NORMALIZE_WHITESPACE
-        Dict({
-        'America': [
-            {'Name': 'Alice', 'City': 'New York'},
-            {'Name': 'Charlie', 'City': 'New York'}
-        ],
-        'Europe': [
-            {'Name': 'David', 'City': 'Paris'}
-        ]
-        })
-
-        ```
-        """
-        from .._dict import Dict
-
-        def _struct(data: Iterable[dict[K, V]]) -> Generator[R, None, None]:
-            return (func(Dict(x), *args, **kwargs) for x in data)
-
-        return self.apply(_struct)
-
     def with_keys[K](self, keys: Iterable[K]) -> Dict[K, T]:
         """
         Create a Dict by zipping the iterable with keys.
@@ -130,3 +67,156 @@ class BaseDict[T](IterWrapper[T]):
             return Dict(dict(zip(data, values)))
 
         return self.into(_with_values)
+
+    def reduce_by[K](
+        self, key: Callable[[T], K], binop: Callable[[T, T], T]
+    ) -> Dict[K, T]:
+        """
+        Perform a simultaneous groupby and reduction.
+
+        Args:
+            key: Function to compute the key for grouping.
+            binop: Binary operation to reduce the grouped elements.
+        Example:
+        ```python
+        >>> from collections.abc import Iterable
+        >>> import pyochain as pc
+        >>> from operator import add, mul
+        >>>
+        >>> def is_even(x: int) -> bool:
+        ...     return x % 2 == 0
+        >>>
+        >>> def group_reduce(data: Iterable[int]) -> int:
+        ...     return pc.Iter.from_(data).reduce(add)
+        >>>
+        >>> data = pc.Seq([1, 2, 3, 4, 5])
+        >>> data.iter().reduce_by(is_even, add).unwrap()
+        {False: 9, True: 6}
+        >>> data.iter().group_by(is_even).map_values(group_reduce).unwrap()
+        {False: 9, True: 6}
+
+        ```
+        But the former does not build the intermediate groups, allowing it to operate in much less space.
+
+        This makes it suitable for larger datasets that do not fit comfortably in memory
+
+        Simple Examples:
+        ```python
+        >>> pc.Iter.from_([1, 2, 3, 4, 5]).reduce_by(is_even, add).unwrap()
+        {False: 9, True: 6}
+        >>> pc.Iter.from_([1, 2, 3, 4, 5]).reduce_by(is_even, mul).unwrap()
+        {False: 15, True: 8}
+
+        ```
+        """
+        from .._dict import Dict
+
+        def _reduce_by(data: Iterable[T]) -> Dict[K, T]:
+            return Dict(cz.itertoolz.reduceby(key, binop, data))
+
+        return self.into(_reduce_by)
+
+    def group_by[K](self, on: Callable[[T], K]) -> Dict[K, list[T]]:
+        """
+        Group elements by key function and return a Dict result.
+
+        Args:
+            on: Function to compute the key for grouping.
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> names = [
+        ...     "Alice",
+        ...     "Bob",
+        ...     "Charlie",
+        ...     "Dan",
+        ...     "Edith",
+        ...     "Frank",
+        ... ]
+        >>> pc.Iter.from_(names).group_by(len).sort()
+        ... # doctest: +NORMALIZE_WHITESPACE
+        Dict({
+            3: ['Bob', 'Dan'],
+            5: ['Alice', 'Edith', 'Frank'],
+            7: ['Charlie']
+        })
+        >>>
+        >>> iseven = lambda x: x % 2 == 0
+        >>> pc.Iter.from_([1, 2, 3, 4, 5, 6, 7, 8]).group_by(iseven)
+        ... # doctest: +NORMALIZE_WHITESPACE
+        Dict({
+            False: [1, 3, 5, 7],
+            True: [2, 4, 6, 8]
+        })
+
+        ```
+        Non-callable keys imply grouping on a member.
+        ```python
+        >>> data = [
+        ...     {"name": "Alice", "gender": "F"},
+        ...     {"name": "Bob", "gender": "M"},
+        ...     {"name": "Charlie", "gender": "M"},
+        ... ]
+        >>> pc.Iter.from_(data).group_by("gender").sort()
+        ... # doctest: +NORMALIZE_WHITESPACE
+        Dict({
+            'F': [
+                {'name': 'Alice', 'gender': 'F'}
+            ],
+            'M': [
+                {'name': 'Bob', 'gender': 'M'},
+                {'name': 'Charlie', 'gender': 'M'}
+            ]
+        })
+
+        ```
+        """
+        from .._dict import Dict
+
+        def _group_by(data: Iterable[T]) -> Dict[K, list[T]]:
+            return Dict(cz.itertoolz.groupby(on, data))
+
+        return self.into(_group_by)
+
+    def frequencies(self) -> Dict[T, int]:
+        """
+        Find number of occurrences of each value in the iterable.
+        ```python
+        >>> import pyochain as pc
+        >>> data = ["cat", "cat", "ox", "pig", "pig", "cat"]
+        >>> pc.Iter.from_(data).frequencies().unwrap()
+        {'cat': 3, 'ox': 1, 'pig': 2}
+
+        ```
+        """
+        from .._dict import Dict
+
+        def _frequencies(data: Iterable[T]) -> Dict[T, int]:
+            return Dict(cz.itertoolz.frequencies(data))
+
+        return self.into(_frequencies)
+
+    def count_by[K](self, key: Callable[[T], K]) -> Dict[K, int]:
+        """
+        Count elements of a collection by a key function.
+
+        Args:
+            key: Function to compute the key for counting.
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> pc.Iter.from_(["cat", "mouse", "dog"]).count_by(len).unwrap()
+        {3: 2, 5: 1}
+        >>> def iseven(x):
+        ...     return x % 2 == 0
+        >>> pc.Iter.from_([1, 2, 3]).count_by(iseven).unwrap()
+        {False: 2, True: 1}
+
+        ```
+        """
+        from .._dict import Dict
+
+        def _count_by(data: Iterable[T]) -> Dict[K, int]:
+            return Dict(cz.recipes.countby(key, data))
+
+        return self.into(_count_by)
