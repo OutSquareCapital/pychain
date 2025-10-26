@@ -1,15 +1,52 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from functools import partial
-from typing import TYPE_CHECKING, Any, Concatenate
+from typing import TYPE_CHECKING, Any, Concatenate, TypeIs
 
 import cytoolz as cz
 
-from .._core import MappingWrapper, is_mapping
+from .._core import MappingWrapper
 
 if TYPE_CHECKING:
     from ._main import Dict
+
+
+def _prune_recursive(
+    data: dict[Any, Any] | list[Any],
+    remove_empty: bool = True,
+    predicate: Callable[[Any, Any], bool] | None = None,
+) -> dict[Any, Any] | list[Any] | None:
+    match data:
+        case dict():
+            pruned_dict: dict[Any, Any] = {}
+            for k, v in data.items():
+                if predicate and predicate(k, v):
+                    continue
+
+                pruned_v = _prune_recursive(v, remove_empty, predicate)
+
+                is_empty = remove_empty and (pruned_v is None or pruned_v in ({}, []))
+                if not is_empty:
+                    pruned_dict[k] = pruned_v
+            return pruned_dict if pruned_dict or not remove_empty else None
+
+        case list():
+            pruned_list = [
+                _prune_recursive(item, remove_empty, predicate) for item in data
+            ]
+            if remove_empty:
+                pruned_list = [
+                    item
+                    for item in pruned_list
+                    if not (item is None or item in ({}, []))
+                ]
+            return pruned_list if pruned_list or not remove_empty else None
+
+        case _:
+            if remove_empty and data is None:
+                return None
+            return data
 
 
 class NestedDict[K, V](MappingWrapper[K, V]):
@@ -78,16 +115,18 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         ```
         """
 
-        def _can_recurse(max_depth: int | None, current_depth: int) -> bool:
-            return max_depth is None or current_depth < max_depth + 1
-
         def _flatten(
             d: Mapping[Any, Any], parent_key: str = "", current_depth: int = 1
         ) -> dict[str, Any]:
+            def _can_recurse(v: object) -> TypeIs[Mapping[Any, Any]]:
+                return isinstance(v, Mapping) and (
+                    max_depth is None or current_depth < max_depth + 1
+                )
+
             items: list[tuple[str, Any]] = []
             for k, v in d.items():
                 new_key = parent_key + sep + k if parent_key else k
-                if is_mapping(v) and _can_recurse(max_depth, current_depth):
+                if _can_recurse(v):
                     items.extend(_flatten(v, new_key, current_depth + 1).items())
                 else:
                     items.append((new_key, v))
@@ -180,20 +219,25 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         """
 
         def _schema(data: dict[Any, Any]) -> Any:
-            def _recurse_schema(node: Any, current_depth: int) -> Any:
-                if isinstance(node, dict):
-                    if current_depth >= max_depth:
-                        return "dict"
-                    return {
-                        k: _recurse_schema(v, current_depth + 1)
-                        for k, v in node.items()  # type: ignore
-                    }
-                elif cz.itertoolz.isiterable(node):
-                    if current_depth >= max_depth:
+            def _recurse_schema(
+                node: dict[Any, Any] | Sequence[Any], current_depth: int
+            ) -> Any:
+                match node:
+                    case dict():
+                        if current_depth >= max_depth:
+                            return "dict"
+                        return {
+                            k: _recurse_schema(v, current_depth + 1)
+                            for k, v in node.items()
+                        }
+                    case Sequence():
+                        if current_depth >= max_depth:
+                            return type(node).__name__
+                        return _recurse_schema(
+                            cz.itertoolz.first(node), current_depth + 1
+                        )
+                    case _:
                         return type(node).__name__
-                    return _recurse_schema(cz.itertoolz.first(node), current_depth + 1)
-                else:
-                    return type(node).__name__
 
             return _recurse_schema(data, 0)
 
@@ -247,3 +291,53 @@ class NestedDict[K, V](MappingWrapper[K, V]):
             return cz.dicttoolz.get_in(keys, data, default)
 
         return self.into(_get_in)
+
+    def prune(
+        self,
+        remove_empty: bool = True,
+        predicate: Callable[[K, V], bool] | None = None,
+    ) -> Dict[K, V]:
+        """
+        Recursively prune empty values from the dictionary.
+
+        Optionally apply a predicate to determine which key-value pairs to remove.
+
+        If it returns True, the element is removed.
+
+        The value passed is the one *after* any potential recursive pruning.
+
+        Args:
+            remove_empty: If True (default), removes `None`, `{}` and `[]`.
+            predicate: Optional function `(key, value) -> bool`.
+
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> data = {
+        ...     "a": 1,
+        ...     "b": None,
+        ...     "c": {},
+        ...     "d": [],
+        ...     "e": {"f": None, "g": 2},
+        ...     "h": [1, None, {}],
+        ...     "i": 0,
+        ... }
+        >>> p_data = pc.Dict(data)
+        >>>
+        >>> p_data.prune().unwrap()
+        {'a': 1, 'e': {'g': 2}, 'h': [1], 'i': 0}
+        >>>
+        >>> p_data.prune(predicate=lambda k, v: v == 0).unwrap()
+        {'a': 1, 'e': {'g': 2}, 'h': [1]}
+        >>>
+        >>> p_data.prune(remove_empty=False, predicate=lambda k, v: v == 0).unwrap()
+        {'a': 1, 'b': None, 'c': {}, 'd': [], 'e': {'f': None, 'g': 2}, 'h': [1, None, {}]}
+
+        ```
+        """
+
+        def _apply_prune(data: dict[K, V]) -> dict[Any, Any]:
+            result = _prune_recursive(data, remove_empty, predicate)
+            return result if isinstance(result, dict) else dict()
+
+        return self.apply(_apply_prune)
