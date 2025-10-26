@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import itertools
 from collections.abc import Callable, Generator, Iterable, Iterator
-from typing import TYPE_CHECKING, Any, overload
+from typing import TYPE_CHECKING, Any, TypeIs, overload
 
 import cytoolz as cz
 import more_itertools as mit
@@ -183,15 +183,10 @@ class BaseJoins[T](IterWrapper[T]):
         ) -> Generator[tuple[Iterable[Any], ...] | tuple[object, ...], Any, None]:
             """from more_itertools.zip_broadcast"""
 
-            def is_scalar(obj: Any) -> bool:
+            def is_scalar(obj: Any) -> TypeIs[object]:
                 if isinstance(obj, (str, bytes)):
                     return True
-                try:
-                    iter(obj)
-                except TypeError:
-                    return True
-                else:
-                    return False
+                return cz.itertoolz.isiterable(obj) is False
 
             size = len(objects)
             if not size:
