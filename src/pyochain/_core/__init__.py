@@ -1,4 +1,11 @@
-from ._main import CommonBase, IterWrapper, MappingWrapper, Pipeable, Wrapper
+from ._main import (
+    CommonBase,
+    IterWrapper,
+    MappingWrapper,
+    Pipeable,
+    Wrapper,
+    is_mapping,
+)
 from ._protocols import (
     Peeked,
     SizedIterable,
@@ -18,4 +25,5 @@ __all__ = [
     "Peeked",
     "SizedIterable",
     "Pipeable",
+    "is_mapping",
 ]

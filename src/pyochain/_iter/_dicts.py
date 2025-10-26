@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING
+from collections.abc import Callable, Iterable, Sequence
+from typing import TYPE_CHECKING, Any
 
 import cytoolz as cz
 
@@ -220,3 +220,38 @@ class BaseDict[T](IterWrapper[T]):
             return Dict(cz.recipes.countby(key, data))
 
         return self.into(_count_by)
+
+    def to_records[U: Sequence[Any]](self: BaseDict[U]) -> Dict[Any, Any]:
+        """
+        Transform an iterable of nested sequences into a nested dictionary.
+
+        - Each inner sequence represents a path to a value in the dictionary.
+        - The last element of each sequence is treated as the value
+        - All preceding elements are treated as keys leading to that value.
+
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> arrays = [["a", "b", 1], ["a", "c", 2], ["d", 3]]
+        >>> pc.Seq(arrays).to_records().unwrap()
+        {'a': {'b': 1, 'c': 2}, 'd': 3}
+
+        ```
+        """
+        from .._dict import Dict
+
+        def _from_nested(
+            arrays: Iterable[Sequence[Any]], parent: dict[Any, Any] | None = None
+        ) -> Dict[Any, Any]:
+            """from dictutils.pivot"""
+            d: dict[Any, Any] = parent or {}
+            for arr in arrays:
+                if len(arr) >= 2:
+                    head, *tail = arr
+                    if len(tail) == 1:
+                        d[head] = tail[0]
+                    else:
+                        d[head] = _from_nested([tail], d.get(head, {}))
+            return Dict(d)
+
+        return self.into(_from_nested)

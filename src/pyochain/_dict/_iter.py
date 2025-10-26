@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable, Mapping
-from typing import TYPE_CHECKING, Concatenate
+from typing import TYPE_CHECKING, Any, Concatenate
 
 import cytoolz as cz
 
-from .._core import MappingWrapper
+from .._core import MappingWrapper, is_mapping
 
 if TYPE_CHECKING:
-    from .._iter import Iter
+    from .._iter import Iter, Seq
     from ._main import Dict
 
 
@@ -99,3 +99,36 @@ class IterDict[K, V](MappingWrapper[K, V]):
             return Iter(iter(data.items()))
 
         return self.into(_items)
+
+    def to_arrays(self) -> Seq[list[Any]]:
+        """
+        Convert the nested dictionary into a sequence of arrays.
+
+        The sequence represents all paths from root to leaves.
+
+        ```python
+        >>> import pyochain as pc
+        >>> data = {
+        ...     "a": {"b": 1, "c": 2},
+        ...     "d": {"e": {"f": 3}},
+        ... }
+        >>> pc.Dict(data).to_arrays().unwrap()
+        [['a', 'b', 1], ['a', 'c', 2], ['d', 'e', 'f', 3]]
+
+        ```
+        """
+        from .._iter import Seq
+
+        def _to_arrays(d: Mapping[Any, Any] | object) -> list[list[Any]]:
+            """from dictutils.pivot"""
+            if not is_mapping(d):
+                return [[d]]
+
+            arr: list[Any] = []
+            for k, v in d.items():
+                for el in _to_arrays(v):
+                    arr.append([k] + el)
+
+            return arr
+
+        return Seq(self.into(_to_arrays))

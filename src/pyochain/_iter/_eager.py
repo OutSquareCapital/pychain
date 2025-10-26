@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Sequence
 from functools import partial
 from typing import TYPE_CHECKING, Any
 
@@ -190,3 +190,44 @@ class BaseEager[T](IterWrapper[T]):
             return Counter(data).most_common(n)
 
         return self._eager(_most_common)
+
+    def rearrange[U: Sequence[Any]](self: BaseEager[U], *indices: int) -> Seq[list[U]]:
+        """
+        Rearrange elements in a given list of arrays by order indices.
+
+        The last element (value) always remains in place.
+
+        Args:
+            order: List of indices specifying new order of keys
+
+
+        Raises:
+            IndexError: If any index in order is out of range for the row
+
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> data = pc.Seq([["A", "X", 1], ["A", "Y", 2], ["B", "X", 3], ["B", "Y", 4]])
+        >>> data.rearrange(1, 0).unwrap()
+        [['X', 'A', 1], ['Y', 'A', 2], ['X', 'B', 3], ['Y', 'B', 4]]
+
+        ```
+        """
+
+        def _rearrange(in_arrs: Iterable[U]) -> list[list[U]]:
+            """from dictutils.pivot"""
+            order = indices
+            out: list[list[U]] = []
+            for arr in in_arrs:
+                max_key_index: int = len(arr) - 2
+                for i in order:
+                    if i < 0 or i > max_key_index:
+                        raise IndexError(
+                            f"order index {i} out of range for row with {max_key_index + 1} keys"
+                        )
+
+                out.append([arr[i] for i in order] + [arr[-1]])
+
+            return out
+
+        return self._eager(_rearrange)

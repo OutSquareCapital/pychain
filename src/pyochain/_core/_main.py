@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable, Iterator, Sequence
-from typing import TYPE_CHECKING, Any, Concatenate, Self
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
+from typing import TYPE_CHECKING, Any, Concatenate, Self, TypeIs
 
 if TYPE_CHECKING:
     from .._dict import Dict
     from .._iter import Iter, Seq
+
+
+def is_mapping(obj: Any) -> TypeIs[Mapping[Any, Any]]:
+    return isinstance(obj, Mapping)
 
 
 class Pipeable:

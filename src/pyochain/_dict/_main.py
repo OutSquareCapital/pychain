@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from typing import Any, Self
 
 from .._core import SupportsKeysAndGetItem
@@ -96,12 +96,19 @@ class Dict[K, V](
         return f"{self.__class__.__name__}({dict_repr(self.unwrap())})"
 
     @staticmethod
-    def from_[G, I](data: Mapping[G, I] | SupportsKeysAndGetItem[G, I]) -> Dict[G, I]:
+    def from_[G, I](
+        data: Mapping[G, I] | Iterable[tuple[G, I]] | SupportsKeysAndGetItem[G, I],
+    ) -> Dict[G, I]:
         """
-        Create a Dict from a mapping or SupportsKeysAndGetItem.
+        Create a Dict from a convertible value.
 
         Args:
-            data: A mapping or object supporting keys and item access to convert into a Dict.
+            data: A mapping, Iterable of tuples, or object supporting keys and item access to convert into a Dict.
+
+        Returns:
+            A Dict instance containing the data from the input.
+
+        Example:
 
         ```python
         >>> import pyochain as pc
@@ -117,6 +124,8 @@ class Dict[K, V](
         >>>
         >>> pc.Dict.from_(MyMapping()).unwrap()
         {1: 'a', 2: 'b', 3: 'c'}
+        >>> pc.Dict.from_([("d", "e"), ("f", "g")]).unwrap()
+        {'d': 'e', 'f': 'g'}
 
         ```
         """
@@ -235,3 +244,25 @@ class Dict[K, V](
         """
         other_data = other.unwrap() if isinstance(other, Dict) else other
         return self.unwrap() == other_data
+
+    def pivot(self, *indices: int) -> Dict[Any, Any]:
+        """
+        Pivot a nested dictionary by rearranging the key levels according to order.
+
+        Syntactic sugar for to_arrays().rearrange(*indices).to_records()
+
+        Args:
+            indices: Indices specifying the new order of key levels
+
+        Returns:
+            Pivoted dictionary with keys rearranged
+
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> d = {"A": {"X": 1, "Y": 2}, "B": {"X": 3, "Y": 4}}
+        >>> pc.Dict(d).pivot(1, 0).unwrap()
+        {'X': {'A': 1, 'B': 3}, 'Y': {'A': 2, 'B': 4}}
+        """
+
+        return self.to_arrays().rearrange(*indices).to_records()

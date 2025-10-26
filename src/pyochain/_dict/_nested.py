@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Any, Concatenate
 
 import cytoolz as cz
 
-from .._core import MappingWrapper
+from .._core import MappingWrapper, is_mapping
 
 if TYPE_CHECKING:
-    from .._dict import Dict
+    from ._main import Dict
 
 
 class NestedDict[K, V](MappingWrapper[K, V]):
@@ -78,23 +78,54 @@ class NestedDict[K, V](MappingWrapper[K, V]):
         ```
         """
 
+        def _can_recurse(max_depth: int | None, current_depth: int) -> bool:
+            return max_depth is None or current_depth < max_depth + 1
+
         def _flatten(
-            d: dict[Any, Any], parent_key: str = "", current_depth: int = 1
+            d: Mapping[Any, Any], parent_key: str = "", current_depth: int = 1
         ) -> dict[str, Any]:
             items: list[tuple[str, Any]] = []
             for k, v in d.items():
                 new_key = parent_key + sep + k if parent_key else k
-                if isinstance(v, dict) and (
-                    max_depth is None or current_depth < max_depth + 1
-                ):
-                    items.extend(
-                        _flatten(v, new_key, current_depth + 1).items()  # type: ignore
-                    )
+                if is_mapping(v) and _can_recurse(max_depth, current_depth):
+                    items.extend(_flatten(v, new_key, current_depth + 1).items())
                 else:
-                    items.append((new_key, v))  # type: ignore
+                    items.append((new_key, v))
             return dict(items)
 
         return self.apply(_flatten)
+
+    def unpivot(
+        self: NestedDict[str, Mapping[str, Any]],
+    ) -> Dict[str, dict[str, Any]]:
+        """
+        Unpivot a nested dictionary by swapping rows and columns.
+
+        Example:
+        ```python
+        >>> import pyochain as pc
+        >>> data = {
+        ...     "row1": {"col1": "A", "col2": "B"},
+        ...     "row2": {"col1": "C", "col2": "D"},
+        ... }
+        >>> pc.Dict(data).unpivot()
+        ... # doctest: +NORMALIZE_WHITESPACE
+        Dict({
+            'col1': {'row1': 'A', 'row2': 'C'},
+            'col2': {'row1': 'B', 'row2': 'D'}
+        })
+        """
+
+        def _unpivot(
+            data: Mapping[str, Mapping[str, Any]],
+        ) -> dict[str, dict[str, Any]]:
+            out: dict[str, dict[str, Any]] = {}
+            for rkey, inner in data.items():
+                for ckey, val in inner.items():
+                    out.setdefault(ckey, {})[rkey] = val
+            return out
+
+        return self.apply(_unpivot)
 
     def with_nested_key(self, *keys: K, value: V) -> Dict[K, V]:
         """
