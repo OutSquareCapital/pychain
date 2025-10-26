@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Any, Self, TypeGuard
+from typing import Any, Self, TypeIs
 
 import cytoolz as cz
 
@@ -96,7 +96,7 @@ def key(name: str) -> Expr:
     return Expr([name], (), name)
 
 
-def _expr_identity(obj: Any) -> TypeGuard[Expr]:
+def _expr_identity(obj: Any) -> TypeIs[Expr]:
     return hasattr(obj, "__tokens__")
 
 
@@ -108,7 +108,7 @@ def compute_exprs(
 ) -> dict[str, Any]:
     for e in exprs:
         if not _expr_identity(e):
-            e = key(e)  # type: ignore
+            e = key(e)
         current: object = cz.dicttoolz.get_in(e.__tokens__, data_in)
         for op in e.__ops__:
             current = op(current)

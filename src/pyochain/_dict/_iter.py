@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Concatenate
 
 import cytoolz as cz
 
-from .._core import MappingWrapper, is_mapping
+from .._core import MappingWrapper
 
 if TYPE_CHECKING:
     from .._iter import Iter, Seq
@@ -119,16 +119,17 @@ class IterDict[K, V](MappingWrapper[K, V]):
         """
         from .._iter import Seq
 
-        def _to_arrays(d: Mapping[Any, Any] | object) -> list[list[Any]]:
+        def _to_arrays(d: Mapping[Any, Any]) -> list[list[Any]]:
             """from dictutils.pivot"""
-            if not is_mapping(d):
-                return [[d]]
+            match d:
+                case Mapping():
+                    arr: list[Any] = []
+                    for k, v in d.items():
+                        for el in _to_arrays(v):
+                            arr.append([k] + el)
+                    return arr
 
-            arr: list[Any] = []
-            for k, v in d.items():
-                for el in _to_arrays(v):
-                    arr.append([k] + el)
-
-            return arr
+                case _:
+                    return [[d]]
 
         return Seq(self.into(_to_arrays))

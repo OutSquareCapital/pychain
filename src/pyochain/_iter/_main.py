@@ -149,11 +149,14 @@ class Iter[T](
 
         ```
         """
-        if cz.itertoolz.isiterable(data):
-            return Iter(iter(data))
-        else:
-            d: Iterable[U] = (data, *more_data)  # type: ignore[assignment]
-            return Iter(iter(d))
+
+        def _convert_data() -> Sequence[Any]:
+            if cz.itertoolz.isiterable(data):
+                return data
+            else:
+                return (data, *more_data)
+
+        return Iter(iter(_convert_data()))
 
     @staticmethod
     def unfold[S, V](seed: S, generator: Callable[[S], tuple[V, S] | None]) -> Iter[V]:

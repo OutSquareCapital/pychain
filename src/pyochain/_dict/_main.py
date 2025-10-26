@@ -31,7 +31,7 @@ class Dict[K, V](
 
     def __repr__(self) -> str:
         def dict_repr(
-            v: object,
+            v: Mapping[Any, Any] | list[Any] | str,
             depth: int = 0,
             max_depth: int = 3,
             max_items: int = 6,
@@ -42,8 +42,8 @@ class Dict[K, V](
             if depth > max_depth:
                 return "…"
             match v:
-                case dict():
-                    items: list[tuple[str, Any]] = list(v.items())  # type: ignore
+                case Mapping():
+                    items: list[tuple[str, Any]] = list(v.items())
                     shown: list[tuple[str, Any]] = items[:max_items]
                     if (
                         all(
@@ -68,7 +68,7 @@ class Dict[K, V](
                     return "{\n" + ",\n".join(lines) + f"\n{pad}" + "}"
 
                 case list():
-                    elems: list[Any] = v[:max_items]  # type: ignore
+                    elems: list[Any] = v[:max_items]
                     if (
                         all(
                             isinstance(x, (int, float, str, bool, type(None)))
@@ -77,14 +77,14 @@ class Dict[K, V](
                         and len(elems) <= 4
                     ):
                         body = ", ".join(dict_repr(x, depth + 1) for x in elems)
-                        if len(v) > max_items:  # type: ignore
+                        if len(v) > max_items:
                             body += ", …"
                         return "[" + body + "]"
                     lines = [
                         f"{pad}{' ' * indent}{dict_repr(x, depth + 1, max_depth, max_items, max_str, indent)}"
                         for x in elems
                     ]
-                    if len(v) > max_items:  # type: ignore
+                    if len(v) > max_items:
                         lines.append(f"{pad}{' ' * indent}…")
                     return "[\n" + ",\n".join(lines) + f"\n{pad}" + "]"
 
