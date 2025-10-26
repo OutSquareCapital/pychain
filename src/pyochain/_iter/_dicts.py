@@ -242,7 +242,7 @@ class BaseDict[T](IterWrapper[T]):
 
         def _from_nested(
             arrays: Iterable[Sequence[Any]], parent: dict[Any, Any] | None = None
-        ) -> Dict[Any, Any]:
+        ) -> dict[Any, Any]:
             """from dictutils.pivot"""
             d: dict[Any, Any] = parent or {}
             for arr in arrays:
@@ -252,6 +252,6 @@ class BaseDict[T](IterWrapper[T]):
                         d[head] = tail[0]
                     else:
                         d[head] = _from_nested([tail], d.get(head, {}))
-            return Dict(d)
+            return d
 
-        return self.into(_from_nested)
+        return Dict(self.into(_from_nested))
